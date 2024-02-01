@@ -1,0 +1,23 @@
+{
+  "private": true,
+  "name": "janus-trainer",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "backend": "yarn workspace janus-trainer-backend start:dev",
+    "frontend": "yarn workspace janus-trainer-frontend dev",
+    "start": "concurrently --kill-others-on-fail \"yarn backend\" \"yarn frontend\"",
+    "format": "yarn workspaces foreach --all run format",
+    "format:check": "yarn workspaces foreach --all run format:check",
+    "lint": "yarn workspaces foreach --all run lint",
+    "prepare": "husky"
+  },
+  "dependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "packageManager": "yarn@4.1.0",
+  "devDependencies": {
+    "husky": "^9.0.7"
+  }
+}
