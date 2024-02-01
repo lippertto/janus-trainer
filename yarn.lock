@@ -2202,7 +2202,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mui/system@npm:^5.15.7":
+"@mui/system@npm:^5.15.6, @mui/system@npm:^5.15.7":
   version: 5.15.7
   resolution: "@mui/system@npm:5.15.7"
   dependencies:
@@ -8856,6 +8856,7 @@ __metadata:
     "@emotion/styled": "npm:^11.11.0"
     "@mui/icons-material": "npm:^5.15.6"
     "@mui/material": "npm:^5.15.6"
+    "@mui/system": "npm:^5.15.6"
     "@mui/x-data-grid": "npm:^6.19.2"
     "@mui/x-date-pickers": "npm:^6.19.2"
     "@types/md5": "npm:^2.3.5"
