@@ -1,5 +1,5 @@
-# Created by https://www.toptal.com/developers/gitignore/api/node,yarn,nextjs
-# Edit at https://www.toptal.com/developers/gitignore?templates=node,yarn,nextjs
+# Created by https://www.toptal.com/developers/gitignore/api/node,yarn,nextjs,serverless
+# Edit at https://www.toptal.com/developers/gitignore?templates=node,yarn,nextjs,serverless
 
 ### NextJS ###
 # dependencies
@@ -172,6 +172,10 @@ dist
 # SvelteKit build / generate output
 .svelte-kit
 
+### Serverless ###
+# Ignore build directory
+.serverless
+
 ### yarn ###
 # https://yarnpkg.com/getting-started/qa#which-files-should-be-gitignored
 
@@ -189,4 +193,4 @@ dist
 # and uncomment the following lines
 # .pnp.*
 
-# End of https://www.toptal.com/developers/gitignore/api/node,yarn,nextjs
+# End of https://www.toptal.com/developers/gitignore/api/node,yarn,nextjs,serverless
