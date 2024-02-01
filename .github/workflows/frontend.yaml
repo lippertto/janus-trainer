@@ -1,0 +1,30 @@
+name: Test
+
+on: [push]
+
+jobs:
+  everything:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20.x'
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ECR_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_ECR_SECRET_ACCESS_KEY }}
+          aws-region: eu-north-1
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+      - name: Build, tag, and push image to Amazon ECR
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: janus-trainer-frontend
+        run: |
+          export IMAGE_TAG="$GITHUB_RUN_ID"
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG

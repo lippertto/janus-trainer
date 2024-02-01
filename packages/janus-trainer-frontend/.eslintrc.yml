@@ -1,0 +1,9 @@
+extends:
+  - eslint:recommended
+  - 'prettier'
+  - 'next/core-web-vitals'
+  - plugin:@next/next/recommended
+  - plugin:@typescript-eslint/recommended
+plugins:
+  - '@typescript-eslint'
+  - react
