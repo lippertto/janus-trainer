@@ -8888,6 +8888,7 @@ __metadata:
   dependencies:
     concurrently: "npm:^8.2.2"
     husky: "npm:^9.0.7"
+    prettier: "npm:^3.2.4"
   languageName: unknown
   linkType: soft
 

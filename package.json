@@ -8,13 +8,14 @@
     "backend": "yarn workspace janus-trainer-backend start:dev",
     "frontend": "yarn workspace janus-trainer-frontend dev",
     "start": "concurrently --kill-others-on-fail \"yarn backend\" \"yarn frontend\"",
-    "format": "yarn workspaces foreach --all run format",
-    "format:check": "yarn workspaces foreach --all run format:check",
+    "format": "prettier . --write",
+    "format:check": "prettier . --check",
     "lint": "yarn workspaces foreach --all run lint",
     "prepare": "husky"
   },
   "dependencies": {
-    "concurrently": "^8.2.2"
+    "concurrently": "^8.2.2",
+    "prettier": "^3.2.4"
   },
   "packageManager": "yarn@4.1.0",
   "devDependencies": {
