@@ -7,8 +7,8 @@ import {
   jwtLikeString,
   setTrainingStatus,
   startPostgres,
+  createTraining,
 } from './helpers';
-import { createTraining } from './helpers';
 import { StartedPostgreSqlContainer } from '@testcontainers/postgresql';
 import dayjs from 'dayjs';
 import { Training } from '../src/trainings/trainings.entity';

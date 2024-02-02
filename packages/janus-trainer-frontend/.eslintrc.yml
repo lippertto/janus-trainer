@@ -1,9 +1,9 @@
 extends:
-  - eslint:recommended
-  - 'prettier'
   - 'next/core-web-vitals'
   - plugin:@next/next/recommended
   - plugin:@typescript-eslint/recommended
 plugins:
-  - '@typescript-eslint'
   - react
+  - "@typescript-eslint"
+rules:
+  "@next/next/no-html-link-for-pages": off

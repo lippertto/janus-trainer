@@ -38,16 +38,16 @@ export class AuthService {
   }
 
   /** Will throw when the given group does not exist in the groups of the request's header */
-  requireGroup(request: Request, allowsGroups: Group[]) {
+  requireGroup(request: Request, allowedGroups: Group[]) {
     const { groups } = this.parseRequest(request);
     for (const userGroup of groups) {
-      if (allowsGroups.indexOf(userGroup) !== -1) {
+      if (allowedGroups.indexOf(userGroup) !== -1) {
         return;
       }
     }
     throw new ForbiddenException(
       `Must be member of any of the groups ${JSON.stringify(
-        allowsGroups,
+        allowedGroups,
       )} for this operation.`,
     );
   }
