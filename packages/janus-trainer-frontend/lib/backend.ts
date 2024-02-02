@@ -1,5 +1,6 @@
 import dayjs from 'dayjs';
 import { Group } from './auth';
+import { DisciplineDto } from 'janus-trainer-dto';
 
 type CompensationResponse = {
   periodStart: string;
@@ -302,6 +303,14 @@ export class Backend {
     );
     const trainers = (await response.json()).value;
     return trainers as Trainer[];
+  }
+
+  async getDisciplines(): Promise<DisciplineDto[]> {
+    const response = await fetch(this.withPath(`/disciplines`), {
+      headers: this.authorizationHeader(),
+    });
+    const result = (await response.json()).value;
+    return result as DisciplineDto[];
   }
 }
 

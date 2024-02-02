@@ -3,6 +3,7 @@ import { Training } from './src/trainings/trainings.entity';
 
 import 'dotenv/config';
 import { User } from './src/users/user.entity';
+import { Discipline } from './src/disciplines/discipline.entity';
 
 /** A data source to be used for the migrations of typeorm. */
 export default new DataSource({
@@ -12,7 +13,7 @@ export default new DataSource({
   username: process.env.POSTGRES_USERNAME,
   password: process.env.POSTGRES_PASSWORD,
   database: process.env.POSTGRES_DATABASE,
-  entities: [User, Training],
+  entities: [User, Training, Discipline],
   logging: 'all',
   migrations: ['migrations/*.ts'],
 });

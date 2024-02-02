@@ -13,8 +13,8 @@ ENV NODE_ENV=production
 
 WORKDIR /app
 
-# TODO: Find out if it works without this step
 COPY packages/janus-trainer-frontend ./packages/janus-trainer-frontend
+COPY packages/janus-trainer-dto ./packages/janus-trainer-dto
 
 RUN corepack enable
 RUN yarn set version stable
@@ -22,8 +22,6 @@ COPY package.json yarn.lock .yarnrc.yml ./
 # This should be --immutable, but that fails. So we'll just do a complete install.
 RUN yarn install
 
-# COPY packages/janus-trainer-frontend/. .
-# COPY packages/janus-trainer-frontend/.env.production .
 RUN yarn workspace janus-trainer-frontend build
 
 # 3. Production image, copy all the files and run next

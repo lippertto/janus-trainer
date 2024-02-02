@@ -37,6 +37,7 @@ import { JanusSession } from '../lib/auth';
 import DeleteTrainingDialog from './DeleteTrainingDialog';
 import Tooltip, { TooltipProps, tooltipClasses } from '@mui/material/Tooltip';
 import { styled } from '@mui/material/styles';
+import { DisciplineDto } from 'janus-trainer-dto';
 
 require('dayjs/locale/de');
 dayjs.locale('de');
@@ -128,6 +129,7 @@ function preProcessEditCellPropsForNonEmptyString(
 
 function getGridColumns(
   trainings: Training[],
+  disciplines: DisciplineDto[],
   rowModesModel: GridRowModesModel,
   handleCancelClick: { (id: GridRowId): () => void },
   handleDeleteClick: { (id: GridRowId): () => void },
@@ -166,9 +168,10 @@ function getGridColumns(
     {
       field: 'discipline',
       headerName: 'Sportart',
+      type: 'singleSelect',
       editable: true,
-      preProcessEditCellProps: preProcessEditCellPropsForNonEmptyString,
-      renderEditCell: renderNonEmptyStringCell,
+      valueOptions: disciplines.map((d) => d.name),
+      width: 150,
     },
     {
       field: 'group',
@@ -340,6 +343,9 @@ type TrainingTableToolbarProps = {
   ) => void;
   userName: string;
   userId: string;
+  /** A default discipline to be used for complete new entries. */
+  defaultDiscipline: string;
+  allowAddTraining: boolean;
 };
 
 function TrainingTableToolbar({
@@ -348,47 +354,53 @@ function TrainingTableToolbar({
   setRowModesModel,
   userName,
   userId,
+  defaultDiscipline = 'Volleyball',
+  allowAddTraining,
 }: TrainingTableToolbarProps) {
   return (
     <GridToolbarContainer>
-      <Button
-        startIcon={<AddIcon />}
-        onClick={() => {
-          const id = uuidv4();
-          setRows((oldRows: Training[]): Training[] => {
-            let template = null;
-            if (oldRows.length === 0) {
-              template = {
-                date: dayjs().format('YYYY-MM-DD'),
-                discipline: 'Volleyball',
-                group: 'Volleyball Liga',
-                compensationCents: 1900,
-                userName: userName,
-                userId: userId,
-              };
-            } else {
-              template = { ...getNewestTraining(oldRows) };
-            }
+      {allowAddTraining ? (
+        <Button
+          startIcon={<AddIcon />}
+          onClick={() => {
+            const id = uuidv4();
+            setRows((oldRows: Training[]): Training[] => {
+              let template = null;
+              if (oldRows.length === 0) {
+                template = {
+                  date: dayjs().format('YYYY-MM-DD'),
+                  discipline: defaultDiscipline,
+                  group: 'Gruppe eintragen',
+                  compensationCents: 1900,
+                  userName: userName,
+                  userId: userId,
+                };
+              } else {
+                template = { ...getNewestTraining(oldRows) };
+              }
 
-            return [
-              ...oldRows,
-              {
-                ...template,
-                id: id,
-                isNew: true,
-                participantCount: -1,
-                status: TrainingStatus.NEW,
-              } as Row,
-            ];
-          });
-          setRowModesModel((oldModel) => ({
-            ...oldModel,
-            [id]: { mode: GridRowModes.Edit },
-          }));
-        }}
-      >
-        Training hinzufügen
-      </Button>
+              return [
+                ...oldRows,
+                {
+                  ...template,
+                  id: id,
+                  isNew: true,
+                  participantCount: -1,
+                  status: TrainingStatus.NEW,
+                } as Row,
+              ];
+            });
+            setRowModesModel((oldModel) => ({
+              ...oldModel,
+              [id]: { mode: GridRowModes.Edit },
+            }));
+          }}
+        >
+          Training hinzufügen
+        </Button>
+      ) : (
+        <></>
+      )}
       <Button startIcon={<RefreshIcon />} onClick={refresh}>
         neu laden
       </Button>
@@ -402,23 +414,27 @@ interface Row extends Training {
 
 type SetTrainings = React.Dispatch<React.SetStateAction<Training[]>>;
 
+type TrainingTableProps = {
+  /** The trainings to display. Note: SHould be sorted, e.g. with `v.sort((r1, r2) => parseInt(r1.id) - parseInt(r2.id))` */
+  trainings: Training[];
+  setTrainings: SetTrainings;
+  refresh: () => Promise<Training[]>;
+  /** Whether the UI should show the approval actions. (User must be admin to actually execute the steps.) */
+  approvalMode: boolean;
+  /** A list of disciplines for the dropdown. */
+  disciplines: DisciplineDto[];
+};
+
 /**
  * Renders a list of Trainings.
- *
- * @param showNames whether to show the names of the trainer
- * @param trainings The trainings to display. Note: SHould be sorted, e.g. with `v.sort((r1, r2) => parseInt(r1.id) - parseInt(r2.id))`
  */
 export default function TrainingTable({
   trainings,
   setTrainings,
   refresh,
   approvalMode,
-}: {
-  trainings: Training[];
-  setTrainings: SetTrainings;
-  refresh: () => Promise<Training[]>;
-  approvalMode: boolean;
-}) {
+  disciplines = [],
+}: TrainingTableProps) {
   const apiRef = useGridApiRef();
   const backend = React.useRef(new Backend());
   const [rowModesModel, setRowModesModel] = React.useState<GridRowModesModel>(
@@ -526,6 +542,7 @@ export default function TrainingTable({
 
   const columns = getGridColumns(
     trainings,
+    disciplines,
     rowModesModel,
     handleCancelClick,
     handleDeleteClick,
@@ -557,7 +574,7 @@ export default function TrainingTable({
         }
         columns={columns}
         processRowUpdate={processRowUpdate}
-        // rows need to be sorted before we pass them on. Else, the rows might jump when their status is changed.
+        // rows should sorted before we pass them on. Else, the rows might jump when their status is changed.
         rows={trainings}
         rowModesModel={rowModesModel}
         slots={{
@@ -570,6 +587,7 @@ export default function TrainingTable({
             setRowModesModel,
             userName: session.name,
             userId: session.userId,
+            allowAddTraining: approvalMode == false,
           },
         }}
       />

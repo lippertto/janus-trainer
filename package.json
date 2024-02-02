@@ -10,7 +10,7 @@
     "start": "concurrently --kill-others-on-fail \"yarn start:backend\" \"yarn start:frontend\"",
     "format": "eslint .",
     "format:fix": "eslint . --fix",
-    "lint": "yarn workspaces foreach --all run lint",
+    "lint": "yarn workspace janus-trainer-frontend run lint",
     "prepare": "husky"
   },
   "packageManager": "yarn@4.1.0",

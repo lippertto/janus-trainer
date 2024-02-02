@@ -8,11 +8,13 @@ import TrainingTable from '../../components/TrainingTable';
 import { useSession } from 'next-auth/react';
 import type { JanusSession } from '../../lib/auth';
 import LoginRequired from '../../components/LoginRequired';
+import { DisciplineDto } from 'janus-trainer-dto';
 
 export default function EnterPage() {
   const backend = useRef<Backend>(new Backend());
 
   const [trainings, setTrainings] = React.useState<Training[]>([]);
+  const [disciplines, setDisciplines] = React.useState<DisciplineDto[]>([]);
 
   const { data, status: authenticationStatus } = useSession();
   const session = data as JanusSession;
@@ -24,13 +26,15 @@ export default function EnterPage() {
 
     backend.current.setAccessToken(session?.accessToken);
 
+    backend.current.getDisciplines().then((v) => setDisciplines(v));
+
     return backend.current.getTrainingsForUser(session?.userId).then((v) => {
       // trainings need to be sorted
       v.sort((r1, r2) => parseInt(r1.id) - parseInt(r2.id));
       setTrainings(v);
       return v;
     });
-  }, [session, setTrainings, authenticationStatus]);
+  }, [session, setTrainings, setDisciplines, authenticationStatus]);
 
   useEffect(() => {
     refresh();
@@ -43,6 +47,7 @@ export default function EnterPage() {
   return (
     <TrainingTable
       trainings={trainings}
+      disciplines={disciplines}
       setTrainings={setTrainings}
       refresh={refresh}
       approvalMode={false}

@@ -12,7 +12,8 @@ import { CompensationsModule } from './compensations/compensations.module';
 
 import { UsersModule } from './users/users.module';
 import { TrainersModule } from './trainers/trainers.module';
-import { SportsModule } from './sports/sports.module';
+import { DisciplineModule } from './disciplines/disciplines.module';
+import { Discipline } from './disciplines/discipline.entity';
 
 const providers: Provider[] = [];
 
@@ -27,14 +28,14 @@ if (config().cors.origin && !config().cors.origin.includes('localhost')) {
       useFactory: () => ({
         ...config().typeorm,
         type: 'postgres',
-        entities: [Training, User],
+        entities: [Training, User, Discipline],
       }),
     }),
     TrainingsModule,
     CompensationsModule,
     UsersModule,
     TrainersModule,
-    SportsModule,
+    DisciplineModule,
   ],
   providers: providers,
 })

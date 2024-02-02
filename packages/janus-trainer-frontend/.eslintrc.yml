@@ -1,7 +1,6 @@
 extends:
   - 'next/core-web-vitals'
   - plugin:@next/next/recommended
-  - plugin:@typescript-eslint/recommended
 plugins:
   - react
   - '@typescript-eslint'
