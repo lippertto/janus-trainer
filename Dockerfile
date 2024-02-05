@@ -22,6 +22,7 @@ COPY package.json yarn.lock .yarnrc.yml ./
 # This should be --immutable, but that fails. So we'll just do a complete install.
 RUN yarn install
 
+RUN yarn workspace janus-trainer-dto build
 RUN yarn workspace janus-trainer-frontend build
 
 # 3. Production image, copy all the files and run next
