@@ -5,6 +5,22 @@ on:
     branches:
       - main
 jobs:
+  lint-and-format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Enable Corepack
+        run: corepack enable
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
+      - name: yarn install
+        run: yarn install
+      - name: yarn format
+        run: yarn format
+      - name: yarn lint
+        run: yarn lint
   build-frontend:
     runs-on: ubuntu-latest
     outputs:
@@ -37,7 +53,9 @@ jobs:
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           echo image-name=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG >> $GITHUB_OUTPUT
   deploy-frontend:
-    needs: ["build-frontend"]
+    needs:
+      - build-frontend
+      - lint-and-format
     runs-on: ubuntu-latest
     env:
       IMAGE_NAME: ${{needs.build-frontend.outputs.image-name}}
@@ -62,6 +80,7 @@ jobs:
       # the build-frontend has a linting step which does more than eslint.
       # To avoid partial deployments due to aborted frontend builds, we add a dependency
       - build-frontend
+      - lint-and-format
     steps:
       - uses: actions/checkout@v4
       - name: Enable Corepack
