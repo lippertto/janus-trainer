@@ -1,4 +1,4 @@
-export interface DisciplineDto {
+export default interface DisciplineDto {
   id: string;
   name: string;
 }

@@ -1,5 +1,5 @@
 import { DisciplineDto } from './DisciplineDto';
 
-export interface GetDisciplineResponseDto {
+export default interface GetDisciplineResponseDto {
   value: DisciplineDto[];
 }
