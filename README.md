@@ -34,6 +34,13 @@ DROP TABLE IF EXISTS "migrations";
 COMMIT;
 ```
 
+# Infrastructure
+
+Currently, I did not want to manage the infrastructure as code. Hence, the resources were created by click-ops.
+
 # TODOs
 * Read up on MUI's nextjs integration: https://mui.com/material-ui/guides/nextjs/
 * Sort imports with eslint: https://eslint.org/docs/latest/rules/sort-imports
+
+## Refinement
+* Think about deploying the frontend with the serverless framework https://www.serverless.com/blog/serverless-nextjs
