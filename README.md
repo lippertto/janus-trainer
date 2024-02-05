@@ -1,3 +1,7 @@
+# Frontend
+
+## Deployment
+
 Log in to aws:
 
 ```sh
@@ -13,3 +17,6 @@ podman push 930650061532.dkr.ecr.eu-north-1.amazonaws.com/janus-trainer-app-arm6
 ```
 
 Deployment is done via UI.
+
+# TODOs
+Read up on MUI's nextjs integration: https://mui.com/material-ui/guides/nextjs/
