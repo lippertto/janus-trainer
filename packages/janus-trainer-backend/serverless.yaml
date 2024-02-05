@@ -24,11 +24,11 @@ provider:
   name: aws
   runtime: nodejs20.x
   region: eu-north-1
-  # iam:
-  #   # This role will be created by Serverless
-  #   role:
-  #     statements:
-  #       - Effect: Allow
+  iam:
+    role:
+      managedPolicies:
+        - arn:aws:iam::aws:policy/AmazonCognitoPowerUser
+
 
 functions:
   main:

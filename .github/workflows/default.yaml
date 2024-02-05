@@ -1,4 +1,4 @@
-name: janus-app
+name: janus-trainer-app
 
 on:
   push:
