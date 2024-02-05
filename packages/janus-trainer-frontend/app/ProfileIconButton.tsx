@@ -10,8 +10,6 @@ import type { JanusSession } from '../lib/auth';
 function menuItemsLoggedIn() {
   return (
     <div>
-      <MenuItem>Profile</MenuItem>
-      <MenuItem>My account</MenuItem>
       <MenuItem
         onClick={() => {
           signOut();
