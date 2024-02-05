@@ -17,6 +17,7 @@ import { DatePicker } from '@mui/x-date-pickers';
 import quarterOfYear from 'dayjs/plugin/quarterOfYear';
 import ButtonGroup from '@mui/material/ButtonGroup';
 import Button from '@mui/material/Button';
+import { DisciplineDto } from 'janus-trainer-dto';
 
 dayjs.extend(quarterOfYear);
 
@@ -29,18 +30,13 @@ export default function ApprovePage(): React.ReactElement {
     dayjs().endOf('quarter'),
   );
   const [trainings, setTrainings] = React.useState<Training[]>([]);
+  const [disciplines, setDisciplines] = React.useState<DisciplineDto[]>([]);
 
   const { data, status: authenticationStatus } = useSession();
   const session = data as JanusSession;
 
   const refreshTrainings = React.useCallback(async () => {
-    if (!session?.accessToken) {
-      return [];
-    }
-
     if (startDate?.isValid() && endDate?.isValid()) {
-      backend.current.setAccessToken(session?.accessToken);
-
       return backend.current
         .getTrainingsByDate(startDate, endDate)
         .then((v) => {
@@ -52,11 +48,21 @@ export default function ApprovePage(): React.ReactElement {
         });
     }
     return [];
-  }, [startDate, endDate, setTrainings, session?.accessToken]);
+  }, [startDate, endDate, setTrainings]);
+
+  useEffect(() => {
+    backend.current.setAccessToken(session?.accessToken);
+    if (!session?.accessToken) {
+      setTrainings([]);
+      return;
+    }
+    backend.current.getDisciplines().then((v) => setDisciplines(v));
+    refreshTrainings();
+  }, [refreshTrainings, setDisciplines, session?.accessToken]);
 
   useEffect(() => {
     refreshTrainings();
-  }, [startDate, endDate, refreshTrainings, session?.accessToken]);
+  }, [startDate, endDate, refreshTrainings]);
 
   if (authenticationStatus !== 'authenticated') {
     return <LoginRequired authenticationStatus={authenticationStatus} />;
@@ -106,6 +112,7 @@ export default function ApprovePage(): React.ReactElement {
       <Grid xs={12}>
         <TrainingTable
           trainings={trainings}
+          disciplines={disciplines}
           setTrainings={setTrainings}
           refresh={refreshTrainings}
           approvalMode={true}
