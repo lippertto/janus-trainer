@@ -19,7 +19,7 @@ export default function RootLayout({
       <head>
         {/*<script src="http://localhost:8097"></script>*/}
         <title>Janus Trainer App</title>
-        <link rel="icon" href="/static/favicon.ico" sizes="any" />
+        <link rel="icon" href="/favicon.ico" sizes="any" />
       </head>
       <body>
         <JanusProviders>

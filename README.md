@@ -18,5 +18,22 @@ podman push 930650061532.dkr.ecr.eu-north-1.amazonaws.com/janus-trainer-app-arm6
 
 Deployment is done via UI.
 
+# Backend
+
+## Database
+
+Clean databases
+
+```sql
+BEGIN TRANSACTION;
+DROP TABLE IF EXISTS "given_training";
+DROP TABLE IF EXISTS "training";
+DROP TABLE IF EXISTS "trainer";
+DROP TABLE IF EXISTS "user";
+DROP TABLE IF EXISTS "migrations";
+COMMIT;
+```
+
 # TODOs
-Read up on MUI's nextjs integration: https://mui.com/material-ui/guides/nextjs/
+* Read up on MUI's nextjs integration: https://mui.com/material-ui/guides/nextjs/
+* Sort imports with eslint: https://eslint.org/docs/latest/rules/sort-imports
