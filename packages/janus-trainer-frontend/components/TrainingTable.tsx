@@ -370,7 +370,7 @@ function TrainingTableToolbar({
                 template = {
                   date: dayjs().format('YYYY-MM-DD'),
                   discipline: defaultDiscipline,
-                  group: 'Gruppe eintragen',
+                  group: '',
                   compensationCents: 1900,
                   userName: userName,
                   userId: userId,
@@ -385,14 +385,18 @@ function TrainingTableToolbar({
                   ...template,
                   id: id,
                   isNew: true,
-                  participantCount: -1,
+                  participantCount: 0,
                   status: TrainingStatus.NEW,
                 } as Row,
               ];
             });
             setRowModesModel((oldModel) => ({
               ...oldModel,
-              [id]: { mode: GridRowModes.Edit },
+              [id]: {
+                mode: GridRowModes.Edit,
+                fieldToFocus: 'date',
+                deleteValue: true,
+              },
             }));
           }}
         >

@@ -49,6 +49,7 @@ Currently, I did not want to manage the infrastructure as code. Hence, the resou
 * Use docker postgres for dev environment
 * Put secrets into actual secrets
 * Errors should show immediately when adding a new training
+* Run migrations in CI
 
 ## Refinement
 * Read up on .env files best practices
