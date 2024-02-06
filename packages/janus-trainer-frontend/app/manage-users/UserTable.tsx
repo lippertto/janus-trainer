@@ -1,4 +1,4 @@
-import { DataGrid } from '@mui/x-data-grid';
+import { DataGrid, GridToolbarContainer } from '@mui/x-data-grid';
 import type {
   GridColDef,
   GridRenderEditCellParams,
@@ -8,9 +8,12 @@ import type {
 import type { User } from '../../lib/backend';
 import React from 'react';
 import EditIcon from '@mui/icons-material/Edit';
+import RefreshIcon from '@mui/icons-material/Refresh';
 import IconButton from '@mui/material/IconButton';
 import ClickAwayListener from '@mui/material/ClickAwayListener';
 import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
+import PersonAddIcon from '@mui/icons-material/PersonAdd';
 
 function renderActionCell(
   params: GridRenderEditCellParams,
@@ -29,18 +32,41 @@ function renderActionCell(
   );
 }
 
+function UserTableToolbar({
+  handleAddUser,
+  handleRefresh,
+}: {
+  handleAddUser: () => void;
+  handleRefresh: () => void;
+}) {
+  return (
+    <GridToolbarContainer>
+      <Button startIcon={<PersonAddIcon />} onClick={handleAddUser}>
+        Nutzer hinzufügen
+      </Button>
+      <Button startIcon={<RefreshIcon />} onClick={handleRefresh}>
+        Neu laden
+      </Button>
+    </GridToolbarContainer>
+  );
+}
+
 export default function UserTable({
   users,
   selectedRow,
   setSelectedRow,
   handleEdit,
   listenToClickAways,
+  handleAddUser,
+  handleRefresh,
 }: {
   users: User[];
   selectedRow: GridRowId[];
   setSelectedRow: (v: GridRowSelectionModel) => void;
   handleEdit: () => void;
   listenToClickAways: boolean;
+  handleAddUser: () => void;
+  handleRefresh: () => void;
 }) {
   const columns: GridColDef[] = [
     { field: 'name', headerName: 'Name', flex: 1 },
@@ -76,6 +102,10 @@ export default function UserTable({
           setSelectedRow(newRowSelectionModel);
         }}
         rowSelectionModel={selectedRow}
+        slots={{
+          toolbar: UserTableToolbar,
+        }}
+        slotProps={{ toolbar: { handleAddUser, handleRefresh } }}
       />
     </ClickAwayListener>
   );

@@ -7,11 +7,7 @@ import UserTable from './UserTable';
 import React from 'react';
 import { Backend, type User } from '../../lib/backend';
 import { type GridRowSelectionModel } from '@mui/x-data-grid';
-import Grid from '@mui/material/Unstable_Grid2'; // Grid version 2
-import Button from '@mui/material/Button';
-import RefreshIcon from '@mui/icons-material/Refresh';
 import { EditUserDialog } from './EditUserDialog';
-import PersonAddIcon from '@mui/icons-material/PersonAdd';
 
 export default function UserManagementPage() {
   const backend = React.useRef<Backend>(new Backend());
@@ -45,34 +41,18 @@ export default function UserManagementPage() {
 
   return (
     <>
-      <Grid container spacing={2}>
-        <Grid xsOffset={'auto'}>
-          <Button onClick={refresh} endIcon={<RefreshIcon />}>
-            Neu laden
-          </Button>
-        </Grid>
-        <Grid xs={12}>
-          <UserTable
-            users={users}
-            selectedRow={selectedRows}
-            setSelectedRow={setSelectedRows}
-            handleEdit={() => {
-              setShowEdit(true);
-            }}
-            listenToClickAways={!showEdit && !showCreate}
-          />
-        </Grid>
-        <Grid xsOffset={'auto'}>
-          <Button
-            onClick={() => {
-              setShowCreate(true);
-            }}
-            endIcon={<PersonAddIcon />}
-          >
-            Neuer Nutzer
-          </Button>
-        </Grid>
-      </Grid>
+      <UserTable
+        users={users}
+        selectedRow={selectedRows}
+        setSelectedRow={setSelectedRows}
+        handleEdit={() => {
+          setShowEdit(true);
+        }}
+        listenToClickAways={!showEdit && !showCreate}
+        handleAddUser={() => setShowCreate(true)}
+        handleRefresh={refresh}
+      />
+
       <EditUserDialog
         open={showEdit}
         handleClose={() => setShowEdit(false)}
