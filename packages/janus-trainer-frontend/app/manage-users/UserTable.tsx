@@ -1,36 +1,16 @@
-import { DataGrid, GridToolbarContainer } from '@mui/x-data-grid';
-import type {
-  GridColDef,
-  GridRenderEditCellParams,
-  GridRowId,
-  GridRowSelectionModel,
+import {
+  DataGrid,
+  GridActionsCellItem,
+  GridToolbarContainer,
 } from '@mui/x-data-grid';
+import type { GridColDef, GridRowId } from '@mui/x-data-grid';
 import type { User } from '../../lib/backend';
 import React from 'react';
 import EditIcon from '@mui/icons-material/Edit';
 import RefreshIcon from '@mui/icons-material/Refresh';
-import IconButton from '@mui/material/IconButton';
-import ClickAwayListener from '@mui/material/ClickAwayListener';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
-
-function renderActionCell(
-  params: GridRenderEditCellParams,
-  selectedRow: GridRowId[],
-  handleEdit: () => void,
-) {
-  if (selectedRow.length === 0) return <></>;
-  if (selectedRow[0] !== params.id) return <></>;
-
-  return (
-    <>
-      <IconButton onClick={handleEdit}>
-        <EditIcon />
-      </IconButton>
-    </>
-  );
-}
 
 function UserTableToolbar({
   handleAddUser,
@@ -53,20 +33,14 @@ function UserTableToolbar({
 
 export default function UserTable({
   users,
-  selectedRow,
-  setSelectedRow,
-  handleEdit,
-  listenToClickAways,
   handleAddUser,
   handleRefresh,
+  handleUserEditClick,
 }: {
   users: User[];
-  selectedRow: GridRowId[];
-  setSelectedRow: (v: GridRowSelectionModel) => void;
-  handleEdit: () => void;
-  listenToClickAways: boolean;
   handleAddUser: () => void;
   handleRefresh: () => void;
+  handleUserEditClick: (id: GridRowId) => void;
 }) {
   const columns: GridColDef[] = [
     { field: 'name', headerName: 'Name', flex: 1 },
@@ -81,32 +55,30 @@ export default function UserTable({
     },
     {
       field: 'actions',
+      type: 'actions',
       headerName: '',
-      renderCell: (params) => renderActionCell(params, selectedRow, handleEdit),
       flex: 0.5,
+      getActions: ({ id }) => {
+        return [
+          <GridActionsCellItem
+            icon={<EditIcon />}
+            label="bearbeiten"
+            onClick={() => handleUserEditClick(id)}
+            key={id}
+          />,
+        ];
+      },
     },
   ];
 
   return (
-    <ClickAwayListener
-      onClickAway={() => {
-        if (listenToClickAways) {
-          setSelectedRow([]);
-        }
+    <DataGrid
+      columns={columns}
+      rows={users}
+      slots={{
+        toolbar: UserTableToolbar,
       }}
-    >
-      <DataGrid
-        columns={columns}
-        rows={users}
-        onRowSelectionModelChange={(newRowSelectionModel) => {
-          setSelectedRow(newRowSelectionModel);
-        }}
-        rowSelectionModel={selectedRow}
-        slots={{
-          toolbar: UserTableToolbar,
-        }}
-        slotProps={{ toolbar: { handleAddUser, handleRefresh } }}
-      />
-    </ClickAwayListener>
+      slotProps={{ toolbar: { handleAddUser, handleRefresh } }}
+    />
   );
 }

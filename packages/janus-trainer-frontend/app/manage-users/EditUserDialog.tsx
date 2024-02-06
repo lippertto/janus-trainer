@@ -19,7 +19,7 @@ export function EditUserDialog({
   handleClose,
   handleSave,
 }: {
-  user?: User;
+  user: User | null;
   open: boolean;
   handleClose: () => void;
   handleSave: (
@@ -50,6 +50,7 @@ export function EditUserDialog({
   const nameIsSet = name && name?.length > 0;
   const emailIsSet = email && email?.length > 0;
   const ibanIsSet = iban?.length > 0;
+  const dataIsValid = nameIsSet && emailIsSet && (!isTrainer || ibanIsSet);
 
   return (
     <Dialog open={open} onClose={handleClose}>
@@ -122,6 +123,7 @@ export function EditUserDialog({
           Abbrechen
         </Button>
         <Button
+          disabled={!dataIsValid}
           onClick={() => {
             if (user) {
               handleSave(
