@@ -10,6 +10,16 @@ import type { JanusSession } from '../../lib/auth';
 import LoginRequired from '../../components/LoginRequired';
 import { DisciplineDto } from 'janus-trainer-dto';
 
+function sortDiscipline(a: DisciplineDto, b: DisciplineDto): number {
+  if (a.name < b.name) {
+    return -1;
+  }
+  if (a.name > b.name) {
+    return 1;
+  }
+  return 0;
+}
+
 export default function EnterPage() {
   const backend = useRef<Backend>(new Backend());
 
@@ -25,8 +35,9 @@ export default function EnterPage() {
     }
 
     backend.current.setAccessToken(session?.accessToken);
-
-    backend.current.getDisciplines().then((v) => setDisciplines(v));
+    backend.current
+      .getDisciplines()
+      .then((v) => setDisciplines(v.toSorted(sortDiscipline)));
 
     return backend.current.getTrainingsForUser(session?.userId).then((v) => {
       // trainings need to be sorted

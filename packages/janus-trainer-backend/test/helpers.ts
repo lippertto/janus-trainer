@@ -8,9 +8,12 @@ import {
   PostgreSqlContainer,
   StartedPostgreSqlContainer,
 } from '@testcontainers/postgresql';
+import { v4 as uuidv4 } from 'uuid';
+import { DisciplineDto } from 'janus-trainer-dto';
 
 let globalCompensationCents = 100;
 let globalTrainingDate = dayjs('2000-01-01');
+let discipline: DisciplineDto | null = null;
 
 /** Creates user and trainer entities and adds the corresponding relationship. */
 export async function createTrainer(
@@ -45,11 +48,16 @@ export async function createApp() {
   await app.init();
   return app;
 }
+
 export async function createTraining(
   app: INestApplication,
   userId: string,
   fields: { compensationCents?: number; date?: dayjs.Dayjs } = {},
 ): Promise<TrainingResponse> {
+  if (!discipline) {
+    discipline = await createDiscipline(app, 'global-test-discipline');
+  }
+
   let result = null;
   await request(app.getHttpServer())
     .post('/trainings')
@@ -61,6 +69,7 @@ export async function createTraining(
       group: 'group',
       participantCount: 5,
       userId: userId,
+      disciplineId: discipline.id,
     })
     .then((response) => {
       if (response.statusCode != 201) {
@@ -73,7 +82,6 @@ export async function createTraining(
       expect(response.body).toMatchObject({
         compensationCents: fields.compensationCents ?? globalCompensationCents,
         date: (fields.date ?? globalTrainingDate).format('YYYY-MM-DD'),
-        discipline: 'discipline',
         group: 'group',
         participantCount: 5,
         user: expect.objectContaining({ id: userId }),
@@ -96,6 +104,7 @@ export async function setTrainingStatus(
 ): Promise<void> {
   await request(app.getHttpServer())
     .patch(`/trainings/${trainingId}`)
+    .set('Authorization', `Bearer ${JWT_WITH_ADMIN_GROUP}`)
     .send({ status: status })
     .expect(200)
     .then((response) => {
@@ -125,7 +134,9 @@ export async function startPostgres(
     TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE: '/var/run/docker.sock',
     TESTCONTAINERS_RYUK_DISABLED: 'true',
   };
-  const container = await new PostgreSqlContainer().start();
+  const container = await new PostgreSqlContainer(
+    'postgres:13.3-alpine',
+  ).start();
   process.env = {
     ...process.env,
     POSTGRES_HOST: container.getHost(),
@@ -147,4 +158,21 @@ export function jwtLikeString(cognitoId: string, groups: string[]): string {
     JSON.stringify({ sub: cognitoId, 'cognito:groups': groups }),
   );
   return `header.${payload}.signature`;
+}
+
+export async function createDiscipline(
+  app: INestApplication,
+  name?: string,
+): Promise<DisciplineDto> {
+  if (!name) {
+    name = uuidv4();
+  }
+  const response = await request(app.getHttpServer())
+    .post('/disciplines')
+    .set('Authorization', `Bearer ${JWT_WITH_ADMIN_GROUP}`)
+    .send({
+      name,
+    });
+  expect(response.statusCode).toBe(201);
+  return response.body as DisciplineDto;
 }

@@ -26,8 +26,8 @@ export default function DeleteTrainingDialog(props: DeleteTrainingDialog) {
       <DialogTitle>Löschen bestätigen</DialogTitle>
       <DialogContent>
         <DialogContentText>
-          Soll das {training?.discipline}-Training von {training?.user.name} am{' '}
-          {dateString} gelöscht werden?
+          Soll das {training?.discipline.name}-Training von{' '}
+          {training?.user.name} am {dateString} gelöscht werden?
         </DialogContentText>
       </DialogContent>
       <DialogActions>

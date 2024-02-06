@@ -23,19 +23,22 @@ import { TrainingsBatchApproveResponse } from './dto/trainings-batch-approve-res
 import { TrainingUpdateStatusRequest } from './dto/training-update-status-request';
 import { TrainingsQueryResponse } from './dto/trainings-query-response';
 import { TrainingResponse } from './dto/training-response';
-import { TrainingsCreateRequest } from './dto/trainings-create-request';
+import { TrainingCreateRequestDto } from 'janus-trainer-dto';
 import { Training, TrainingStatus } from './trainings.entity';
 import { AuthService } from '../auth/auth.service';
 import { Request } from 'express';
 import { Group } from '../users/user.entity';
 import dayjs from 'dayjs';
-import { UpdateTrainingRequest } from './dto/update-training-request';
+import { TrainingUpdateRequestDto } from 'janus-trainer-dto';
 
 function trainingToResponse(training: Training): TrainingResponse {
   return {
     id: training.id.toString(),
     date: training.date,
-    discipline: training.discipline,
+    discipline: {
+      name: training.discipline.name,
+      id: training.discipline.id.toString(),
+    },
     group: training.group,
     compensationCents: training.compensationCents,
     user: {
@@ -79,7 +82,7 @@ export class TrainingsController {
   async updateTraining(
     @Req() request: Request,
     @Param('id') id: string,
-    @Body() updateRequest: UpdateTrainingRequest,
+    @Body() updateRequest: TrainingUpdateRequestDto,
   ): Promise<TrainingResponse> {
     const { userId, groups } = this.authService.parseRequest(request);
 
@@ -100,7 +103,7 @@ export class TrainingsController {
       id,
       updateRequest.compensationCents,
       updateRequest.date,
-      updateRequest.discipline,
+      updateRequest.disciplineId,
       updateRequest.group,
       updateRequest.participantCount,
     );
@@ -146,14 +149,13 @@ export class TrainingsController {
   @Post()
   @Header('Content-Type', 'application/json')
   async createTraining(
-    @Body() createRequest: TrainingsCreateRequest,
+    @Body() createRequest: TrainingCreateRequestDto,
     @Req() request: Request,
   ): Promise<TrainingResponse> {
-    const { userId: cognitoId, groups } =
-      this.authService.parseRequest(request);
+    const { userId, groups } = this.authService.parseRequest(request);
 
     if (groups.indexOf(Group.ADMINS) === -1) {
-      if (cognitoId != createRequest.userId) {
+      if (userId != createRequest.userId) {
         throw new ForbiddenException(
           'Only admins may create trainings for others.',
         );
@@ -168,9 +170,11 @@ export class TrainingsController {
 
   @Patch(':id')
   async updateOneTraining(
+    @Req() httpRequest: Request,
     @Param('id') id: string,
     @Body() updateRequest: TrainingUpdateStatusRequest,
   ): Promise<TrainingResponse> {
+    this.authService.requireGroup(httpRequest, [Group.ADMINS, Group.TRAINERS]);
     const currentTraining = await this.trainingsService.getOneTraining(id);
     if (currentTraining === null) {
       throw new NotFoundException('Could not find trining');
@@ -184,7 +188,11 @@ export class TrainingsController {
   }
 
   @Get(':id')
-  async getOneTraining(@Param('id') id: string): Promise<TrainingResponse> {
+  async getOneTraining(
+    @Req() request: Request,
+    @Param('id') id: string,
+  ): Promise<TrainingResponse> {
+    this.authService.requireGroup(request, [Group.ADMINS, Group.TRAINERS]);
     const result = await this.trainingsService.getOneTraining(id);
     if (result == null) {
       throw new NotFoundException('Could not find the queried training by id');

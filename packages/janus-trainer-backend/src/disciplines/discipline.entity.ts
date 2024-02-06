@@ -1,4 +1,12 @@
-import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Training } from '../trainings/trainings.entity';
+import {
+  BaseEntity,
+  Column,
+  DeleteDateColumn,
+  Entity,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @Entity()
 export class Discipline extends BaseEntity {
@@ -7,4 +15,10 @@ export class Discipline extends BaseEntity {
 
   @Column()
   name: string;
+
+  @OneToMany(() => Training, (training) => training.discipline)
+  trainings: Promise<Training[]>;
+
+  @DeleteDateColumn()
+  deletedDate: Date;
 }

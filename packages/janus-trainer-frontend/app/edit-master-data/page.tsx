@@ -5,11 +5,15 @@ import { useSession } from 'next-auth/react';
 import Button from '@mui/material/Button';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
+import Card from '@mui/material/Card';
+import CardHeader from '@mui/material/CardHeader';
+import CardContent from '@mui/material/CardContent';
+import CardActions from '@mui/material/CardActions';
+import ListItemText from '@mui/material/ListItemText';
 import Grid from '@mui/material/Unstable_Grid2'; // Grid version 2
 
 import { DisciplineDto } from 'janus-trainer-dto';
 import React from 'react';
-import { ListItemText } from '@mui/material';
 import { JanusSession } from '@/lib/auth';
 import { Backend } from '@/lib/backend';
 import LoginRequired from '@/components/LoginRequired';
@@ -59,10 +63,17 @@ export default function Page() {
   return (
     <Grid container spacing={2}>
       <Grid>
-        <Button onClick={() => {}}>Disziplin hinzufügen</Button>
-        <List style={{ maxHeight: 500, overflow: 'auto' }}>
-          {disciplines.map(disciplineToListItem)}
-        </List>
+        <Card>
+          <CardHeader title={'Sportarten'} />
+          <CardContent>
+            <List style={{ maxHeight: 500, overflow: 'auto' }}>
+              {disciplines.map(disciplineToListItem)}
+            </List>
+          </CardContent>
+          <CardActions>
+            <Button onClick={() => {}}>Sportart hinzufügen</Button>
+          </CardActions>
+        </Card>
       </Grid>
     </Grid>
   );

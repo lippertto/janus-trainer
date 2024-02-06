@@ -3,7 +3,7 @@ export class TrainingResponse {
   // is of type GivenTrainingStatus
   status: string;
   date: string;
-  discipline: string;
+  discipline: { name: string; id: string };
   group: string;
   compensationCents: number;
   participantCount: number;

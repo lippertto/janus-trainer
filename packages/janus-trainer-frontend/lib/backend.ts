@@ -1,6 +1,10 @@
 import dayjs from 'dayjs';
 import { Group } from './auth';
-import { DisciplineDto } from 'janus-trainer-dto';
+import {
+  DisciplineDto,
+  TrainingCreateRequestDto,
+  TrainingUpdateRequestDto,
+} from 'janus-trainer-dto';
 
 type CompensationResponse = {
   periodStart: string;
@@ -69,16 +73,18 @@ export class Backend {
     participantCount: number,
     userId: string,
   ): Promise<Training> {
+    const request: TrainingCreateRequestDto = {
+      date: date,
+      disciplineId: discipline,
+      group: group,
+      compensationCents: compensationCents,
+      participantCount: participantCount,
+      userId: userId,
+    };
+
     const response = await fetch(this.withPath('/trainings'), {
       method: 'POST',
-      body: JSON.stringify({
-        date: date,
-        discipline: discipline,
-        group: group,
-        compensationCents: compensationCents,
-        participantCount: participantCount,
-        userId: userId,
-      }),
+      body: JSON.stringify(request),
       cache: 'no-cache',
       headers: {
         ...this.authorizationHeader(),
@@ -93,20 +99,21 @@ export class Backend {
   async updateTraining(
     id: string,
     date: string,
-    discipline: string,
+    disciplineId: string,
     group: string,
     compensationCents: number,
     participantCount: number,
   ): Promise<Training> {
+    const request: TrainingUpdateRequestDto = {
+      date,
+      disciplineId,
+      group,
+      compensationCents,
+      participantCount,
+    };
     const response = await fetch(this.withPath(`/trainings/${id}`), {
       method: 'PUT',
-      body: JSON.stringify({
-        date: date,
-        discipline: discipline,
-        group: group,
-        compensationCents: compensationCents,
-        participantCount: participantCount,
-      }),
+      body: JSON.stringify(request),
       headers: {
         ...this.authorizationHeader(),
         'Content-Type': 'application/json',
@@ -323,7 +330,7 @@ export enum TrainingStatus {
 export interface Training {
   id: string;
   date: string;
-  discipline: string;
+  discipline: { id: string; name: string };
   group: string;
   compensationCents: number;
   user: { id: string; name: string };
@@ -349,8 +356,6 @@ export interface User {
   name: string;
   groups: string[];
 }
-
-export interface TrainingCreateRequest {}
 
 /** A trainer as returned from the list trainers backend. */
 export interface Trainer {

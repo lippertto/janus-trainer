@@ -1,3 +1,4 @@
+import { Discipline } from '../disciplines/discipline.entity';
 import { User } from '../users/user.entity';
 import {
   BaseEntity,
@@ -19,8 +20,8 @@ export class Training extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
-  discipline: string;
+  @ManyToOne(() => Discipline, (discipline) => discipline.trainings)
+  discipline: Discipline;
 
   @Column()
   group: string;

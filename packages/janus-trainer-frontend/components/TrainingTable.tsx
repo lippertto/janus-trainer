@@ -170,7 +170,14 @@ function getGridColumns(
       headerName: 'Sportart',
       type: 'singleSelect',
       editable: true,
-      valueOptions: disciplines.map((d) => d.name),
+      valueOptions: disciplines.map((v) => v.name),
+      valueGetter: (params: GridValueGetterParams) => {
+        return params.value.name;
+      },
+      valueSetter: (params: GridValueSetterParams) => {
+        const discipine = disciplines.find((d) => d.name == params.value);
+        return { ...params.row, discipline: discipine };
+      },
       width: 150,
     },
     {
@@ -344,7 +351,7 @@ type TrainingTableToolbarProps = {
   userName: string;
   userId: string;
   /** A default discipline to be used for complete new entries. */
-  defaultDiscipline: string;
+  defaultDiscipline: DisciplineDto;
   allowAddTraining: boolean;
 };
 
@@ -354,7 +361,7 @@ function TrainingTableToolbar({
   setRowModesModel,
   userName,
   userId,
-  defaultDiscipline = 'Volleyball',
+  defaultDiscipline,
   allowAddTraining,
 }: TrainingTableToolbarProps) {
   return (
@@ -509,7 +516,7 @@ export default function TrainingTable({
         return backend.current
           .addTraining(
             updatedRow.date,
-            updatedRow.discipline,
+            updatedRow.discipline.id,
             updatedRow.group,
             updatedRow.compensationCents,
             updatedRow.participantCount,
@@ -528,7 +535,7 @@ export default function TrainingTable({
         return backend.current.updateTraining(
           updatedRow.id,
           updatedRow.date,
-          updatedRow.discipline,
+          updatedRow.discipline.id,
           updatedRow.group,
           updatedRow.compensationCents,
           updatedRow.participantCount,
@@ -592,6 +599,7 @@ export default function TrainingTable({
             userName: session.name,
             userId: session.userId,
             allowAddTraining: approvalMode == false,
+            defaultDiscipline: disciplines.at(0),
           },
         }}
       />

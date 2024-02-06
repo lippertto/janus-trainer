@@ -8,12 +8,15 @@ import {
   setTrainingStatus,
   startPostgres,
   createTraining,
+  createDiscipline,
+  JWT_WITH_TRAINER_GROUP,
 } from './helpers';
 import { StartedPostgreSqlContainer } from '@testcontainers/postgresql';
 import dayjs from 'dayjs';
 import { Training } from '../src/trainings/trainings.entity';
 import { TrainingResponse } from '../src/trainings/dto/training-response';
 import { v4 as uuidv4 } from 'uuid';
+import { Group } from '../src/users/user.entity';
 
 jest.setTimeout(5 * 60 * 1000);
 
@@ -48,34 +51,36 @@ describe('trainings (e2e)', () => {
   });
 
   test('training can be retrieved after storing it', async () => {
+    // GIVEN
     const userId = await createTrainer(app, 'any-trainer-name');
-    let trainingId = null;
+    const discipline = await createDiscipline(app);
 
-    await request(app.getHttpServer())
+    // WHEN
+    const response = await request(app.getHttpServer())
       .post('/trainings')
       .set('Authorization', `Bearer ${JWT_WITH_ADMIN_GROUP}`)
       .send({
         compensationCents: 100,
         date: '2023-01-02',
-        discipline: 'discipline',
+        disciplineId: discipline.id.toString(),
         group: 'group',
         participantCount: 5,
         userId: userId,
-      })
-      .expect(201)
-      .then((response) => {
-        expect(response.body).toMatchObject({
-          compensationCents: 100,
-          date: '2023-01-02',
-          discipline: 'discipline',
-          group: 'group',
-          participantCount: 5,
-        });
-        trainingId = response.body.id;
       });
 
+    // THEN
+    expect(response.statusCode).toBe(201);
+    const training = response.body;
+
+    expect(training.compensationCents).toBe(100);
+    expect(training.date).toBe('2023-01-02');
+    expect(training.discipline).toMatchObject(discipline);
+    expect(training.group).toBe('group');
+    expect(training.participantCount).toBe(5);
+
     await request(app.getHttpServer())
-      .get(`/trainings/${trainingId}`)
+      .get(`/trainings/${training.id}`)
+      .set('Authorization', `Bearer ${JWT_WITH_TRAINER_GROUP}`)
       .expect(200);
   });
 
@@ -135,6 +140,10 @@ describe('trainings (e2e)', () => {
     // THEN
     await request(app.getHttpServer())
       .get(`/trainings/${trainingId}`)
+      .set(
+        'Authorization',
+        `Bearer ${jwtLikeString(trainerId, [Group.TRAINERS])}`,
+      )
       .expect(200)
       .then((response) => {
         expect(response.body.status).toBe('APPROVED');
@@ -152,6 +161,7 @@ describe('trainings (e2e)', () => {
     // WHEN
     await request(app.getHttpServer())
       .patch(`/trainings/${trainingId}`)
+      .set('Authorization', `Bearer ${jwtLikeString(trainerId, ['admins'])}`)
       .send({ status: 'APPROVED' })
       // THEN
       .expect(400);
@@ -180,6 +190,7 @@ describe('trainings (e2e)', () => {
     // THEN
     await request(app.getHttpServer())
       .get(`/trainings/${trainingId01}`)
+      .set('Authorization', `Bearer ${jwtLikeString(trainerId, ['admins'])}`)
       .then((response) => {
         expect(response.body.status).toBe('COMPENSATED');
       });
@@ -209,7 +220,7 @@ describe('trainings (e2e)', () => {
     const createdTrainingId = (
       await createTraining(app, trainerId01, { date: dayjs('2022-04-30') })
     ).id;
-    const discipline = uuidv4();
+    const newDiscipline = await createDiscipline(app);
     const group = uuidv4();
     const participantCount = Math.floor(Math.random() * 1000);
     const compensationCents = Math.floor(Math.random() * 1000);
@@ -220,18 +231,17 @@ describe('trainings (e2e)', () => {
       .set('Authorization', `Bearer ${jwtLikeString(trainerId01, ['admins'])}`)
       .send({
         date: '2024-01-25',
-        discipline: discipline,
+        disciplineId: newDiscipline.id.toString(),
         group: group,
         participantCount: participantCount,
         compensationCents: compensationCents,
-      })
-      .expect(200);
+      });
 
     // THEN
-    // check response
+    expect(response.statusCode).toBe(200);
     const returnedTraining = response.body as TrainingResponse;
     expect(returnedTraining.date).toBe('2024-01-25');
-    expect(returnedTraining.discipline).toBe(discipline);
+    expect(returnedTraining.discipline).toMatchObject(newDiscipline);
     expect(returnedTraining.group).toBe(group);
     expect(returnedTraining.participantCount).toBe(participantCount);
     expect(returnedTraining.compensationCents).toBe(compensationCents);
@@ -243,7 +253,7 @@ describe('trainings (e2e)', () => {
       .expect(200);
     const gottenTraining = getResponse.body as TrainingResponse;
     expect(gottenTraining.date).toBe('2024-01-25');
-    expect(gottenTraining.discipline).toBe(discipline);
+    expect(gottenTraining.discipline).toMatchObject(newDiscipline);
     expect(gottenTraining.group).toBe(group);
     expect(gottenTraining.participantCount).toBe(participantCount);
     expect(gottenTraining.compensationCents).toBe(compensationCents);

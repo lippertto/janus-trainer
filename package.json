@@ -5,6 +5,12 @@
     "packages/*"
   ],
   "scripts": {
+    "backend": "yarn workspace janus-trainer-backend",
+    "frontend": "yarn workspace janus-trainer-frontend",
+    "dto": "yarn workspace janus-trainer-dto",
+    "build": "yarn build:dto && yarn build:backend && yarn build:backend",
+    "build:backend": "yarn backend build",
+    "build:dto": "yarn dto build",
     "start:backend": "yarn workspace janus-trainer-backend start:dev",
     "start:frontend": "yarn workspace janus-trainer-frontend dev",
     "start": "concurrently --kill-others-on-fail \"yarn start:backend\" \"yarn start:frontend\"",

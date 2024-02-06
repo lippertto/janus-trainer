@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { Discipline } from './discipline.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -17,9 +17,15 @@ export class DisciplineService {
   }
 
   async addDiscipline(name: string): Promise<Discipline> {
-    this.log.log(`Adding discipline '${name}'`);
     const result = this.repo.create({ name });
 
     return this.repo.save(result);
+  }
+
+  async getDisciplineById(id: string): Promise<Discipline | null> {
+    const idAsNumber = parseInt(id);
+    if (!idAsNumber)
+      throw new BadRequestException(`${id} is not a valid discipline id`);
+    return this.repo.findOneBy({ id: idAsNumber });
   }
 }
