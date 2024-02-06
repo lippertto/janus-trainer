@@ -14,9 +14,10 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --projects ./test",
     "typeorm": "typeorm-ts-node-commonjs",
-    "migration:generate:test": "dotenv -e .env.development -- typeorm-ts-node-commonjs migration:generate --dataSource datasource.ts",
-    "migration:run:test": "dotenv -e .env.development -- typeorm-ts-node-commonjs migration:run --dataSource datasource.ts",
+    "migration:generate:test": "dotenv -e .env.test -- typeorm-ts-node-commonjs migration:generate --dataSource datasource.ts",
+    "migration:run:dev": "dotenv -e .env.development -- typeorm-ts-node-commonjs migration:run --dataSource datasource.ts",
     "migration:run:prod": "dotenv -e .env.production -- typeorm-ts-node-commonjs migration:run --dataSource datasource.ts",
+    "migration:run:test": "dotenv -e .env.test -- typeorm-ts-node-commonjs migration:run --dataSource datasource.ts",
     "deploy": "yarn run build && serverless deploy --stage production"
   },
   "dependencies": {

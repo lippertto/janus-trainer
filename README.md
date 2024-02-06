@@ -1,3 +1,11 @@
+# Local execution
+You can run the app locally (excluding the cognito login) by using the following commands:
+
+```shell
+podman-compose up -d
+yarn start
+```
+
 # Frontend
 
 ## Deployment
@@ -41,15 +49,15 @@ Currently, I did not want to manage the infrastructure as code. Hence, the resou
 # TODOs
 
 ## Open points
-* Make list of disciplines editable
+* Bug on prod when editing users
 * Find out if groups need to be autocompleted
 * Find out what happens to log-in session after update. (users have to log out and in to get things working)
 * Exception handling with error boundaries
 * Allow to go from compensation page to validate page with specific dates+trainer
-* Use docker postgres for dev environment
 * Put secrets into actual secrets
-* Errors should show immediately when adding a new training
 * Run migrations in CI
+* Create test environment
+* Delete disciplines
 
 ## Refinement
 * Read up on .env files best practices

@@ -1,0 +1,14 @@
+version: "3"
+services:
+  database:
+    # if you change this, update the image used in backend/helpers.ts too
+    image: postgres:13.3-alpine
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgress
+      - POSTGRES_DB=postgres
+    ports: [5432:5432]
+    volumes:
+      - janus-trainer-pgdata:/var/lib/postgresql
+volumes:
+  janus-trainer-pgdata: {}
