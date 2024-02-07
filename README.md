@@ -31,6 +31,7 @@ Currently, I did not want to manage the infrastructure as code. Hence, the resou
 # TODOs
 
 ## Open points
+* Bug: Add training, leave Gruppe empty, save
 * Add end to end tests (for dev env)
 * Find out if groups need to be autocompleted
 * Find out what happens to log-in session after update. (users have to log out and in to get things working)
@@ -41,6 +42,7 @@ Currently, I did not want to manage the infrastructure as code. Hence, the resou
 * Create test environment
 * Delete disciplines
 * Add lerna and nx
+* Add manual cloudformation scripts for cognito (and other config)
 
 ## Refinement
 * Read up on .env files best practices

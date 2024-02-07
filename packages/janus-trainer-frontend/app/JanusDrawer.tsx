@@ -5,6 +5,8 @@ import EditCalendarIcon from '@mui/icons-material/EditCalendar';
 import AssignmentTurnedInIcon from '@mui/icons-material/AssignmentTurnedIn';
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
 import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
+import SettingsIcon from '@mui/icons-material/Settings';
+
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
@@ -21,7 +23,8 @@ const ADMIN_LINKS = [
   { text: 'Eingeben', href: '/enter', icon: EditCalendarIcon },
   { text: 'Freigeben', href: '/approve', icon: AssignmentTurnedInIcon },
   { text: 'Auszahlen', href: '/compensate', icon: AccountBalanceIcon },
-  { text: 'Nutzer verwalten', href: '/manage-users', icon: ManageAccountsIcon },
+  { text: 'Nutzer anlegen', href: '/manage-users', icon: ManageAccountsIcon },
+  { text: 'Verwaltung', href: '/edit-master-data', icon: SettingsIcon },
 ];
 
 const TRAINER_LINKS = [
