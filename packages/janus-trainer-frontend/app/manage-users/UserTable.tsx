@@ -50,7 +50,7 @@ export default function UserTable({
       headerName: 'Gruppen',
       flex: 1,
       renderCell: (params) => (
-        <Typography>{params.value.join(', ')}</Typography>
+        <Typography>{params.value?.join(', ')}</Typography>
       ),
     },
     {
@@ -79,6 +79,7 @@ export default function UserTable({
         toolbar: UserTableToolbar,
       }}
       slotProps={{ toolbar: { handleAddUser, handleRefresh } }}
+      rowSelection={false}
     />
   );
 }

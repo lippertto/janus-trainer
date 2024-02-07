@@ -278,7 +278,7 @@ export class Backend {
     isTrainer: boolean,
     isAdmin: boolean,
     iban?: string,
-  ): Promise<void> {
+  ): Promise<UserDto> {
     const groups = [];
     if (isTrainer) {
       groups.push(Group.TRAINERS);
@@ -287,7 +287,7 @@ export class Backend {
       groups.push(Group.ADMINS);
     }
 
-    await fetch(this.withPath(`/users`), {
+    const response = await fetch(this.withPath(`/users`), {
       method: 'POST',
       body: JSON.stringify({
         email: email.trim(),
@@ -300,6 +300,8 @@ export class Backend {
         'Content-Type': 'application/json',
       },
     });
+
+    return (await response.json()) as UserDto;
   }
 
   async getTrainersActiveInPeriod(

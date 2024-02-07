@@ -62,8 +62,9 @@ export default function UserManagementPage() {
         handleClose={() => setShowEdit(false)}
         handleSave={(_1, _2, _3, _4, _5, _6) =>
           backend.current
-            .updateUser(_1, _2, _3, _4, _5, _6)
+            .updateUser(_1!, _2, _3, _4, _5, _6)
             .then((updatedUser) => {
+              setUserToEdit(null);
               setUsers(
                 users.map((u) => (u.id === userToEdit?.id ? updatedUser : u)),
               );
@@ -74,9 +75,12 @@ export default function UserManagementPage() {
       <EditUserDialog
         open={showCreate}
         handleClose={() => setShowCreate(false)}
-        handleSave={(_1, _2, _3, _4, _5, _6) =>
-          backend.current.createUser(_2, _3, _4, _5, _6).then(() => refresh())
-        }
+        handleSave={(_1, _2, _3, _4, _5, _6) => {
+          backend.current.createUser(_2, _3, _4, _5, _6).then((newUser) => {
+            setUserToEdit(null);
+            setUsers([...users, newUser]);
+          });
+        }}
         user={null}
       />
     </>

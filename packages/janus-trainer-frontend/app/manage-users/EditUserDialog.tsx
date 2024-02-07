@@ -23,7 +23,7 @@ export function EditUserDialog({
   open: boolean;
   handleClose: () => void;
   handleSave: (
-    id: string,
+    id: string | null,
     name: string,
     email: string,
     isTrainer: boolean,
@@ -125,18 +125,16 @@ export function EditUserDialog({
         <Button
           disabled={!dataIsValid}
           onClick={() => {
-            if (user) {
-              handleSave(
-                user.id,
-                name,
-                email,
-                isTrainer,
-                isAdmin,
-                ibanIsSet ? iban : undefined,
-              );
-              setPreviousUserId('');
-              handleClose();
-            }
+            handleSave(
+              user?.id,
+              name,
+              email,
+              isTrainer,
+              isAdmin,
+              ibanIsSet ? iban : undefined,
+            );
+            setPreviousUserId('');
+            handleClose();
           }}
           autoFocus
         >
