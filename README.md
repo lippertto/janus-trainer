@@ -31,7 +31,6 @@ Currently, I did not want to manage the infrastructure as code. Hence, the resou
 # TODOs
 
 ## Open points
-* Do not refresh complete user list after changes
 * Add end to end tests (for dev env)
 * Find out if groups need to be autocompleted
 * Find out what happens to log-in session after update. (users have to log out and in to get things working)
