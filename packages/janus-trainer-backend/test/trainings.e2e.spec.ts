@@ -16,7 +16,7 @@ import dayjs from 'dayjs';
 import { Training } from '../src/trainings/trainings.entity';
 import { TrainingResponse } from '../src/trainings/dto/training-response';
 import { v4 as uuidv4 } from 'uuid';
-import { Group } from '../src/users/user.entity';
+import { Group } from 'janus-trainer-dto';
 
 jest.setTimeout(5 * 60 * 1000);
 

@@ -1,4 +1,14 @@
-import { Body, Controller, Get, Post, Req } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpException,
+  HttpStatus,
+  Param,
+  Post,
+  Req,
+} from '@nestjs/common';
 import {
   type DisciplineListDto,
   type DisciplineDto,
@@ -38,5 +48,13 @@ export class DisciplinesController {
       request.name,
     );
     return toDto(newDiscipline);
+  }
+
+  @Delete(':id')
+  async deleteDiscipline(@Req() httpRequest: Request, @Param('id') id: string) {
+    this.authService.requireGroup(httpRequest, [Group.ADMINS]);
+
+    this.disciplineService.deleteDiscipline(id);
+    throw new HttpException('OK', HttpStatus.NO_CONTENT);
   }
 }

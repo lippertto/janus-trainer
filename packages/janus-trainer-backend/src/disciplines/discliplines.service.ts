@@ -28,4 +28,12 @@ export class DisciplineService {
       throw new BadRequestException(`${id} is not a valid discipline id`);
     return this.repo.findOneBy({ id: idAsNumber });
   }
+
+  async deleteDiscipline(id: string): Promise<void> {
+    const idAsNumber = parseInt(id);
+    if (!idAsNumber)
+      throw new BadRequestException(`${id} is not a valid discipline id`);
+
+    await this.repo.softDelete(id);
+  }
 }

@@ -1,9 +1,14 @@
 import { INestApplication } from '@nestjs/common';
-import { createApp, startPostgres, jwtLikeString } from './helpers';
+import {
+  createApp,
+  startPostgres,
+  jwtLikeString,
+  createDiscipline,
+} from './helpers';
 
 import request from 'supertest';
 import { StartedPostgreSqlContainer } from '@testcontainers/postgresql';
-import { Group } from '../src/users/user.entity';
+import { Group } from 'janus-trainer-dto';
 import { v4 as uuidv4 } from 'uuid';
 
 describe('Discipline (e2e)', () => {
@@ -44,5 +49,29 @@ describe('Discipline (e2e)', () => {
     expect(response.statusCode).toBe(201);
     expect(response.body.name).toBe(newName);
     expect(response.body.id).not.toBeUndefined();
+  });
+
+  test('can delete a discipline', async () => {
+    // GIVEN
+    const discipline = await createDiscipline(app, 'discipline-to-delete');
+
+    // WHEN
+    const deleteResponse = await request(app.getHttpServer())
+      .delete(`/disciplines/${discipline.id}`)
+      .set(
+        'Authorization',
+        `Bearer ${jwtLikeString('any-trainer-id', [Group.ADMINS])}`,
+      );
+
+    // THEN
+    expect(deleteResponse.statusCode).toBe(204);
+
+    const getResponse = await request(app.getHttpServer())
+      .get(`/disciplines/${discipline.id}`)
+      .set(
+        'Authorization',
+        `Bearer ${jwtLikeString('any-trainer-id', [Group.ADMINS])}`,
+      );
+    expect(getResponse.statusCode).toBe(404);
   });
 });

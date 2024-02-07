@@ -1,6 +1,7 @@
 import { jest } from '@jest/globals';
 import { Repository } from 'typeorm';
-import { Group, User } from './user.entity';
+import { User } from './user.entity';
+import { Group } from 'janus-trainer-dto';
 import { UsersService } from './users.service';
 import {
   type UserType,

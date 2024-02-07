@@ -28,6 +28,15 @@ export default function Page() {
     [session?.accessToken],
   );
 
+  const deleteDiscipline = React.useCallback(
+    (id: string) => {
+      if (!session?.accessToken) return;
+      backend.current.deleteDiscipline(id);
+      setDisciplines(disciplines.filter((d) => d.id !== id));
+    },
+    [session?.accessToken, disciplines, setDisciplines],
+  );
+
   React.useEffect(() => {
     backend.current.setAccessToken(session?.accessToken);
     if (!session?.accessToken) {
@@ -62,6 +71,7 @@ export default function Page() {
           <DisciplineList
             disciplines={disciplines}
             handleAddDiscipline={handleAddDiscipline}
+            deleteDiscipline={deleteDiscipline}
           />
         </Grid>
       </Grid>
