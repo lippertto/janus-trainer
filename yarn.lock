@@ -8869,6 +8869,7 @@ __metadata:
     "@types/react": "npm:^18"
     "@types/react-dom": "npm:^18"
     "@types/uuid": "npm:^9.0.8"
+    class-validator: "npm:^0.14.1"
     dayjs: "npm:^1.11.10"
     janus-trainer-dto: "npm:*"
     md5: "npm:^2.3.0"
