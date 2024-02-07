@@ -1,4 +1,4 @@
-export { default as CreateDisciplineRequestDto } from './src/CreateDisciplineRequestDto';
+export { default as DisciplineCreateRequestDto } from './src/DisciplineCreateRequestDto';
 export {
   type DisciplineDto,
   type DisciplineListDto,

@@ -1,5 +1,6 @@
 import dayjs from 'dayjs';
 import {
+  DisciplineCreateRequestDto,
   DisciplineDto,
   Group,
   TrainingCreateRequestDto,
@@ -333,6 +334,22 @@ export class Backend {
         ...this.authorizationHeader(),
       },
     });
+  }
+
+  async addDiscipline(name: string): Promise<DisciplineDto> {
+    const request: DisciplineCreateRequestDto = {
+      name,
+    };
+    const response = await fetch(this.withPath(`/disciplines`), {
+      headers: {
+        ...this.authorizationHeader(),
+        'Content-Type': 'application/json',
+      },
+      method: 'POST',
+      body: JSON.stringify(request),
+    });
+    const result = (await response.json()).value;
+    return result as DisciplineDto;
   }
 }
 

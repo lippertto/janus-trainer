@@ -1,7 +1,10 @@
 import { Body, Controller, Get, Post, Req } from '@nestjs/common';
-import type { DisciplineListDto, DisciplineDto } from 'janus-trainer-dto';
-import { Group } from 'janus-trainer-dto';
-import { CreateDisciplineRequestDto } from 'janus-trainer-dto';
+import {
+  type DisciplineListDto,
+  type DisciplineDto,
+  Group,
+  DisciplineCreateRequestDto,
+} from 'janus-trainer-dto';
 import { AuthService } from '../auth/auth.service';
 import { Request } from 'express';
 import { type Discipline } from './discipline.entity';
@@ -28,7 +31,7 @@ export class DisciplinesController {
   @Post()
   async addDiscipline(
     @Req() httpRequest: Request,
-    @Body() request: CreateDisciplineRequestDto,
+    @Body() request: DisciplineCreateRequestDto,
   ): Promise<DisciplineDto> {
     this.authService.requireGroup(httpRequest, [Group.ADMINS]);
     const newDiscipline = await this.disciplineService.addDiscipline(

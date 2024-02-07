@@ -32,6 +32,7 @@ Currently, I did not want to manage the infrastructure as code. Hence, the resou
 
 ## Open points
 * Bug: Add training, leave Gruppe empty, save
+* Run tests on pull requests, deploy on main
 * Add end to end tests (for dev env)
 * Find out if groups need to be autocompleted
 * Find out what happens to log-in session after update. (users have to log out and in to get things working)
