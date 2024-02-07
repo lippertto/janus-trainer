@@ -1,5 +1,7 @@
 import {
   ConflictException,
+  HttpException,
+  HttpStatus,
   Injectable,
   InternalServerErrorException,
   Logger,
@@ -10,6 +12,7 @@ import {
   AdminAddUserToGroupCommand,
   AdminCreateUserCommand,
   AdminCreateUserResponse,
+  AdminDeleteUserCommand,
   AdminGetUserCommand,
   AdminRemoveUserFromGroupCommand,
   AdminUpdateUserAttributesCommand,
@@ -95,9 +98,9 @@ export class UsersService {
 
     for (let i = 0; i < allGroups.length; i++) {
       const thisGroup = allGroups[i];
-      const usersInThisGroup = await findUsersForGroup(client, thisGroup);
-      usersInThisGroup.forEach((user) => {
-        allUsers.get(user).groups.push(thisGroup as Group);
+      const usersIdsInThisGroup = await findUsersForGroup(client, thisGroup);
+      usersIdsInThisGroup.forEach((userId) => {
+        allUsers.get(userId).groups.push(thisGroup as Group);
       });
     }
 
@@ -140,15 +143,16 @@ export class UsersService {
     email: string,
     groups: Group[],
     iban?: string,
-  ): Promise<User> {
+  ): Promise<UserDto> {
     if (process.env.JEST_WORKER_ID) {
       const username = uuidv4();
-      const user = await this.userRepository.create({
+      const userToCreate = await this.userRepository.create({
         id: username,
         iban: iban,
         name: name,
       });
-      return await this.userRepository.save(user);
+      const user = await this.userRepository.save(userToCreate);
+      return { id: user.id, iban, name, groups, email };
     }
 
     const client = new CognitoIdentityProviderClient({ region: 'eu-north-1' });
@@ -194,11 +198,21 @@ export class UsersService {
       }
     });
 
-    return await this.userRepository.create({
+    const userToCreate = await this.userRepository.create({
       id: username,
       name: name,
       iban: iban,
     });
+
+    const createdUser = await this.userRepository.save(userToCreate);
+
+    return {
+      id: createdUser.id,
+      email,
+      name: createdUser.name,
+      iban: createdUser.iban,
+      groups,
+    };
   }
 
   /** Returns all users in cognito. Note, the groups will be empty . */
@@ -345,5 +359,29 @@ export class UsersService {
         groups.indexOf(groupString) !== -1,
       );
     }
+  }
+
+  async deleteUser(id: string): Promise<void> {
+    const dbUser = await this.userRepository.findOneBy({ id: id });
+    if (!dbUser) {
+      this.log.warn(`User with ${id} not found. Will not delete it.`);
+      throw new HttpException('OK', HttpStatus.NO_CONTENT);
+    }
+
+    const client = new CognitoIdentityProviderClient({ region: 'eu-north-1' });
+
+    const deleteUserRequest = new AdminDeleteUserCommand({
+      UserPoolId: USER_POOL_ID,
+      Username: id,
+    });
+    try {
+      await client.send(deleteUserRequest);
+    } catch (e) {
+      this.log.error(`Failed to delete user: ${e.message}`);
+      throw new InternalServerErrorException();
+    }
+
+    dbUser.softRemove();
+    await this.userRepository.save(dbUser);
   }
 }

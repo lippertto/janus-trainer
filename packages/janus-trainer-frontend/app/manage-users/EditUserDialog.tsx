@@ -1,10 +1,10 @@
-import Dialog from '@mui/material/Dialog';
 import React from 'react';
 import { User } from '../../lib/backend';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import Button from '@mui/material/Button';
-import DialogActions from '@mui/material/DialogActions';
 import Grid from '@mui/material/Unstable_Grid2'; // Grid version 2
 import TextField from '@mui/material/TextField';
 import FormGroup from '@mui/material/FormGroup';
@@ -126,7 +126,7 @@ export function EditUserDialog({
           disabled={!dataIsValid}
           onClick={() => {
             handleSave(
-              user?.id,
+              user?.id ?? null,
               name,
               email,
               isTrainer,

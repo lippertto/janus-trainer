@@ -2,12 +2,15 @@ import {
   Controller,
   Post,
   Body,
+  Delete,
   Req,
   Get,
   Param,
   Put,
   BadRequestException,
   NotFoundException,
+  HttpStatus,
+  HttpException,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import {
@@ -43,25 +46,22 @@ export class UsersController {
 
   @Post()
   async createUser(
-    @Body() createRequest: UserCreateRequestDto,
-    @Req() request: Request,
-  ): Promise<User> {
-    this.authService.requireGroup(request, [Group.ADMINS]);
+    @Body() request: UserCreateRequestDto,
+    @Req() httpRequest: Request,
+  ): Promise<UserDto> {
+    this.authService.requireGroup(httpRequest, [Group.ADMINS]);
 
-    if (
-      createRequest.groups.indexOf(Group.TRAINERS) !== -1 &&
-      !createRequest.iban
-    ) {
+    if (request.groups.indexOf(Group.TRAINERS) !== -1 && !request.iban) {
       throw new BadRequestException(
         "To assign the role 'trainer', an IBAN has to be provided.",
       );
     }
 
     return await this.usersService.createUser(
-      createRequest.name,
-      createRequest.email,
-      createRequest.groups,
-      createRequest.iban,
+      request.name,
+      request.email,
+      request.groups,
+      request.iban,
     );
   }
 
@@ -87,5 +87,15 @@ export class UsersController {
     const users = await this.usersService.listUsers();
 
     return { value: users };
+  }
+
+  @Delete(':id')
+  async deleteUser(
+    @Req() httpRequest: Request,
+    @Param('id') id: string,
+  ): Promise<void> {
+    this.authService.requireGroup(httpRequest, [Group.ADMINS]);
+    await this.usersService.deleteUser(id);
+    throw new HttpException('OK', HttpStatus.NO_CONTENT);
   }
 }

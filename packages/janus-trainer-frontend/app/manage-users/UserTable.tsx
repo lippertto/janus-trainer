@@ -5,9 +5,12 @@ import {
 } from '@mui/x-data-grid';
 import type { GridColDef, GridRowId } from '@mui/x-data-grid';
 import type { User } from '../../lib/backend';
+
 import React from 'react';
 import EditIcon from '@mui/icons-material/Edit';
 import RefreshIcon from '@mui/icons-material/Refresh';
+import DeleteIcon from '@mui/icons-material/Delete';
+
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
@@ -36,11 +39,13 @@ export default function UserTable({
   handleAddUser,
   handleRefresh,
   handleUserEditClick,
+  handleUserDeleteClick,
 }: {
   users: User[];
   handleAddUser: () => void;
   handleRefresh: () => void;
   handleUserEditClick: (id: GridRowId) => void;
+  handleUserDeleteClick: (id: GridRowId) => void;
 }) {
   const columns: GridColDef[] = [
     { field: 'name', headerName: 'Name', flex: 1 },
@@ -64,6 +69,12 @@ export default function UserTable({
             icon={<EditIcon />}
             label="bearbeiten"
             onClick={() => handleUserEditClick(id)}
+            key={id}
+          />,
+          <GridActionsCellItem
+            icon={<DeleteIcon />}
+            label="löschen"
+            onClick={() => handleUserDeleteClick(id)}
             key={id}
           />,
         ];

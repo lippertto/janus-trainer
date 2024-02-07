@@ -9,11 +9,48 @@ import { Backend, type User } from '../../lib/backend';
 import { GridRowId } from '@mui/x-data-grid';
 import { EditUserDialog } from './EditUserDialog';
 
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import Button from '@mui/material/Button';
+import Typography from '@mui/material/Typography';
+
+function DeleteUserDialog({
+  open,
+  handleClose,
+  user,
+  handleDeleteClick,
+}: {
+  open: boolean;
+  handleClose: () => void;
+  user: User | null;
+  handleDeleteClick: () => void;
+}) {
+  return (
+    <Dialog open={open} onClose={handleClose}>
+      <DialogTitle>Nutzer löschen</DialogTitle>
+      <DialogContent>
+        <Typography>
+          Soll {user?.name} mit der Email-adresse {user?.email} gelöscht werden?
+        </Typography>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={handleDeleteClick} color="error">
+          Löschen
+        </Button>
+        <Button onClick={handleClose}>Abbrechen</Button>
+      </DialogActions>
+    </Dialog>
+  );
+}
+
 export default function UserManagementPage() {
   const backend = React.useRef<Backend>(new Backend());
 
-  const [showEdit, setShowEdit] = React.useState<boolean>(false);
   const [showCreate, setShowCreate] = React.useState<boolean>(false);
+  const [showDelete, setShowDelete] = React.useState<boolean>(false);
+  const [showEdit, setShowEdit] = React.useState<boolean>(false);
   const [users, setUsers] = React.useState<User[]>([]);
   const [userToEdit, setUserToEdit] = React.useState<User | null>(null);
 
@@ -30,14 +67,32 @@ export default function UserManagementPage() {
     }
   }, [session?.accessToken]);
 
-  function handleUserEditClick(id: GridRowId) {
-    const user = users.find((t) => t.id === id);
-    if (!user) {
-      console.error(`Could not find user with id ${id}`);
-    }
-    setShowEdit(true);
-    setUserToEdit(user ?? null);
-  }
+  const handleUserEditClick = React.useCallback(
+    (id: GridRowId) => {
+      const user = users.find((t) => t.id === id);
+      if (!user) {
+        console.error(`Could not find user with id ${id}`);
+      }
+      setShowEdit(true);
+      setUserToEdit(user ?? null);
+    },
+    [setShowEdit, setUserToEdit, users],
+  );
+
+  const handleUserDeleteClick = React.useCallback(
+    (id: GridRowId) => {
+      const user = users.find((t) => t.id === id);
+      if (!user) {
+        console.error(`Could not find user with id ${id}`);
+        setUserToEdit(null);
+        return;
+      } else {
+        setUserToEdit(user);
+        setShowDelete(true);
+      }
+    },
+    [users, setUserToEdit],
+  );
 
   React.useEffect(() => {
     backend.current.setAccessToken(session?.accessToken);
@@ -55,6 +110,7 @@ export default function UserManagementPage() {
         handleAddUser={() => setShowCreate(true)}
         handleRefresh={refresh}
         handleUserEditClick={handleUserEditClick}
+        handleUserDeleteClick={handleUserDeleteClick}
       />
 
       <EditUserDialog
@@ -82,6 +138,20 @@ export default function UserManagementPage() {
           });
         }}
         user={null}
+      />
+      <DeleteUserDialog
+        open={showDelete}
+        handleClose={() => setShowDelete(false)}
+        user={userToEdit}
+        handleDeleteClick={() => {
+          if (userToEdit) {
+            backend.current.deleteUser(userToEdit.id).then(() => {
+              setUsers(users.filter((u) => u.id !== userToEdit.id));
+            });
+          }
+          setUserToEdit(null);
+          setShowDelete(false);
+        }}
       />
     </>
   );

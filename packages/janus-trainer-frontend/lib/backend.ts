@@ -325,6 +325,15 @@ export class Backend {
     const result = (await response.json()).value;
     return result as DisciplineDto[];
   }
+
+  async deleteUser(id: string): Promise<void> {
+    await fetch(this.withPath(`/users/${id}`), {
+      method: 'DELETE',
+      headers: {
+        ...this.authorizationHeader(),
+      },
+    });
+  }
 }
 
 export enum TrainingStatus {
