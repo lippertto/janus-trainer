@@ -13,6 +13,7 @@ ENV NODE_ENV=production
 
 WORKDIR /app
 
+COPY tsconfig.json tsconfig.json
 COPY packages/janus-trainer-frontend ./packages/janus-trainer-frontend
 COPY packages/janus-trainer-dto ./packages/janus-trainer-dto
 
