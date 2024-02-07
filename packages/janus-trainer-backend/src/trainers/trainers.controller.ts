@@ -2,7 +2,7 @@ import { Get, Controller, Req, Query } from '@nestjs/common';
 import { TrainersService } from './trainers.service';
 import { TrainerQueryRequest } from './dto/trainer-query-request';
 import { AuthService } from '../auth/auth.service';
-import { Group } from '../users/user.entity';
+import { Group } from 'janus-trainer-dto';
 import { Request } from 'express';
 import dayjs from 'dayjs';
 import { TrainerQueryResponse } from './dto/trainer-query-response';

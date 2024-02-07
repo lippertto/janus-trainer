@@ -6,6 +6,9 @@
     "strict": true,
     "noEmit": true,
     "esModuleInterop": true,
+    // added decorators for class-validator
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
     "module": "esnext",
     "moduleResolution": "bundler",
     "resolveJsonModule": true,

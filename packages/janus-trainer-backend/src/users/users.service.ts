@@ -5,7 +5,7 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { UserResponse } from './dto/user-response';
+import { UserDto, Group } from 'janus-trainer-dto';
 import {
   AdminAddUserToGroupCommand,
   AdminCreateUserCommand,
@@ -23,7 +23,7 @@ import {
   UsernameExistsException,
 } from '@aws-sdk/client-cognito-identity-provider';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Group, User } from './user.entity';
+import { User } from './user.entity';
 import { Repository } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -83,7 +83,7 @@ export class UsersService {
   ) {}
 
   /** Lists all users which are stored in cognito.  */
-  async listUsers(): Promise<UserResponse[]> {
+  async listUsers(): Promise<UserDto[]> {
     const client = new CognitoIdentityProviderClient({ region: 'eu-north-1' });
 
     const allUsers = new Map(
@@ -101,7 +101,7 @@ export class UsersService {
       });
     }
 
-    const result: UserResponse[] = [];
+    const result: UserDto[] = [];
     for (const [username, cognitoUser] of allUsers.entries()) {
       const userInDatabase = await this.userRepository.findOneBy({
         id: username,
@@ -251,7 +251,7 @@ export class UsersService {
     email: string,
     groups: Group[],
     iban?: string,
-  ): Promise<UserResponse> {
+  ): Promise<UserDto> {
     const client = new CognitoIdentityProviderClient({ region: 'eu-north-1' });
     try {
       await client.send(

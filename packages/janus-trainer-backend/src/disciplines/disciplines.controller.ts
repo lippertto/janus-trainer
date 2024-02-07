@@ -1,12 +1,9 @@
 import { Body, Controller, Get, Post, Req } from '@nestjs/common';
-import type {
-  GetDisciplineResponseDto,
-  DisciplineDto,
-} from 'janus-trainer-dto';
+import type { DisciplineListDto, DisciplineDto } from 'janus-trainer-dto';
+import { Group } from 'janus-trainer-dto';
 import { CreateDisciplineRequestDto } from 'janus-trainer-dto';
 import { AuthService } from '../auth/auth.service';
 import { Request } from 'express';
-import { Group } from '../users/user.entity';
 import { type Discipline } from './discipline.entity';
 import { DisciplineService } from './discliplines.service';
 
@@ -22,9 +19,7 @@ export class DisciplinesController {
   ) {}
 
   @Get()
-  async disciplines(
-    @Req() request: Request,
-  ): Promise<GetDisciplineResponseDto> {
+  async disciplines(@Req() request: Request): Promise<DisciplineListDto> {
     this.authService.requireGroup(request, [Group.TRAINERS, Group.ADMINS]);
     const list = this.disciplineService.getAllDisciplines();
     return { value: (await list).map(toDto) };

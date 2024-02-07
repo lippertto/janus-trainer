@@ -3,7 +3,7 @@ import { Request } from 'express';
 import { CompensationsService } from './compensations.service';
 import { CompensationQueryResponse } from './compensation-response.dto';
 import { AuthService } from '../auth/auth.service';
-import { Group } from '../users/user.entity';
+import { Group } from 'janus-trainer-dto';
 
 @Controller('compensations')
 export class CompensationController {

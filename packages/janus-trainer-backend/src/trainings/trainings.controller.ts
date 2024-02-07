@@ -27,7 +27,7 @@ import { TrainingCreateRequestDto } from 'janus-trainer-dto';
 import { Training, TrainingStatus } from './trainings.entity';
 import { AuthService } from '../auth/auth.service';
 import { Request } from 'express';
-import { Group } from '../users/user.entity';
+import { Group } from 'janus-trainer-dto';
 import dayjs from 'dayjs';
 import { TrainingUpdateRequestDto } from 'janus-trainer-dto';
 

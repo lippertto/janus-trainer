@@ -1,4 +1,4 @@
-import { Group } from '../users/user.entity';
+import { Group } from 'janus-trainer-dto';
 
 export class AuthResponse {
   groups: Group[];

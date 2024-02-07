@@ -10,7 +10,7 @@ import TextField from '@mui/material/TextField';
 import FormGroup from '@mui/material/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
-import { Group } from '../../lib/auth';
+import { Group } from 'janus-trainer-dto';
 import FormLabel from '@mui/material/FormLabel';
 
 export function EditUserDialog({

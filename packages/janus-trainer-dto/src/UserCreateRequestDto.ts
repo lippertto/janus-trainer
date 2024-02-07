@@ -6,9 +6,10 @@ import {
   IsIBAN,
   IsOptional,
 } from 'class-validator';
-import { Group } from '../user.entity';
 
-export class CreateUserRequest {
+import { Group } from './Group';
+
+export class UserCreateRequestDto {
   @IsEmail()
   email: string;
 

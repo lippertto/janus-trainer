@@ -63,7 +63,11 @@ export default function UserManagementPage() {
         handleSave={(_1, _2, _3, _4, _5, _6) =>
           backend.current
             .updateUser(_1, _2, _3, _4, _5, _6)
-            .then(() => refresh())
+            .then((updatedUser) => {
+              setUsers(
+                users.map((u) => (u.id === userToEdit?.id ? updatedUser : u)),
+              );
+            })
         }
         user={userToEdit}
       />

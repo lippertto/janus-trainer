@@ -17,6 +17,7 @@
     "@mui/system": "^5.15.6",
     "@mui/x-data-grid": "^6.19.2",
     "@mui/x-date-pickers": "^6.19.2",
+    "class-validator": "^0.14.1",
     "dayjs": "^1.11.10",
     "janus-trainer-dto": "*",
     "md5": "^2.3.0",

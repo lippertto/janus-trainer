@@ -9,11 +9,6 @@ import {
   OneToMany,
 } from 'typeorm';
 
-export enum Group {
-  ADMINS = 'admins',
-  TRAINERS = 'trainers',
-}
-
 @Entity()
 export class User extends BaseEntity {
   @PrimaryColumn()

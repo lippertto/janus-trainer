@@ -1,5 +1,11 @@
-export { default as GetDisciplineResponseDto } from './src/GetDisciplineResponseDto';
 export { default as CreateDisciplineRequestDto } from './src/CreateDisciplineRequestDto';
-export { default as DisciplineDto } from './src/DisciplineDto';
+export {
+  type DisciplineDto,
+  type DisciplineListDto,
+} from './src/DisciplineDto';
 export { default as TrainingCreateRequestDto } from './src/TrainingCreateRequestDto';
 export { default as TrainingUpdateRequestDto } from './src/TrainingUpdateRequestDto';
+export { UserCreateRequestDto } from './src/UserCreateRequestDto';
+export { UserUpdateRequestDto } from './src/UserUpdateRequestDto';
+export { type UserDto, type UserListDto } from './src/UserDto';
+export { Group } from './src/Group';

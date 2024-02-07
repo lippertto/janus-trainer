@@ -8,29 +8,11 @@ yarn start
 
 # Frontend
 
-## Deployment
-
-Log in to aws:
-
-```sh
-aws ecr get-login-password --region eu-north-1 | podman login --username AWS --password-stdin 930650061532.dkr.ecr.eu-north-1.amazonaws.com
-```
-
-Build image and deploy to aws:
-
-```sh
-podman build -t janus-trainer-app-arm64 .
-podman tag janus-trainer-app-arm64:latest 930650061532.dkr.ecr.eu-north-1.amazonaws.com/janus-trainer-app-arm64:latest
-podman push 930650061532.dkr.ecr.eu-north-1.amazonaws.com/janus-trainer-app-arm64:latest
-```
-
-Deployment is done via UI.
-
 # Backend
 
 ## Database
 
-Clean databases
+To clean the databases, you can use the following command.
 
 ```sql
 BEGIN TRANSACTION;
@@ -49,7 +31,8 @@ Currently, I did not want to manage the infrastructure as code. Hence, the resou
 # TODOs
 
 ## Open points
-* Bug on prod when editing users
+* Do not refresh complete user list after changes
+* Add end to end tests (for dev env)
 * Find out if groups need to be autocompleted
 * Find out what happens to log-in session after update. (users have to log out and in to get things working)
 * Exception handling with error boundaries
@@ -58,10 +41,10 @@ Currently, I did not want to manage the infrastructure as code. Hence, the resou
 * Run migrations in CI
 * Create test environment
 * Delete disciplines
+* Add lerna and nx
 
 ## Refinement
 * Read up on .env files best practices
 * Read up on MUI's nextjs integration: https://mui.com/material-ui/guides/nextjs/
 * Think about deploying the frontend with the serverless framework https://www.serverless.com/blog/serverless-nextjs
 * Sort imports with eslint: https://eslint.org/docs/latest/rules/sort-imports
-* Try to make a component (master data) more server-side rendered

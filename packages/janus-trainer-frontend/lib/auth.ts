@@ -8,6 +8,7 @@ import type { JWT } from 'next-auth/jwt';
 import { getServerSession } from 'next-auth';
 import CognitoProvider from 'next-auth/providers/cognito';
 import { Backend } from './backend';
+import { Group } from 'janus-trainer-dto';
 
 // refresh logic copied from https://github.com/nextauthjs/next-auth-refresh-token-example/blob/57f84dbc50f30233d4ee389c7239212858ecae14/pages/api/auth/%5B...nextauth%5D.js#L1
 
@@ -136,11 +137,6 @@ export function auth(
     | []
 ) {
   return getServerSession(...args, config);
-}
-
-export enum Group {
-  ADMINS = 'admins',
-  TRAINERS = 'trainers',
 }
 
 export interface JanusSession extends Session {

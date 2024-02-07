@@ -1,9 +1,11 @@
 import dayjs from 'dayjs';
-import { Group } from './auth';
 import {
   DisciplineDto,
+  Group,
   TrainingCreateRequestDto,
   TrainingUpdateRequestDto,
+  UserDto,
+  type UserUpdateRequestDto,
 } from 'janus-trainer-dto';
 
 type CompensationResponse = {
@@ -67,19 +69,19 @@ export class Backend {
 
   async addTraining(
     date: string,
-    discipline: string,
+    disciplineId: string,
     group: string,
     compensationCents: number,
     participantCount: number,
     userId: string,
   ): Promise<Training> {
     const request: TrainingCreateRequestDto = {
-      date: date,
-      disciplineId: discipline,
-      group: group,
-      compensationCents: compensationCents,
-      participantCount: participantCount,
-      userId: userId,
+      date,
+      disciplineId,
+      group,
+      compensationCents,
+      participantCount,
+      userId,
     };
 
     const response = await fetch(this.withPath('/trainings'), {
@@ -243,7 +245,7 @@ export class Backend {
     isTrainer: boolean,
     isAdmin: boolean,
     iban?: string,
-  ): Promise<void> {
+  ): Promise<UserDto> {
     const groups = [];
     if (isTrainer) {
       groups.push(Group.TRAINERS);
@@ -252,20 +254,22 @@ export class Backend {
       groups.push(Group.ADMINS);
     }
 
-    await fetch(this.withPath(`/users/${id}`), {
+    const request: UserUpdateRequestDto = {
+      email: email.trim(),
+      name: name.trim(),
+      iban: iban?.trim(),
+      groups: groups,
+    };
+
+    const response = await fetch(this.withPath(`/users/${id}`), {
       method: 'PUT',
-      body: JSON.stringify({
-        id: id.trim(),
-        email: email.trim(),
-        name: name.trim(),
-        iban: iban?.trim(),
-        groups: groups,
-      }),
+      body: JSON.stringify(request),
       headers: {
         ...this.authorizationHeader(),
         'Content-Type': 'application/json',
       },
     });
+    return (await response.json()) as UserDto;
   }
 
   async createUser(

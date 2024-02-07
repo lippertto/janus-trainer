@@ -1,7 +1,8 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { Request } from 'express';
-import { User, Group } from '../users/user.entity';
+import { User } from '../users/user.entity';
+import { Group } from 'janus-trainer-dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 

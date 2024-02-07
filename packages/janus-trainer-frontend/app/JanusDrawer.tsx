@@ -12,7 +12,8 @@ import Link from '@mui/material/Link';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import React from 'react';
-import { Group, JanusSession } from '../lib/auth';
+import { Group } from 'janus-trainer-dto';
+import { JanusSession } from '../lib/auth';
 import { useSession } from 'next-auth/react';
 
 const ADMIN_LINKS = [

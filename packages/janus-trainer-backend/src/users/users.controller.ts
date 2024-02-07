@@ -10,12 +10,16 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { UserListResponse, UserResponse } from './dto/user-response';
-import { CreateUserRequest } from './dto/create-user-request';
-import { Group, User } from './user.entity';
+import {
+  UserListDto,
+  UserDto,
+  UserCreateRequestDto,
+  UserUpdateRequestDto,
+  Group,
+} from 'janus-trainer-dto';
+import { User } from './user.entity';
 import { AuthService } from '../auth/auth.service';
 import { Request } from 'express';
-import { UpdateUserRequest } from './dto/update-user-request';
 
 @Controller('users')
 export class UsersController {
@@ -39,7 +43,7 @@ export class UsersController {
 
   @Post()
   async createUser(
-    @Body() createRequest: CreateUserRequest,
+    @Body() createRequest: UserCreateRequestDto,
     @Req() request: Request,
   ): Promise<User> {
     this.authService.requireGroup(request, [Group.ADMINS]);
@@ -64,10 +68,10 @@ export class UsersController {
   @Put(':id')
   async updateUser(
     @Param('id') id: string,
-    @Req() request: Request,
-    @Body() updateRequest: UpdateUserRequest,
-  ): Promise<UserResponse> {
-    this.authService.requireGroup(request, [Group.ADMINS]);
+    @Req() httpRequest: Request,
+    @Body() updateRequest: UserUpdateRequestDto,
+  ): Promise<UserDto> {
+    this.authService.requireGroup(httpRequest, [Group.ADMINS]);
     return await this.usersService.updateUser(
       id,
       updateRequest.name,
@@ -78,7 +82,7 @@ export class UsersController {
   }
 
   @Get()
-  async listUsers(@Req() request: Request): Promise<UserListResponse> {
+  async listUsers(@Req() request: Request): Promise<UserListDto> {
     this.authService.requireGroup(request, [Group.ADMINS]);
     const users = await this.usersService.listUsers();
 
