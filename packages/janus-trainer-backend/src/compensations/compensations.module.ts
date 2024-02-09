@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { CompensationsService } from './compensations.service';
-import { Training } from '../trainings/trainings.entity';
+import { Training } from '../trainings/training.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CompensationController } from './compensations.controller';
 import { AuthModule } from '../auth/auth.module';

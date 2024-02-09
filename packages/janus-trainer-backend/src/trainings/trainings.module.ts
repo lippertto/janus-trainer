@@ -1,11 +1,12 @@
 import { Module } from '@nestjs/common';
 import { TrainingsService } from './trainings.service';
-import { Training } from './trainings.entity';
+import { Training } from './training.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TrainingsController } from './trainings.controller';
 import { AuthModule } from '../auth/auth.module';
 import { UsersModule } from '../users/users.module';
 import { DisciplineModule } from '../disciplines/disciplines.module';
+import { SharedModule } from '../shared/shared.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { DisciplineModule } from '../disciplines/disciplines.module';
     UsersModule,
     AuthModule,
     DisciplineModule,
+    SharedModule,
   ],
   providers: [TrainingsService],
   controllers: [TrainingsController],

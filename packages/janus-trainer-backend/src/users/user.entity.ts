@@ -1,4 +1,4 @@
-import { Training } from '../trainings/trainings.entity';
+import { Training } from '../trainings/training.entity';
 import {
   BaseEntity,
   Column,

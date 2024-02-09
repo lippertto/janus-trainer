@@ -13,7 +13,7 @@ import {
 } from './helpers';
 import { StartedPostgreSqlContainer } from '@testcontainers/postgresql';
 import dayjs from 'dayjs';
-import { Training } from '../src/trainings/trainings.entity';
+import { Training } from '../src/trainings/training.entity';
 import { TrainingResponse } from '../src/trainings/dto/training-response';
 import { v4 as uuidv4 } from 'uuid';
 import { Group } from 'janus-trainer-dto';

@@ -1,5 +1,5 @@
 import { DataSource } from 'typeorm';
-import { Training } from './src/trainings/trainings.entity';
+import { Training } from './src/trainings/training.entity';
 
 import 'dotenv/config';
 import { User } from './src/users/user.entity';

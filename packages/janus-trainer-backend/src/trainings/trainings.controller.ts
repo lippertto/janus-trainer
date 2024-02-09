@@ -24,12 +24,12 @@ import { TrainingUpdateStatusRequest } from './dto/training-update-status-reques
 import { TrainingsQueryResponse } from './dto/trainings-query-response';
 import { TrainingResponse } from './dto/training-response';
 import { TrainingCreateRequestDto } from 'janus-trainer-dto';
-import { Training, TrainingStatus } from './trainings.entity';
+import { Training, TrainingStatus } from './training.entity';
 import { AuthService } from '../auth/auth.service';
 import { Request } from 'express';
 import { Group } from 'janus-trainer-dto';
-import dayjs from 'dayjs';
 import { TrainingUpdateRequestDto } from 'janus-trainer-dto';
+import { SharedService } from '../shared/shared.service';
 
 function trainingToResponse(training: Training): TrainingResponse {
   return {
@@ -57,6 +57,7 @@ export class TrainingsController {
   constructor(
     private readonly trainingsService: TrainingsService,
     private readonly authService: AuthService,
+    private readonly sharedService: SharedService,
   ) {}
 
   @Get()
@@ -71,8 +72,8 @@ export class TrainingsController {
       trainings = await this.trainingsService.findTrainingsByUserId(userId);
     } else {
       trainings = await this.trainingsService.findTrainingsByDate(
-        this.dateStringToDate(startString),
-        this.dateStringToDate(endString),
+        this.sharedService.dateStringToDate(startString),
+        this.sharedService.dateStringToDate(endString),
       );
     }
     return { value: trainings.map((gt) => trainingToResponse(gt)) };
@@ -229,26 +230,5 @@ export class TrainingsController {
 
     await this.trainingsService.deleteTraining(id);
     throw new HttpException('OK', HttpStatus.NO_CONTENT);
-  }
-
-  dateStringToDate(dateString: string): dayjs.Dayjs {
-    const components = dateString.split('-');
-    if (
-      components.length != 3 ||
-      components[0].length != 4 ||
-      components[1].length != 2 ||
-      components[2].length != 2
-    ) {
-      throw new BadRequestException(
-        `Date ${dateString} is not in the correct format`,
-      );
-    }
-    return dayjs(
-      new Date(
-        parseInt(components[0]),
-        parseInt(components[1]) - 1,
-        parseInt(components[2]),
-      ),
-    );
   }
 }

@@ -4,7 +4,7 @@ import { config } from './config';
 import { APP_GUARD } from '@nestjs/core';
 import { CognitoJwtGuard } from './auth/auth.service';
 import { AuthModule } from './auth/auth.module';
-import { Training } from './trainings/trainings.entity';
+import { Training } from './trainings/training.entity';
 import { User } from './users/user.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TrainingsModule } from './trainings/trainings.module';
@@ -14,6 +14,9 @@ import { UsersModule } from './users/users.module';
 import { TrainersModule } from './trainers/trainers.module';
 import { DisciplineModule } from './disciplines/disciplines.module';
 import { Discipline } from './disciplines/discipline.entity';
+import { HolidaysModule } from './holidays/holidays.module';
+import { Holiday } from './holidays/holiday.entity';
+import { SharedModule } from './shared/shared.module';
 
 const providers: Provider[] = [];
 
@@ -28,7 +31,7 @@ if (config().cors.origin && !config().cors.origin.includes('localhost')) {
       useFactory: () => ({
         ...config().typeorm,
         type: 'postgres',
-        entities: [Training, User, Discipline],
+        entities: [Training, User, Discipline, Holiday],
       }),
     }),
     TrainingsModule,
@@ -36,6 +39,8 @@ if (config().cors.origin && !config().cors.origin.includes('localhost')) {
     UsersModule,
     TrainersModule,
     DisciplineModule,
+    HolidaysModule,
+    SharedModule,
   ],
   providers: providers,
 })

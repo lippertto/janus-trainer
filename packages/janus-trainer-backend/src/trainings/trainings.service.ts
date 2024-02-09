@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Training, TrainingStatus } from './trainings.entity';
+import { Training, TrainingStatus } from './training.entity';
 import { Repository, Between } from 'typeorm';
 import { UsersService } from '../users/users.service';
 import dayjs from 'dayjs';
