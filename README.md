@@ -34,19 +34,21 @@ Currently, I did not want to manage the infrastructure as code. Hence, the resou
 * Bug: Add training, leave Gruppe empty, save
 * Run tests on pull requests, deploy on main
 * Add end to end tests (for dev env)
-* Find out if groups need to be autocompleted
 * Find out what happens to log-in session after update. (users have to log out and in to get things working)
 * Exception handling with error boundaries
 * Allow to go from compensation page to validate page with specific dates+trainer
 * Put secrets into actual secrets
 * Run migrations in CI
 * Create test environment
-* Delete disciplines
 * Add lerna and nx
 * Add manual cloudformation scripts for cognito (and other config)
+* Concept for management of classes
 
 ## Refinement
 * Read up on .env files best practices
 * Read up on MUI's nextjs integration: https://mui.com/material-ui/guides/nextjs/
 * Think about deploying the frontend with the serverless framework https://www.serverless.com/blog/serverless-nextjs
 * Sort imports with eslint: https://eslint.org/docs/latest/rules/sort-imports
+
+## Future
+* Trainers can change their IBAN
