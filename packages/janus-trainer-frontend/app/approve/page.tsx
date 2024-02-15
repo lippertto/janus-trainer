@@ -1,6 +1,6 @@
 'use client';
 import React, { useEffect } from 'react';
-import { Backend, Training } from '../../lib/backend';
+import { Backend } from '../../lib/backend';
 import Stack from '@mui/system/Stack';
 import TrainingTable from '../../components/TrainingTable';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -17,7 +17,7 @@ import { DatePicker } from '@mui/x-date-pickers';
 import quarterOfYear from 'dayjs/plugin/quarterOfYear';
 import ButtonGroup from '@mui/material/ButtonGroup';
 import Button from '@mui/material/Button';
-import { DisciplineDto } from 'janus-trainer-dto';
+import { DisciplineDto, TrainingDto } from 'janus-trainer-dto';
 import { getDisciplines } from '@/lib/api-disciplines';
 
 dayjs.extend(quarterOfYear);
@@ -30,7 +30,7 @@ export default function ApprovePage(): React.ReactElement {
   const [endDate, setEndDate] = React.useState<dayjs.Dayjs | null>(
     dayjs().endOf('quarter'),
   );
-  const [trainings, setTrainings] = React.useState<Training[]>([]);
+  const [trainings, setTrainings] = React.useState<TrainingDto[]>([]);
   const [disciplines, setDisciplines] = React.useState<DisciplineDto[]>([]);
 
   const { data, status: authenticationStatus } = useSession();
@@ -42,7 +42,8 @@ export default function ApprovePage(): React.ReactElement {
         .getTrainingsByDate(startDate, endDate)
         .then((v) => {
           v.sort(
-            (r1: Training, r2: Training) => parseInt(r1.id) - parseInt(r2.id),
+            (r1: TrainingDto, r2: TrainingDto) =>
+              parseInt(r1.id) - parseInt(r2.id),
           );
           setTrainings(v);
           return v;

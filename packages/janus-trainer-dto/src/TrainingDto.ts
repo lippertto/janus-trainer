@@ -1,7 +1,6 @@
-export class TrainingResponse {
+export type TrainingDto = {
   id: string;
-  // is of type GivenTrainingStatus
-  status: string;
+  status: TrainingStatusDto;
   date: string;
   discipline: { name: string; id: string };
   group: string;
@@ -13,4 +12,14 @@ export class TrainingResponse {
 
   // deprecated
   user: { id: string; name: string };
+};
+
+export type TrainingListDto = {
+  value: TrainingDto[];
+};
+
+export enum TrainingStatusDto {
+  NEW = 'NEW',
+  APPROVED = 'APPROVED',
+  COMPENSATED = 'COMPENSATED',
 }

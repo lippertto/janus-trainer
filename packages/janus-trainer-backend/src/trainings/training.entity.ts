@@ -1,3 +1,4 @@
+import { TrainingStatusDto } from 'janus-trainer-dto/dist/src/TrainingDto';
 import { Discipline } from '../disciplines/discipline.entity';
 import { User } from '../users/user.entity';
 import {
@@ -8,12 +9,6 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-
-export enum TrainingStatus {
-  NEW = 'NEW',
-  APPROVED = 'APPROVED',
-  COMPENSATED = 'COMPENSATED',
-}
 
 @Entity()
 export class Training extends BaseEntity {
@@ -41,6 +36,9 @@ export class Training extends BaseEntity {
   @Column()
   participantCount: number;
 
-  @Column({ enum: TrainingStatus })
-  status: TrainingStatus;
+  @Column({
+    type: 'varchar',
+    enum: TrainingStatusDto,
+  })
+  status: TrainingStatusDto;
 }

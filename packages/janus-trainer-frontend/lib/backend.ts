@@ -2,6 +2,7 @@ import dayjs from 'dayjs';
 import {
   Group,
   TrainingCreateRequestDto,
+  TrainingDto,
   TrainingUpdateRequestDto,
   UserDto,
   type UserUpdateRequestDto,
@@ -73,7 +74,7 @@ export class Backend {
     compensationCents: number,
     participantCount: number,
     userId: string,
-  ): Promise<Training> {
+  ): Promise<TrainingDto> {
     const request: TrainingCreateRequestDto = {
       date,
       disciplineId,
@@ -94,7 +95,7 @@ export class Backend {
       },
     });
     const result = await response.json();
-    return result as Training;
+    return result as TrainingDto;
   }
 
   async updateTraining(
@@ -104,7 +105,7 @@ export class Backend {
     group: string,
     compensationCents: number,
     participantCount: number,
-  ): Promise<Training> {
+  ): Promise<TrainingDto> {
     const request: TrainingUpdateRequestDto = {
       date,
       disciplineId,
@@ -121,13 +122,13 @@ export class Backend {
       },
     });
     const result = await response.json();
-    return result as Training;
+    return result as TrainingDto;
   }
 
   async getTrainingsByDate(
     startDate: dayjs.Dayjs,
     endDate: dayjs.Dayjs,
-  ): Promise<Training[]> {
+  ): Promise<TrainingDto[]> {
     const response = await fetch(
       this.withPath(
         `/trainings?start=${startDate.format(
@@ -143,7 +144,7 @@ export class Backend {
       },
     );
     const data = await response.json();
-    return data.value as Training[];
+    return data.value as TrainingDto[];
   }
 
   async deleteTraining(id: string): Promise<void> {
@@ -156,14 +157,7 @@ export class Backend {
     });
   }
 
-  async getTrainingsForUser(userId: string): Promise<Training[]> {
-    const response = await fetch(this.withPath(`/trainings?userId=${userId}`), {
-      headers: this.authorizationHeader(),
-    });
-    return (await response.json()).value as Training[];
-  }
-
-  async approveTraining(id: string): Promise<Training> {
+  async approveTraining(id: string): Promise<TrainingDto> {
     const response = await fetch(this.withPath(`/trainings/${id}`), {
       method: 'PATCH',
       body: JSON.stringify({ status: 'APPROVED' }),
@@ -173,10 +167,10 @@ export class Backend {
         'Content-Type': 'application/json',
       },
     });
-    return (await response.json()) as Training;
+    return (await response.json()) as TrainingDto;
   }
 
-  async unapproveTraining(id: string): Promise<Training> {
+  async unapproveTraining(id: string): Promise<TrainingDto> {
     const response = await fetch(this.withPath(`/trainings/${id}`), {
       method: 'PATCH',
       body: JSON.stringify({ status: 'NEW' }),
@@ -186,7 +180,7 @@ export class Backend {
         'Content-Type': 'application/json',
       },
     });
-    return (await response.json()) as Training;
+    return (await response.json()) as TrainingDto;
   }
 
   async getCompensations(): Promise<Compensation[]> {
@@ -325,25 +319,6 @@ export class Backend {
       },
     });
   }
-}
-
-export enum TrainingStatus {
-  NEW = 'NEW',
-  APPROVED = 'APPROVED',
-  COMPENSATED = 'COMPENSATED',
-}
-
-export interface Training {
-  id: string;
-  date: string;
-  discipline: { id: string; name: string };
-  group: string;
-  compensationCents: number;
-  user: { id: string; name: string };
-  userName: string;
-  userId: string;
-  participantCount: number;
-  status: TrainingStatus;
 }
 
 export interface Compensation {

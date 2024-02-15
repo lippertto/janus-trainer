@@ -14,7 +14,7 @@ import {
 import { StartedPostgreSqlContainer } from '@testcontainers/postgresql';
 import dayjs from 'dayjs';
 import { Training } from '../src/trainings/training.entity';
-import { TrainingResponse } from '../src/trainings/dto/training-response';
+import { TrainingDto } from 'src/trainings/dto/TrainingDto';
 import { v4 as uuidv4 } from 'uuid';
 import { Group } from 'janus-trainer-dto';
 
@@ -239,7 +239,7 @@ describe('trainings (e2e)', () => {
 
     // THEN
     expect(response.statusCode).toBe(200);
-    const returnedTraining = response.body as TrainingResponse;
+    const returnedTraining = response.body as TrainingDto;
     expect(returnedTraining.date).toBe('2024-01-25');
     expect(returnedTraining.discipline).toMatchObject(newDiscipline);
     expect(returnedTraining.group).toBe(group);
@@ -251,7 +251,7 @@ describe('trainings (e2e)', () => {
       .get(`/trainings/${createdTrainingId}`)
       .set('Authorization', `Bearer ${jwtLikeString(trainerId01, ['admins'])}`)
       .expect(200);
-    const gottenTraining = getResponse.body as TrainingResponse;
+    const gottenTraining = getResponse.body as TrainingDto;
     expect(gottenTraining.date).toBe('2024-01-25');
     expect(gottenTraining.discipline).toMatchObject(newDiscipline);
     expect(gottenTraining.group).toBe(group);

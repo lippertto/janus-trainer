@@ -1,10 +1,11 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Training, TrainingStatus } from './training.entity';
+import { Training } from './training.entity';
 import { Repository, Between } from 'typeorm';
 import { UsersService } from '../users/users.service';
 import dayjs from 'dayjs';
 import { DisciplineService } from '../disciplines/discliplines.service';
+import { TrainingStatusDto } from 'janus-trainer-dto';
 
 /** The relations that the orm should retrieve */
 const RELATIONS_TO_RETRIEVE = { user: true, discipline: true };
@@ -98,7 +99,7 @@ export class TrainingsService {
       discipline: discipline,
       group: group,
       user: user,
-      status: TrainingStatus.NEW,
+      status: TrainingStatusDto.NEW,
     });
     const createdTraining = await this.trainingsRepository.save(newTraining);
     return createdTraining;
@@ -118,18 +119,18 @@ export class TrainingsService {
    */
   async transitionTrainingStatus(
     trainingOrId: Training | string,
-    newStatus: TrainingStatus,
+    newStatus: TrainingStatusDto,
   ): Promise<Training> {
     const training = await this.trainingOrIdToTraining(trainingOrId);
 
-    if (training.status === TrainingStatus.COMPENSATED) {
+    if (training.status === TrainingStatusDto.COMPENSATED) {
       throw new BadRequestException(
         'Cannot transition a training from COMPENSATED',
       );
     }
     if (
-      training.status === TrainingStatus.NEW &&
-      newStatus === TrainingStatus.COMPENSATED
+      training.status === TrainingStatusDto.NEW &&
+      newStatus === TrainingStatusDto.COMPENSATED
     ) {
       throw new BadRequestException(
         'Cannot transition a training from NEW to COMPENSATED',

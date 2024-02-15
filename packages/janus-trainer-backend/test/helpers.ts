@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { AppModule } from '../src/app.module';
-import { TrainingResponse } from 'src/trainings/dto/training-response';
+import { TrainingDto } from 'src/trainings/dto/TrainingDto';
 import request from 'supertest';
 import dayjs from 'dayjs';
 import {
@@ -53,7 +53,7 @@ export async function createTraining(
   app: INestApplication,
   userId: string,
   fields: { compensationCents?: number; date?: dayjs.Dayjs } = {},
-): Promise<TrainingResponse> {
+): Promise<TrainingDto> {
   if (!discipline) {
     discipline = await createDiscipline(app, 'global-test-discipline');
   }

@@ -20,18 +20,21 @@ import {
 import { TrainingsService } from './trainings.service';
 import { BatchApproveTrainingsRequest } from './dto/batch-approve-trainings-request';
 import { TrainingsBatchApproveResponse } from './dto/trainings-batch-approve-response';
-import { TrainingUpdateStatusRequest } from './dto/training-update-status-request';
-import { TrainingsQueryResponse } from './dto/trainings-query-response';
-import { TrainingResponse } from './dto/training-response';
+import { TrainingUpdateStatusRequest } from 'janus-trainer-dto/src/TrainingUpdateStatusRequest';
 import { TrainingCreateRequestDto } from 'janus-trainer-dto';
-import { Training, TrainingStatus } from './training.entity';
+import { Training } from './training.entity';
 import { AuthService } from '../auth/auth.service';
 import { Request } from 'express';
 import { Group } from 'janus-trainer-dto';
-import { TrainingUpdateRequestDto } from 'janus-trainer-dto';
+import {
+  TrainingUpdateRequestDto,
+  TrainingDto,
+  TrainingListDto,
+  TrainingStatusDto,
+} from 'janus-trainer-dto';
 import { SharedService } from '../shared/shared.service';
 
-function trainingToResponse(training: Training): TrainingResponse {
+function trainingToResponse(training: Training): TrainingDto {
   return {
     id: training.id.toString(),
     date: training.date,
@@ -66,7 +69,7 @@ export class TrainingsController {
     @Query('start') startString: string,
     @Query('end') endString: string,
     @Query('userId') userId: string,
-  ): Promise<TrainingsQueryResponse> {
+  ): Promise<TrainingListDto> {
     let trainings: Training[];
     if (userId) {
       trainings = await this.trainingsService.findTrainingsByUserId(userId);
@@ -84,7 +87,7 @@ export class TrainingsController {
     @Req() request: Request,
     @Param('id') id: string,
     @Body() updateRequest: TrainingUpdateRequestDto,
-  ): Promise<TrainingResponse> {
+  ): Promise<TrainingDto> {
     const { userId, groups } = this.authService.parseRequest(request);
 
     const trainingToUpdate = await this.trainingsService.getOneTraining(id);
@@ -123,7 +126,7 @@ export class TrainingsController {
           case 'SET_COMPENSATED':
             await this.trainingsService.transitionTrainingStatus(
               id,
-              TrainingStatus.COMPENSATED,
+              TrainingStatusDto.COMPENSATED,
             );
             return 'OK';
           default:
@@ -152,7 +155,7 @@ export class TrainingsController {
   async createTraining(
     @Body() createRequest: TrainingCreateRequestDto,
     @Req() request: Request,
-  ): Promise<TrainingResponse> {
+  ): Promise<TrainingDto> {
     const { userId, groups } = this.authService.parseRequest(request);
 
     if (groups.indexOf(Group.ADMINS) === -1) {
@@ -174,7 +177,7 @@ export class TrainingsController {
     @Req() httpRequest: Request,
     @Param('id') id: string,
     @Body() updateRequest: TrainingUpdateStatusRequest,
-  ): Promise<TrainingResponse> {
+  ): Promise<TrainingDto> {
     this.authService.requireGroup(httpRequest, [Group.ADMINS, Group.TRAINERS]);
     const currentTraining = await this.trainingsService.getOneTraining(id);
     if (currentTraining === null) {
@@ -192,7 +195,7 @@ export class TrainingsController {
   async getOneTraining(
     @Req() request: Request,
     @Param('id') id: string,
-  ): Promise<TrainingResponse> {
+  ): Promise<TrainingDto> {
     this.authService.requireGroup(request, [Group.ADMINS, Group.TRAINERS]);
     const result = await this.trainingsService.getOneTraining(id);
     if (result == null) {
@@ -222,7 +225,7 @@ export class TrainingsController {
       }
     }
 
-    if (training.status === TrainingStatus.COMPENSATED) {
+    if (training.status === TrainingStatusDto.COMPENSATED) {
       throw new BadRequestException(
         `Cannot delete trainings with status ${training.status}`,
       );

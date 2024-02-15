@@ -1,15 +1,15 @@
 'use client';
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect } from 'react';
 
-import { Backend, Training } from '../../lib/backend';
 import TrainingTable from '../../components/TrainingTable';
 
 import { useSession } from 'next-auth/react';
 import type { JanusSession } from '../../lib/auth';
 import LoginRequired from '../../components/LoginRequired';
-import { DisciplineDto } from 'janus-trainer-dto';
+import { DisciplineDto, TrainingDto } from 'janus-trainer-dto';
 import { getDisciplines } from '@/lib/api-disciplines';
+import { getTrainingsForUser } from '@/lib/api-trainings';
 
 function sortDiscipline(a: DisciplineDto, b: DisciplineDto): number {
   if (a.name < b.name) {
@@ -22,31 +22,28 @@ function sortDiscipline(a: DisciplineDto, b: DisciplineDto): number {
 }
 
 export default function EnterPage() {
-  const backend = useRef<Backend>(new Backend());
-
-  const [trainings, setTrainings] = React.useState<Training[]>([]);
+  const [trainings, setTrainings] = React.useState<TrainingDto[]>([]);
   const [disciplines, setDisciplines] = React.useState<DisciplineDto[]>([]);
 
   const { data, status: authenticationStatus } = useSession();
   const session = data as JanusSession;
 
   const refresh = React.useCallback(async () => {
-    if (authenticationStatus !== 'authenticated' || !session) {
-      return Promise.resolve([]);
-    }
+    if (!session?.accessToken) return [];
 
-    backend.current.setAccessToken(session?.accessToken);
     getDisciplines(session!.accessToken).then((v) =>
       setDisciplines(v.toSorted(sortDiscipline)),
     );
 
-    return backend.current.getTrainingsForUser(session?.userId).then((v) => {
-      // trainings need to be sorted
-      v.sort((r1, r2) => parseInt(r1.id) - parseInt(r2.id));
-      setTrainings(v);
-      return v;
-    });
-  }, [session, setTrainings, setDisciplines, authenticationStatus]);
+    return getTrainingsForUser(session.accessToken, session.userId).then(
+      (v) => {
+        // trainings need to be sorted
+        v.sort((r1, r2) => parseInt(r1.id) - parseInt(r2.id));
+        setTrainings(v);
+        return v;
+      },
+    );
+  }, [session, setTrainings, setDisciplines]);
 
   useEffect(() => {
     refresh();

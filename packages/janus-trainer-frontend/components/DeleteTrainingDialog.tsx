@@ -5,13 +5,13 @@ import DialogContentText from '@mui/material/DialogContentText';
 import Dialog from '@mui/material/Dialog';
 import Button from '@mui/material/Button';
 import React from 'react';
-import { Training } from '../lib/backend';
 import dayjs from 'dayjs';
+import { TrainingDto } from 'janus-trainer-dto';
 
 interface DeleteTrainingDialog {
   open: boolean;
   onUserChoice: (confirmed: boolean) => void;
-  training: Training | null;
+  training: TrainingDto | null;
 }
 
 export default function DeleteTrainingDialog(props: DeleteTrainingDialog) {

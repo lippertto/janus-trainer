@@ -14,7 +14,7 @@ import {
   GridValueGetterParams,
   GridValueSetterParams,
 } from '@mui/x-data-grid';
-import { Backend, Training, TrainingStatus } from '../lib/backend';
+import { Backend } from '../lib/backend';
 
 import AddIcon from '@mui/icons-material/Add';
 import FastRewindIcon from '@mui/icons-material/FastRewind';
@@ -33,7 +33,11 @@ import { useSession } from 'next-auth/react';
 import dayjs from 'dayjs';
 import { JanusSession } from '../lib/auth';
 import DeleteTrainingDialog from './DeleteTrainingDialog';
-import { DisciplineDto } from 'janus-trainer-dto';
+import {
+  DisciplineDto,
+  TrainingDto,
+  TrainingStatusDto,
+} from 'janus-trainer-dto';
 
 import {
   dateToIso8601,
@@ -50,7 +54,7 @@ dayjs.locale('de');
  *  Obtain the newest training (to create a new entry to the table).
  * Since the ISO 8601 dates can be sorted alphabetically, we only do a string comparison here.
  */
-function getNewestTraining(trainings: Training[]): Training {
+function getNewestTraining(trainings: TrainingDto[]): TrainingDto {
   return trainings
     .toSorted((a, b) => {
       if (a.date < b.date) return -1;
@@ -68,7 +72,7 @@ function participantCountIsValid(n: number) {
   return n && n >= 0;
 }
 
-function trainingIsValid(t: Training): boolean {
+function trainingIsValid(t: TrainingDto): boolean {
   if (!dateIsValid(t.date)) return false;
   if (!participantCountIsValid(t.participantCount)) return false;
   return true;
@@ -117,8 +121,8 @@ function preProcessEditCellPropsForNonEmptyString(
   return { ...params.props, error: undefined };
 }
 
-function getGridColumns(
-  trainings: Training[],
+function buildGridColumns(
+  trainings: TrainingDto[],
   disciplines: DisciplineDto[],
   rowModesModel: GridRowModesModel,
   handleCancelClick: { (id: GridRowId): () => void },
@@ -133,7 +137,7 @@ function getGridColumns(
       field: 'date',
       headerName: 'Datum',
       type: 'date',
-      width: 150,
+      flex: 1,
       valueFormatter: toHumanReadableDate,
       valueGetter: getDateFromIso8601,
       valueSetter: dateToIso8601,
@@ -156,7 +160,7 @@ function getGridColumns(
       field: 'userName',
       headerName: 'Übungsleitung',
       editable: true,
-      width: 200,
+      flex: 3,
     },
     {
       field: 'discipline',
@@ -171,13 +175,13 @@ function getGridColumns(
         const discipine = disciplines.find((d) => d.name == params.value);
         return { ...params.row, discipline: discipine };
       },
-      width: 150,
+      flex: 2,
     },
     {
       field: 'group',
       headerName: 'Gruppe',
       editable: true,
-      width: 150,
+      flex: 2,
       preProcessEditCellProps: preProcessEditCellPropsForNonEmptyString,
       renderEditCell: renderNonEmptyStringCell,
     },
@@ -185,6 +189,7 @@ function getGridColumns(
       field: 'participantCount',
       headerName: 'Teilnehmer',
       type: 'number',
+      flex: 1,
       editable: true,
       preProcessEditCellProps: (params: GridPreProcessEditCellProps) => {
         // unclear why this happens. This case happens sometimes when the date becomes invalid
@@ -210,9 +215,9 @@ function getGridColumns(
       field: 'compensationCents',
       headerName: 'Vergütung',
       type: 'singleSelect',
-      width: 100,
+      flex: 1,
       editable: true,
-      valueOptions: ['27€', '21€', '19€', '16€'],
+      valueOptions: ['27€', '24€', '21€', '19€', '16€'],
       valueGetter: (params: GridValueGetterParams) => {
         const euroValue = params.value / 100;
         return `${euroValue}€`;
@@ -227,12 +232,13 @@ function getGridColumns(
     {
       field: 'status',
       headerName: 'Status',
+      flex: 1,
       valueGetter: (params) => {
-        if (params.value === TrainingStatus.NEW) {
+        if (params.value === TrainingStatusDto.NEW) {
           return 'neu';
-        } else if (params.value === TrainingStatus.APPROVED) {
+        } else if (params.value === TrainingStatusDto.APPROVED) {
           return 'freigegeben';
-        } else if (params.value === TrainingStatus.COMPENSATED) {
+        } else if (params.value === TrainingStatusDto.COMPENSATED) {
           return 'überwiesen';
         } else {
           console.log(`Found bad status '${params.value}'`);
@@ -244,7 +250,7 @@ function getGridColumns(
       field: 'actions',
       type: 'actions',
       headerName: 'bearbeiten',
-      width: 100,
+      flex: 1,
       cellClassName: 'actions',
       getActions: ({ id }) => {
         const thisTraining = trainings.find((t) => t.id === id) as Row;
@@ -276,7 +282,7 @@ function getGridColumns(
           ];
         }
 
-        if (thisTraining.status === TrainingStatus.NEW) {
+        if (thisTraining.status === TrainingStatusDto.NEW) {
           return [
             <GridActionsCellItem
               icon={<EditIcon />}
@@ -309,7 +315,7 @@ function getGridColumns(
           return [];
         }
         switch (thisTraining.status) {
-          case TrainingStatus.NEW:
+          case TrainingStatusDto.NEW:
             return [
               <GridActionsCellItem
                 icon={<FastForwardIcon />}
@@ -318,7 +324,7 @@ function getGridColumns(
                 key="approve-button"
               />,
             ];
-          case TrainingStatus.APPROVED:
+          case TrainingStatusDto.APPROVED:
             return [
               <GridActionsCellItem
                 icon={<FastRewindIcon />}
@@ -327,7 +333,7 @@ function getGridColumns(
                 key="revoke-button"
               />,
             ];
-          case TrainingStatus.COMPENSATED:
+          case TrainingStatusDto.COMPENSATED:
             return [];
         }
       },
@@ -364,7 +370,7 @@ function TrainingTableToolbar({
           startIcon={<AddIcon />}
           onClick={() => {
             const id = uuidv4();
-            setRows((oldRows: Training[]): Training[] => {
+            setRows((oldRows: TrainingDto[]): TrainingDto[] => {
               let template = null;
               if (oldRows.length === 0) {
                 template = {
@@ -386,7 +392,7 @@ function TrainingTableToolbar({
                   id: id,
                   isNew: true,
                   participantCount: 0,
-                  status: TrainingStatus.NEW,
+                  status: TrainingStatusDto.NEW,
                 } as Row,
               ];
             });
@@ -412,17 +418,17 @@ function TrainingTableToolbar({
   );
 }
 
-interface Row extends Training {
+interface Row extends TrainingDto {
   isNew?: boolean;
 }
 
-type SetTrainings = React.Dispatch<React.SetStateAction<Training[]>>;
+type SetTrainings = React.Dispatch<React.SetStateAction<TrainingDto[]>>;
 
 type TrainingTableProps = {
-  /** The trainings to display. Note: SHould be sorted, e.g. with `v.sort((r1, r2) => parseInt(r1.id) - parseInt(r2.id))` */
-  trainings: Training[];
+  /** The trainings to display. Note: Should be sorted, e.g. with `v.sort((r1, r2) => parseInt(r1.id) - parseInt(r2.id))` */
+  trainings: TrainingDto[];
   setTrainings: SetTrainings;
-  refresh: () => Promise<Training[]>;
+  refresh: () => Promise<TrainingDto[]>;
   /** Whether the UI should show the approval actions. (User must be admin to actually execute the steps.) */
   approvalMode: boolean;
   /** A list of disciplines for the dropdown. */
@@ -446,7 +452,7 @@ export default function TrainingTable({
   const [showDeleteDialog, setShowDeleteDialog] =
     React.useState<boolean>(false);
   const [trainingToDelete, setTrainingToDelete] =
-    React.useState<Training | null>(null);
+    React.useState<TrainingDto | null>(null);
 
   const { data, status: authenticationStatus } = useSession();
   const session = data as JanusSession;
@@ -543,7 +549,7 @@ export default function TrainingTable({
     }
   }, [authenticationStatus, session.accessToken]);
 
-  const columns = getGridColumns(
+  const columns = buildGridColumns(
     trainings,
     disciplines,
     rowModesModel,
