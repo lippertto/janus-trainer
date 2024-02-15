@@ -12,6 +12,14 @@ yarn start
 
 ## Database
 
+### Add a new entity
+1. Create the new entity
+2. Add the entity to `src/app.module.ts`
+3. Add entity to `./datasource.ts`
+4. Generate migration vs. test system with `yarn backend migration:generate:test`
+
+### Clean database
+
 To clean the databases, you can use the following command.
 
 ```sql
@@ -52,3 +60,4 @@ Currently, I did not want to manage the infrastructure as code. Hence, the resou
 
 ## Future
 * Trainers can change their IBAN
+

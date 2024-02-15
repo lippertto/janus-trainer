@@ -11,4 +11,4 @@ export { type UserDto, type UserListDto } from './src/UserDto';
 export { Group } from './src/Group';
 
 export { HolidayCreateRequestDto } from './src/HolidayCreateRequestDto';
-export { HolidayDto, HolidayListDto } from './src/HolidayDto';
+export { type HolidayDto, type HolidayListDto } from './src/HolidayDto';

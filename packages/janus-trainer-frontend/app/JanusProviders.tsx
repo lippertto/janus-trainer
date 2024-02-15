@@ -7,8 +7,21 @@ import React from 'react';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { SessionProvider } from 'next-auth/react';
 import { deDE } from '@mui/x-data-grid';
+import { SnackbarProvider } from 'notistack';
+
+import { MaterialDesignContent } from 'notistack';
+import { styled } from '@mui/material/styles';
 
 const theme = createTheme({}, deDE);
+
+const StyledSnackbarContent = styled(MaterialDesignContent)(() => ({
+  '&.notistack-MuiContent-success': {
+    fontFamily: theme.typography.fontFamily,
+  },
+  '&.notistack-MuiContent-error': {
+    fontFamily: theme.typography.fontFamily,
+  },
+}));
 
 export default function JanusProviders({
   children,
@@ -18,7 +31,14 @@ export default function JanusProviders({
   return (
     <ThemeProvider theme={theme}>
       <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="de">
-        <SessionProvider>{children}</SessionProvider>
+        <SnackbarProvider
+          Components={{
+            success: StyledSnackbarContent,
+            error: StyledSnackbarContent,
+          }}
+        >
+          <SessionProvider>{children}</SessionProvider>
+        </SnackbarProvider>
       </LocalizationProvider>
     </ThemeProvider>
   );

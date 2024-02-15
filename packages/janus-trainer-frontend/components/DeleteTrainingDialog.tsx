@@ -10,12 +10,12 @@ import dayjs from 'dayjs';
 
 interface DeleteTrainingDialog {
   open: boolean;
-  onClose: (ok: boolean) => void;
+  onUserChoice: (confirmed: boolean) => void;
   training: Training | null;
 }
 
 export default function DeleteTrainingDialog(props: DeleteTrainingDialog) {
-  const { open, onClose, training } = props;
+  const { open, onUserChoice, training } = props;
 
   const dateString = training?.date
     ? dayjs(training.date).format('DD.MM.YYYY')
@@ -31,8 +31,8 @@ export default function DeleteTrainingDialog(props: DeleteTrainingDialog) {
         </DialogContentText>
       </DialogContent>
       <DialogActions>
-        <Button onClick={() => onClose(false)}>Abbrechen</Button>
-        <Button onClick={() => onClose(true)} autoFocus>
+        <Button onClick={() => onUserChoice(false)}>Abbrechen</Button>
+        <Button onClick={() => onUserChoice(true)} color="error" autoFocus>
           Löschen
         </Button>
       </DialogActions>

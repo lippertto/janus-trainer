@@ -55,6 +55,6 @@ export class DisciplinesController {
     this.authService.requireGroup(httpRequest, [Group.ADMINS]);
 
     this.disciplineService.deleteDiscipline(id);
-    throw new HttpException('OK', HttpStatus.NO_CONTENT);
+    throw new HttpException('', HttpStatus.NO_CONTENT);
   }
 }

@@ -24,7 +24,7 @@ const ADMIN_LINKS = [
   { text: 'Freigeben', href: '/approve', icon: AssignmentTurnedInIcon },
   { text: 'Auszahlen', href: '/compensate', icon: AccountBalanceIcon },
   { text: 'Nutzer anlegen', href: '/manage-users', icon: ManageAccountsIcon },
-  { text: 'Verwaltung', href: '/edit-master-data', icon: SettingsIcon },
+  { text: 'Verwaltung', href: '/configure', icon: SettingsIcon },
 ];
 
 const TRAINER_LINKS = [

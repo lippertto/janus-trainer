@@ -9,6 +9,7 @@ import { useSession } from 'next-auth/react';
 import type { JanusSession } from '../../lib/auth';
 import LoginRequired from '../../components/LoginRequired';
 import { DisciplineDto } from 'janus-trainer-dto';
+import { getDisciplines } from '@/lib/api-disciplines';
 
 function sortDiscipline(a: DisciplineDto, b: DisciplineDto): number {
   if (a.name < b.name) {
@@ -30,14 +31,14 @@ export default function EnterPage() {
   const session = data as JanusSession;
 
   const refresh = React.useCallback(async () => {
-    if (authenticationStatus !== 'authenticated') {
+    if (authenticationStatus !== 'authenticated' || !session) {
       return Promise.resolve([]);
     }
 
     backend.current.setAccessToken(session?.accessToken);
-    backend.current
-      .getDisciplines()
-      .then((v) => setDisciplines(v.toSorted(sortDiscipline)));
+    getDisciplines(session!.accessToken).then((v) =>
+      setDisciplines(v.toSorted(sortDiscipline)),
+    );
 
     return backend.current.getTrainingsForUser(session?.userId).then((v) => {
       // trainings need to be sorted

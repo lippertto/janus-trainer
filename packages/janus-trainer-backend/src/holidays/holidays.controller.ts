@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -60,6 +61,9 @@ export class HolidaysController {
 
   @Get()
   async getHolidays(@Query('year') year: number): Promise<HolidayListDto> {
+    if (!year) {
+      throw new BadRequestException('Year must be provided');
+    }
     const holidays = await this.holidayService.getHolidayByYear(year);
     return { value: holidays.map(holidayToDto) };
   }

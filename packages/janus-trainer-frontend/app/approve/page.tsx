@@ -18,6 +18,7 @@ import quarterOfYear from 'dayjs/plugin/quarterOfYear';
 import ButtonGroup from '@mui/material/ButtonGroup';
 import Button from '@mui/material/Button';
 import { DisciplineDto } from 'janus-trainer-dto';
+import { getDisciplines } from '@/lib/api-disciplines';
 
 dayjs.extend(quarterOfYear);
 
@@ -53,10 +54,9 @@ export default function ApprovePage(): React.ReactElement {
   useEffect(() => {
     backend.current.setAccessToken(session?.accessToken);
     if (!session?.accessToken) {
-      setTrainings([]);
       return;
     }
-    backend.current.getDisciplines().then((v) => setDisciplines(v));
+    getDisciplines(session.accessToken).then((v) => setDisciplines(v));
     refreshTrainings();
   }, [refreshTrainings, setDisciplines, session?.accessToken]);
 

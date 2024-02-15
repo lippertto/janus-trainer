@@ -1,7 +1,5 @@
 import dayjs from 'dayjs';
 import {
-  DisciplineCreateRequestDto,
-  DisciplineDto,
   Group,
   TrainingCreateRequestDto,
   TrainingUpdateRequestDto,
@@ -319,46 +317,12 @@ export class Backend {
     return trainers as Trainer[];
   }
 
-  async getDisciplines(): Promise<DisciplineDto[]> {
-    const response = await fetch(this.withPath(`/disciplines`), {
-      headers: this.authorizationHeader(),
-    });
-    const result = (await response.json()).value;
-    return result as DisciplineDto[];
-  }
-
   async deleteUser(id: string): Promise<void> {
     await fetch(this.withPath(`/users/${id}`), {
       method: 'DELETE',
       headers: {
         ...this.authorizationHeader(),
       },
-    });
-  }
-
-  async addDiscipline(name: string): Promise<DisciplineDto> {
-    const request: DisciplineCreateRequestDto = {
-      name,
-    };
-    const response = await fetch(this.withPath(`/disciplines`), {
-      headers: {
-        ...this.authorizationHeader(),
-        'Content-Type': 'application/json',
-      },
-      method: 'POST',
-      body: JSON.stringify(request),
-    });
-    const result = (await response.json()).value;
-    return result as DisciplineDto;
-  }
-
-  async deleteDiscipline(id: string): Promise<void> {
-    await fetch(this.withPath(`/disciplines/${id}`), {
-      headers: {
-        ...this.authorizationHeader(),
-        'Content-Type': 'application/json',
-      },
-      method: 'DELETE',
     });
   }
 }
