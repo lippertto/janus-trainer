@@ -23,7 +23,8 @@
       },
       "search.exclude": {
         "**/.next": true,
-        "**/dist": true
+        "**/dist": true,
+        ".yarn.lock": true,
       },
     }
   }
