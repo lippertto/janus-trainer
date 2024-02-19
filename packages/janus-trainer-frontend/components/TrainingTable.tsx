@@ -26,6 +26,7 @@ import SaveIcon from '@mui/icons-material/Save';
 import CancelIcon from '@mui/icons-material/Cancel';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 
 import { v4 as uuidv4 } from 'uuid';
 import { useSession } from 'next-auth/react';
@@ -35,6 +36,7 @@ import { JanusSession } from '../lib/auth';
 import DeleteTrainingDialog from './DeleteTrainingDialog';
 import {
   DisciplineDto,
+  HolidayDto,
   TrainingDto,
   TrainingStatusDto,
 } from 'janus-trainer-dto';
@@ -49,6 +51,18 @@ import { styled } from '@mui/material/styles';
 
 require('dayjs/locale/de');
 dayjs.locale('de');
+
+function warningForDate(d: string, holidays: HolidayDto[]): string | null {
+  if (new Date(d).getDay() === 0) {
+    return 'Ist ein Sonntag';
+  }
+  for (const h of holidays) {
+    if (d >= h.start && d <= h.end) {
+      return `Kollidiert mit dem Feiertag ${h.name}`;
+    }
+  }
+  return null;
+}
 
 /**
  *  Obtain the newest training (to create a new entry to the table).
@@ -125,6 +139,7 @@ function buildGridColumns(
   trainings: TrainingDto[],
   disciplines: DisciplineDto[],
   rowModesModel: GridRowModesModel,
+  holidays: HolidayDto[],
   handleCancelClick: { (id: GridRowId): () => void },
   handleDeleteClick: { (id: GridRowId): () => void },
   handleEditClick: { (id: GridRowId): () => void },
@@ -137,9 +152,9 @@ function buildGridColumns(
       field: 'date',
       headerName: 'Datum',
       type: 'date',
-      flex: 1,
+      flex: 1.5,
       valueFormatter: toHumanReadableDate,
-      valueGetter: getDateFromIso8601,
+      valueGetter: (params) => getDateFromIso8601(params.value),
       valueSetter: dateToIso8601,
       editable: true,
       preProcessEditCellProps: (params: GridPreProcessEditCellProps) => {
@@ -160,7 +175,7 @@ function buildGridColumns(
       field: 'userName',
       headerName: 'Übungsleitung',
       editable: true,
-      flex: 3,
+      flex: 2,
     },
     {
       field: 'discipline',
@@ -249,7 +264,7 @@ function buildGridColumns(
     {
       field: 'actions',
       type: 'actions',
-      headerName: 'bearbeiten',
+      headerName: '',
       flex: 1,
       cellClassName: 'actions',
       getActions: ({ id }) => {
@@ -308,7 +323,7 @@ function buildGridColumns(
     {
       field: 'approvalActions',
       type: 'actions',
-      headerName: 'freigeben',
+      headerName: '',
       getActions: ({ id }) => {
         const thisTraining = trainings.find((t) => t.id === id);
         if (!thisTraining) {
@@ -337,6 +352,22 @@ function buildGridColumns(
             return [];
         }
       },
+    },
+    {
+      field: 'warnings',
+      headerName: '',
+      renderCell: (params) => {
+        const dateMessage = warningForDate(params.row.date, holidays);
+        if (dateMessage) {
+          return (
+            <Tooltip title={dateMessage}>
+              <WarningAmberIcon sx={{ color: 'orange' }} />
+            </Tooltip>
+          );
+        }
+        return null;
+      },
+      flex: 0.5,
     },
   ];
 }
@@ -433,6 +464,8 @@ type TrainingTableProps = {
   approvalMode: boolean;
   /** A list of disciplines for the dropdown. */
   disciplines: DisciplineDto[];
+  /** List of holidays used to highligh collisions */
+  holidays: HolidayDto[];
 };
 
 /**
@@ -444,6 +477,7 @@ export default function TrainingTable({
   refresh,
   approvalMode,
   disciplines = [],
+  holidays = [],
 }: TrainingTableProps) {
   const backend = React.useRef(new Backend());
   const [rowModesModel, setRowModesModel] = React.useState<GridRowModesModel>(
@@ -553,6 +587,7 @@ export default function TrainingTable({
     trainings,
     disciplines,
     rowModesModel,
+    holidays,
     handleCancelClick,
     handleDeleteClick,
     handleEditClick,

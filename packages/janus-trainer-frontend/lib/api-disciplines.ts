@@ -42,6 +42,11 @@ export async function getDisciplines(
       headers: { Authorization: `Bearer ${accessToken}` },
     },
   );
+  if (response.status !== 200) {
+    return Promise.reject(
+      new Error(`Failed to get disciplines: ${response.text}`),
+    );
+  }
   const result = (await response.json()).value;
   return result as DisciplineDto[];
 }

@@ -124,7 +124,7 @@ describe('Holidays (e2e)', () => {
     await createHoliday(app, '1023-01-01', '1023-01-02', 'any-name'); // not in 1022
 
     // WHEN
-    const response = await request(app.getHttpServer())
+    const singleYearResponse = await request(app.getHttpServer())
       .get(`/holidays?year=1022`)
       .set(
         'Authorization',
@@ -132,8 +132,21 @@ describe('Holidays (e2e)', () => {
       );
 
     // THEN
-    expect(response.statusCode).toBe(200);
-    const holidays = response.body.value;
+    expect(singleYearResponse.statusCode).toBe(200);
+    const holidays = singleYearResponse.body.value;
     expect(holidays).toHaveLength(2);
+
+    // WHEN
+    const multiYearResponse = await request(app.getHttpServer())
+      .get(`/holidays?year=1022,1023`)
+      .set(
+        'Authorization',
+        `Bearer ${jwtLikeString('any-trainer-id', [Group.ADMINS])}`,
+      );
+
+    // THEN
+    expect(multiYearResponse.statusCode).toBe(200);
+    const multiYearHolidays = multiYearResponse.body.value;
+    expect(multiYearHolidays).toHaveLength(3);
   });
 });

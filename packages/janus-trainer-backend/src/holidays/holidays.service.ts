@@ -47,10 +47,17 @@ export class HolidaysService {
     await this.repo.delete({ id: idAsNumber });
   }
 
-  async getHolidayByYear(year: number): Promise<Holiday[]> {
-    return await this.repo
+  async getHolidayByYear(yearList: number[]): Promise<Holiday[]> {
+    let queryBuilder = this.repo
       .createQueryBuilder('holiday')
-      .where("DATE_PART('year', holiday.start) = :year", { year })
-      .getMany();
+      .where("DATE_PART('year', holiday.start) = :year", { year: yearList[0] });
+
+    for (const year of yearList.slice(1)) {
+      queryBuilder = queryBuilder.orWhere(
+        `DATE_PART('year', holiday.start) = ${year}`,
+      );
+    }
+
+    return await queryBuilder.getMany();
   }
 }

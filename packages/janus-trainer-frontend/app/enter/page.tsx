@@ -7,9 +7,11 @@ import TrainingTable from '../../components/TrainingTable';
 import { useSession } from 'next-auth/react';
 import type { JanusSession } from '../../lib/auth';
 import LoginRequired from '../../components/LoginRequired';
-import { DisciplineDto, TrainingDto } from 'janus-trainer-dto';
+import { DisciplineDto, HolidayDto, TrainingDto } from 'janus-trainer-dto';
 import { getDisciplines } from '@/lib/api-disciplines';
 import { getTrainingsForUser } from '@/lib/api-trainings';
+import { getHolidays } from '@/lib/api-holidays';
+import { showError } from '@/lib/notifications';
 
 function sortDiscipline(a: DisciplineDto, b: DisciplineDto): number {
   if (a.name < b.name) {
@@ -24,6 +26,7 @@ function sortDiscipline(a: DisciplineDto, b: DisciplineDto): number {
 export default function EnterPage() {
   const [trainings, setTrainings] = React.useState<TrainingDto[]>([]);
   const [disciplines, setDisciplines] = React.useState<DisciplineDto[]>([]);
+  const [holidays, setHolidays] = React.useState<HolidayDto[]>([]);
 
   const { data, status: authenticationStatus } = useSession();
   const session = data as JanusSession;
@@ -31,9 +34,23 @@ export default function EnterPage() {
   const refresh = React.useCallback(async () => {
     if (!session?.accessToken) return [];
 
-    getDisciplines(session!.accessToken).then((v) =>
-      setDisciplines(v.toSorted(sortDiscipline)),
-    );
+    getDisciplines(session!.accessToken)
+      .then((v) => setDisciplines(v.toSorted(sortDiscipline)))
+      .catch((e) => {
+        showError('Konnte die Sportarten nicht laden', e.message);
+      });
+
+    // we get the holidays for this year and the last. This should be enough
+    getHolidays(session.accessToken, [
+      new Date().getFullYear(),
+      new Date().getFullYear() - 1,
+    ])
+      .then((v) => {
+        setHolidays(v);
+      })
+      .catch((e) => {
+        showError('Konnte die Feiertage nicht laden', e.message);
+      });
 
     return getTrainingsForUser(session.accessToken, session.userId).then(
       (v) => {
@@ -57,6 +74,7 @@ export default function EnterPage() {
     <TrainingTable
       trainings={trainings}
       disciplines={disciplines}
+      holidays={holidays}
       setTrainings={setTrainings}
       refresh={refresh}
       approvalMode={false}

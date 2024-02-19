@@ -8,6 +8,7 @@ import {
   HttpStatus,
   NotFoundException,
   Param,
+  ParseArrayPipe,
   Post,
   Query,
   Req,
@@ -60,8 +61,11 @@ export class HolidaysController {
   }
 
   @Get()
-  async getHolidays(@Query('year') year: number): Promise<HolidayListDto> {
-    if (!year) {
+  async getHolidays(
+    @Query('year', new ParseArrayPipe({ items: Number, separator: ',' }))
+    year: number[],
+  ): Promise<HolidayListDto> {
+    if (!year || year.length === 0) {
       throw new BadRequestException('Year must be provided');
     }
     const holidays = await this.holidayService.getHolidayByYear(year);

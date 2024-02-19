@@ -17,8 +17,10 @@ import { DatePicker } from '@mui/x-date-pickers';
 import quarterOfYear from 'dayjs/plugin/quarterOfYear';
 import ButtonGroup from '@mui/material/ButtonGroup';
 import Button from '@mui/material/Button';
-import { DisciplineDto, TrainingDto } from 'janus-trainer-dto';
+import { DisciplineDto, HolidayDto, TrainingDto } from 'janus-trainer-dto';
 import { getDisciplines } from '@/lib/api-disciplines';
+import { getHolidays } from '@/lib/api-holidays';
+import { showError } from '@/lib/notifications';
 
 dayjs.extend(quarterOfYear);
 
@@ -32,6 +34,7 @@ export default function ApprovePage(): React.ReactElement {
   );
   const [trainings, setTrainings] = React.useState<TrainingDto[]>([]);
   const [disciplines, setDisciplines] = React.useState<DisciplineDto[]>([]);
+  const [holidays, setHolidays] = React.useState<HolidayDto[]>([]);
 
   const { data, status: authenticationStatus } = useSession();
   const session = data as JanusSession;
@@ -59,6 +62,12 @@ export default function ApprovePage(): React.ReactElement {
     }
     getDisciplines(session.accessToken).then((v) => setDisciplines(v));
     refreshTrainings();
+    getHolidays(session.accessToken, [
+      new Date().getFullYear() - 1,
+      new Date().getFullYear(),
+    ])
+      .then((v) => setHolidays(v))
+      .catch((e) => showError('Konnte Feiertage nicht laden', e.message));
   }, [refreshTrainings, setDisciplines, session?.accessToken]);
 
   useEffect(() => {
@@ -114,6 +123,7 @@ export default function ApprovePage(): React.ReactElement {
         <TrainingTable
           trainings={trainings}
           disciplines={disciplines}
+          holidays={holidays}
           setTrainings={setTrainings}
           refresh={refreshTrainings}
           approvalMode={true}

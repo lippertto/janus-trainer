@@ -4,10 +4,10 @@ import dayjs from 'dayjs';
 
 export async function getHolidays(
   accessToken: string,
-  year: number,
+  years: number[],
 ): Promise<HolidayDto[]> {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_BACKEND_URL}/holidays?year=${year}`,
+    `${process.env.NEXT_PUBLIC_BACKEND_URL}/holidays?year=${years.join(',')}`,
     {
       headers: { Authorization: `Bearer ${accessToken}` },
     },

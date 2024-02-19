@@ -1,6 +1,5 @@
 import {
   GridValueFormatterParams,
-  GridValueGetterParams,
   GridValueSetterParams,
 } from '@mui/x-data-grid';
 import dayjs from 'dayjs';
@@ -14,8 +13,8 @@ export function toHumanReadableDate(params: GridValueFormatterParams): string {
 }
 
 /** The API returns 8601 strings. This method converts the string to a date object to be used by the data grid. */
-export function getDateFromIso8601(params: GridValueGetterParams): dayjs.Dayjs {
-  const [year, month, day] = params.value.split('-');
+export function getDateFromIso8601(value: string): dayjs.Dayjs {
+  const [year, month, day] = value.split('-');
   return dayjs(new Date(parseInt(year), parseInt(month) - 1, parseInt(day)));
 }
 

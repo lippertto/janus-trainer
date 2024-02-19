@@ -128,7 +128,7 @@ export default function Page() {
     if (!session?.accessToken || !holidayYear) {
       return;
     }
-    getHolidays(session.accessToken, holidayYear)
+    getHolidays(session.accessToken, [holidayYear])
       .then((h) => setHolidays(h))
       .catch((e: Error) => {
         showError('Konnte die Feiertage nicht laden.', e.message);

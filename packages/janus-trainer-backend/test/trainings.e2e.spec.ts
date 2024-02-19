@@ -14,9 +14,8 @@ import {
 import { StartedPostgreSqlContainer } from '@testcontainers/postgresql';
 import dayjs from 'dayjs';
 import { Training } from '../src/trainings/training.entity';
-import { TrainingDto } from 'src/trainings/dto/TrainingDto';
 import { v4 as uuidv4 } from 'uuid';
-import { Group } from 'janus-trainer-dto';
+import { Group, TrainingDto } from 'janus-trainer-dto';
 
 jest.setTimeout(5 * 60 * 1000);
 

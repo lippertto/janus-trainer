@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { AppModule } from '../src/app.module';
-import { TrainingDto } from 'src/trainings/dto/TrainingDto';
+import { TrainingDto } from 'janus-trainer-dto';
 import request from 'supertest';
 import dayjs from 'dayjs';
 import {
