@@ -33,7 +33,7 @@ export class AuthService {
     );
 
     return {
-      groups: structuredPayload['cognito:groups'],
+      groups: structuredPayload['cognito:groups'] || [],
       userId: structuredPayload['sub'],
     };
   }

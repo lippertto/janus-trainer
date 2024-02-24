@@ -1,7 +1,7 @@
 {
   "name": "janus-trainer-dto",
   "version": "0.0.0",
-  "type": "module",
+  "type": "commonjs",
   "private": true,
   "scripts": {
     "build": "tsc",

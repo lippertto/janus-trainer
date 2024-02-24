@@ -60,11 +60,10 @@ async function refreshAccessToken(token: JWT) {
 export const config: AuthOptions = {
   providers: [
     CognitoProvider({
-      clientId: '1fdbm0hhfie17vml90s01gm84j',
+      clientId: process.env.COGNITO_CLIENT_ID!,
       // @ts-expect-error: we actually have to pass null in here.
       clientSecret: null,
-      issuer:
-        'https://cognito-idp.eu-north-1.amazonaws.com/eu-north-1_NtmiRBAZH',
+      issuer: process.env.COGNITO_ISSUER!,
       client: {
         token_endpoint_auth_method: 'none',
       },
@@ -93,7 +92,7 @@ export const config: AuthOptions = {
       janusSession.accessToken = token.accessToken as string;
       janusSession.name = token.name as string;
       janusSession.userId = token.sub!;
-      janusSession.groups = token.groups as Group[];
+      janusSession.groups = (token.groups || []) as Group[];
 
       const backend = new Backend();
       backend.setAccessToken(janusSession.accessToken);

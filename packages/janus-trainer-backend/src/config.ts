@@ -3,8 +3,8 @@ import * as fs from 'fs';
 
 export const config = () => ({
   cognito: {
-    issuer: process.env.OAUTH2_ISSUER,
-    jwksUri: process.env.OAUTH2_JWKS_URI,
+    issuer: `${process.env.COGNITO_BASE_URL}/${process.env.COGNITO_USER_POOL_ID}`,
+    jwksUri: `${process.env.COGNITO_BASE_URL}/${process.env.COGNITO_USER_POOL_ID}/.well-known/jwks.json`,
   },
   cors: {
     origin: process.env.JANUS_APP_HOST,

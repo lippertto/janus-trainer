@@ -34,7 +34,23 @@ COMMIT;
 
 # Infrastructure
 
-Currently, I did not want to manage the infrastructure as code. Hence, the resources were created by click-ops.
+Currently, I did not want to manage the infrastructure as code. Hence, most resources were created by click-ops.
+
+## Cognito resources
+
+Create the user pool
+```shell
+aws cognito-idp create-user-pool \
+    --region eu-north-1 \
+    --cli-input-yaml file://infrastructure/user-pool-dev.yaml
+
+aws cognito-idp create-user-pool-client \
+    --region eu-north-1 \
+    --cli-input-yaml file://infrastructure/user-pool-client-dev.yaml
+```
+
+* manually create groups in user pool
+
 
 # TODOs
 

@@ -44,7 +44,7 @@ export async function getDisciplines(
   );
   if (response.status !== 200) {
     return Promise.reject(
-      new Error(`Failed to get disciplines: ${response.text}`),
+      new Error(`Failed to get disciplines: ${await response.text()}`),
     );
   }
   const result = (await response.json()).value;
