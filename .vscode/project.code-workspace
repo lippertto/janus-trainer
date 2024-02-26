@@ -16,6 +16,10 @@
         "name": "janus-trainer-dto",
         "path": "../packages/janus-trainer-dto"
       },
+      {
+        "name": "janus-trainer-e2e",
+        "path": "../packages/janus-trainer-e2e"
+      },
     ],
     "settings": {
       "files.exclude": {

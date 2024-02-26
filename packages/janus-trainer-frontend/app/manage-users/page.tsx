@@ -5,7 +5,7 @@ import type { JanusSession } from '../../lib/auth';
 import LoginRequired from '../../components/LoginRequired';
 import UserTable from './UserTable';
 import React from 'react';
-import { Backend, type User } from '../../lib/backend';
+import { type User } from '../../lib/backend';
 import { GridRowId } from '@mui/x-data-grid';
 import { EditUserDialog } from './EditUserDialog';
 
@@ -15,6 +15,14 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
+
+import {
+  createUser,
+  deleteUser,
+  getAllUsers,
+  updateUser,
+} from '../../lib/api-users';
+import { showError } from '@/lib/notifications';
 
 function DeleteUserDialog({
   open,
@@ -46,8 +54,6 @@ function DeleteUserDialog({
 }
 
 export default function UserManagementPage() {
-  const backend = React.useRef<Backend>(new Backend());
-
   const [showCreate, setShowCreate] = React.useState<boolean>(false);
   const [showDelete, setShowDelete] = React.useState<boolean>(false);
   const [showEdit, setShowEdit] = React.useState<boolean>(false);
@@ -61,9 +67,13 @@ export default function UserManagementPage() {
     setUserToEdit(null);
     setUsers([]);
     if (session?.accessToken) {
-      backend.current.getAllUsers().then((result) => {
-        setUsers(result);
-      });
+      getAllUsers(session.accessToken)
+        .then((result) => {
+          setUsers(result);
+        })
+        .catch((e: Error) => {
+          showError('Konnte die Nutzer nicht laden', e.message);
+        });
     }
   }, [session?.accessToken]);
 
@@ -95,7 +105,6 @@ export default function UserManagementPage() {
   );
 
   React.useEffect(() => {
-    backend.current.setAccessToken(session?.accessToken);
     refresh();
   }, [session?.accessToken, refresh]);
 
@@ -117,14 +126,14 @@ export default function UserManagementPage() {
         open={showEdit}
         handleClose={() => setShowEdit(false)}
         handleSave={(_1, _2, _3, _4, _5, _6) =>
-          backend.current
-            .updateUser(_1!, _2, _3, _4, _5, _6)
-            .then((updatedUser) => {
+          updateUser(session.accessToken, _1!, _2, _3, _4, _5, _6).then(
+            (updatedUser) => {
               setUserToEdit(null);
               setUsers(
                 users.map((u) => (u.id === userToEdit?.id ? updatedUser : u)),
               );
-            })
+            },
+          )
         }
         user={userToEdit}
       />
@@ -132,10 +141,12 @@ export default function UserManagementPage() {
         open={showCreate}
         handleClose={() => setShowCreate(false)}
         handleSave={(_1, _2, _3, _4, _5, _6) => {
-          backend.current.createUser(_2, _3, _4, _5, _6).then((newUser) => {
-            setUserToEdit(null);
-            setUsers([...users, newUser]);
-          });
+          createUser(session.accessToken, _2, _3, _4, _5, _6).then(
+            (newUser) => {
+              setUserToEdit(null);
+              setUsers([...users, newUser]);
+            },
+          );
         }}
         user={null}
       />
@@ -145,7 +156,7 @@ export default function UserManagementPage() {
         user={userToEdit}
         handleDeleteClick={() => {
           if (userToEdit) {
-            backend.current.deleteUser(userToEdit.id).then(() => {
+            deleteUser(session.accessToken, userToEdit.id).then(() => {
               setUsers(users.filter((u) => u.id !== userToEdit.id));
             });
           }

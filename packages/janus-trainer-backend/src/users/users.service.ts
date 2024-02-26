@@ -30,7 +30,7 @@ import { User } from './user.entity';
 import { Repository } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 
-const USER_POOL_ID = 'eu-north-1_NtmiRBAZH';
+const USER_POOL_ID = process.env.COGNITO_USER_POOL_ID;
 
 interface ParsedCognitoUser {
   username: string;

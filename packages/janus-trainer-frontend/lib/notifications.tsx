@@ -14,6 +14,7 @@ export function showError(
     finalMessage = message;
   }
   enqueueSnackbar(finalMessage, {
+    persist: true,
     variant: 'error',
     action: (snackbarId) => (
       <Button

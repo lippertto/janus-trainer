@@ -1,11 +1,8 @@
 import dayjs from 'dayjs';
 import {
-  Group,
   TrainingCreateRequestDto,
   TrainingDto,
   TrainingUpdateRequestDto,
-  UserDto,
-  type UserUpdateRequestDto,
 } from 'janus-trainer-dto';
 
 type CompensationResponse = {
@@ -216,87 +213,6 @@ export class Backend {
     };
   }
 
-  async getAllUsers(): Promise<User[]> {
-    const response = await fetch(this.withPath('/users'), {
-      headers: this.authorizationHeader(),
-    });
-    let result: User[];
-    try {
-      result = (await response.json()).value;
-    } catch (e) {
-      console.log(JSON.stringify(e));
-      return [];
-    }
-
-    return result;
-  }
-
-  async updateUser(
-    id: string,
-    name: string,
-    email: string,
-    isTrainer: boolean,
-    isAdmin: boolean,
-    iban?: string,
-  ): Promise<UserDto> {
-    const groups = [];
-    if (isTrainer) {
-      groups.push(Group.TRAINERS);
-    }
-    if (isAdmin) {
-      groups.push(Group.ADMINS);
-    }
-
-    const request: UserUpdateRequestDto = {
-      email: email.trim(),
-      name: name.trim(),
-      iban: iban?.trim(),
-      groups: groups,
-    };
-
-    const response = await fetch(this.withPath(`/users/${id}`), {
-      method: 'PUT',
-      body: JSON.stringify(request),
-      headers: {
-        ...this.authorizationHeader(),
-        'Content-Type': 'application/json',
-      },
-    });
-    return (await response.json()) as UserDto;
-  }
-
-  async createUser(
-    name: string,
-    email: string,
-    isTrainer: boolean,
-    isAdmin: boolean,
-    iban?: string,
-  ): Promise<UserDto> {
-    const groups = [];
-    if (isTrainer) {
-      groups.push(Group.TRAINERS);
-    }
-    if (isAdmin) {
-      groups.push(Group.ADMINS);
-    }
-
-    const response = await fetch(this.withPath(`/users`), {
-      method: 'POST',
-      body: JSON.stringify({
-        email: email.trim(),
-        name: name.trim(),
-        iban: iban?.trim(),
-        groups: groups,
-      }),
-      headers: {
-        ...this.authorizationHeader(),
-        'Content-Type': 'application/json',
-      },
-    });
-
-    return (await response.json()) as UserDto;
-  }
-
   async getTrainersActiveInPeriod(
     start: dayjs.Dayjs,
     end: dayjs.Dayjs,
@@ -309,15 +225,6 @@ export class Backend {
     );
     const trainers = (await response.json()).value;
     return trainers as Trainer[];
-  }
-
-  async deleteUser(id: string): Promise<void> {
-    await fetch(this.withPath(`/users/${id}`), {
-      method: 'DELETE',
-      headers: {
-        ...this.authorizationHeader(),
-      },
-    });
   }
 }
 

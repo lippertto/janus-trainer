@@ -18,7 +18,8 @@
     "format": "eslint .",
     "format:fix": "eslint . --fix",
     "lint": "yarn workspace janus-trainer-frontend run lint",
-    "prepare": "husky"
+    "prepare": "husky",
+    "test:e2e": "yarn workspace janus-trainer-e2e test"
   },
   "packageManager": "yarn@4.1.0",
   "devDependencies": {
