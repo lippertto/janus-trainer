@@ -56,16 +56,13 @@ aws cognito-idp create-user-pool-client \
 
 ## Open points
 * Bug: Add training, leave Gruppe empty, save
+* Bug: Enter dates by keyboard
 * Run tests on pull requests, deploy on main
-* Add end to end tests (for dev env)
 * Find out what happens to log-in session after update. (users have to log out and in to get things working)
-* Exception handling with error boundaries
 * Allow to go from compensation page to validate page with specific dates+trainer
 * Put secrets into actual secrets
 * Run migrations in CI
-* Create test environment
 * Add lerna and nx
-* Add manual cloudformation scripts for cognito (and other config)
 * Concept for management of classes
 
 ## Refinement

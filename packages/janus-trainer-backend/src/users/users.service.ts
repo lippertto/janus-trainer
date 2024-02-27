@@ -266,6 +266,7 @@ export class UsersService {
     groups: Group[],
     iban?: string,
   ): Promise<UserDto> {
+    this.log.log(`Updating User ${cognitoId}`);
     const client = new CognitoIdentityProviderClient({ region: 'eu-north-1' });
     try {
       await client.send(

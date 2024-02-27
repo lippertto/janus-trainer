@@ -17,6 +17,7 @@ import { Discipline } from './disciplines/discipline.entity';
 import { HolidaysModule } from './holidays/holidays.module';
 import { Holiday } from './holidays/holiday.entity';
 import { SharedModule } from './shared/shared.module';
+import { SystemModule } from './system/system.module';
 
 const providers: Provider[] = [];
 
@@ -41,6 +42,7 @@ if (config().cors.origin && !config().cors.origin.includes('localhost')) {
     DisciplineModule,
     HolidaysModule,
     SharedModule,
+    SystemModule,
   ],
   providers: providers,
 })

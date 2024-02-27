@@ -36,17 +36,24 @@ export async function deleteDiscipline(
 export async function getDisciplines(
   accessToken: string,
 ): Promise<DisciplineDto[]> {
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_BACKEND_URL}/disciplines`,
-    {
-      headers: { Authorization: `Bearer ${accessToken}` },
-    },
-  );
-  if (response.status !== 200) {
-    return Promise.reject(
-      new Error(`Failed to get disciplines: ${await response.text()}`),
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}/disciplines`,
+      {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      },
     );
+
+    if (response.status !== 200) {
+      return Promise.reject(
+        new Error(`Failed to get disciplines: ${await response.text()}`),
+      );
+    }
+    const result = (await response.json()).value;
+    return result as DisciplineDto[];
+  } catch (e) {
+    console.log(JSON.stringify(e));
+
+    throw e;
   }
-  const result = (await response.json()).value;
-  return result as DisciplineDto[];
 }

@@ -36,7 +36,7 @@ const loginToCognito = (username: string, password: string) => {
   cy.visit('/');
   cy.get('[data-testid="PersonOutlineIcon"] > path').click();
   cy.get('.MuiList-root > .MuiButtonBase-root').click();
-  cy.get('span').click();
+  cy.contains('Sign in with Cognito').click();
 
   cy.origin(
     Cypress.env('cognito_domain'),

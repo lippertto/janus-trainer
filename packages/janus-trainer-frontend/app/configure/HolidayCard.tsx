@@ -80,6 +80,7 @@ function HolidayTable({
   ];
   return (
     <DataGrid
+      data-testid="holiday-table"
       rows={rows}
       columns={columns}
       initialState={{
@@ -195,6 +196,8 @@ function EnterHolidayDialog({
             }}
             slotProps={{
               textField: {
+                // we have to use id, because data-testid is not passed on
+                id: 'holiday-date-picker-start',
                 error: !!startErrorMessage,
                 helperText: startErrorMessage,
               },
@@ -210,6 +213,7 @@ function EnterHolidayDialog({
             minDate={start}
             slotProps={{
               textField: {
+                id: 'holiday-date-picker-end',
                 error: !!endErrorMessage,
                 helperText: endErrorMessage,
               },
@@ -217,6 +221,7 @@ function EnterHolidayDialog({
           />
           <TextField
             label="Beschreibung"
+            data-testid="holiday-text-field-description"
             value={name}
             onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
               setName(event.target.value);
@@ -239,6 +244,7 @@ function EnterHolidayDialog({
           Abbrechen
         </Button>
         <Button
+          data-testid="holiday-button-submit"
           disabled={notYetValid}
           onClick={() => {
             handleSave(start!, end!, name);
@@ -299,6 +305,7 @@ export default function HolidayCard({
               if (!value) return;
               setHolidayYear(value.year());
             }}
+            sx={{ mb: 3 }}
           />
 
           <HolidayTable
@@ -311,6 +318,7 @@ export default function HolidayCard({
             onClick={() => {
               setShowEnterDialog(true);
             }}
+            data-testid="add-holiday-button"
           >
             Feiertag hinzufügen
           </Button>

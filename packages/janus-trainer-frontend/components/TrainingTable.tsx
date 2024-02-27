@@ -172,6 +172,22 @@ function buildGridColumns(
       renderEditCell: renderDateCell,
     },
     {
+      field: 'warnings',
+      headerName: '',
+      renderCell: (params) => {
+        const dateMessage = warningForDate(params.row.date, holidays);
+        if (dateMessage) {
+          return (
+            <Tooltip title={dateMessage}>
+              <WarningAmberIcon sx={{ color: 'orange' }} />
+            </Tooltip>
+          );
+        }
+        return null;
+      },
+      flex: 0.5,
+    },
+    {
       field: 'userName',
       headerName: 'Übungsleitung',
       editable: true,
@@ -352,22 +368,6 @@ function buildGridColumns(
             return [];
         }
       },
-    },
-    {
-      field: 'warnings',
-      headerName: '',
-      renderCell: (params) => {
-        const dateMessage = warningForDate(params.row.date, holidays);
-        if (dateMessage) {
-          return (
-            <Tooltip title={dateMessage}>
-              <WarningAmberIcon sx={{ color: 'orange' }} />
-            </Tooltip>
-          );
-        }
-        return null;
-      },
-      flex: 0.5,
     },
   ];
 }

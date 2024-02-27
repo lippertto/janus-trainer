@@ -4,6 +4,7 @@ import React from 'react';
 import { useSession } from 'next-auth/react';
 
 import Grid from '@mui/material/Unstable_Grid2';
+import Button from '@mui/material/Button';
 import { GridRowId } from '@mui/x-data-grid';
 
 import dayjs from 'dayjs';
@@ -34,6 +35,30 @@ function compareByNameProperty(
     return 1;
   }
   return 0;
+}
+
+function clearDatabaseButton(accessToken: string, refresh: () => void) {
+  if (process.env.NEXT_PUBLIC_ENVIRONMENT === 'production') {
+    return null;
+  }
+  return (
+    <Grid xs={1}>
+      <Button
+        data-testid="configure-button-clear-database"
+        color="error"
+        onClick={() => {
+          fetch(
+            `${process.env.NEXT_PUBLIC_BACKEND_URL}/system/clear-database`,
+            {
+              headers: { Authorization: `Bearer ${accessToken}` },
+            },
+          ).then(() => refresh());
+        }}
+      >
+        Datenbank leeren
+      </Button>
+    </Grid>
+  );
 }
 
 export default function Page() {
@@ -109,12 +134,8 @@ export default function Page() {
     [session?.accessToken, holidays, setHolidays],
   );
 
-  React.useEffect(() => {
-    if (!session?.accessToken) {
-      return;
-    }
-
-    getDisciplines(session.accessToken)
+  const loadDisciplines = React.useCallback((accessToken: string) => {
+    getDisciplines(accessToken)
       .then((d) => d.toSorted(compareByNameProperty))
       .then((d) => {
         setDisciplines(d);
@@ -122,18 +143,36 @@ export default function Page() {
       .catch((e: Error) => {
         showError('Konnte die Sportarten nicht laden.', e.message);
       });
-  }, [session?.accessToken]);
+  }, []);
+
+  const loadHolidays = React.useCallback(
+    (accessToken: string) => {
+      if (!holidayYear) {
+        setHolidays([]);
+        return;
+      }
+      getHolidays(accessToken, [holidayYear])
+        .then((h) => setHolidays(h))
+        .catch((e: Error) => {
+          showError('Konnte die Feiertage nicht laden.', e.message);
+        });
+    },
+    [holidayYear],
+  );
 
   React.useEffect(() => {
-    if (!session?.accessToken || !holidayYear) {
+    if (!session?.accessToken) {
       return;
     }
-    getHolidays(session.accessToken, [holidayYear])
-      .then((h) => setHolidays(h))
-      .catch((e: Error) => {
-        showError('Konnte die Feiertage nicht laden.', e.message);
-      });
-  }, [session?.accessToken, holidayYear]);
+    loadDisciplines(session.accessToken);
+  }, [session?.accessToken, loadDisciplines]);
+
+  React.useEffect(() => {
+    if (!session?.accessToken) {
+      return;
+    }
+    loadHolidays(session.accessToken);
+  }, [session?.accessToken, loadHolidays]);
 
   if (authenticationStatus !== 'authenticated') {
     return <LoginRequired authenticationStatus={authenticationStatus} />;
@@ -158,6 +197,10 @@ export default function Page() {
             setHolidayYear={setHolidayYear}
           />
         </Grid>
+        {clearDatabaseButton(session.accessToken, () => {
+          loadDisciplines(session.accessToken);
+          loadHolidays(session.accessToken);
+        })}
       </Grid>
     </>
   );
