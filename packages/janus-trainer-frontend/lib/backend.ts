@@ -61,7 +61,13 @@ export class Backend {
         ...this.authorizationHeader(),
       },
     });
-    return response.status === 201;
+    if (response.status !== 201) {
+      console.log(
+        `Will not let user log in. Backend says status=${response.status}: text=${await response.text()}`,
+      );
+      return false;
+    }
+    return true;
   }
 
   async addTraining(

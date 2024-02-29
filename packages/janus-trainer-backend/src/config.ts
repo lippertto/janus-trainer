@@ -1,4 +1,3 @@
-import 'dotenv';
 import * as fs from 'fs';
 
 export const config = () => ({

@@ -9,6 +9,7 @@
     "build": "nest build --webpack",
     "clean": "rm -rf dist",
     "start:dev": "yarn run build && serverless offline --host 0.0.0.0",
+    "start:test": "yarn run build && NODE_ENV=test serverless offline --host 0.0.0.0",
     "db:reset": "",
     "test": "jest",
     "test:watch": "jest --watch",

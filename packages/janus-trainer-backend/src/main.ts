@@ -9,7 +9,7 @@ let server: Handler;
 
 async function bootstrap(): Promise<Handler> {
   const app = await NestFactory.create(AppModule, {
-    // logger: ['log', 'warn', 'error', 'fatal']
+    logger: ['log', 'warn', 'error', 'fatal', 'debug', 'verbose'],
   });
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
   app.enableCors(config().cors);

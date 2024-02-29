@@ -64,6 +64,7 @@ aws cognito-idp create-user-pool-client \
 * Run migrations in CI
 * Add lerna and nx
 * Concept for management of classes
+* Use Winston for logging in backend
 
 ## Refinement
 * Read up on .env files best practices
