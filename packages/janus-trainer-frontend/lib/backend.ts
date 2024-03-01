@@ -54,6 +54,7 @@ export class Backend {
   }
 
   async logIn(): Promise<boolean> {
+    console.log(`Posting to ${this.withPath("/auth")} with authorization ${JSON.stringify(this.authorizationHeader())}`)
     const response = await fetch(this.withPath('/auth'), {
       method: 'POST',
       cache: 'no-cache',
