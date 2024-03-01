@@ -21,6 +21,9 @@ const StyledSnackbarContent = styled(MaterialDesignContent)(() => ({
   '&.notistack-MuiContent-error': {
     fontFamily: theme.typography.fontFamily,
   },
+  '&.notistack-MuiContent-warning': {
+    fontFamily: theme.typography.fontFamily,
+  },
 }));
 
 export default function JanusProviders({
@@ -35,6 +38,7 @@ export default function JanusProviders({
           Components={{
             success: StyledSnackbarContent,
             error: StyledSnackbarContent,
+            warning: StyledSnackbarContent,
           }}
         >
           <SessionProvider>{children}</SessionProvider>

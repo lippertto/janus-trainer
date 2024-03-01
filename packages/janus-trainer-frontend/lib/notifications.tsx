@@ -31,3 +31,7 @@ export function showError(
 export function showSuccess(message: string) {
   enqueueSnackbar(message, { variant: 'success', autoHideDuration: 3000 });
 }
+
+export function showWarning(message: string) {
+  enqueueSnackbar(message, { variant: 'warning', autoHideDuration: 3000 });
+}

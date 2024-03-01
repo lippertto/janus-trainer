@@ -55,7 +55,6 @@ aws cognito-idp create-user-pool-client \
 # TODOs
 
 ## Open points
-* Bug: Add training, leave Gruppe empty, save
 * Bug: Enter dates by keyboard
 * Run tests on pull requests, deploy on main
 * Find out what happens to log-in session after update. (users have to log out and in to get things working)

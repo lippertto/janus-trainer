@@ -10,6 +10,7 @@ import {
   GridRowId,
   GridRowModes,
   GridRowModesModel,
+  GridRowParams,
   GridToolbarContainer,
   GridValueGetterParams,
   GridValueSetterParams,
@@ -48,6 +49,7 @@ import {
 } from '@/lib/datagrid-utils';
 import Tooltip, { TooltipProps, tooltipClasses } from '@mui/material/Tooltip';
 import { styled } from '@mui/material/styles';
+import { showWarning } from '@/lib/notifications';
 
 require('dayjs/locale/de');
 dayjs.locale('de');
@@ -82,13 +84,16 @@ function dateIsValid(date: Date | string) {
   return !dayjs(date).isAfter(dayjs());
 }
 
-function participantCountIsValid(n: number) {
-  return n && n >= 0;
+function participantCountIsValid(n: number): boolean {
+  return !!n && n >= 0;
 }
 
 function trainingIsValid(t: TrainingDto): boolean {
   if (!dateIsValid(t.date)) return false;
-  if (!participantCountIsValid(t.participantCount)) return false;
+  if (!participantCountIsValid(t.participantCount)) {
+    console.log(t.participantCount);
+    return false;
+  }
   return true;
 }
 
@@ -283,13 +288,7 @@ function buildGridColumns(
       headerName: '',
       flex: 1,
       cellClassName: 'actions',
-      getActions: ({ id }) => {
-        const thisTraining = trainings.find((t) => t.id === id) as Row;
-        if (!thisTraining) {
-          // this happens when we render after add a new training has been added and the state has not yet been fully updated.
-          return [];
-        }
-
+      getActions: ({ id, row }: GridRowParams<Row>) => {
         const isInEditMode = rowModesModel[id]?.mode === GridRowModes.Edit;
         if (isInEditMode) {
           return [
@@ -313,7 +312,7 @@ function buildGridColumns(
           ];
         }
 
-        if (thisTraining.status === TrainingStatusDto.NEW) {
+        if (row.status === TrainingStatusDto.NEW) {
           return [
             <GridActionsCellItem
               icon={<EditIcon />}
@@ -340,12 +339,8 @@ function buildGridColumns(
       field: 'approvalActions',
       type: 'actions',
       headerName: '',
-      getActions: ({ id }) => {
-        const thisTraining = trainings.find((t) => t.id === id);
-        if (!thisTraining) {
-          return [];
-        }
-        switch (thisTraining.status) {
+      getActions: ({ id, row }: GridRowParams) => {
+        switch (row.status) {
           case TrainingStatusDto.NEW:
             return [
               <GridActionsCellItem
@@ -365,6 +360,8 @@ function buildGridColumns(
               />,
             ];
           case TrainingStatusDto.COMPENSATED:
+            return [];
+          default:
             return [];
         }
       },
@@ -402,10 +399,10 @@ function TrainingTableToolbar({
           onClick={() => {
             const id = uuidv4();
             setRows((oldRows: TrainingDto[]): TrainingDto[] => {
+              // find a template to be used for the new row
               let template = null;
               if (oldRows.length === 0) {
                 template = {
-                  date: dayjs().format('YYYY-MM-DD'),
                   discipline: defaultDiscipline,
                   group: '',
                   compensationCents: 1900,
@@ -424,6 +421,7 @@ function TrainingTableToolbar({
                   isNew: true,
                   participantCount: 0,
                   status: TrainingStatusDto.NEW,
+                  date: dayjs().format('YYYY-MM-DD'),
                 } as Row,
               ];
             });
@@ -432,7 +430,6 @@ function TrainingTableToolbar({
               [id]: {
                 mode: GridRowModes.Edit,
                 fieldToFocus: 'date',
-                deleteValue: true,
               },
             }));
           }}
@@ -540,9 +537,25 @@ export default function TrainingTable({
   /** This function is called when an edited row is saved. It will synchronize the changes to the backend. */
   const processRowUpdate = React.useCallback(
     async (updatedRow: Row, originalRow: Row): Promise<Row> => {
+      // TODO find out why this happens
+      if (!updatedRow?.id) return originalRow;
+
       if (!trainingIsValid(updatedRow)) {
-        console.log('Training is not valid!');
-        return originalRow;
+        if (updatedRow.isNew) {
+          showWarning('Das eingegebene Training ist nicht valide.');
+          // we need to use setTimeout or else the row will not stay in edit-mode
+          setTimeout(() =>
+            setRowModesModel((oldModel) => ({
+              ...oldModel,
+              [updatedRow.id]: {
+                mode: GridRowModes.Edit,
+              },
+            })),
+          );
+          return updatedRow;
+        } else {
+          return originalRow;
+        }
       }
       if (updatedRow.isNew) {
         return backend.current
