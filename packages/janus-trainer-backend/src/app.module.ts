@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Logger, Module } from '@nestjs/common';
 import type { Provider } from '@nestjs/common';
 import { config } from './config';
 import { APP_GUARD } from '@nestjs/core';
@@ -18,8 +18,8 @@ import { HolidaysModule } from './holidays/holidays.module';
 import { Holiday } from './holidays/holiday.entity';
 import { SharedModule } from './shared/shared.module';
 import { SystemModule } from './system/system.module';
-
-const providers: Provider[] = [];
+import { WinstonModule } from 'nest-winston';
+const providers: Provider[] = [Logger];
 
 if (config().cors.origin && !config().cors.origin.includes('localhost')) {
   providers.push({ provide: APP_GUARD, useClass: CognitoJwtGuard });
@@ -35,6 +35,7 @@ if (config().cors.origin && !config().cors.origin.includes('localhost')) {
         entities: [Training, User, Discipline, Holiday],
       }),
     }),
+    WinstonModule.forRoot(config().winston),
     TrainingsModule,
     CompensationsModule,
     UsersModule,

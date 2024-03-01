@@ -1,15 +1,16 @@
-import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { Discipline } from './discipline.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { Logger } from 'winston';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 
 @Injectable()
 export class DisciplineService {
-  private readonly log: Logger = new Logger();
-
   constructor(
     @InjectRepository(Discipline)
     private repo: Repository<Discipline>,
+    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
   ) {}
 
   async getAllDisciplines(): Promise<Discipline[]> {

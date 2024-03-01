@@ -2,9 +2,9 @@ import {
   ConflictException,
   HttpException,
   HttpStatus,
+  Inject,
   Injectable,
   InternalServerErrorException,
-  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { UserDto, Group } from 'janus-trainer-dto';
@@ -29,6 +29,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './user.entity';
 import { Repository } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
+import { Logger } from 'winston';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 
 const USER_POOL_ID = process.env.COGNITO_USER_POOL_ID;
 
@@ -78,11 +80,10 @@ async function findUsersForGroup(
 
 @Injectable()
 export class UsersService {
-  private readonly log: Logger = new Logger();
-
   constructor(
     @InjectRepository(User)
     private userRepository: Repository<User>,
+    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
   ) {}
 
   /** Lists all users which are stored in cognito.  */
@@ -92,9 +93,9 @@ export class UsersService {
     const allUsers = new Map(
       (await this.listAllUsers(client)).map((user) => [user.username, user]),
     );
-    this.log.debug(`Found ${allUsers.size} users in cognito.`);
+    this.logger.debug(`Found ${allUsers.size} users in cognito.`);
     const allGroups = await this.listGroups(client);
-    this.log.debug(`Found groups: ${JSON.stringify(allGroups)} in cognito`);
+    this.logger.debug(`Found groups: ${JSON.stringify(allGroups)} in cognito`);
 
     for (let i = 0; i < allGroups.length; i++) {
       const thisGroup = allGroups[i];
@@ -169,7 +170,7 @@ export class UsersService {
       )) as AdminCreateUserResponse;
     } catch (e) {
       if (e instanceof UsernameExistsException) {
-        this.log.error(
+        this.logger.error(
           `Could not create user. User with email ${email} already exists.`,
         );
         throw new ConflictException({
@@ -179,7 +180,7 @@ export class UsersService {
           },
         });
       }
-      this.log.error(`Failed to create user: ${e.message}`);
+      this.logger.error(`Failed to create user: ${e.message}`);
       throw new InternalServerErrorException();
     }
     const username = createResponse.User.Username;
@@ -194,7 +195,7 @@ export class UsersService {
           }),
         );
       } catch (e) {
-        this.log.error(`Failed to add user ${username} to group ${g}`);
+        this.logger.error(`Failed to add user ${username} to group ${g}`);
       }
     });
 
@@ -266,7 +267,7 @@ export class UsersService {
     groups: Group[],
     iban?: string,
   ): Promise<UserDto> {
-    this.log.log(`Updating User ${cognitoId}`);
+    this.logger.info(`Updating User ${cognitoId}`);
     const client = new CognitoIdentityProviderClient({ region: 'eu-north-1' });
     try {
       await client.send(
@@ -293,7 +294,7 @@ export class UsersService {
         UserAttributes: attributes,
       }),
     );
-    this.log.log(`Updated attributes for user ${cognitoId} in cognito`);
+    this.logger.info(`Updated attributes for user ${cognitoId} in cognito`);
 
     this.ensureGroups(client, cognitoId, groups);
 
@@ -306,7 +307,7 @@ export class UsersService {
     currentUser.name = name;
     await this.userRepository.save(currentUser);
 
-    this.log.log(`Updated attributes for user ${cognitoId} in database`);
+    this.logger.info(`Updated attributes for user ${cognitoId} in database`);
 
     return {
       id: currentUser.id,
@@ -325,7 +326,7 @@ export class UsersService {
     memberOfGroup: boolean,
   ) {
     if (memberOfGroup) {
-      this.log.log(`Adding ${username} to group ${group}`);
+      this.logger.info(`Adding ${username} to group ${group}`);
       await client.send(
         new AdminAddUserToGroupCommand({
           Username: username,
@@ -334,7 +335,7 @@ export class UsersService {
         }),
       );
     } else {
-      this.log.log(`Removing ${username} from group ${group}`);
+      this.logger.info(`Removing ${username} from group ${group}`);
       await client.send(
         new AdminRemoveUserFromGroupCommand({
           Username: username,
@@ -365,7 +366,7 @@ export class UsersService {
   async deleteUser(id: string): Promise<void> {
     const dbUser = await this.userRepository.findOneBy({ id: id });
     if (!dbUser) {
-      this.log.warn(`User with ${id} not found. Will not delete it.`);
+      this.logger.warn(`User with ${id} not found. Will not delete it.`);
       throw new HttpException('OK', HttpStatus.NO_CONTENT);
     }
 
@@ -378,7 +379,7 @@ export class UsersService {
     try {
       await client.send(deleteUserRequest);
     } catch (e) {
-      this.log.error(`Failed to delete user: ${e.message}`);
+      this.logger.error(`Failed to delete user: ${e.message}`);
       throw new InternalServerErrorException();
     }
 

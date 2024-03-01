@@ -1,4 +1,5 @@
-import * as fs from 'fs';
+import * as winston from 'winston';
+import { utilities as nestWinstonModuleUtilities } from 'nest-winston';
 
 export const config = () => ({
   cognito: {
@@ -7,15 +8,6 @@ export const config = () => ({
   },
   cors: {
     origin: process.env.JANUS_APP_HOST,
-  },
-  nestFactoryOptions: {
-    httpsOptions:
-      process.env.HTTPS_KEY && process.env.HTTPS_CERT
-        ? {
-            key: fs.readFileSync(process.env.HTTPS_KEY),
-            cert: fs.readFileSync(process.env.HTTPS_CERT),
-          }
-        : undefined,
   },
   port: parseInt(process.env.PORT),
   typeorm: {
@@ -27,5 +19,15 @@ export const config = () => ({
     database: process.env.POSTGRES_DATABASE,
     synchronize: process.env.SYNCHRONIZE_DATABASE ? true : false,
     migrations: ['src/migrations/*.ts'],
+  },
+  winston: {
+    defaultMeta: { service: 'janus-trainer-app-backend' },
+    format:
+      process.env.NODE_ENV === 'development'
+        ? nestWinstonModuleUtilities.format.nestLike('JanusTrainerApp', {
+            colors: true,
+          })
+        : winston.format.json(),
+    transports: [new winston.transports.Console({})],
   },
 });

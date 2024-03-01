@@ -1,7 +1,9 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectEntityManager } from '@nestjs/typeorm';
 import { EntityManager } from 'typeorm';
 import dayjs from 'dayjs';
+import { Logger } from 'winston';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 
 export interface CompensationSummary {
   correspondingIds: string[];
@@ -16,11 +18,10 @@ export interface CompensationSummary {
 
 @Injectable()
 export class CompensationsService {
-  private readonly log: Logger = new Logger();
-
   constructor(
     @InjectEntityManager()
     private em: EntityManager,
+    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
   ) {}
 
   /**

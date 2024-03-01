@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Training } from './training.entity';
 import { Repository, Between } from 'typeorm';
@@ -6,25 +6,26 @@ import { UsersService } from '../users/users.service';
 import dayjs from 'dayjs';
 import { DisciplineService } from '../disciplines/discliplines.service';
 import { TrainingStatusDto } from 'janus-trainer-dto';
+import { Logger } from 'winston';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 
 /** The relations that the orm should retrieve */
 const RELATIONS_TO_RETRIEVE = { user: true, discipline: true };
 
 @Injectable()
 export class TrainingsService {
-  private readonly log: Logger = new Logger();
-
   constructor(
     @InjectRepository(Training)
     private readonly trainingsRepository: Repository<Training>,
     private readonly userService: UsersService,
     private readonly disciplineService: DisciplineService,
+    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
   ) {}
 
   async getOneTraining(id: string): Promise<Training | null> {
     const idAsNumber = parseInt(id);
     if (Number.isNaN(idAsNumber)) {
-      this.log.warn(`id '${id}' is not a number`);
+      this.logger.warn(`id '${id}' is not a number`);
       return Promise.resolve(null);
     }
     return this.trainingsRepository.findOne({
@@ -108,7 +109,7 @@ export class TrainingsService {
   async deleteTraining(id: string): Promise<void> {
     const idAsNumber = parseInt(id);
     if (Number.isNaN(idAsNumber)) {
-      this.log.warn("training id '{}' is not a number");
+      this.logger.warn("training id '{}' is not a number");
       return;
     }
     await this.trainingsRepository.delete(idAsNumber);
