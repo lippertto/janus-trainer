@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "clean": "rm -rf .next",
-    "dev": "next dev",
+    "start:dev": "NODE_ENV=development next dev",
     "start:test": "NODE_ENV=test next dev",
     "build": "next build",
     "start": "next start",

@@ -3,7 +3,6 @@ import {
   DataGrid,
   GridActionsCellItem,
   GridColDef,
-  GridEditDateCell,
   GridEditInputCell,
   GridPreProcessEditCellProps,
   GridRenderEditCellParams,
@@ -14,6 +13,7 @@ import {
   GridToolbarContainer,
   GridValueGetterParams,
   GridValueSetterParams,
+  useGridApiContext,
 } from '@mui/x-data-grid';
 import { Backend } from '../lib/backend';
 
@@ -50,6 +50,7 @@ import {
 import Tooltip, { TooltipProps, tooltipClasses } from '@mui/material/Tooltip';
 import { styled } from '@mui/material/styles';
 import { showWarning } from '@/lib/notifications';
+import { DatePicker } from '@mui/x-date-pickers';
 
 require('dayjs/locale/de');
 dayjs.locale('de');
@@ -106,19 +107,31 @@ const StyledTooltip = styled(({ className, ...props }: TooltipProps) => (
   },
 }));
 
-export function renderDateCell(params: GridRenderEditCellParams) {
-  const { error } = params;
-  // the div is required for the Tooltip. The GridEditDateCell cannot be wrapped directly.
+/** We have to use the MUI X DatePicker. The regular date component gets confused with our setValue/getValue logic. */
+function JanusGridEditDateCell(params: {
+  id: GridRowId;
+  field: string;
+  value?: dayjs.Dayjs;
+  error?: string;
+}) {
+  const apiRef = useGridApiContext();
+  const { error, id, field, value } = params;
   const propsForDateCell = { ...params, error: !!error };
+
+  const handleChange = (newValue: dayjs.Dayjs | null) => {
+    apiRef.current.setEditCellValue({ id, field, value: newValue });
+  };
+
+  // the div is required for the Tooltip. The GridEditDateCell cannot be wrapped directly.
   return (
-    <StyledTooltip open={!!error} title={error}>
-      <div>
-        <GridEditDateCell
-          {...propsForDateCell}
-          inputProps={{ max: new Date() }}
-        />
-      </div>
-    </StyledTooltip>
+    <div>
+      <DatePicker
+        {...propsForDateCell}
+        value={value}
+        onChange={handleChange}
+        maxDate={dayjs()}
+      />
+    </div>
   );
 }
 
@@ -141,7 +154,6 @@ function preProcessEditCellPropsForNonEmptyString(
 }
 
 function buildGridColumns(
-  trainings: TrainingDto[],
   disciplines: DisciplineDto[],
   rowModesModel: GridRowModesModel,
   holidays: HolidayDto[],
@@ -174,7 +186,9 @@ function buildGridColumns(
           error: undefined,
         };
       },
-      renderEditCell: renderDateCell,
+      renderEditCell: (params: GridRenderEditCellParams) => {
+        return <JanusGridEditDateCell {...params} />;
+      },
     },
     {
       field: 'warnings',
@@ -597,7 +611,6 @@ export default function TrainingTable({
   }, [authenticationStatus, session.accessToken]);
 
   const columns = buildGridColumns(
-    trainings,
     disciplines,
     rowModesModel,
     holidays,
