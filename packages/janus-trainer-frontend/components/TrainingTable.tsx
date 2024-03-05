@@ -1,4 +1,7 @@
 import React from 'react';
+
+import dayjs from 'dayjs';
+
 import {
   DataGrid,
   GridActionsCellItem,
@@ -29,12 +32,14 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 
-import { v4 as uuidv4 } from 'uuid';
+import Tooltip, { TooltipProps, tooltipClasses } from '@mui/material/Tooltip';
+
 import { useSession } from 'next-auth/react';
 
-import dayjs from 'dayjs';
 import { JanusSession } from '../lib/auth';
 import DeleteTrainingDialog from './DeleteTrainingDialog';
+import AddTrainingDialog from './AddTrainingDialog';
+
 import {
   DisciplineDto,
   HolidayDto,
@@ -47,10 +52,10 @@ import {
   getDateFromIso8601,
   toHumanReadableDate,
 } from '@/lib/datagrid-utils';
-import Tooltip, { TooltipProps, tooltipClasses } from '@mui/material/Tooltip';
+import { showError, showSuccess } from '@/lib/notifications';
 import { styled } from '@mui/material/styles';
-import { showWarning } from '@/lib/notifications';
 import { DatePicker } from '@mui/x-date-pickers';
+import { addTraining } from '@/lib/api-trainings';
 
 require('dayjs/locale/de');
 dayjs.locale('de');
@@ -65,20 +70,6 @@ function warningForDate(d: string, holidays: HolidayDto[]): string | null {
     }
   }
   return null;
-}
-
-/**
- *  Obtain the newest training (to create a new entry to the table).
- * Since the ISO 8601 dates can be sorted alphabetically, we only do a string comparison here.
- */
-function getNewestTraining(trainings: TrainingDto[]): TrainingDto {
-  return trainings
-    .toSorted((a, b) => {
-      if (a.date < b.date) return -1;
-      if (b.date > a.date) return 1;
-      return 0;
-    })
-    .slice(-1)[0];
 }
 
 function dateIsValid(date: Date | string) {
@@ -384,68 +375,22 @@ function buildGridColumns(
 }
 
 type TrainingTableToolbarProps = {
-  refresh: () => void;
-  setRows: SetTrainings;
-  setRowModesModel: (
-    newModel: (oldModel: GridRowModesModel) => GridRowModesModel,
-  ) => void;
-  userName: string;
-  userId: string;
-  /** A default discipline to be used for complete new entries. */
-  defaultDiscipline: DisciplineDto;
-  allowAddTraining: boolean;
+  handleRefresh: () => void;
+  handleAddTraining?: () => void;
 };
 
 function TrainingTableToolbar({
-  refresh,
-  setRows,
-  setRowModesModel,
-  userName,
-  userId,
-  defaultDiscipline,
-  allowAddTraining,
+  handleRefresh,
+  handleAddTraining,
 }: TrainingTableToolbarProps) {
   return (
     <GridToolbarContainer>
-      {allowAddTraining ? (
+      {handleAddTraining ? (
         <Button
+          data-testid={'add-training-button'}
           startIcon={<AddIcon />}
           onClick={() => {
-            const id = uuidv4();
-            setRows((oldRows: TrainingDto[]): TrainingDto[] => {
-              // find a template to be used for the new row
-              let template = null;
-              if (oldRows.length === 0) {
-                template = {
-                  discipline: defaultDiscipline,
-                  group: '',
-                  compensationCents: 1900,
-                  userName: userName,
-                  userId: userId,
-                };
-              } else {
-                template = { ...getNewestTraining(oldRows) };
-              }
-
-              return [
-                ...oldRows,
-                {
-                  ...template,
-                  id: id,
-                  isNew: true,
-                  participantCount: 0,
-                  status: TrainingStatusDto.NEW,
-                  date: dayjs().format('YYYY-MM-DD'),
-                } as Row,
-              ];
-            });
-            setRowModesModel((oldModel) => ({
-              ...oldModel,
-              [id]: {
-                mode: GridRowModes.Edit,
-                fieldToFocus: 'date',
-              },
-            }));
+            handleAddTraining();
           }}
         >
           Training hinzufügen
@@ -453,7 +398,7 @@ function TrainingTableToolbar({
       ) : (
         <></>
       )}
-      <Button startIcon={<RefreshIcon />} onClick={refresh}>
+      <Button startIcon={<RefreshIcon />} onClick={handleRefresh}>
         neu laden
       </Button>
     </GridToolbarContainer>
@@ -489,15 +434,21 @@ export default function TrainingTable({
   approvalMode,
   disciplines = [],
   holidays = [],
+  ...props
 }: TrainingTableProps) {
   const backend = React.useRef(new Backend());
   const [rowModesModel, setRowModesModel] = React.useState<GridRowModesModel>(
     {},
   );
+  const [showAddDialog, setShowAddDialog] = React.useState<boolean>(false);
   const [showDeleteDialog, setShowDeleteDialog] =
     React.useState<boolean>(false);
   const [trainingToDelete, setTrainingToDelete] =
     React.useState<TrainingDto | null>(null);
+
+  const trainingTemplate = trainings
+    ? trainings[trainings.length - 1]
+    : undefined;
 
   const { data, status: authenticationStatus } = useSession();
   const session = data as JanusSession;
@@ -507,11 +458,6 @@ export default function TrainingTable({
       ...rowModesModel,
       [id]: { mode: GridRowModes.View, ignoreModifications: true },
     });
-    // If pressed the cancel button while we were editing a new row, we remove it from the trainings.
-    const editedRow = trainings.find((row) => row.id === id) as Row;
-    if (editedRow!.isNew) {
-      setTrainings(trainings.filter((row) => row.id !== id));
-    }
   };
 
   const handleEditClick = (id: GridRowId) => () => {
@@ -548,6 +494,36 @@ export default function TrainingTable({
     setShowDeleteDialog(false);
   };
 
+  const handleDialogSaveClick = React.useCallback(
+    (
+      disciplineId: string,
+      group: string,
+      participantCount: number,
+      compensation: number,
+      date: string,
+      userId: string,
+    ) => {
+      if (!session?.accessToken) return;
+      addTraining(
+        session?.accessToken,
+        date,
+        disciplineId,
+        group,
+        compensation,
+        participantCount,
+        userId,
+      )
+        .then((savedTraining) => {
+          showSuccess('Training gespeichert');
+          setTrainings([...trainings, savedTraining]);
+        })
+        .catch((e) => {
+          showError('Konnte Training nicht speichern', e.message);
+        });
+    },
+    [session?.accessToken, trainings, setTrainings],
+  );
+
   /** This function is called when an edited row is saved. It will synchronize the changes to the backend. */
   const processRowUpdate = React.useCallback(
     async (updatedRow: Row, originalRow: Row): Promise<Row> => {
@@ -555,53 +531,18 @@ export default function TrainingTable({
       if (!updatedRow?.id) return originalRow;
 
       if (!trainingIsValid(updatedRow)) {
-        if (updatedRow.isNew) {
-          showWarning('Das eingegebene Training ist nicht valide.');
-          // we need to use setTimeout or else the row will not stay in edit-mode
-          setTimeout(() =>
-            setRowModesModel((oldModel) => ({
-              ...oldModel,
-              [updatedRow.id]: {
-                mode: GridRowModes.Edit,
-              },
-            })),
-          );
-          return updatedRow;
-        } else {
-          return originalRow;
-        }
+        return originalRow;
       }
-      if (updatedRow.isNew) {
-        return backend.current
-          .addTraining(
-            updatedRow.date,
-            updatedRow.discipline.id,
-            updatedRow.group,
-            updatedRow.compensationCents,
-            updatedRow.participantCount,
-            session.userId,
-          )
-          .then((createdTraining) => {
-            // update the list of trainings where we replace the created entry with the one from the backend.
-            setTrainings(
-              trainings.map((t) =>
-                t.id === originalRow.id ? createdTraining : t,
-              ),
-            );
-            return createdTraining;
-          });
-      } else {
-        return backend.current.updateTraining(
-          updatedRow.id,
-          updatedRow.date,
-          updatedRow.discipline.id,
-          updatedRow.group,
-          updatedRow.compensationCents,
-          updatedRow.participantCount,
-        );
-      }
+      return backend.current.updateTraining(
+        updatedRow.id,
+        updatedRow.date,
+        updatedRow.discipline.id,
+        updatedRow.group,
+        updatedRow.compensationCents,
+        updatedRow.participantCount,
+      );
     },
-    [trainings, setTrainings, session.userId],
+    [],
   );
 
   React.useEffect(() => {
@@ -651,20 +592,30 @@ export default function TrainingTable({
         }}
         slotProps={{
           toolbar: {
-            refresh,
-            setRows: setTrainings,
-            setRowModesModel,
-            userName: session.name,
-            userId: session.userId,
-            allowAddTraining: approvalMode == false,
-            defaultDiscipline: disciplines.at(0),
+            handleRefresh: refresh,
+            handleAddTraining: approvalMode
+              ? undefined
+              : () => {
+                  setShowAddDialog(true);
+                },
           },
         }}
+        {...props}
       />
       <DeleteTrainingDialog
         open={showDeleteDialog}
         training={trainingToDelete}
         onUserChoice={handleDeleteConfirmation}
+      />
+      <AddTrainingDialog
+        open={showAddDialog}
+        disciplines={disciplines}
+        userId={session.userId}
+        template={trainingTemplate}
+        handleClose={() => {
+          setShowAddDialog(false);
+        }}
+        handleSave={handleDialogSaveClick}
       />
     </>
   );

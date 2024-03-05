@@ -1,9 +1,5 @@
 import dayjs from 'dayjs';
-import {
-  TrainingCreateRequestDto,
-  TrainingDto,
-  TrainingUpdateRequestDto,
-} from 'janus-trainer-dto';
+import { TrainingDto, TrainingUpdateRequestDto } from 'janus-trainer-dto';
 
 type CompensationResponse = {
   periodStart: string;
@@ -68,37 +64,6 @@ export class Backend {
       return false;
     }
     return true;
-  }
-
-  async addTraining(
-    date: string,
-    disciplineId: string,
-    group: string,
-    compensationCents: number,
-    participantCount: number,
-    userId: string,
-  ): Promise<TrainingDto> {
-    const request: TrainingCreateRequestDto = {
-      date,
-      disciplineId,
-      group,
-      compensationCents,
-      participantCount,
-      userId,
-    };
-
-    const response = await fetch(this.withPath('/trainings'), {
-      method: 'POST',
-      body: JSON.stringify(request),
-      cache: 'no-cache',
-      headers: {
-        ...this.authorizationHeader(),
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-    });
-    const result = await response.json();
-    return result as TrainingDto;
   }
 
   async updateTraining(
