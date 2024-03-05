@@ -90,12 +90,17 @@ export default function AddTrainingDialog({
             value={date}
             onChange={(e) => setDate(e)}
             slotProps={{
-              textField: { error: Boolean(dateError), helperText: dateError },
+              textField: {
+                error: Boolean(dateError),
+                helperText: dateError,
+                inputProps: { 'data-testid': 'add-training-date-field' },
+              },
             }}
           />
 
           <TextField
             label="Sportart"
+            data-testid="add-training-discipline-field"
             value={discipline}
             onChange={(event) => {
               console.log(event.target.value);
@@ -113,6 +118,7 @@ export default function AddTrainingDialog({
 
           <TextField
             label="Name der Gruppe"
+            data-testid="add-training-group-field"
             onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
               setGroup(event.target.value);
             }}
@@ -124,6 +130,7 @@ export default function AddTrainingDialog({
           <TextField
             type="number"
             label="Anzahl Teilnehmer"
+            data-testid="add-training-participant-count-field"
             value={participantCount}
             onChange={(e) => setParticipantCount(parseInt(e.target.value))}
             inputProps={{ min: 1 }}
@@ -133,15 +140,26 @@ export default function AddTrainingDialog({
 
           <TextField
             label="Vergütung"
+            data-testid="add-training-compensation-field"
             select
             onChange={(e) => setCompensation(parseInt(e.target.value))}
             value={compensation}
           >
-            <MenuItem value={1600}>16€</MenuItem>
-            <MenuItem value={1900}>19€</MenuItem>
-            <MenuItem value={2100}>21€</MenuItem>
-            <MenuItem value={2400}>24€</MenuItem>
-            <MenuItem value={2700}>27€</MenuItem>
+            <MenuItem data-testid="compensation-1600" value={1600}>
+              16€
+            </MenuItem>
+            <MenuItem data-testid="compensation-1900" value={1900}>
+              19€
+            </MenuItem>
+            <MenuItem data-testid="compensation-2100" value={2100}>
+              21€
+            </MenuItem>
+            <MenuItem data-testid="compensation-2400" value={2400}>
+              24€
+            </MenuItem>
+            <MenuItem data-testid="compensation-2700" value={2700}>
+              27€
+            </MenuItem>
           </TextField>
         </Stack>
       </DialogContent>
@@ -149,6 +167,7 @@ export default function AddTrainingDialog({
         <Button onClick={handleClose}>Abbrechen</Button>
         <Button
           disabled={thereIsAnError}
+          data-testid="add-training-save-button"
           onClick={() => {
             if (date) {
               handleSave(

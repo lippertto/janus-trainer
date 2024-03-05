@@ -24,6 +24,7 @@ function menuItemsLoggedIn() {
 function menuItemsLoggedOut(closeMenu: () => void) {
   return (
     <MenuItem
+      data-testid="login-button"
       onClick={() => {
         closeMenu();
         signIn();
@@ -41,7 +42,7 @@ function authMenu(
 ) {
   return (
     <Menu
-      id="menu-appbar"
+      data-testid="menu-appbar"
       anchorEl={anchorEl}
       anchorOrigin={{
         vertical: 'top',
@@ -89,7 +90,12 @@ export function ProfileIconButton() {
 
   return (
     <>
-      <IconButton size="large" onClick={handleOpenProfileMenu} color="inherit">
+      <IconButton
+        size="large"
+        onClick={handleOpenProfileMenu}
+        color="inherit"
+        data-testid="profile-button"
+      >
         {getAccountCircle(loggedIn ? session.name : '')}
       </IconButton>
 

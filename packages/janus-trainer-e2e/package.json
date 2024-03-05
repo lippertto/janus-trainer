@@ -3,11 +3,13 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "cypress:open": "cypress open"
+    "playwright:open": "playwright test --ui",
+    "playwright:test": "playwright test"
   },
   "devDependencies": {
-    "cypress": "^13.6.4",
-    "eslint-plugin-cypress": "^2.15.1",
+    "@playwright/test": "^1.42.1",
+    "@types/node": "^20.11.25",
+    "eslint-plugin-playwright": "^1.5.2",
     "typescript": "^5.3.3"
   }
 }

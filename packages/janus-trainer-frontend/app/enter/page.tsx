@@ -78,7 +78,7 @@ export default function EnterPage() {
       setTrainings={setTrainings}
       refresh={refresh}
       approvalMode={false}
-      data-testid={'enter-training-table'}
+      data-testid="enter-training-table"
     />
   );
 }

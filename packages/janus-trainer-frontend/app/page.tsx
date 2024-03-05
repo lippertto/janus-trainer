@@ -9,7 +9,7 @@ import LoginRequired from '../components/LoginRequired';
 function Contents() {
   return (
     <Typography>
-      Einen Menüpunk unter <MenuIcon /> auswählen oder direkt{' '}
+      Einen Menüpunkt unter <MenuIcon /> auswählen oder direkt{' '}
       <Link href={'/enter'}>eine neue Zeit eintragen</Link>
     </Typography>
   );

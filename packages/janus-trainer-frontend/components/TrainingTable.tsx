@@ -387,7 +387,7 @@ function TrainingTableToolbar({
     <GridToolbarContainer>
       {handleAddTraining ? (
         <Button
-          data-testid={'add-training-button'}
+          data-testid="add-training-button"
           startIcon={<AddIcon />}
           onClick={() => {
             handleAddTraining();

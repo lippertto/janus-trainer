@@ -1,4 +1,4 @@
 plugins:
-  - cypress
+  - playwright
 extends:
-  - plugin:cypress/recommended
+  - plugin:playwright/recommended
