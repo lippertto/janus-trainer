@@ -6,8 +6,9 @@
   ],
   "scripts": {
     "backend": "yarn workspace janus-trainer-backend",
-    "clean": "yarn dto clean && yarn backend clean && yarn frontend clean",
+    "e2e": "yarn workspace janus-trainer-e2e",
     "frontend": "yarn workspace janus-trainer-frontend",
+    "clean": "yarn dto clean && yarn backend clean && yarn frontend clean",
     "dto": "yarn workspace janus-trainer-dto",
     "build": "yarn build:dto && yarn build:backend && yarn build:backend",
     "build:backend": "yarn backend build",

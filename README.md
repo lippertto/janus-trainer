@@ -55,7 +55,6 @@ aws cognito-idp create-user-pool-client \
 # TODOs
 
 ## Open points
-* Bug: Enter dates by keyboard
 * Run tests on pull requests, deploy on main
 * Find out what happens to log-in session after update. (users have to log out and in to get things working)
 * Allow to go from compensation page to validate page with specific dates+trainer
@@ -64,13 +63,16 @@ aws cognito-idp create-user-pool-client \
 * Add lerna and nx
 * Concept for management of classes
 * Allow to scan QR codes from the App
+* Use column-editing mode for TrainingTable
+* Make compensations editable
 
 ## Refinement
 * Read up on .env files best practices
 * Read up on MUI's nextjs integration: https://mui.com/material-ui/guides/nextjs/
 * Think about deploying the frontend with the serverless framework https://www.serverless.com/blog/serverless-nextjs
 * Sort imports with eslint: https://eslint.org/docs/latest/rules/sort-imports
+* Use canned confirmation dialogs: https://github.com/jonatanklosko/material-ui-confirm
+
 
 ## Future
 * Trainers can change their IBAN
-

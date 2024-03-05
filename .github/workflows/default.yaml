@@ -1,9 +1,11 @@
 name: janus-trainer-app
-
 on:
   push:
     branches:
       - main
+  pull_request:
+    types: [opened, synchronize]
+
 jobs:
   lint-and-format:
     runs-on: ubuntu-latest
@@ -21,8 +23,47 @@ jobs:
         run: yarn format
       - name: yarn lint
         run: yarn lint
+  run-e2e-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Enable Corepack
+        run: corepack enable
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
+      - name: Install dependencies
+        run: npm install -g yarn && yarn
+      - name: Install Playwright Browsers
+        run: yarn e2e playwright install --with-deps
+      - name: create env
+        id: create-env
+        run: |
+          echo COGNITO_DOMAIN=https://janus-trainer-dev.auth.eu-north-1.amazoncognito.com/ > packages/janus-trainer-e2e/.env
+      - name: Run Playwright tests
+        run: yarn e2e playwright:test
+        env:
+          COGNITO_ADMIN_USERNAME: ${{ vars.COGNITO_ADMIN_USERNAME }}
+          COGNITO_ADMIN_PASSWORD: ${{ secrets.COGNITO_ADMIN_PASSWORD }}
+          COGNITO_TRAINER_USERNAME: ${{ vars.COGNITO_TRAINER_USERNAME }}
+          COGNITO_TRAINER_PASSWORD: ${{ secrets.COGNITO_TRAINER_PASSWORD }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30
+
+      - run: yarn install
+      - run: yarn build
+      - run: docker compose up -d
+      - run: 'yarn backend migration:run:dev'
+      - run: yarn start 2>&1 > server.log &
+
+
   build-frontend:
     runs-on: ubuntu-latest
+    if: github.ref_name == 'main'
     outputs:
       image-name: ${{ steps.push.outputs.image-name }}
     steps:
@@ -57,6 +98,7 @@ jobs:
       - build-frontend
       - lint-and-format
     runs-on: ubuntu-latest
+    if: github.ref_name == 'main'
     env:
       IMAGE_NAME: ${{needs.build-frontend.outputs.image-name}}
     steps:
@@ -75,6 +117,7 @@ jobs:
             --image-uri ${IMAGE_NAME}
 
   deploy-backend:
+    if: github.ref_name == 'main'
     runs-on: ubuntu-latest
     needs:
       # the build-frontend has a linting step which does more than eslint.
@@ -102,6 +145,6 @@ jobs:
           yarn workspace janus-trainer-dto build
       - name: Deploy backend
         env:
-          SLS_DEBUG: '*'
+          SLS_DEBUG: "*"
         run: |
           yarn workspace janus-trainer-backend deploy
