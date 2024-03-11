@@ -13,17 +13,18 @@ test.describe('Configuration page', () => {
     await page.getByTestId('add-holiday-button').click();
 
     await page.evaluate(() => {
-      let selector = document.querySelector('input#holiday-date-picker-start');
-      selector.removeAttribute('readonly');
-      selector = document.querySelector('input#holiday-date-picker-end');
+      const selector = document.querySelector(
+        'input#holiday-date-picker-start',
+      );
       selector.removeAttribute('readonly');
     });
 
-    // await page.getByRole('textbox', { name: 'Start' }).fill('03.10.2024');
-    // await page.locator('#holiday-date-picker-end').focus;
-
     await page.locator('input#holiday-date-picker-start').fill('03.10.2024');
 
+    await page.evaluate(() => {
+      const selector = document.querySelector('input#holiday-date-picker-end');
+      selector.removeAttribute('readonly');
+    });
     await page.locator('input#holiday-date-picker-end').fill('03.10.2024');
 
     // the testIds do not work on CI. Also, the getByRole does not work on CI.
