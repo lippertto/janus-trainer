@@ -34,6 +34,7 @@ jobs:
           node-version: "20.x"
       - run: docker compose up -d
       - run: yarn install
+      - run: yarn build
       - run: yarn start &
       - run: yarn migration:run:dev
       - name: Install Playwright Browsers
