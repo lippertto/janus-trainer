@@ -20,7 +20,7 @@ test.describe('Configuration page', () => {
 
     // await page.locator('#holiday-date-picker-start').fill('03.10.2024');
     await page.getByRole('textbox').nth(0).focus();
-    await page.getByRole('textbox').nth(0).type('03.10.2024');
+    await page.keyboard.type('03.10.2024');
 
     // await page.evaluate(() => {
     //   const selector = document.querySelector('input#holiday-date-picker-end');
@@ -28,16 +28,18 @@ test.describe('Configuration page', () => {
     //   selector.removeAttribute('disabled');
     // });
     await page.getByRole('textbox').nth(1).focus();
-    await page.getByRole('textbox').nth(1).type('03.10.2024');
+    await page.keyboard.type('03.10.2024');
 
     // await page.locator('input#holiday-date-picker-end').fill('03.10.2024');
 
     // the testIds do not work on CI. Also, the getByRole does not work on CI.
-    await page.getByTestId('holiday-text-field-description').click();
-    await page
-      .getByTestId('holiday-text-field-description')
-      .getByLabel('Beschreibung')
-      .fill('Tag der Dt. Einheit');
+    await page.getByTestId('holiday-text-field-description').focus();
+    await page.keyboard.type('Tag der Dt. Einheit');
+
+    // await page
+    //   .getByTestId('holiday-text-field-description')
+    //   .getByLabel('Beschreibung')
+    //   .fill('Tag der Dt. Einheit');
 
     await page.getByTestId('holiday-button-submit').click();
 
