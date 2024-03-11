@@ -17,6 +17,7 @@ test.describe('Configuration page', () => {
         'input#holiday-date-picker-start',
       );
       selector.removeAttribute('readonly');
+      selector.removeAttribute('disabled');
     });
 
     await page.locator('input#holiday-date-picker-start').fill('03.10.2024');
@@ -24,6 +25,7 @@ test.describe('Configuration page', () => {
     await page.evaluate(() => {
       const selector = document.querySelector('input#holiday-date-picker-end');
       selector.removeAttribute('readonly');
+      selector.removeAttribute('disabled');
     });
     await page.locator('input#holiday-date-picker-end').fill('03.10.2024');
 
