@@ -12,10 +12,11 @@ test.describe('Configuration page', () => {
     await page.goto('/configure');
     await page.getByTestId('add-holiday-button').click();
 
+    // the testIds do not work on CI. Also, the getByRole does not work on CI.
     await page.locator('#holiday-date-picker-start').click();
-    await page.getByRole('textbox', { name: 'Start' }).fill('03.10.2024');
+    await page.locator('#holiday-date-picker-start').fill('03.10.2024');
     await page.locator('#holiday-date-picker-end').click();
-    await page.getByRole('textbox', { name: 'Ende' }).fill('03.10.2024');
+    await page.locator('#holiday-date-picker-end').fill('03.10.2024');
     await page
       .getByTestId('holiday-text-field-description')
       .getByLabel('Beschreibung')
