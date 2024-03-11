@@ -13,9 +13,9 @@ test.describe('Configuration page', () => {
     await page.getByTestId('add-holiday-button').click();
 
     await page.evaluate(() => {
-      const selector = document.querySelector(
-        'input#holiday-date-picker-start',
-      );
+      let selector = document.querySelector('input#holiday-date-picker-start');
+      selector.removeAttribute('readonly');
+      selector = document.querySelector('input#holiday-date-picker-end');
       selector.removeAttribute('readonly');
     });
 
