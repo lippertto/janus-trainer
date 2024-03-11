@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, firefox } from '@playwright/test';
 
 test.beforeEach('clear database', async ({ page }) => {
   await page.goto('/configure');
@@ -8,7 +8,15 @@ test.beforeEach('clear database', async ({ page }) => {
 test.describe('Configuration page', () => {
   test.use({ storageState: 'playwright/.auth/admin.json' });
 
-  test('enter a new holiday', async ({ page }) => {
+  test('enter a new holiday', async () => {
+    const browser = await firefox.launch({
+      firefoxUserPrefs: {
+        'ui.primaryPointerCapabilities': 0x02 | 0x04,
+        'ui.allPointerCapabilities': 0x02 | 0x04,
+      },
+    });
+    const page = await browser.newPage();
+
     await page.goto('/configure');
     await page.getByTestId('add-holiday-button').click();
 
