@@ -1,5 +1,10 @@
 import { test as setup, expect } from '@playwright/test';
 
+// implemented after https://playwright.dev/docs/auth#multiple-signed-in-roles
+// the test will log in via cognito and write the authentication information to a file
+// which can be used by the following tests.
+// Note that this currently works only with firefox and not with chrome.
+
 const adminFile = 'playwright/.auth/admin.json';
 
 setup('authenticate as admin', async ({ page }) => {

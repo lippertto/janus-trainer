@@ -38,7 +38,7 @@ jobs:
       - run: yarn start &
       - run: yarn migration:run:dev
       - name: Install Playwright Browsers
-        run: yarn e2e playwright install --with-deps
+        run: yarn e2e playwright install firefox --with-deps
       - name: create env
         id: create-env
         run: |

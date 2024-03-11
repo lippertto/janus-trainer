@@ -156,7 +156,7 @@ function EnterHolidayDialog({
   const endIsBeforeStart = start && end ? start.diff(end) > 0 : false;
   let startErrorMessage = null;
   if (!start) {
-    startErrorMessage = 'Muss gestzt sein';
+    startErrorMessage = 'Muss gesetzt sein';
   } else if (!start.isValid()) {
     startErrorMessage = 'Ist kein Datum';
   }

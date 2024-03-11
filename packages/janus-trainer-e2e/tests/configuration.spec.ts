@@ -8,13 +8,13 @@ test.beforeEach('clear database', async ({ page }) => {
 test.describe('Configuration page', () => {
   test.use({ storageState: 'playwright/.auth/admin.json' });
 
-  test('log into webpage', async ({ page }) => {
+  test('enter a new holiday', async ({ page }) => {
     await page.goto('/configure');
     await page.getByTestId('add-holiday-button').click();
 
-    await page.getByRole('textbox', { name: 'Start' }).click();
+    await page.locator('#holiday-date-picker-start').click();
     await page.getByRole('textbox', { name: 'Start' }).fill('03.10.2024');
-    await page.getByRole('textbox', { name: 'Ende' }).click();
+    await page.locator('#holiday-date-picker-end').click();
     await page.getByRole('textbox', { name: 'Ende' }).fill('03.10.2024');
     await page
       .getByTestId('holiday-text-field-description')
