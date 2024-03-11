@@ -18,17 +18,15 @@ test.describe('Configuration page', () => {
     //   selector.removeAttribute('disabled');
     // });
 
-    await page.locator('#holiday-date-picker-start').focus();
-    // await page.getByRole('textbox').nth(0).focus();
+    await page.getByRole('textbox').nth(0).focus();
+    await expect(page.getByRole('textbox').nth(0)).toBeEditable();
+    // await page.locator('#holiday-date-picker-start:visible')
     await page.keyboard.type('03.10.2024');
+    // await page.keyboard.type('03.10.2024');
 
-    // await page.evaluate(() => {
-    //   const selector = document.querySelector('input#holiday-date-picker-end');
-    //   selector.removeAttribute('readonly');
-    //   selector.removeAttribute('disabled');
-    // });
-    // await page.getByRole('textbox').nth(1).focus();
-    await page.locator('#holiday-date-picker-end').focus();
+    await page.getByRole('textbox').nth(1).focus();
+    await expect(page.getByRole('textbox').nth(1)).toBeEditable();
+
     await page.keyboard.type('03.10.2024');
 
     // await page.locator('input#holiday-date-picker-end').fill('03.10.2024');
@@ -38,6 +36,12 @@ test.describe('Configuration page', () => {
       .getByTestId('holiday-text-field-description')
       .getByLabel('Beschreibung')
       .focus();
+    await expect(
+      page
+        .getByTestId('holiday-text-field-description')
+        .getByLabel('Beschreibung'),
+    ).toBeEditable();
+
     await page.keyboard.type('Tag der Dt. Einheit');
 
     // await page

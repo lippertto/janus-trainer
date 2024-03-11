@@ -207,7 +207,6 @@ function EnterHolidayDialog({
           <DatePicker
             label="Ende"
             value={end}
-            readOnly={process.env.CI ? false : undefined}
             onChange={(v) => {
               setEnd(v);
             }}
