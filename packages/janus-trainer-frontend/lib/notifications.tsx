@@ -9,7 +9,7 @@ export function showError(
 ) {
   let finalMessage;
   if (backendMessage) {
-    finalMessage = `${message} / Systemmeldung: ${backendMessage}`;
+    finalMessage = `${message}. Techn. Meldung: ${backendMessage}`;
   } else {
     finalMessage = message;
   }

@@ -11,6 +11,7 @@ import { SnackbarProvider } from 'notistack';
 
 import { MaterialDesignContent } from 'notistack';
 import { styled } from '@mui/material/styles';
+import { ConfirmProvider } from 'material-ui-confirm';
 
 const theme = createTheme({}, deDE);
 
@@ -41,7 +42,15 @@ export default function JanusProviders({
             warning: StyledSnackbarContent,
           }}
         >
-          <SessionProvider>{children}</SessionProvider>
+          <ConfirmProvider
+            defaultOptions={{
+              confirmationButtonProps: { autoFocus: true },
+              confirmationText: 'Ok',
+              cancellationText: 'Abbrechen',
+            }}
+          >
+            <SessionProvider>{children}</SessionProvider>
+          </ConfirmProvider>
         </SnackbarProvider>
       </LocalizationProvider>
     </ThemeProvider>

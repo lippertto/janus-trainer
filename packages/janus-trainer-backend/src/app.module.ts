@@ -19,6 +19,7 @@ import { Holiday } from './holidays/holiday.entity';
 import { SharedModule } from './shared/shared.module';
 import { SystemModule } from './system/system.module';
 import { WinstonModule } from 'nest-winston';
+import { AppUsersModule } from './app-users/app-users.module';
 const providers: Provider[] = [Logger];
 
 if (config().cors.origin && !config().cors.origin.includes('localhost')) {
@@ -44,6 +45,7 @@ if (config().cors.origin && !config().cors.origin.includes('localhost')) {
     HolidaysModule,
     SharedModule,
     SystemModule,
+    AppUsersModule,
   ],
   providers: providers,
 })

@@ -1,21 +1,24 @@
+import React from 'react';
+
 import Drawer from '@mui/material/Drawer';
-
-import HomeIcon from '@mui/icons-material/Home';
-import EditCalendarIcon from '@mui/icons-material/EditCalendar';
-import AssignmentTurnedInIcon from '@mui/icons-material/AssignmentTurnedIn';
-import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
-import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
-import SettingsIcon from '@mui/icons-material/Settings';
-
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
 import Link from '@mui/material/Link';
+
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import React from 'react';
+
+import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
+import AssignmentTurnedInIcon from '@mui/icons-material/AssignmentTurnedIn';
+import EditCalendarIcon from '@mui/icons-material/EditCalendar';
+import HomeIcon from '@mui/icons-material/Home';
+import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
+import QrCodeScannerIcon from '@mui/icons-material/QrCodeScanner';
+import SettingsIcon from '@mui/icons-material/Settings';
+
 import { Group } from 'janus-trainer-dto';
-import { JanusSession } from '../lib/auth';
+import { JanusSession } from '@/lib/auth';
 import { useSession } from 'next-auth/react';
 
 const ADMIN_LINKS = [
@@ -25,11 +28,13 @@ const ADMIN_LINKS = [
   { text: 'Auszahlen', href: '/compensate', icon: AccountBalanceIcon },
   { text: 'Nutzer anlegen', href: '/manage-users', icon: ManageAccountsIcon },
   { text: 'Verwaltung', href: '/configure', icon: SettingsIcon },
+  { text: 'Scannen', href: '/scan', icon: QrCodeScannerIcon },
 ];
 
 const TRAINER_LINKS = [
   { text: 'Home', href: '/', icon: HomeIcon },
   { text: 'Eingeben', href: '/enter', icon: EditCalendarIcon },
+  { text: 'Scannen', href: '/scan', icon: QrCodeScannerIcon },
 ];
 
 export default function JanusDrawer({
