@@ -1,14 +1,14 @@
 'use client';
 
-import { useSession } from 'next-auth/react';
-import type { JanusSession } from '../../lib/auth';
-import LoginRequired from '../../components/LoginRequired';
-import UserTable from './UserTable';
 import React from 'react';
-import { type User } from '../../lib/backend';
-import { GridRowId } from '@mui/x-data-grid';
-import { EditUserDialog } from './EditUserDialog';
 
+import { useSession } from 'next-auth/react';
+
+import UserTable from './UserTable';
+import { EditUserDialog } from './EditUserDialog';
+import { showError } from '@/lib/notifications';
+
+import { GridRowId } from '@mui/x-data-grid';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -16,13 +16,16 @@ import DialogContent from '@mui/material/DialogContent';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 
+import LoginRequired from '../../components/LoginRequired';
+import type { JanusSession } from '../../lib/auth';
+import { type User } from '../../lib/backend';
+
 import {
   createUser,
   deleteUser,
   getAllUsers,
   updateUser,
 } from '../../lib/api-users';
-import { showError } from '@/lib/notifications';
 
 function DeleteUserDialog({
   open,

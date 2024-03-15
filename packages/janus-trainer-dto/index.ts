@@ -19,3 +19,5 @@ export { Group } from './src/Group';
 
 export { HolidayCreateRequestDto } from './src/HolidayCreateRequestDto';
 export { type HolidayDto, type HolidayListDto } from './src/HolidayDto';
+
+export { type AppUserDto } from './src/AppUserDto';
