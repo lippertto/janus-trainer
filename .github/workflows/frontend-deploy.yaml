@@ -29,6 +29,6 @@ jobs:
       - name: Deploy backend image to lambda
         run: |
           aws lambda update-function-code \
-            --function-name ${ FUNCTION_NAME } \
+            --function-name ${FUNCTION_NAME} \
             --architectures x86_64 \
-            --image-uri ${ IMAGE_NAME }
+            --image-uri ${IMAGE_NAME}
