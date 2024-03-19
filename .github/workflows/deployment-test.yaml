@@ -1,0 +1,19 @@
+name: deployment-test
+on:
+  workflow_dispatch:
+jobs:
+  build-frontend-test:
+    uses: ./.github/workflows/build-frontend.yaml
+    secrets:
+      aws-ecr-key: ${{ secrets.AWS_ECR_KEY }}
+      aws-ecr-secret-access-key: ${{ secrets.AWS_ECR_SECRET_ACCESS_KEY }}
+  deploy-frontend-test:
+    needs:
+        - build-frontend-test
+    uses: ./.github/workflows/deployment.yaml
+    with:
+        image-name: ${{needs.build-frontend-test.outputs.image-name}}
+        function-name: 'arn:aws:lambda:eu-north-1:930650061532:function:janus-trainer-app'
+    secrets:
+        aws-ecr-key: ${{ secrets.AWS_ECR_KEY }}
+        aws-ecr-secret-access-key: ${{ secrets.AWS_ECR_SECRET_ACCESS_KEY }}
