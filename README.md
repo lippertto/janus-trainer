@@ -51,28 +51,38 @@ aws cognito-idp create-user-pool-client \
 
 * manually create groups in user pool
 
+## Frontend
+* Create a https certificate in ACM for the frontend domain
+* Create an lambda function in the UI
+  * Memory 256MB
+  * The function must be accessible via the internet
+  * Use any of the built frontend images
+* Create a CloudFront distribution
+  * Set origin to the lambda function
+  * Add behavior for _next/static/* (caching enabled)
+  * Copy the domain name of the distribution and put it into a CNAME DNS entry
+
 
 # TODOs
 
-## Open points
-* Run tests on pull requests, deploy on main
+## Features
 * Find out what happens to log-in session after update. (users have to log out and in to get things working)
 * Allow to go from compensation page to validate page with specific dates+trainer
+* Concept for management of classes
+* Make compensations editable
+
+## Tech update
+* Run tests on pull requests, deploy on main
+* Use lint-staged: https://github.com/lint-staged/lint-staged
 * Put secrets into actual secrets
 * Run migrations in CI
 * Add lerna and nx
-* Concept for management of classes
-* Allow to scan QR codes from the App
 * Use column-editing mode for TrainingTable
-* Make compensations editable
 
 ## Refinement
-* Read up on .env files best practices
 * Read up on MUI's nextjs integration: https://mui.com/material-ui/guides/nextjs/
 * Think about deploying the frontend with the serverless framework https://www.serverless.com/blog/serverless-nextjs
 * Sort imports with eslint: https://eslint.org/docs/latest/rules/sort-imports
-* Use canned confirmation dialogs: https://github.com/jonatanklosko/material-ui-confirm
-
 
 ## Future
 * Trainers can change their IBAN

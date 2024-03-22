@@ -21,7 +21,8 @@
     "migration:run:dev": "dotenv -e .env.development -- typeorm-ts-node-commonjs migration:run --dataSource datasource.ts",
     "migration:run:prod": "dotenv -e .env.production -- typeorm-ts-node-commonjs migration:run --dataSource datasource.ts",
     "migration:run:test": "dotenv -e .env.test -- typeorm-ts-node-commonjs migration:run --dataSource datasource.ts",
-    "deploy": "yarn run build && serverless deploy --stage production"
+    "deploy:prod": "yarn run build && serverless deploy --stage production",
+    "deploy:test": "yarn run build && serverless deploy --stage test"
   },
   "dependencies": {
     "@aws-sdk/client-cognito-identity-provider": "^3.485.0",
@@ -48,7 +49,6 @@
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.1",
     "serverless": "^3.38.0",
-    "serverless-dotenv-plugin": "^6.0.0",
     "typeorm": "^0.3.20",
     "winston": "^3.11.0"
   },

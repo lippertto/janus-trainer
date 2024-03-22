@@ -1,4 +1,4 @@
-name: deployment-test
+name: deploy-to-test
 on:
   workflow_dispatch:
 jobs:
@@ -9,11 +9,24 @@ jobs:
       aws-ecr-secret-access-key: ${{ secrets.AWS_ECR_SECRET_ACCESS_KEY }}
   deploy-frontend-test:
     needs:
-        - build-frontend-test
+      - build-frontend-test
     uses: ./.github/workflows/frontend-deploy.yaml
     with:
-        image-name: ${{needs.build-frontend-test.outputs.image-name}}
-        function-name: 'arn:aws:lambda:eu-north-1:930650061532:function:janus-trainer-app-test'
+      image-name: ${{needs.build-frontend-test.outputs.image-name}}
+      function-name: 'arn:aws:lambda:eu-north-1:930650061532:function:janus-trainer-app-test'
     secrets:
-        aws-ecr-key: ${{ secrets.AWS_ECR_KEY }}
-        aws-ecr-secret-access-key: ${{ secrets.AWS_ECR_SECRET_ACCESS_KEY }}
+      aws-ecr-key: ${{ secrets.AWS_ECR_KEY }}
+      aws-ecr-secret-access-key: ${{ secrets.AWS_ECR_SECRET_ACCESS_KEY }}
+
+  deploy-backend-test:
+    needs:
+      # the build-frontend has a linting step which does more than eslint.
+      # To avoid partial deployments due to aborted frontend builds, we add a dependency
+      - deploy-frontend-test
+    uses: ./.github/workflows/backend-deploy.yaml
+    with:
+      deploy-command: 'deploy:test'
+    secrets:
+      aws-ecr-key: ${{ secrets.AWS_ECR_KEY }}
+      aws-ecr-secret-access-key: ${{ secrets.AWS_ECR_SECRET_ACCESS_KEY }}
+      postgres-password: ${{ secrets.POSTGRES_PASSWORD_TEST }}

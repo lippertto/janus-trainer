@@ -85,33 +85,15 @@ jobs:
 
   deploy-backend-prod:
     if: github.ref_name == 'main'
-    runs-on: ubuntu-latest
     needs:
       # the build-frontend has a linting step which does more than eslint.
       # To avoid partial deployments due to aborted frontend builds, we add a dependency
       - frontend-build
       - lint-and-format
-    steps:
-      - uses: actions/checkout@v4
-      - name: Enable Corepack
-        run: corepack enable
-      - name: Use Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20.x'
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ECR_KEY }}
-          aws-secret-access-key: ${{ secrets.AWS_ECR_SECRET_ACCESS_KEY }}
-          aws-region: eu-north-1
-      - name: yarn install
-        run: yarn install
-      - name: build dto libarary
-        run: |
-          yarn workspace janus-trainer-dto build
-      - name: Deploy backend
-        env:
-          SLS_DEBUG: '*'
-        run: |
-          yarn workspace janus-trainer-backend deploy
+    uses: ./.github/workflows/backend-deploy.yaml
+    with:
+      deploy-command: 'deploy:prod'
+    secrets:
+      aws-ecr-key: ${{ secrets.AWS_ECR_KEY }}
+      aws-ecr-secret-access-key: ${{ secrets.AWS_ECR_SECRET_ACCESS_KEY }}
+      postgres-password: ${{ secrets.POSTGRES_PASSWORD_PROD }}
