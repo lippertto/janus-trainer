@@ -18,7 +18,7 @@
     "test:e2e": "jest --projects ./test",
     "typeorm": "typeorm-ts-node-commonjs",
     "migration:generate:test": "dotenv -e .env.test -- typeorm-ts-node-commonjs migration:generate --dataSource datasource.ts",
-    "migration:run:dev": "dotenv -e .env.development -- typeorm-ts-node-commonjs migration:run --dataSource datasource.ts",
+    "migration:run:dev": "POSTGRES_HOST=localhost POSTGRES_USERNAME=postgres POSTGRES_PASSWORD=postgress POSTGRES_DATABASE=postgres typeorm-ts-node-commonjs migration:run --dataSource datasource.ts",
     "migration:run:prod": "dotenv -e .env.production -- typeorm-ts-node-commonjs migration:run --dataSource datasource.ts",
     "migration:run:test": "dotenv -e .env.test -- typeorm-ts-node-commonjs migration:run --dataSource datasource.ts",
     "deploy:prod": "yarn run build && serverless deploy --stage production",
