@@ -36,7 +36,9 @@ jobs:
       - run: yarn install
       - run: yarn build
       - run: yarn start &
-      - run: yarn migration:run:dev
+      - run: 'yarn backend migration:run:dev'
+      - run: curl http://localhost:3000
+      - run: curl http://localhost:3001
       - name: Install Playwright Browsers
         run: yarn e2e playwright install firefox --with-deps
       - name: create env
@@ -56,12 +58,6 @@ jobs:
           name: playwright-report
           path: packages/janus-trainer-e2e/playwright-report/
           retention-days: 1
-
-      - run: yarn install
-      - run: yarn build
-      - run: docker compose up -d
-      - run: 'yarn backend migration:run:dev'
-      - run: yarn start 2>&1 > server.log &
 
   frontend-build:
     if: github.ref_name == 'main'
