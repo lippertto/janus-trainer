@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - main
+      - gitlab
   pull_request:
     types: [opened, synchronize]
 
@@ -35,7 +36,7 @@ jobs:
       - run: docker compose up -d
       - run: yarn install
       - run: yarn build
-      - run: yarn start &
+      - run: yarn start
       - run: 'yarn backend migration:run:dev'
       - run: curl http://localhost:3000
       - run: curl http://localhost:3001
