@@ -36,7 +36,7 @@ jobs:
       - run: docker compose up -d
       - run: yarn install
       - run: yarn build
-      - run: yarn start
+      - run: yarn start &
         env:
           POSTGRES_PASSWORD: postgress
       - run: 'yarn backend migration:run:dev'
