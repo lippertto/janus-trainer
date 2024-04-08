@@ -26,7 +26,7 @@ params:
     postgres-host: snuffleupagus.db.elephantsql.com
     postgres-database: vudaklvt
     postgres-username: vudaklvt
-    postgres-password: ${env:POSTGRES_PASSWORD}
+    postgres-password: ${env:POSTGRES_PASSWORD_PROD}
     cognito-user-pool-id: eu-north-1_NtmiRBAZH
     no-color: "true"
     node-env: production
@@ -35,7 +35,7 @@ params:
     postgres-host: snuffleupagus.db.elephantsql.com
     postgres-database: bwquglhx
     postgres-username: bwquglhx
-    postgres-password: ${env:POSTGRES_PASSWORD}
+    postgres-password: ${env:POSTGRES_PASSWORD_TEST}
     cognito-user-pool-id: eu-north-1_NtmiRBAZH
     no-color: "true"
     node-env: test
