@@ -36,10 +36,8 @@ jobs:
       - run: docker compose up -d
       - run: yarn install
       - run: yarn build
-      - run: yarn start
+      - run: yarn start &
       - run: 'yarn backend migration:run:dev'
-      - run: curl http://localhost:3000
-      - run: curl http://localhost:3001
       - name: Install Playwright Browsers
         run: yarn e2e playwright install firefox --with-deps
       - name: create env
@@ -53,6 +51,7 @@ jobs:
           COGNITO_ADMIN_PASSWORD: ${{ secrets.COGNITO_ADMIN_PASSWORD }}
           COGNITO_TRAINER_USERNAME: ${{ vars.COGNITO_TRAINER_USERNAME }}
           COGNITO_TRAINER_PASSWORD: ${{ secrets.COGNITO_TRAINER_PASSWORD }}
+          POSTGRES_PASSWORD: postgress
       - uses: actions/upload-artifact@v4
         if: always()
         with:
