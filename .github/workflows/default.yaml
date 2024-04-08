@@ -36,9 +36,9 @@ jobs:
       - run: yarn install
       - run: yarn build
       - run: yarn start &
+        env:
+          POSTGRES_PASSWORD: postgress
       - run: 'yarn backend migration:run:dev'
-      - run: curl http://localhost:3000
-      - run: curl http://localhost:3001
       - name: Install Playwright Browsers
         run: yarn e2e playwright install firefox --with-deps
       - name: create env
