@@ -1,26 +1,4 @@
 {
-    "folders": [
-      {
-        "name": "ROOT",
-        "path": "../",
-      },
-      {
-        "name": "janus-trainer-frontend",
-        "path": "../packages/janus-trainer-frontend"
-      },
-      {
-        "name": "janus-trainer-backend",
-        "path": "../packages/janus-trainer-backend"
-      },
-      {
-        "name": "janus-trainer-dto",
-        "path": "../packages/janus-trainer-dto"
-      },
-      {
-        "name": "janus-trainer-e2e",
-        "path": "../packages/janus-trainer-e2e"
-      },
-    ],
     "settings": {
       "files.exclude": {
         "packages/": true

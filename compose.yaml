@@ -1,7 +1,6 @@
 version: "3"
 services:
   database:
-    # if you change this, update the image used in backend/helpers.ts too
     image: postgres:13.3-alpine
     environment:
       - POSTGRES_USER=postgres

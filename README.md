@@ -6,19 +6,7 @@ podman-compose up -d
 yarn start
 ```
 
-# Frontend
-
-# Backend
-
-## Database
-
-### Add a new entity
-1. Create the new entity
-2. Add the entity to `src/app.module.ts`
-3. Add entity to `./datasource.ts`
-4. Generate migration vs. test system with `yarn backend migration:generate:test`
-
-### Clean database
+# Clean database
 
 To clean the databases, you can use the following command.
 
@@ -50,6 +38,7 @@ aws cognito-idp create-user-pool-client \
 ```
 
 * manually create groups in user pool
+* Give the lambda permission to manage cognito user pool
 
 ## Frontend
 * Create a https certificate in ACM for the frontend domain
@@ -65,23 +54,30 @@ aws cognito-idp create-user-pool-client \
 
 # TODOs
 
+## Tomorrow
+* Test some user operations on prod
+* Concept: re-added users (deactivate in Cognito?)
+* Merge everything
+* Setup test environment & deployment
+* Re activate e2e tests
+
 ## Features
 * Find out what happens to log-in session after update. (users have to log out and in to get things working)
 * Allow to go from compensation page to validate page with specific dates+trainer
 * Concept for management of classes
 * Make compensations editable
+* Put user management into Verwaltung
+* Put disciplines+classes on separate Angebot page
 
 ## Tech update
+* Add proper logging
 * Run tests on pull requests, deploy on main
 * Use lint-staged: https://github.com/lint-staged/lint-staged
 * Put secrets into actual secrets
-* Run migrations in CI
-* Add lerna and nx
 * Use column-editing mode for TrainingTable
 
 ## Refinement
 * Read up on MUI's nextjs integration: https://mui.com/material-ui/guides/nextjs/
-* Think about deploying the frontend with the serverless framework https://www.serverless.com/blog/serverless-nextjs
 * Sort imports with eslint: https://eslint.org/docs/latest/rules/sort-imports
 
 ## Future
