@@ -1,4 +1,0 @@
-plugins:
-  - playwright
-extends:
-  - plugin:playwright/recommended

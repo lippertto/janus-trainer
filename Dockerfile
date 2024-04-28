@@ -1,57 +1,82 @@
-# This file will build the docker image for the frontend.
-# The backend is currently deployed via the serverless framework.
+# TLT: Base for this dockerfile is https://github.com/vercel/next.js/blob/canary/examples/with-docker/Dockerfile
+# TLT: Adaptions are marked with TLT
+# TLT: Updated 18 to current LTS version (20)
+FROM node:20-alpine AS base
 
-# Copied and adapted from https://github.com/vercel/next.js/blob/canary/examples/with-docker-multi-env/docker/production/Dockerfile
-# Steps 1 and 2 were merged to make the mono repo work.
-
-FROM public.ecr.aws/docker/library/node:20.9.0-slim AS base
-
-FROM base AS builder
-
-# Setting this should instruct yarn to only install non-dev dependencies. (does not seem to work)
-ENV NODE_ENV=production
-
+# Install dependencies only when needed
+FROM base AS deps
+# Check https://github.com/nodejs/docker-node/tree/b4117f9333da4138b03a546ec926ef50a31506c3#nodealpine to understand why libc6-compat might be needed.
+RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
-COPY tsconfig.json tsconfig.json
-COPY packages/janus-trainer-frontend ./packages/janus-trainer-frontend
-COPY packages/janus-trainer-dto ./packages/janus-trainer-dto
+# Install dependencies based on the preferred package manager
+COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* ./
+# TLT: added this to make prisma work.
+RUN echo "nodeLinker: node-modules" > .yarnrc.yml
+# TLT: added corepack enable to update yarn and changed frozen-lockfile to immutable
+RUN \
+  if [ -f yarn.lock ]; then corepack enable && yarn --immutable; \
+  elif [ -f package-lock.json ]; then npm ci; \
+  elif [ -f pnpm-lock.yaml ]; then corepack enable pnpm && pnpm i --frozen-lockfile; \
+  else echo "Lockfile not found." && exit 1; \
+  fi
 
-RUN corepack enable
-RUN yarn set version stable
-COPY package.json yarn.lock .yarnrc.yml ./
-# This should be --immutable, but that fails. So we'll just do a complete install.
-RUN yarn install
+# TLT: added prisma steps
+COPY prisma ./prisma
+RUN yarn prisma generate
 
-RUN yarn workspace janus-trainer-dto build
-RUN yarn workspace janus-trainer-frontend build
+# Rebuild the source code only when needed
+FROM base AS builder
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
 
-# 3. Production image, copy all the files and run next
+# Next.js collects completely anonymous telemetry data about general usage.
+# Learn more here: https://nextjs.org/telemetry
+# Uncomment the following line in case you want to disable telemetry during the build.
+# ENV NEXT_TELEMETRY_DISABLED 1
+
+# TLT: Added corepack enable
+RUN \
+  if [ -f yarn.lock ]; then corepack enable && yarn run build; \
+  elif [ -f package-lock.json ]; then npm run build; \
+  elif [ -f pnpm-lock.yaml ]; then corepack enable pnpm && pnpm run build; \
+  else echo "Lockfile not found." && exit 1; \
+  fi
+
+# Production image, copy all the files and run next
 FROM base AS runner
 
-COPY --from=public.ecr.aws/awsguru/aws-lambda-adapter:0.8.1 /lambda-adapter /opt/extensions/lambda-adapter
+# TLT add lambda adapter
+COPY --from=public.ecr.aws/awsguru/aws-lambda-adapter:0.8.3 /lambda-adapter /opt/extensions/lambda-adapter
+ENV AWS_LAMBDA_EXEC_WRAPPER=/opt/bootstrap
 
 WORKDIR /app
 
-ENV NODE_ENV=production
-ENV AWS_LAMBDA_EXEC_WRAPPER=/opt/bootstrap
-ENV PORT=8080
-ENV HOSTNAME=0.0.0.0
+ENV NODE_ENV production
+# Uncomment the following line in case you want to disable telemetry during runtime.
+# ENV NEXT_TELEMETRY_DISABLED 1
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-USER nextjs
+COPY --from=builder /app/public ./public
 
-# the monorepo setup results in a complicated file structure for the standalone output.
-# partially inspired from https://github.com/vercel/next.js/discussions/35437
-COPY --from=builder --chown=nextjs:nodejs /app/packages/janus-trainer-frontend/.next/standalone/node_modules ./node_modules
-COPY --from=builder --chown=nextjs:nodejs /app/packages/janus-trainer-frontend/.next/standalone/packages/janus-trainer-frontend ./
-COPY --from=builder --chown=nextjs:nodejs /app/packages/janus-trainer-frontend/public ./public
-COPY --from=builder --chown=nextjs:nodejs /app/packages/janus-trainer-frontend/.next/static ./.next/static
+# Set the correct permission for prerender cache
+RUN mkdir .next
+RUN chown nextjs:nodejs .next
+
+# Automatically leverage output traces to reduce image size
+# https://nextjs.org/docs/advanced-features/output-file-tracing
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+
+USER nextjs
 
 EXPOSE 8080
 
-CMD ["node", "server.js"]
+ENV PORT 8080
 
-
+# server.js is created by next build from the standalone output
+# https://nextjs.org/docs/pages/api-reference/next-config-js/output
+CMD HOSTNAME="0.0.0.0" node server.js

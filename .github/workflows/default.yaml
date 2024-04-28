@@ -17,12 +17,11 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20.x'
+          cache: yarn
       - name: yarn install
         run: yarn install
       - name: yarn format
         run: yarn format
-      - name: yarn lint
-        run: yarn lint
   run-e2e-tests:
     runs-on: ubuntu-latest
     steps:
@@ -32,21 +31,21 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20.x'
+          cache: yarn
       - run: docker compose up -d
       - run: yarn install
       - run: yarn build
-      - run: yarn start &
+      - name: create environment
+        run: cp .env.development .env
+      - run: yarn prisma db push
+      - run: yarn prisma db seed
+      - run: yarn start:dev &
         env:
           POSTGRES_PASSWORD: postgress
-      - run: 'yarn backend migration:run:dev'
       - name: Install Playwright Browsers
-        run: yarn e2e playwright install firefox --with-deps
-      - name: create env
-        id: create-env
-        run: |
-          echo COGNITO_DOMAIN=https://janus-trainer-dev.auth.eu-north-1.amazoncognito.com/ > packages/janus-trainer-e2e/.env
+        run: yarn playwright install firefox --with-deps
       - name: Run Playwright tests
-        run: yarn e2e playwright:test
+        run: yarn playwright:test
         env:
           COGNITO_ADMIN_USERNAME: ${{ vars.COGNITO_ADMIN_USERNAME }}
           COGNITO_ADMIN_PASSWORD: ${{ secrets.COGNITO_ADMIN_PASSWORD }}
@@ -56,39 +55,28 @@ jobs:
         if: always()
         with:
           name: playwright-report
-          path: packages/janus-trainer-e2e/playwright-report/
+          path: playwright/test-report/
           retention-days: 1
 
-  frontend-build:
+  build:
     if: github.ref_name == 'main'
-    uses: ./.github/workflows/frontend-build.yaml
+    uses: ./.github/workflows/build.yaml
     secrets:
       aws-ecr-key: ${{ secrets.AWS_ECR_KEY }}
       aws-ecr-secret-access-key: ${{ secrets.AWS_ECR_SECRET_ACCESS_KEY }}
 
-  frontend-deploy-prod:
+  deploy-prod:
     if: github.ref_name == 'main'
     needs:
-      - frontend-build
+      - build
       - lint-and-format
-    uses: ./.github/workflows/frontend-deploy.yaml
+    uses: ./.github/workflows/deploy.yaml
     with:
-      image-name: ${{needs.frontend-build.outputs.image-name}}
+      image-name: ${{needs.build.outputs.image-name}}
       function-name: 'arn:aws:lambda:eu-north-1:930650061532:function:janus-trainer-app'
-    secrets:
-      aws-ecr-key: ${{ secrets.AWS_ECR_KEY }}
-      aws-ecr-secret-access-key: ${{ secrets.AWS_ECR_SECRET_ACCESS_KEY }}
-
-  deploy-backend-prod:
-    if: github.ref_name == 'main'
-    needs:
-      # the build-frontend has a linting step which does more than eslint.
-      # To avoid partial deployments due to aborted frontend builds, we add a dependency
-      - frontend-build
-      - lint-and-format
-    uses: ./.github/workflows/backend-deploy.yaml
-    with:
-      deploy-command: 'deploy:prod'
+      postgres-host: snuffleupagus.db.elephantsql.com
+      postgres-database: vudaklvt
+      postgres-username: vudaklvt
     secrets:
       aws-ecr-key: ${{ secrets.AWS_ECR_KEY }}
       aws-ecr-secret-access-key: ${{ secrets.AWS_ECR_SECRET_ACCESS_KEY }}

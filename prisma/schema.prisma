@@ -1,0 +1,66 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("POSTGRES_CONNECTION_URL")
+}
+
+model Holiday {
+  id    Int    @id @default(autoincrement())
+  name  String
+  // date in iso 8601
+  start String
+  // date in iso 8601
+  end   String
+}
+
+model Discipline {
+  id        Int        @id @default(autoincrement())
+  name      String
+  deletedAt DateTime?
+  trainings Training[]
+}
+
+enum TrainingStatus {
+  NEW
+  APPROVED
+  COMPENSATED
+}
+
+model Training {
+  id                Int    @id @default(autoincrement())
+  // name of the group
+  group             String
+  // date in iso 8601
+  date              String
+  // cents
+  compensationCents BigInt
+
+  createdAt DateTime
+
+  participantCount BigInt
+
+  status TrainingStatus
+
+  user   UserInDb @relation(fields: [userId], references: [id])
+  userId String
+
+  discipline   Discipline @relation(fields: [disciplineId], references: [id])
+  disciplineId Int
+}
+
+// The user in the database is only part of the domain object.
+// The groups and the email are stored in cognito.
+model UserInDb {
+  // This is an external id, in our case cognito
+  id        String     @id
+  iban      String?
+  name      String
+  deletedAt DateTime?
+  trainings Training[]
+
+  // We want the table to be called User
+  @@map("User")
+}
