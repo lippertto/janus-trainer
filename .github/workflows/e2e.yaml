@@ -1,0 +1,41 @@
+on:
+  workflow_call:
+    secrets:
+      cognito-admin-password:
+        required: true
+      cognito-trainer-password:
+        required: true
+jobs:
+  run-e2e-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Enable Corepack
+        run: corepack enable
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: yarn
+      - run: docker compose up -d
+      - run: yarn install
+      - run: yarn build
+      - name: create environment
+        run: cp .env.development .env
+      - run: yarn prisma db push
+      - run: yarn prisma db seed
+      - run: yarn start:dev &
+      - name: Install Playwright Browsers
+        run: yarn playwright install firefox --with-deps
+      - name: Run Playwright tests
+        run: yarn playwright:test
+        env:
+          COGNITO_ADMIN_USERNAME: ltrd@fastmail.fm
+          COGNITO_ADMIN_PASSWORD: ${{ secrets.cognito-admin-password }}
+          COGNITO_TRAINER_USERNAME: tobias.lippert@fastmail.com
+          COGNITO_TRAINER_PASSWORD: ${{ secrets.cognito-trainer-password }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: playwright/test-report/
+          retention-days: 1

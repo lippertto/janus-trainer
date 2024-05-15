@@ -1,0 +1,232 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Parameters:
+  JanusEnvironment:
+    Type: String
+    AllowedValues: [ 'dev', 'test', 'prod' ]
+    Description: >-
+      For which environment you want to create the infrastructure.
+      The value will be used as suffix to the resources.
+  JanusDomain:
+    Type: String
+    Description: Under which domain the app will be hosted.
+  JanusDomainCertificateArn:
+    Type: String
+    Description: The arn of the certificate for the used domain.
+  JanusTrainerAppImage:
+    Type: String
+    Description: The image to deploy to the lambda function.
+  PostgresConnectionUrl:
+    Type: String
+    Description: How to connect to the database
+
+Mappings:
+  Constants:
+    ManagedPolicyIds:
+      CachingDisabled: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad
+      CachingOptimized: 658327ea-f89d-4fab-a63d-7e88639e58f6
+      AllViewer: 216adef6-5c7f-47e4-b989-5492eafa07d3
+      AllViewerExceptHostHeader: b689b0a8-53d0-40ab-baf2-68738e2966ac
+
+Resources:
+  JanusUserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: !Join [ "-", [ "janus-trainer-pool", !Ref JanusEnvironment ] ]
+      AdminCreateUserConfig:
+        AllowAdminCreateUserOnly: True
+        InviteMessageTemplate:
+          EmailMessage: !Sub |
+            Hallo, ein Konto in der Janus Trainer App wurde für dich erstellt.
+            Dein Account hat die id {username}, dein temporäres Passwort ist {####}
+            Du musst es beim ersten Einloggen ändern.
+            Du findest die App unter https://${JanusDomain} Sportliche Grüße Dein SC Janus "
+          EmailSubject: 'Neues Konto in der Janus Trainer App'
+      UsernameAttributes:
+        - email
+      UsernameConfiguration:
+        CaseSensitive: false
+      AccountRecoverySetting:
+        RecoveryMechanisms:
+          - Name: verified_email
+            Priority: 1
+  JanusUserPoolDomain:
+    Type: AWS::Cognito::UserPoolDomain
+    Properties:
+      Domain: !Join [ "-", [ "janus-trainer-app", !Ref JanusEnvironment ] ]
+      UserPoolId: !Ref JanusUserPool
+  JanusUserPoolGroupAdmins:
+    Type: AWS::Cognito::UserPoolGroup
+    Properties:
+      GroupName: admins
+      UserPoolId: !Ref JanusUserPool
+  JanusUserPoolGroupTrainers:
+    Type: AWS::Cognito::UserPoolGroup
+    Properties:
+      GroupName: trainers
+      UserPoolId: !Ref JanusUserPool
+
+  TobiasAccount:
+    Type: AWS::Cognito::UserPoolUser
+    Properties:
+      UserPoolId: !Ref JanusUserPool
+      Username: ltrd@fastmail.fm
+    DependsOn: JanusUserPool
+  TobiasIsAdmin:
+    Type: AWS::Cognito::UserPoolUserToGroupAttachment
+    Properties:
+      GroupName: !Ref JanusUserPoolGroupAdmins
+      Username: !Ref TobiasAccount
+      UserPoolId: !Ref JanusUserPool
+  TobiasIsTrainer:
+    Type: AWS::Cognito::UserPoolUserToGroupAttachment
+    Properties:
+      GroupName: !Ref JanusUserPoolGroupTrainers
+      Username: !Ref TobiasAccount
+      UserPoolId: !Ref JanusUserPool
+
+  JanusUserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      UserPoolId: !Ref JanusUserPool
+      ClientName: !Join [ "-", [ "janus-trainer-app", !Ref JanusEnvironment ] ]
+      CallbackURLs:
+        - !Join ['', ['https://', !Ref JanusDomain, '/api/auth/callback/cognito']]
+        - http://localhost:3000/api/auth/callback/cognito
+      SupportedIdentityProviders:
+        - COGNITO
+      AllowedOAuthFlows:
+        - code
+      AllowedOAuthScopes:
+        - email
+        - openid
+      ExplicitAuthFlows:
+        - ALLOW_USER_SRP_AUTH
+        - ALLOW_REFRESH_TOKEN_AUTH
+      AllowedOAuthFlowsUserPoolClient: true
+      ReadAttributes:
+        - email
+        - email_verified
+        - name
+      WriteAttributes:
+        - email
+        - name
+      PreventUserExistenceErrors: ENABLED
+
+  JanusTrainerAppRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Join [ "-", [ "JanusTrainerAppRole", !Ref JanusEnvironment ] ]
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+
+  JanusTrainerAppRolePolicy:
+    Type: AWS::IAM::RolePolicy
+    Properties:
+      RoleName: !Ref JanusTrainerAppRole
+      PolicyName: !Join ["-", ["JanusTrainerAppPolicy", !Ref JanusEnvironment ] ]
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: Statement01
+            Effect: Allow
+            Action:
+              - cognito-idp:AdminDeleteUser
+              - cognito-idp:AdminEnableUser
+              - cognito-idp:AdminCreateUser
+              - cognito-idp:AdminAddUserToGroup
+              - cognito-idp:AdminDeleteUserAttributes
+              - cognito-idp:AdminUpdateUserAttributes
+              - cognito-idp:AdminListGroupsForUser
+              - cognito-idp:ListGroups
+              - cognito-idp:GetGroup
+              - cognito-idp:ListUsersInGroup
+              - cognito-idp:ListUsers
+              - cognito-idp:GetUser
+            Resource: !GetAtt JanusUserPool.Arn
+
+  JanusTrainerAppLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      Architectures:
+        - x86_64
+      Code:
+        ImageUri: !Ref JanusTrainerAppImage
+      PackageType: Image
+      Role: !GetAtt JanusTrainerAppRole.Arn
+      ReservedConcurrentExecutions: 5
+      Environment:
+        Variables:
+          NEXTAUTH_URL: !Join ["", ["https://", !Ref JanusDomain]]
+          NEXTAUTH_SECRET: tobias-secret-value
+          COGNITO_CLIENT_ID: !Ref JanusUserPoolClient
+          COGNITO_REGION: eu-north-1
+          COGNITO_USER_POOL_ID: !Ref JanusUserPool
+          POSTGRES_CONNECTION_URL: !Ref PostgresConnectionUrl
+
+  JanusTrainerAppLambdaUrl:
+    Type: AWS::Lambda::Url
+    Properties:
+      AuthType: NONE
+      TargetFunctionArn: !GetAtt JanusTrainerAppLambda.Arn
+
+  # This allows the function to be invoked publicly
+  JanusTrainerAppLambdaPublicExposure:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref JanusTrainerAppLambda
+      Action: lambda:InvokeFunctionUrl
+      Principal: "*"
+      FunctionUrlAuthType: "NONE"
+
+  JanusTrainerAppCloudFrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        PriceClass: PriceClass_100  # US+Europe
+        Comment: !Join [ "", [ "Janus Trainer App - ", !Ref JanusEnvironment ] ]
+        Origins:
+          - Id: janus-trainer-lambda
+            DomainName: !Select [2, !Split ["/", !GetAtt JanusTrainerAppLambdaUrl.FunctionUrl]]
+            CustomOriginConfig:
+              OriginProtocolPolicy: https-only
+              OriginSSLProtocols:
+                - TLSv1.2
+# TODO - try to re-enable
+#        CacheBehaviors:
+#          - PathPattern: _next/static/*
+#            TargetOriginId: janus-trainer-lambda
+#            Compress: true
+#            ViewerProtocolPolicy: redirect-to-https
+#            AllowedMethods: [GET, HEAD, OPTIONS]
+#            CachePolicyId: !FindInMap [Constants, ManagedPolicyIds, CachingOptimized]
+#            OriginRequestPolicyId: !FindInMap [Constants, ManagedPolicyIds, AllViewerExceptHostHeader]
+        DefaultCacheBehavior:
+          Compress: true
+          ViewerProtocolPolicy: redirect-to-https
+          AllowedMethods: [GET, HEAD, OPTIONS, PUT, POST, PATCH, DELETE]
+          TargetOriginId: janus-trainer-lambda
+          CachePolicyId: !FindInMap [Constants, ManagedPolicyIds, CachingDisabled]
+          OriginRequestPolicyId: !FindInMap [Constants, ManagedPolicyIds, AllViewerExceptHostHeader]
+        Aliases:
+          - !Ref JanusDomain
+        ViewerCertificate:
+          AcmCertificateArn: !Ref JanusDomainCertificateArn
+          SslSupportMethod: sni-only
+          MinimumProtocolVersion: TLSv1.2_2021
+        HttpVersion: http2and3
+
+Outputs:
+  CloudFrontDistributionId:
+    Description: The name of the cloudfront distribution, intended to be used for invalidation
+    Value: !Ref JanusTrainerAppCloudFrontDistribution

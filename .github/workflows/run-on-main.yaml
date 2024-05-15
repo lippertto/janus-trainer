@@ -1,0 +1,40 @@
+name: janus-trainer-app-main
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  lint:
+    uses: ./.github/workflows/lint.yaml
+
+  build:
+    uses: ./.github/workflows/build.yaml
+    secrets:
+      aws-ecr-key: ${{ secrets.AWS_ECR_KEY }}
+      aws-ecr-secret-access-key: ${{ secrets.AWS_ECR_SECRET_ACCESS_KEY }}
+
+  run-e2e-tests:
+    uses: ./.github/workflows/e2e.yaml
+    secrets:
+      cognito-admin-password: ${{ secrets.COGNITO_ADMIN_PASSWORD }}
+      cognito-trainer-password: ${{ secrets.COGNITO_TRAINER_PASSWORD }}
+
+  deploy-prod:
+    needs:
+      - build
+      - lint
+      - run-e2e-tests
+    uses: ./.github/workflows/deploy.yaml
+    with:
+      image-name: ${{needs.build.outputs.image-name}}
+      postgres-host: snuffleupagus.db.elephantsql.com
+      postgres-database: vudaklvt
+      postgres-username: vudaklvt
+      environment: prod
+      domain: janus.lippert.dev
+      certificate-arn: arn:aws:acm:us-east-1:930650061532:certificate/4ce7a60c-c98c-41ad-bf37-a9da99974cd9
+    secrets:
+      aws-ecr-key: ${{ secrets.AWS_ECR_KEY }}
+      aws-ecr-secret-access-key: ${{ secrets.AWS_ECR_SECRET_ACCESS_KEY }}
+      postgres-password: ${{ secrets.POSTGRES_PASSWORD_PROD }}

@@ -4,9 +4,6 @@ on:
       image-name:
         required: true
         type: string
-      function-name:
-        required: true
-        type: string
       postgres-host:
         required: true
         type: string
@@ -16,6 +13,19 @@ on:
       postgres-username:
         required: true
         type: string
+      environment:
+        required: true
+        type: string
+        description: 'The target environment: test, prod, dev'
+      domain:
+        required: true
+        type: string
+        description: The domain from which the deployment will be reachable
+      certificate-arn:
+        required: true
+        type: string
+        description: The arn of the certificate for the domain.
+
     secrets:
       aws-ecr-key:
         required: true
@@ -25,8 +35,8 @@ on:
         required: true
 
 env:
-  POSTGRES_CONNECTION_URL: postgres://${{inputs.postgres-username}}:${{secrets.postgres-password}}@${{inputs.postgres-host}}:5432/${{inputs.postgres-database}}?connection_limit=5
-
+  POSTGRES_CONNECTION_URL: postgres://${{inputs.postgres-username}}:${{secrets.postgres-password}}@${{inputs.postgres-host}}:5432/${{inputs.postgres-database}}?connection_limit=1
+  STACK_NAME: janus-trainer-${{ inputs.environment }}
 
 jobs:
   migrate-database:
@@ -57,18 +67,22 @@ jobs:
           aws-access-key-id: ${{ secrets.aws-ecr-key }}
           aws-secret-access-key: ${{ secrets.aws-ecr-secret-access-key }}
           aws-region: eu-north-1
-      - name: Deploy backend image to lambda
+      - name: Apply cloudformation template
         run: |
-          aws lambda update-function-code \
-            --function-name ${FUNCTION_NAME} \
-            --architectures x86_64 \
-            --image-uri ${IMAGE_NAME}
-          aws lambda wait function-updated \
-            --function-name ${FUNCTION_NAME}
-      - name: Update environment for lambda
+          aws cloudformation update-stack \
+            --region eu-north-1 \
+            --stack-name ${STACK_NAME} \
+            --capabilities CAPABILITY_NAMED_IAM \
+            --template-body file://cloudformation.yaml \
+            --parameters ParameterKey=JanusEnvironment,ParameterValue=${{inputs.environment}} \
+                         ParameterKey=JanusDomain,ParameterValue=${{inputs.domain}} \
+                         ParameterKey=JanusTrainerAppImage,ParameterValue=${{inputs.image-name}} \
+                         ParameterKey=JanusDomainCertificateArn,ParameterValue=${{inputs.certificate-arn}} \
+                         ParameterKey=PostgresConnectionUrl,ParameterValue=${POSTGRES_CONNECTION_URL}
+          aws cloudformation wait stack-update-complete --stack-name ${STACK_NAME}
+      - name: Invalidate CloudFront cache
         run: |
-          aws lambda update-function-configuration \
-            --function-name ${FUNCTION_NAME} \
-            --environment "Variables={POSTGRES_CONNECTION_URL=${POSTGRES_CONNECTION_URL}}"
-          aws lambda wait function-updated \
-            --function-name ${FUNCTION_NAME}
+          distributionId=$(aws cloudformation describe-stacks --stack-name ${STACK_NAME} --query "Stacks[0].Outputs[?OutputKey=='CloudFrontDistributionId'].OutputValue" --output text)
+          invalidationOutput=$(aws cloudfront create-invalidation --distribution-id $distributionId --paths '/*')
+          invalidationId=$(echo $invalidationOutput | jq -r '.Invalidation.Id')
+          aws cloudfront wait invalidation-completed --id ${invalidationId} --distribution-id ${distributionId}
