@@ -305,6 +305,6 @@ dist
 # End of https://www.toptal.com/developers/gitignore/api/node,yarn,nextjs,intellij
 
 
-playwright/playwright-report/
+playwright/test-report/
 playwright/.auth/
 playwright/test-results/
