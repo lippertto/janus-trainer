@@ -202,20 +202,19 @@ Resources:
               OriginProtocolPolicy: https-only
               OriginSSLProtocols:
                 - TLSv1.2
-# TODO - try to re-enable
-#        CacheBehaviors:
-#          - PathPattern: _next/static/*
-#            TargetOriginId: janus-trainer-lambda
-#            Compress: true
-#            ViewerProtocolPolicy: redirect-to-https
-#            AllowedMethods: [GET, HEAD, OPTIONS]
-#            CachePolicyId: !FindInMap [Constants, ManagedPolicyIds, CachingOptimized]
-#            OriginRequestPolicyId: !FindInMap [Constants, ManagedPolicyIds, AllViewerExceptHostHeader]
+        CacheBehaviors:
+          - PathPattern: _next/static/*
+            TargetOriginId: janus-trainer-lambda
+            Compress: true
+            ViewerProtocolPolicy: redirect-to-https
+            AllowedMethods: [GET, HEAD, OPTIONS]
+            CachePolicyId: !FindInMap [Constants, ManagedPolicyIds, CachingOptimized]
+            OriginRequestPolicyId: !FindInMap [Constants, ManagedPolicyIds, AllViewerExceptHostHeader]
         DefaultCacheBehavior:
+          TargetOriginId: janus-trainer-lambda
           Compress: true
           ViewerProtocolPolicy: redirect-to-https
           AllowedMethods: [GET, HEAD, OPTIONS, PUT, POST, PATCH, DELETE]
-          TargetOriginId: janus-trainer-lambda
           CachePolicyId: !FindInMap [Constants, ManagedPolicyIds, CachingDisabled]
           OriginRequestPolicyId: !FindInMap [Constants, ManagedPolicyIds, AllViewerExceptHostHeader]
         Aliases:
