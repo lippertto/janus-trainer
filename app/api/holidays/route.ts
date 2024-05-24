@@ -19,11 +19,11 @@ function convertStringToNumberArray(str: string): number[] {
   return numberArray;
 }
 
-export async function GET(
+async function doGET(
   request: NextRequest,
-): Promise<NextResponse<HolidayQueryResult | ErrorResponse>> {
-  const authError = await allowAnyAuthorized(request);
-  if (authError) return authError;
+
+) {
+  await allowAnyAuthorized(request);
 
   const yearAsString = request.nextUrl.searchParams.get('year');
   if (!yearAsString) {
@@ -49,6 +49,17 @@ export async function GET(
   }
 
   return NextResponse.json({ value: result });
+
+}
+
+export async function GET(
+  request: NextRequest,
+): Promise<NextResponse<HolidayQueryResult | ErrorResponse>> {
+  try {
+    return await doGET(request);
+  } catch (e) {
+    return handleTopLevelCatch(e);
+  }
 }
 
 async function doPOST(request: NextRequest) {

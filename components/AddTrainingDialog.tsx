@@ -14,7 +14,7 @@ import TextField from '@mui/material/TextField';
 import { DatePicker } from '@mui/x-date-pickers';
 
 import dayjs from 'dayjs';
-import { Discipline, Training } from '@prisma/client';
+import { CompensationValue, Discipline, Training } from '@prisma/client';
 
 type AddTrainingDialogProps = {
   open: boolean;
@@ -30,7 +30,16 @@ type AddTrainingDialogProps = {
     date: string,
     userId: string,
   ) => void;
+  compensationValues: CompensationValue[],
 };
+
+function compensationValueToMenuItem(cv: CompensationValue) {
+  const value = new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(cv.cents / 100);
+  const text = `${cv.description} (${value})`
+  return <MenuItem value={cv.cents} key={cv.id}>
+    {text}
+  </MenuItem>
+}
 
 export default function AddTrainingDialog({
   open,
@@ -39,14 +48,17 @@ export default function AddTrainingDialog({
   template,
   handleClose,
   handleSave,
+  compensationValues,
 }: AddTrainingDialogProps) {
   const [discipline, setDiscipline] = React.useState<string>('6');
   const [group, setGroup] = React.useState<string>('');
   const [date, setDate] = React.useState<dayjs.Dayjs | null>(null);
   const [participantCount, setParticipantCount] = React.useState<number>(0);
-  const [compensation, setCompensation] = React.useState<string>('1600');
+  const [compensation, setCompensation] = React.useState<string>(
+    compensationValues.length > 0 ? compensationValues[0].cents.toString(): "1600"
+  );
 
-  let participantCountError = null;
+  let participantCountError = " ";
   if (participantCount === 0) {
     participantCountError = 'Muss gesetzt sein';
   }
@@ -76,7 +88,7 @@ export default function AddTrainingDialog({
   }
 
   const thereIsAnError =
-    Boolean(dateError) || Boolean(groupError) || Boolean(participantCountError);
+    Boolean(dateError) || Boolean(groupError) || participantCountError !== " ";
 
   return (
     <Dialog open={open}>
@@ -134,7 +146,7 @@ export default function AddTrainingDialog({
             value={participantCount}
             onChange={(e) => setParticipantCount(parseInt(e.target.value))}
             inputProps={{ min: 1 }}
-            error={Boolean(participantCountError)}
+            error={participantCountError !== " "}
             helperText={participantCountError}
           />
 
@@ -145,21 +157,7 @@ export default function AddTrainingDialog({
             onChange={(e) => setCompensation(e.target.value)}
             value={compensation}
           >
-            <MenuItem data-testid="compensation-1600" value={1600}>
-              16€
-            </MenuItem>
-            <MenuItem data-testid="compensation-1900" value={1900}>
-              19€
-            </MenuItem>
-            <MenuItem data-testid="compensation-2100" value={2100}>
-              21€
-            </MenuItem>
-            <MenuItem data-testid="compensation-2400" value={2400}>
-              24€
-            </MenuItem>
-            <MenuItem data-testid="compensation-2700" value={2700}>
-              27€
-            </MenuItem>
+            {compensationValues.map(compensationValueToMenuItem)}
           </TextField>
         </Stack>
       </DialogContent>

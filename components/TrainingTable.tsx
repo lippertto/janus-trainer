@@ -1,6 +1,7 @@
 import React from 'react';
 
 import dayjs from 'dayjs';
+import { v4 as uuidv4 } from 'uuid';
 
 import {
   DataGrid,
@@ -16,7 +17,7 @@ import {
   GridToolbarContainer,
   GridValueGetterParams,
   GridValueSetterParams,
-  useGridApiContext,
+  useGridApiContext, ValueOptions,
 } from '@mui/x-data-grid';
 
 import AddIcon from '@mui/icons-material/Add';
@@ -35,11 +36,12 @@ import Tooltip, { TooltipProps, tooltipClasses } from '@mui/material/Tooltip';
 
 import { useSession } from 'next-auth/react';
 
-import { JanusSession } from '../lib/auth';
+import { JanusSession } from '@/lib/auth';
 import DeleteTrainingDialog from './DeleteTrainingDialog';
 import AddTrainingDialog from './AddTrainingDialog';
 
 import {
+  centsToDisplayString,
   dateToIso8601,
   getDateFromIso8601,
   toHumanReadableDate,
@@ -54,8 +56,9 @@ import {
   unapproveTraining,
   updateTraining,
 } from '@/lib/api-trainings';
-import { Discipline, Holiday, TrainingStatus } from '@prisma/client';
+import { CompensationValue, Discipline, Holiday, TrainingStatus } from '@prisma/client';
 import { TrainingDtoNew } from '@/lib/dto';
+import { bigIntReplacer } from '@/lib/json-tools';
 
 require('dayjs/locale/de');
 dayjs.locale('de');
@@ -143,10 +146,27 @@ function preProcessEditCellPropsForNonEmptyString(
   return { ...params.props, error: undefined };
 }
 
+function buildCompensationValueColumn(values: CompensationValue[]): GridColDef {
+  return {
+    field: 'compensationCents',
+    headerName: 'Vergütung',
+    type: 'singleSelect',
+    flex: 1,
+    editable: true,
+    valueOptions: values.map((v) => {
+      return {
+        value: BigInt(v.cents),
+        label: `${v.description} (${centsToDisplayString(v.cents)})`,
+      };
+    }),
+  };
+}
+
 function buildGridColumns(
   disciplines: Discipline[],
-  rowModesModel: GridRowModesModel,
+  compensationValues: CompensationValue[],
   holidays: Holiday[],
+  rowModesModel: GridRowModesModel,
   handleCancelClick: { (id: GridRowId): () => void },
   handleDeleteClick: { (id: GridRowId): () => void },
   handleEditClick: { (id: GridRowId): () => void },
@@ -254,24 +274,7 @@ function buildGridColumns(
         );
       },
     },
-    {
-      field: 'compensationCents',
-      headerName: 'Vergütung',
-      type: 'singleSelect',
-      flex: 1,
-      editable: true,
-      valueOptions: ['27€', '24€', '21€', '19€', '16€'],
-      valueGetter: (params: GridValueGetterParams) => {
-        const euroValue = params.value / BigInt(100);
-        return `${euroValue}€`;
-      },
-      valueSetter: (params: GridValueSetterParams) => {
-        const numberPart = params.value.substring(0, params.value.length - 1);
-        const euros = parseInt(numberPart);
-        const cents = euros * 100;
-        return { ...params.row, compensationCents: cents };
-      },
-    },
+    buildCompensationValueColumn(compensationValues),
     {
       field: 'status',
       headerName: 'Status',
@@ -382,9 +385,9 @@ type TrainingTableToolbarProps = {
 };
 
 function TrainingTableToolbar({
-  handleRefresh,
-  handleAddTraining,
-}: TrainingTableToolbarProps) {
+                                handleRefresh,
+                                handleAddTraining,
+                              }: TrainingTableToolbarProps) {
   return (
     <GridToolbarContainer>
       {handleAddTraining ? (
@@ -417,27 +420,46 @@ type TrainingTableProps = {
   /** The trainings to display. Note: Should be sorted, e.g. with `v.sort((r1, r2) => parseInt(r1.id) - parseInt(r2.id))` */
   trainings: TrainingDtoNew[];
   setTrainings: SetTrainings;
-  refresh: () => Promise<TrainingDtoNew[]>;
+  refresh: () => void;
   /** Whether the UI should show the approval actions. (User must be admin to actually execute the steps.) */
   approvalMode: boolean;
   /** A list of disciplines for the dropdown. */
   disciplines: Discipline[];
   /** List of holidays used to highligh collisions */
   holidays: Holiday[];
+
+  compensationValues: CompensationValue[];
 };
+
+// we cannot use Set here, because Firefox does not support it
+function addUnknownValuesToCompensationValues(compensationValues: CompensationValue[], trainings: TrainingDtoNew[]): CompensationValue[] {
+  const trainingCompensations = trainings.map((t) => Number(t.compensationCents));
+  const uniqueTrainingCompensations = trainingCompensations.filter((value, index, array) => {
+    return array.indexOf(value) === index;
+  });
+  const missingCompensations = uniqueTrainingCompensations.filter(
+    (trainingCompensation) => (compensationValues.find((cv) => (cv.cents === trainingCompensation)) === undefined),
+  );
+  return [...compensationValues, ...missingCompensations.map((cents: number) => ({
+    cents,
+    description: 'unbekannt',
+    id: Math.floor(Math.random() * 100000),
+  }))];
+}
 
 /**
  * Renders a list of Trainings.
  */
 export default function TrainingTable({
-  trainings,
-  setTrainings,
-  refresh,
-  approvalMode,
-  disciplines = [],
-  holidays = [],
-  ...props
-}: TrainingTableProps) {
+                                        trainings,
+                                        setTrainings,
+                                        refresh,
+                                        approvalMode,
+                                        disciplines,
+                                        holidays,
+                                        compensationValues,
+                                        ...props
+                                      }: TrainingTableProps) {
   const [rowModesModel, setRowModesModel] = React.useState<GridRowModesModel>(
     {},
   );
@@ -446,7 +468,6 @@ export default function TrainingTable({
     React.useState<boolean>(false);
   const [trainingToDelete, setTrainingToDelete] =
     React.useState<TrainingDtoNew | null>(null);
-
   const trainingTemplate = trainings
     ? trainings[trainings.length - 1]
     : undefined;
@@ -558,17 +579,9 @@ export default function TrainingTable({
     [session?.accessToken],
   );
 
-  const columns = buildGridColumns(
-    disciplines,
-    rowModesModel,
-    holidays,
-    handleCancelClick,
-    handleDeleteClick,
-    handleEditClick,
-    handleSaveClick,
-    handleApproveClick,
-    handleRevokeClick,
-  );
+  const columns = buildGridColumns(disciplines,
+    addUnknownValuesToCompensationValues(compensationValues, trainings),
+    holidays, rowModesModel, handleCancelClick, handleDeleteClick, handleEditClick, handleSaveClick, handleApproveClick, handleRevokeClick);
 
   return (
     <>
@@ -591,7 +604,7 @@ export default function TrainingTable({
         }
         columns={columns}
         processRowUpdate={processRowUpdate}
-        // rows should sorted before we pass them on. Else, the rows might jump when their status is changed.
+        // rows should be sorted before we pass them on. Else, the rows might jump when their status is changed.
         rows={trainings}
         rowModesModel={rowModesModel}
         slots={{
@@ -603,8 +616,8 @@ export default function TrainingTable({
             handleAddTraining: approvalMode
               ? undefined
               : () => {
-                  setShowAddDialog(true);
-                },
+                setShowAddDialog(true);
+              },
           },
         }}
         {...props}
@@ -618,6 +631,7 @@ export default function TrainingTable({
         open={showAddDialog}
         disciplines={disciplines}
         userId={session.userId}
+        compensationValues={compensationValues}
         template={trainingTemplate}
         handleClose={() => {
           setShowAddDialog(false);

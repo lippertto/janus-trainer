@@ -64,3 +64,9 @@ model UserInDb {
   // We want the table to be called User
   @@map("User")
 }
+
+model CompensationValue {
+  id          Int    @id @default(autoincrement())
+  cents       Int
+  description String
+}

@@ -20,8 +20,9 @@ import { getDisciplines } from '@/lib/api-disciplines';
 import { getHolidays } from '@/lib/api-holidays';
 import { showError } from '@/lib/notifications';
 import { getTrainingsForPeriod } from '@/lib/api-trainings';
-import { Discipline, Holiday } from '@prisma/client';
+import { CompensationValue, Discipline, Holiday } from '@prisma/client';
 import { TrainingDtoNew } from '@/lib/dto';
+import { getCompensationValues } from '@/lib/api-compensation-values';
 
 dayjs.extend(quarterOfYear);
 
@@ -35,6 +36,7 @@ export default function ApprovePage(): React.ReactElement {
   const [trainings, setTrainings] = React.useState<TrainingDtoNew[]>([]);
   const [disciplines, setDisciplines] = React.useState<Discipline[]>([]);
   const [holidays, setHolidays] = React.useState<Holiday[]>([]);
+  const [compensationValues, setCompensationValues] = React.useState<CompensationValue[]>([]);
 
   const { data, status: authenticationStatus } = useSession();
   const session = data as JanusSession;
@@ -54,10 +56,12 @@ export default function ApprovePage(): React.ReactElement {
     return [];
   }, [startDate, endDate, setTrainings, session?.accessToken]);
 
+  // refresh everything
   useEffect(() => {
     if (!session?.accessToken) {
       return;
     }
+
     getDisciplines(session.accessToken).then((v) => setDisciplines(v));
     refreshTrainings();
     getHolidays(session.accessToken, [
@@ -66,9 +70,16 @@ export default function ApprovePage(): React.ReactElement {
     ])
       .then((v) => setHolidays(v))
       .catch((e) => showError('Konnte Feiertage nicht laden', e.message));
+
+    getCompensationValues(session.accessToken)
+      .then((v) => setCompensationValues(v))
+      .catch((e: Error) => {
+        showError('Konnte Vergütungen nicht laden.', e.message);
+      });
+
   }, [refreshTrainings, setDisciplines, session?.accessToken]);
 
-  useEffect(() => {
+  useEffect( () => {
     refreshTrainings();
   }, [startDate, endDate, refreshTrainings]);
 
@@ -122,6 +133,7 @@ export default function ApprovePage(): React.ReactElement {
           trainings={trainings}
           disciplines={disciplines}
           holidays={holidays}
+          compensationValues={compensationValues}
           setTrainings={setTrainings}
           refresh={refreshTrainings}
           approvalMode={true}

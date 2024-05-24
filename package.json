@@ -2,14 +2,12 @@
   "private": true,
   "name": "janus-trainer",
   "scripts": {
-    "e2e": "yarn workspace janus-trainer-e2e",
     "start:dev": "NODE_ENV=development next dev --hostname 0.0.0.0",
     "start:test": "NODE_ENV=test next dev --hostname 0.0.0.0",
     "clean": "rm -rf .next",
     "format": "eslint .",
     "format:fix": "eslint . --fix",
     "prepare": "husky",
-    "test:e2e": "yarn workspace janus-trainer-e2e playwright:test",
     "build": "next build",
     "playwright:open": "playwright test --ui",
     "playwright:test": "playwright test"
@@ -57,7 +55,7 @@
     "@typescript-eslint/eslint-plugin": "^7.8.0",
     "@typescript-eslint/parser": "^7.8.0",
     "concurrently": "^8.2.2",
-    "dotenv": "^16.4.5",
+    "dotenv-cli": "^7.4.2",
     "eslint": "^8.56.0",
     "eslint-config-next": "^14.2.3",
     "eslint-config-prettier": "^9.1.0",
