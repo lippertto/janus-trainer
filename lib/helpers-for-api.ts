@@ -3,6 +3,7 @@ import { ErrorResponse } from './dto';
 import { getToken } from 'next-auth/jwt';
 import { validate } from 'class-validator';
 
+/** Will throw if the token does not have the admin role. */
 export async function allowOnlyAdmins(req: NextRequest) {
   const token = await getToken({ req });
   if (!token) throw new ApiErrorUnauthorized('Token is missing');
@@ -16,6 +17,10 @@ export async function allowOnlyAdmins(req: NextRequest) {
   }
 }
 
+/**
+ * Throws an exception, unless: the request belongs to an admin user, or the 'sub' of the token is the same as
+ * 'ownUserId'
+ */
 export async function allowAdminOrSelf(
   req: NextRequest,
   ownUserId: string,
@@ -39,12 +44,12 @@ export async function allowAdminOrSelf(
   );
 }
 
+/** Will throw if the token is not valid. */
 export async function allowAnyAuthorized(
   req: NextRequest,
-): Promise<NextResponse<ErrorResponse> | null> {
+): Promise<void> {
   const token = await getToken({ req });
-  if (!token) return errorResponse('Unauthorized', 401);
-  return null;
+  if (!token) throw new ApiErrorUnauthorized('Token is missing');
 }
 
 export function badRequestResponse(

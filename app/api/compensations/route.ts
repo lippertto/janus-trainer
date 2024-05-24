@@ -20,7 +20,7 @@ SELECT CAST(u."id" AS TEXT) AS "userId",
     FROM "Training" AS gt INNER JOIN "User" AS u ON gt."userId" = u."id"
     WHERE gt.status = 'APPROVED'
     AND "u"."deletedAt" IS NULL
-    GROUP BY ("u"."id");
+    GROUP BY ("u"."id", "u"."name", "u"."iban");
 `;
   const value = sqlResult.map((r) => ({
     user: {

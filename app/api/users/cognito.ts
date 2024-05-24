@@ -12,13 +12,19 @@ import {
   ListUsersInGroupCommand,
   ListUsersInGroupResponse,
   UserType,
-  UsernameExistsException, AdminGetUserCommand, AdminUpdateUserAttributesCommand, AdminRemoveUserFromGroupCommand,
+  UsernameExistsException,
+  AdminGetUserCommand,
+  AdminUpdateUserAttributesCommand,
+  AdminRemoveUserFromGroupCommand,
 } from '@aws-sdk/client-cognito-identity-provider';
 import { Group } from '@/lib/dto';
 import {
   ApiConflictError,
   ApiErrorInternalServerError, ApiErrorNotFound,
 } from '@/lib/helpers-for-api';
+
+
+const USER_POOL_ID = process.env.COGNITO_USER_POOL_ID;
 
 export type ParsedCognitoUser = {
   username: string;
@@ -65,17 +71,17 @@ function convertOneCognitoUser(
   };
 }
 
-/** Returns all users in cognito. Note, the groups will be empty . */
-export async function listAllUsers(
-  client: CognitoIdentityProviderClient,
-): Promise<ParsedCognitoUser[]> {
+async function listUsers(client: CognitoIdentityProviderClient,
+                         filterString: string
+) {
   const result: ParsedCognitoUser[] = [];
   let paginationToken = undefined;
   do {
     const response: ListUsersCommandOutput = await client.send(
       new ListUsersCommand({
-        UserPoolId: process.env.COGNITO_USER_POOL_ID,
+        UserPoolId: USER_POOL_ID,
         PaginationToken: paginationToken,
+        Filter: filterString
       }),
     );
     paginationToken = response.PaginationToken;
@@ -85,8 +91,26 @@ export async function listAllUsers(
         .filter((u) => u !== null) as ParsedCognitoUser[]),
     );
   } while (paginationToken);
-
   return result;
+}
+
+/** Returns all users in cognito. Note, the groups will be empty . */
+export async function listAllUsers(
+  client: CognitoIdentityProviderClient,
+): Promise<ParsedCognitoUser[]> {
+  return listUsers(client, "")
+}
+
+export async function getUserByEmail(
+  client: CognitoIdentityProviderClient, email: string
+): Promise<ParsedCognitoUser|null> {
+  const users = await listUsers(client, `email = \"${email}\"`)
+  // Emails are unique within a cognito user pool. Hence we have at most one user.
+  if (users.length === 1) {
+    return users[0]
+  } else {
+    return null;
+  }
 }
 
 export async function listGroups(
@@ -96,7 +120,7 @@ export async function listGroups(
   try {
     response = await client.send(
       new ListGroupsCommand({
-        UserPoolId: process.env.COGNITO_USER_POOL_ID,
+        UserPoolId: USER_POOL_ID,
       }),
     );
   } catch (e) {
@@ -117,7 +141,7 @@ export async function findUsersForGroup(
   do {
     const response: ListUsersInGroupResponse = await client.send(
       new ListUsersInGroupCommand({
-        UserPoolId: process.env.COGNITO_USER_POOL_ID,
+        UserPoolId: USER_POOL_ID,
         GroupName: group,
         NextToken: nextToken,
       }),
@@ -140,7 +164,7 @@ export async function createCognitoUser(
   groups: Group[],
 ): Promise<ParsedCognitoUser> {
   const createUserRequest = new AdminCreateUserCommand({
-    UserPoolId: process.env.COGNITO_USER_POOL_ID,
+    UserPoolId: USER_POOL_ID,
     Username: email,
     UserAttributes: [{ Name: 'name', Value: name }],
   });
@@ -173,7 +197,7 @@ export async function createCognitoUser(
     try {
       await client.send(
         new AdminAddUserToGroupCommand({
-          UserPoolId: process.env.COGNITO_USER_POOL_ID,
+          UserPoolId: USER_POOL_ID,
           Username: username,
           GroupName: g,
         }),
@@ -190,7 +214,7 @@ export async function deleteCognitoUser(
   id: string,
 ) {
   const deleteUserRequest = new AdminDeleteUserCommand({
-    UserPoolId: process.env.COGNITO_USER_POOL_ID,
+    UserPoolId: USER_POOL_ID,
     Username: id,
   });
   try {
@@ -205,6 +229,23 @@ export async function deleteCognitoUser(
   }
 }
 
+async function getCognitoUserById(
+  client: CognitoIdentityProviderClient,
+  id: string
+): Promise<ParsedCognitoUser|null> {
+  try {
+    const response = await client.send(
+      new AdminGetUserCommand({
+        Username: id,
+        UserPoolId: USER_POOL_ID,
+      }),
+    );
+    return convertOneCognitoUser(response)
+  } catch (e) {
+    return null;
+  }
+}
+
 export async function updateCognitoUser(
   client: CognitoIdentityProviderClient,
   id: string,
@@ -212,14 +253,8 @@ export async function updateCognitoUser(
   name: string,
   groups: Group[],
 ): Promise<void> {
-  try {
-    await client.send(
-      new AdminGetUserCommand({
-        Username: id,
-        UserPoolId: process.env.COGNITO_USER_POOL_ID,
-      }),
-    );
-  } catch (e) {
+  const user = await getCognitoUserById(client, id);
+  if (!user) {
     throw new ApiErrorNotFound(
       `Could not update user because it does not exist in Cognito`,
     );
@@ -233,7 +268,7 @@ export async function updateCognitoUser(
   await client.send(
     new AdminUpdateUserAttributesCommand({
       Username: id,
-      UserPoolId: process.env.COGNITO_USER_POOL_ID,
+      UserPoolId: USER_POOL_ID,
       UserAttributes: attributes,
     }),
   );
@@ -272,7 +307,7 @@ async function ensureOneGroupMembership(
       new AdminAddUserToGroupCommand({
         Username: username,
         GroupName: group,
-        UserPoolId: process.env.COGNITO_USER_POOL_ID,
+        UserPoolId: USER_POOL_ID,
       }),
     );
   } else {
@@ -280,8 +315,14 @@ async function ensureOneGroupMembership(
       new AdminRemoveUserFromGroupCommand({
         Username: username,
         GroupName: group,
-        UserPoolId: process.env.COGNITO_USER_POOL_ID,
+        UserPoolId: USER_POOL_ID,
       }),
     );
   }
+}
+
+export function createCognitoClient() {
+  return new CognitoIdentityProviderClient({
+    region: process.env.COGNITO_REGION ?? 'eu-north-1',
+  });
 }

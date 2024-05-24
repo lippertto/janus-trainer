@@ -1,9 +1,10 @@
-import { Prisma, TrainingStatus } from '@prisma/client';
+import { CompensationValue, Prisma, TrainingStatus } from '@prisma/client';
 import {
   IsArray,
   IsEmail,
   IsEnum,
   IsIBAN,
+  IsInt,
   IsISO8601,
   IsNotEmpty,
   IsNumber,
@@ -161,4 +162,20 @@ export type AppUser = {
 export class DisciplineCreateRequestDto {
   @IsString()
   name: string;
+}
+
+export class CompensationValueCreateRequest {
+  constructor(obj: any) {
+    Object.assign(this, obj);
+  }
+
+  @IsInt()
+  cents: number;
+
+  @IsString()
+  description: string;
+}
+
+export type CompensationValueQueryResponse = {
+  value: CompensationValue[]
 }

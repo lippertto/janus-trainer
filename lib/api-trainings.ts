@@ -67,7 +67,7 @@ export async function addTraining(
     userId,
   };
 
-  const response = await fetch(`/api/trainings?userId=${userId}`, {
+  const response = await fetch(`/api/trainings`, {
     method: 'POST',
     body: JSON.stringify(request),
     cache: 'no-cache',

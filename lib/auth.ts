@@ -56,6 +56,8 @@ async function refreshAccessToken(token: JWT) {
   }
 }
 
+const COGNITO_ISSUER = `https://cognito-idp.${process.env.COGNITO_REGION}.amazonaws.com/${process.env.COGNITO_USER_POOL_ID}`
+
 // configuration according to https://github.com/nextauthjs/next-auth/issues/4707
 export const config: AuthOptions = {
   providers: [
@@ -63,7 +65,7 @@ export const config: AuthOptions = {
       clientId: process.env.COGNITO_CLIENT_ID!,
       // @ts-expect-error: we actually have to pass null in here.
       clientSecret: null,
-      issuer: process.env.COGNITO_ISSUER!,
+      issuer: COGNITO_ISSUER!,
       client: {
         token_endpoint_auth_method: 'none',
       },

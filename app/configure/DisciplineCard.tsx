@@ -48,23 +48,24 @@ function disciplineToListItem(
 type AddDisciplineDialogueProps = {
   open: boolean;
   handleClose: () => void;
-  newDiscipineName: string;
+  newDisciplineName: string;
   setNewDisciplineName: React.Dispatch<React.SetStateAction<string>>;
   handleAddDiscipline: (name: string) => void;
   disciplines: Discipline[];
 };
 
-function AddDisciplineDialogue({
-  open,
-  handleClose,
-  newDiscipineName,
-  setNewDisciplineName,
-  disciplines,
-  handleAddDiscipline,
-}: AddDisciplineDialogueProps) {
-  const isDuplicateName = disciplines.find((d) => d.name === newDiscipineName);
+function AddDisciplineDialogue(
+  {
+    open,
+    handleClose,
+    newDisciplineName,
+    setNewDisciplineName,
+    disciplines,
+    handleAddDiscipline,
+  }: AddDisciplineDialogueProps) {
+  const isDuplicateName = disciplines.find((d) => d.name === newDisciplineName);
   let errorMessage: string | null = null;
-  if (newDiscipineName.length === 0) {
+  if (newDisciplineName.length === 0) {
     errorMessage = 'Darf nicht leer sein';
   } else if (isDuplicateName) {
     errorMessage = 'Gibt es schon';
@@ -76,12 +77,15 @@ function AddDisciplineDialogue({
       <DialogContent sx={{ height: 100 }}>
         <TextField
           label="Name der Sportart"
-          value={newDiscipineName}
+          value={newDisciplineName}
           onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
             setNewDisciplineName(event.target.value);
           }}
           // needs to be set in Dialogs according to https://github.com/mui/material-ui/issues/29892#issuecomment-979745849
           margin="dense"
+          inputProps={{
+            'data-testid': 'enter-discipline-textfield',
+          }}
           error={!!errorMessage}
           helperText={errorMessage}
         />
@@ -91,10 +95,11 @@ function AddDisciplineDialogue({
         <Button
           disabled={!!errorMessage}
           onClick={() => {
-            handleAddDiscipline(newDiscipineName);
+            handleAddDiscipline(newDisciplineName);
             setNewDisciplineName('');
             handleClose();
           }}
+          data-testid="enter-discipline-confirm-button"
         >
           Speichern
         </Button>
@@ -111,11 +116,11 @@ type DeleteDisciplineDialogProps = {
 };
 
 function DeleteDisciplineDialog({
-  open,
-  handleClose,
-  discipline,
-  handleConfirmDeletion,
-}: DeleteDisciplineDialogProps) {
+                                  open,
+                                  handleClose,
+                                  discipline,
+                                  handleConfirmDeletion,
+                                }: DeleteDisciplineDialogProps) {
   return (
     <Dialog open={open}>
       <DialogTitle>Sportart löschen</DialogTitle>
@@ -144,15 +149,15 @@ type DisciplineListProps = {
   deleteDiscipline: (id: number) => void;
 };
 
-export default function DisciplineList({
-  disciplines,
-  handleAddDiscipline,
-  deleteDiscipline,
-}: DisciplineListProps) {
+export default function DisciplineCard({
+                                         disciplines,
+                                         handleAddDiscipline,
+                                         deleteDiscipline,
+                                       }: DisciplineListProps) {
   const [showEnterDialog, setShowEnterDialog] = React.useState<boolean>(false);
   const [showDeleteDialog, setShowDeleteDialog] =
     React.useState<boolean>(false);
-  const [newDiscipineName, setNewDisciplineName] = React.useState<string>('');
+  const [newDisciplineName, setNewDisciplineName] = React.useState<string>('');
   const [activeDiscipline, setActiveDiscipline] =
     React.useState<Discipline | null>(null);
 
@@ -180,6 +185,7 @@ export default function DisciplineList({
             onClick={() => {
               setShowEnterDialog(true);
             }}
+            data-testid="add-discipline-button"
           >
             Sportart hinzufügen
           </Button>
@@ -188,7 +194,7 @@ export default function DisciplineList({
       <AddDisciplineDialogue
         open={showEnterDialog}
         handleClose={() => setShowEnterDialog(false)}
-        newDiscipineName={newDiscipineName}
+        newDisciplineName={newDisciplineName}
         setNewDisciplineName={setNewDisciplineName}
         disciplines={disciplines}
         handleAddDiscipline={handleAddDiscipline}

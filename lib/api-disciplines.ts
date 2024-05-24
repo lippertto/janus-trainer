@@ -17,7 +17,7 @@ export async function addDiscipline(
     method: 'POST',
     body: JSON.stringify(request),
   });
-  const result = (await response.json()).value;
+  const result = (await response.json());
   return result as Discipline;
 }
 
@@ -51,3 +51,4 @@ export async function getDisciplines(
     throw e;
   }
 }
+

@@ -14,6 +14,9 @@ async function doGET(request: NextRequest) {
 
   await prisma.holiday.deleteMany({ where: {} });
   await prisma.training.deleteMany({ where: {} });
+
+  await prisma.discipline.deleteMany({ where: {} });
+  await prisma.discipline.createMany({ data: [{ name: 'Sportart 1' }, { name: 'Sportart 2' }] });
   return NextResponse.json({ message: 'ok' });
 }
 

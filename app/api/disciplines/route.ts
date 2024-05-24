@@ -13,8 +13,7 @@ export type DisciplineQueryResult = {
 };
 
 async function doGET(request: NextRequest) {
-  const authError = await allowAnyAuthorized(request);
-  if (authError) return authError;
+  allowAnyAuthorized(request);
 
   const result = await prisma.discipline.findMany();
   return NextResponse.json({ value: result });

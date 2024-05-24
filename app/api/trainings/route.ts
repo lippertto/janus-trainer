@@ -108,6 +108,7 @@ async function doPOST(
   nextRequest: NextRequest,
 ): Promise<NextResponse<Training>> {
   const request = await validateCreateRequest(await nextRequest.json());
+  await allowAdminOrSelf(nextRequest, request.userId);
 
   const result = await prisma.training.create({
     data: {

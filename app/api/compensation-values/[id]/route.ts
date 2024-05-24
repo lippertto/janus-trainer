@@ -12,7 +12,7 @@ async function doDELETE(
   const idAsNumber = parseInt(params.id);
   if (!idAsNumber) return badRequestResponse('id is not valid');
 
-  await prisma.discipline.delete({ where: { id: idAsNumber } });
+  await prisma.compensationValue.delete({ where: { id: idAsNumber } });
 
   return emptyResponse();
 }
