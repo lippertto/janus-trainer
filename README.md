@@ -9,9 +9,6 @@ yarn start:dev
 # TODO
 
 ## Tomorrow
-* Finish compensation values
-  * Use them in the edit-dropdown
-* Is there a dev-cognito? Use either that or the test-cognito. But then update the user ids in the local db.
 * Disable cognito users on deletion, enable when re-created - really?
 * Document how users are handled (id, email, etc.). Users are not deleted because we want to keep the corresponding 
   trainings in the db.
@@ -51,9 +48,8 @@ yarn run dotenv -e .env.development -- prisma migrate dev
 ## Users
 I used cognito to learn it, and to keep the user credentials in a secure spot, i.e., not me.
 
-Production has its own cognito user pool. Dev+Test share a user pool to keep the setup simpler. (At least for now).
-
-
+Every environment has its own user pool. The one in prod and test are managed by cloudformation, the one for dev
+is managed manually.
 
 # Deployment
 The deployment is handled via cloudformation. This will take care of the infrastructure setup and the deployment
