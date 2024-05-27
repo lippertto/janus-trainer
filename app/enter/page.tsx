@@ -7,13 +7,11 @@ import TrainingTable from '../../components/TrainingTable';
 import { useSession } from 'next-auth/react';
 import type { JanusSession } from '../../lib/auth';
 import LoginRequired from '../../components/LoginRequired';
-import { getDisciplines } from '@/lib/api-disciplines';
-import { getTrainingsForUser } from '@/lib/api-trainings';
-import { getHolidays } from '@/lib/api-holidays';
-import { showError } from '@/lib/notifications';
 import { CompensationValue, Discipline, Holiday } from '@prisma/client';
 import { TrainingDtoNew } from '@/lib/dto';
-import { getCompensationValues } from '@/lib/api-compensation-values';
+import { useQuery } from '@tanstack/react-query';
+import { fetchListFromApi } from '@/lib/fetch';
+import { API_COMPENSATION_VALUES, API_DISCIPLINES, API_HOLIDAYS, API_TRAININGS } from '@/lib/routes';
 
 function sortDiscipline(a: Discipline, b: Discipline): number {
   if (a.name < b.name) {
@@ -27,55 +25,71 @@ function sortDiscipline(a: Discipline, b: Discipline): number {
 
 export default function EnterPage() {
   const [trainings, setTrainings] = React.useState<TrainingDtoNew[]>([]);
-  const [disciplines, setDisciplines] = React.useState<Discipline[]>([]);
   const [holidays, setHolidays] = React.useState<Holiday[]>([]);
-  const [compensationValues, setCompensationValues] = React.useState<CompensationValue[]>([]);
-
+  const [disciplines, setDisciplines] = React.useState<Discipline[]>([]);
   const { data, status: authenticationStatus } = useSession();
   const session = data as JanusSession;
 
-  const refresh = React.useCallback(async () => {
-    if (!session?.accessToken) return [];
-    let promises = [];
+  const compensationValuesResult = useQuery({
+    queryKey: ['compensationValues'],
+    queryFn: () => fetchListFromApi<CompensationValue>(
+      API_COMPENSATION_VALUES,
+      session.accessToken),
+    throwOnError: true,
+    enabled: !!session?.accessToken,
+    initialData: [],
+  });
 
-    promises.push(getDisciplines(session!.accessToken)
-      .then((v) => setDisciplines(v.toSorted(sortDiscipline)))
-      .catch((e) => {
-        showError('Konnte die Sportarten nicht laden', e.message);
-      }));
+  const disciplineResult = useQuery({
+    queryKey: ['disciplines'],
+    queryFn: () => fetchListFromApi<Discipline>(
+      API_DISCIPLINES,
+      session.accessToken,
+    ),
+    throwOnError: true,
+    enabled: !!session?.accessToken,
+    initialData: [],
+  });
 
-    // we get the holidays for this year and the last. This should be enough
-    promises.push(getHolidays(session.accessToken, [
-      new Date().getFullYear(),
-      new Date().getFullYear() - 1,
-    ])
-      .then((v) => {
-        setHolidays(v);
-      })
-      .catch((e) => {
-        showError('Konnte die Feiertage nicht laden', e.message);
-      }));
+  const holidayResult = useQuery({
+    queryKey: ['holidays'],
+    queryFn: () => fetchListFromApi<Holiday>(
+      `${API_HOLIDAYS}?year=${new Date().getFullYear()},${new Date().getFullYear() - 1}`,
+      session.accessToken,
+    ),
+    throwOnError: true,
+    enabled: !!session?.accessToken,
+    initialData: [],
+  });
 
-    promises.push(getTrainingsForUser(session.accessToken, session.userId).then(
-      (v) => {
-        // trainings need to be sorted
-        v.sort((r1, r2) => r1.id - r2.id);
-        setTrainings(v);
-      },
-    ));
-
-    promises.push(getCompensationValues(session.accessToken)
-      .then((v) => setCompensationValues(v))
-      .catch((e: Error) => {
-        showError('Konnte Vergütungen nicht laden.', e.message);
-      }));
-
-    return Promise.all(promises);
-  }, [session, setTrainings, setDisciplines]);
+  const trainingResult = useQuery({
+    queryKey: ['trainings'],
+    queryFn: () => fetchListFromApi<TrainingDtoNew>(
+      `${API_TRAININGS}?userId=${session.userId}`,
+      session.accessToken,
+    ),
+    throwOnError: true,
+    enabled: !!session?.accessToken,
+    initialData: [],
+  });
 
   useEffect(() => {
-    refresh();
-  }, [session?.accessToken, refresh]);
+    if (!disciplineResult.isLoading && !disciplineResult.isError) {
+      setDisciplines(disciplineResult.data);
+    }
+  }, [disciplineResult]);
+
+  useEffect(() => {
+    if (!holidayResult.isError && !holidayResult.isLoading) {
+      setHolidays(holidayResult.data);
+    }
+  }, [holidayResult]);
+
+  useEffect(() => {
+    if (!trainingResult.isError && !trainingResult.isLoading) {
+      setTrainings(trainingResult.data);
+    }
+  }, [trainingResult]);
 
   if (authenticationStatus !== 'authenticated') {
     return <LoginRequired authenticationStatus={authenticationStatus} />;
@@ -87,9 +101,14 @@ export default function EnterPage() {
       disciplines={disciplines}
       holidays={holidays}
       setTrainings={setTrainings}
-      refresh={refresh}
+      refresh={() => {
+        compensationValuesResult.refetch();
+        disciplineResult.refetch();
+        holidayResult.refetch();
+        trainingResult.refetch();
+      }}
       approvalMode={false}
-      compensationValues={compensationValues}
+      compensationValues={compensationValuesResult.data}
       data-testid="enter-training-table"
     />
   );

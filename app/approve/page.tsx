@@ -16,13 +16,11 @@ import { DatePicker } from '@mui/x-date-pickers';
 import quarterOfYear from 'dayjs/plugin/quarterOfYear';
 import ButtonGroup from '@mui/material/ButtonGroup';
 import Button from '@mui/material/Button';
-import { getDisciplines } from '@/lib/api-disciplines';
-import { getHolidays } from '@/lib/api-holidays';
-import { showError } from '@/lib/notifications';
-import { getTrainingsForPeriod } from '@/lib/api-trainings';
 import { CompensationValue, Discipline, Holiday } from '@prisma/client';
 import { TrainingDtoNew } from '@/lib/dto';
-import { getCompensationValues } from '@/lib/api-compensation-values';
+import { useQuery } from '@tanstack/react-query';
+import { fetchListFromApi } from '@/lib/fetch';
+import { API_COMPENSATION_VALUES, API_DISCIPLINES, API_HOLIDAYS, API_TRAININGS } from '@/lib/routes';
 
 dayjs.extend(quarterOfYear);
 
@@ -36,52 +34,76 @@ export default function ApprovePage(): React.ReactElement {
   const [trainings, setTrainings] = React.useState<TrainingDtoNew[]>([]);
   const [disciplines, setDisciplines] = React.useState<Discipline[]>([]);
   const [holidays, setHolidays] = React.useState<Holiday[]>([]);
-  const [compensationValues, setCompensationValues] = React.useState<CompensationValue[]>([]);
 
   const { data, status: authenticationStatus } = useSession();
   const session = data as JanusSession;
 
-  const refreshTrainings = React.useCallback(async () => {
-    if (startDate?.isValid() && endDate?.isValid() && session?.accessToken) {
-      return getTrainingsForPeriod(
-        session.accessToken,
-        startDate,
-        endDate,
-      ).then((v) => {
-        v.sort((r1: TrainingDtoNew, r2: TrainingDtoNew) => r1.id - r2.id);
-        setTrainings(v);
-        return v;
-      });
-    }
-    return [];
-  }, [startDate, endDate, setTrainings, session?.accessToken]);
+  const trainingResult = useQuery({
+    queryKey: ['trainings', startDate, endDate],
+    queryFn: () => fetchListFromApi<TrainingDtoNew>(
+      `${API_TRAININGS}?start=${startDate!.format('YYYY-MM-DD')}&end=${endDate!.format('YYYY-MM-DD')}`,
+      session.accessToken,
+    ),
+    throwOnError: true,
+    enabled: (!!session?.accessToken && startDate?.isValid() && endDate?.isValid()),
+    initialData: [],
+  });
 
-  // refresh everything
+  const holidayResult = useQuery({
+    queryKey: ['holidays'],
+    queryFn: () => fetchListFromApi<Holiday>(
+      `${API_HOLIDAYS}?year=${new Date().getFullYear()},${new Date().getFullYear() - 1}`,
+      session.accessToken,
+    ),
+    throwOnError: true,
+    enabled: !!session?.accessToken,
+    initialData: [],
+  });
+
+  const compensationValuesResult = useQuery({
+    queryKey: ['compensationValues'],
+    queryFn: () => fetchListFromApi<CompensationValue>(
+      API_COMPENSATION_VALUES,
+      session.accessToken),
+    throwOnError: true,
+    enabled: !!session?.accessToken,
+    initialData: [],
+  });
+
+  const disciplineResult = useQuery({
+    queryKey: ['disciplines'],
+    queryFn: () => fetchListFromApi<Discipline>(
+      API_DISCIPLINES,
+      session.accessToken,
+    ),
+    throwOnError: true,
+    enabled: !!session?.accessToken,
+    initialData: [],
+  });
+
   useEffect(() => {
-    if (!session?.accessToken) {
-      return;
+    if (!holidayResult.isError && !holidayResult.isLoading) {
+      setHolidays(holidayResult.data);
     }
+  }, [holidayResult]);
 
-    getDisciplines(session.accessToken).then((v) => setDisciplines(v));
-    refreshTrainings();
-    getHolidays(session.accessToken, [
-      new Date().getFullYear() - 1,
-      new Date().getFullYear(),
-    ])
-      .then((v) => setHolidays(v))
-      .catch((e) => showError('Konnte Feiertage nicht laden', e.message));
+  useEffect(() => {
+    if (!disciplineResult.isLoading && !disciplineResult.isError) {
+      setDisciplines(disciplineResult.data);
+    }
+  }, [disciplineResult]);
 
-    getCompensationValues(session.accessToken)
-      .then((v) => setCompensationValues(v))
-      .catch((e: Error) => {
-        showError('Konnte Vergütungen nicht laden.', e.message);
-      });
+  useEffect(() => {
+    if (!trainingResult.isError && !trainingResult.isLoading) {
+      setTrainings(trainingResult.data);
+    }
+  }, [trainingResult]);
 
-  }, [refreshTrainings, setDisciplines, session?.accessToken]);
+  // refresh when the dates have changed
+  useEffect(() => {
+    trainingResult.refetch()
+  }, [startDate, endDate]);
 
-  useEffect( () => {
-    refreshTrainings();
-  }, [startDate, endDate, refreshTrainings]);
 
   if (authenticationStatus !== 'authenticated') {
     return <LoginRequired authenticationStatus={authenticationStatus} />;
@@ -133,9 +155,13 @@ export default function ApprovePage(): React.ReactElement {
           trainings={trainings}
           disciplines={disciplines}
           holidays={holidays}
-          compensationValues={compensationValues}
+          compensationValues={compensationValuesResult.data}
           setTrainings={setTrainings}
-          refresh={refreshTrainings}
+          refresh={() => {
+            holidayResult.refetch()
+            disciplineResult.refetch()
+            trainingResult.refetch()
+          }}
           approvalMode={true}
         />
       </Grid>

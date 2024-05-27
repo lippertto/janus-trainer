@@ -12,6 +12,7 @@ import { SnackbarProvider } from 'notistack';
 import { MaterialDesignContent } from 'notistack';
 import { styled } from '@mui/material/styles';
 import { ConfirmProvider } from 'material-ui-confirm';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 const theme = createTheme({}, deDE);
 
@@ -27,9 +28,11 @@ const StyledSnackbarContent = styled(MaterialDesignContent)(() => ({
   },
 }));
 
+const queryClient = new QueryClient();
+
 export default function JanusProviders({
-  children,
-}: {
+                                         children,
+                                       }: {
   children: React.ReactElement;
 }) {
   return (
@@ -49,8 +52,9 @@ export default function JanusProviders({
               cancellationText: 'Abbrechen',
             }}
           >
-            <SessionProvider>{children}</SessionProvider>
-          </ConfirmProvider>
+            <QueryClientProvider client={queryClient}>
+              <SessionProvider>{children}</SessionProvider>
+            </QueryClientProvider> </ConfirmProvider>
         </SnackbarProvider>
       </LocalizationProvider>
     </ThemeProvider>
