@@ -24,7 +24,7 @@ function UserTableToolbar({
 }) {
   return (
     <GridToolbarContainer>
-      <Button startIcon={<PersonAddIcon />} onClick={handleAddUser}>
+      <Button startIcon={<PersonAddIcon />} onClick={handleAddUser} data-testid={"add-user-button"}>
         Nutzer hinzufügen
       </Button>
       <Button startIcon={<RefreshIcon />} onClick={handleRefresh}>
@@ -63,7 +63,7 @@ export default function UserTable({
       type: 'actions',
       headerName: '',
       flex: 0.5,
-      getActions: ({ id }) => {
+      getActions: ({ id , row}) => {
         return [
           <GridActionsCellItem
             icon={<EditIcon />}
@@ -76,6 +76,7 @@ export default function UserTable({
             label="löschen"
             onClick={() => handleUserDeleteClick(id)}
             key={id}
+            data-testid={`delete-user-${row.email}-button`}
           />,
         ];
       },

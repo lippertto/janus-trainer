@@ -112,10 +112,6 @@ function AddCompensationValueDialog({ open, handleClose, handleConfirm }: AddCom
   </Dialog>;
 }
 
-type DeleteCompensationValueDialogProps = {
-  deletionCandidate: CompensationValue|null
-}
-
 
 export default function CompensationCard({
                                            values,
@@ -123,7 +119,6 @@ export default function CompensationCard({
                                            handleDeleteCompensationValue,
                                          }: CompensationCardProps) {
   const [showAddDialog, setShowAddDialog] = React.useState<boolean>(false);
-  // const [deletionCandidate, setDeletionCandidate] = React.useState<CompensationValue | null>(null);
 
   const confirm = useConfirm();
   const handleDeleteClick = (deletionCandidate: CompensationValue) => {

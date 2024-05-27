@@ -2,7 +2,6 @@ import {
   AdminAddUserToGroupCommand,
   AdminCreateUserCommand,
   AdminCreateUserResponse,
-  AdminDeleteUserCommand,
   AttributeType,
   CognitoIdentityProviderClient,
   ListGroupsCommand,
@@ -15,7 +14,7 @@ import {
   UsernameExistsException,
   AdminGetUserCommand,
   AdminUpdateUserAttributesCommand,
-  AdminRemoveUserFromGroupCommand,
+  AdminRemoveUserFromGroupCommand, AdminDisableUserCommand, AdminEnableUserCommand,
 } from '@aws-sdk/client-cognito-identity-provider';
 import { Group } from '@/lib/dto';
 import {
@@ -31,6 +30,7 @@ export type ParsedCognitoUser = {
   email: string;
   groups: Group[];
   name: string;
+  enabled: boolean;
 };
 
 function getCognitoAttributeOrNull(
@@ -68,10 +68,11 @@ function convertOneCognitoUser(
     email: email,
     name: name,
     groups: [],
+    enabled: cognitoUser.Enabled ?? false,
   };
 }
 
-async function listUsers(client: CognitoIdentityProviderClient,
+async function listCognitoUsers(client: CognitoIdentityProviderClient,
                          filterString: string
 ) {
   const result: ParsedCognitoUser[] = [];
@@ -98,14 +99,14 @@ async function listUsers(client: CognitoIdentityProviderClient,
 export async function listAllUsers(
   client: CognitoIdentityProviderClient,
 ): Promise<ParsedCognitoUser[]> {
-  return listUsers(client, "")
+  return listCognitoUsers(client, "")
 }
 
 export async function getUserByEmail(
   client: CognitoIdentityProviderClient, email: string
 ): Promise<ParsedCognitoUser|null> {
-  const users = await listUsers(client, `email = \"${email}\"`)
-  // Emails are unique within a cognito user pool. Hence we have at most one user.
+  const users = await listCognitoUsers(client, `email = \"${email}\"`)
+  // Emails are unique within a cognito user pool. Hence, we have at most one user.
   if (users.length === 1) {
     return users[0]
   } else {
@@ -155,13 +156,13 @@ export async function findUsersForGroup(
 
 /**
  * Create the given user in cognito.
+ * Note: The user has not been assigned ot any groups yet.
  * @returns the cognito username of the created user.
  */
 export async function createCognitoUser(
   client: CognitoIdentityProviderClient,
   email: string,
   name: string,
-  groups: Group[],
 ): Promise<ParsedCognitoUser> {
   const createUserRequest = new AdminCreateUserCommand({
     UserPoolId: USER_POOL_ID,
@@ -192,37 +193,23 @@ export async function createCognitoUser(
   }
 
   const username = createResponse!.User!.Username!;
-
-  for (const g of groups) {
-    try {
-      await client.send(
-        new AdminAddUserToGroupCommand({
-          UserPoolId: USER_POOL_ID,
-          Username: username,
-          GroupName: g,
-        }),
-      );
-    } catch (e) {
-      console.log(`Failed to add user ${username} to group ${g}`);
-    }
-  }
-  return { username, email, groups, name };
+  return { username, email, groups: [], name, enabled: true };
 }
 
-export async function deleteCognitoUser(
+export async function disableCognitoUser(
   client: CognitoIdentityProviderClient,
   id: string,
 ) {
-  const deleteUserRequest = new AdminDeleteUserCommand({
+  const disableUserCommand = new AdminDisableUserCommand({
     UserPoolId: USER_POOL_ID,
     Username: id,
   });
   try {
-    await client.send(deleteUserRequest);
+    await client.send(disableUserCommand);
   } catch (e) {
     if (e instanceof Error) {
       throw new ApiErrorInternalServerError(
-        `Failed to create user: ${e.message}`,
+        `Failed to disable user in cognito: ${e.message}`,
       );
     }
     throw new ApiErrorInternalServerError('');
@@ -273,12 +260,12 @@ export async function updateCognitoUser(
     }),
   );
 
-  await ensureGroups(client, id, groups);
+  await setGroupsForUser(client, id, groups);
 }
 
 
 /** Ensures that the given user in only the in the provided list of groups. */
-async function ensureGroups(
+export async function setGroupsForUser(
   client: CognitoIdentityProviderClient,
   username: string,
   groups: Group[],
@@ -325,4 +312,26 @@ export function createCognitoClient() {
   return new CognitoIdentityProviderClient({
     region: process.env.COGNITO_REGION ?? 'eu-north-1',
   });
+}
+
+export async function enableCognitoUser(
+  client: CognitoIdentityProviderClient,
+  username: string,
+) {
+  const command = new AdminEnableUserCommand(
+    {
+      UserPoolId: USER_POOL_ID,
+      Username: username,
+    }
+  )
+  try {
+    await client.send(command);
+  } catch (e) {
+    if (e instanceof Error) {
+      throw new ApiErrorInternalServerError(
+        `Failed to enable user in cognito: ${e.message}`,
+      );
+    }
+    throw new ApiErrorInternalServerError('unknown error');
+  }
 }
