@@ -58,7 +58,6 @@ import {
 } from '@/lib/api-trainings';
 import { CompensationValue, Discipline, Holiday, TrainingStatus } from '@prisma/client';
 import { TrainingDtoNew } from '@/lib/dto';
-import { bigIntReplacer } from '@/lib/json-tools';
 
 require('dayjs/locale/de');
 dayjs.locale('de');
@@ -151,7 +150,7 @@ function buildCompensationValueColumn(values: CompensationValue[]): GridColDef {
     field: 'compensationCents',
     headerName: 'Vergütung',
     type: 'singleSelect',
-    flex: 1,
+    flex: 2,
     editable: true,
     valueOptions: values.map((v) => {
       return {
