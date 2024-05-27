@@ -26,45 +26,36 @@ import {
   updateUser,
 } from '@/lib/api-users';
 import { User } from '@/lib/dto';
-
-function DeleteUserDialog({
-  open,
-  handleClose,
-  user,
-  handleDeleteClick,
-}: {
-  open: boolean;
-  handleClose: () => void;
-  user: User | null;
-  handleDeleteClick: () => void;
-}) {
-  return (
-    <Dialog open={open} onClose={handleClose}>
-      <DialogTitle>Nutzer löschen</DialogTitle>
-      <DialogContent>
-        <Typography>
-          Soll {user?.name} mit der Email-adresse {user?.email} gelöscht werden?
-        </Typography>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={handleDeleteClick} color="error">
-          Löschen
-        </Button>
-        <Button onClick={handleClose}>Abbrechen</Button>
-      </DialogActions>
-    </Dialog>
-  );
-}
+import { CompensationValue } from '@prisma/client';
+import { useConfirm } from 'material-ui-confirm';
 
 export default function UserManagementPage() {
   const [showCreate, setShowCreate] = React.useState<boolean>(false);
-  const [showDelete, setShowDelete] = React.useState<boolean>(false);
   const [showEdit, setShowEdit] = React.useState<boolean>(false);
   const [users, setUsers] = React.useState<User[]>([]);
   const [userToEdit, setUserToEdit] = React.useState<User | null>(null);
 
   const { data, status: authenticationStatus } = useSession();
   const session = data as JanusSession;
+
+  const confirm = useConfirm();
+  const handleDeleteClick = (deleteMeId: GridRowId) => {
+    const user = users.find((t) => t.id === deleteMeId);
+    if (!user) return;
+    confirm({
+      title: 'Nutzer löschen?',
+      description: `Soll der Nutzer "${user.email}" gelöscht werden?`,
+    })
+      .then(() =>
+        deleteUser(session.accessToken, user.id)
+          .then(() => {
+            setUsers(users.filter((u) => u.id !== user.id));
+          })
+          .catch((err) => {
+            showError(`Konnte Nutzer ${user.email} nicht löschen`, err.message);
+          }));
+  };
+
 
   const refresh = React.useCallback(async () => {
     setUserToEdit(null);
@@ -92,21 +83,6 @@ export default function UserManagementPage() {
     [setShowEdit, setUserToEdit, users],
   );
 
-  const handleUserDeleteClick = React.useCallback(
-    (id: GridRowId) => {
-      const user = users.find((t) => t.id === id);
-      if (!user) {
-        console.error(`Could not find user with id ${id}`);
-        setUserToEdit(null);
-        return;
-      } else {
-        setUserToEdit(user);
-        setShowDelete(true);
-      }
-    },
-    [users, setUserToEdit],
-  );
-
   React.useEffect(() => {
     refresh();
   }, [session?.accessToken, refresh]);
@@ -122,7 +98,7 @@ export default function UserManagementPage() {
         handleAddUser={() => setShowCreate(true)}
         handleRefresh={refresh}
         handleUserEditClick={handleUserEditClick}
-        handleUserDeleteClick={handleUserDeleteClick}
+        handleUserDeleteClick={handleDeleteClick}
       />
 
       {/* Dialog to edit users */}
@@ -138,7 +114,7 @@ export default function UserManagementPage() {
               );
             },
           ).catch((e) => {
-            showError("Konnte Nutzer nicht aktualisieren", e.message);
+            showError('Konnte Nutzer nicht aktualisieren', e.message);
           })
         }
         user={userToEdit}
@@ -158,20 +134,6 @@ export default function UserManagementPage() {
             });
         }}
         user={null}
-      />
-      <DeleteUserDialog
-        open={showDelete}
-        handleClose={() => setShowDelete(false)}
-        user={userToEdit}
-        handleDeleteClick={() => {
-          if (userToEdit) {
-            deleteUser(session.accessToken, userToEdit.id).then(() => {
-              setUsers(users.filter((u) => u.id !== userToEdit.id));
-            });
-          }
-          setUserToEdit(null);
-          setShowDelete(false);
-        }}
       />
     </>
   );

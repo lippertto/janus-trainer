@@ -64,6 +64,9 @@ export function EditUserDialog({
               onChange={(e) => setName(e.target.value)}
               error={nameIsSet ? false : true}
               helperText={nameIsSet ? null : 'Darf nicht leer sein'}
+              inputProps={{
+                'data-testid': 'enter-name-textfield',
+              }}
             />
           </Grid>
           <Grid>
@@ -73,6 +76,9 @@ export function EditUserDialog({
               onChange={(e) => setEmail(e.target.value)}
               error={emailIsSet ? false : true}
               helperText={emailIsSet ? null : 'Darf nicht leer sein'}
+              inputProps={{
+                'data-testid': 'enter-email-textfield',
+              }}
             />
           </Grid>
           <Grid>
@@ -83,6 +89,7 @@ export function EditUserDialog({
                   <Checkbox
                     checked={isTrainer}
                     onChange={(e) => setIsTrainer(e.target.checked)}
+                    inputProps={{ 'data-testid': 'is-trainer-checkbox' } as React.InputHTMLAttributes<HTMLInputElement>}
                   />
                 }
                 label="Übungsleitung"
@@ -92,6 +99,7 @@ export function EditUserDialog({
                   <Checkbox
                     checked={isAdmin}
                     onChange={(e) => setIsAdmin(e.target.checked)}
+                    inputProps={{ 'data-testid': 'is-admin-checkbox' } as React.InputHTMLAttributes<HTMLInputElement>}
                   />
                 }
                 label="Admin"
@@ -108,6 +116,9 @@ export function EditUserDialog({
               helperText={
                 isTrainer && !ibanIsSet ? 'Notwendig für Übungsleitungen' : null
               }
+              inputProps={{
+                'data-testid': 'enter-iban-textfield',
+              }}
             />
           </Grid>
         </Grid>
@@ -136,6 +147,7 @@ export function EditUserDialog({
             handleClose();
           }}
           autoFocus
+          data-testid={'save-user-button'}
         >
           Speichern
         </Button>

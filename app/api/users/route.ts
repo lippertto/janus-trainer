@@ -1,7 +1,6 @@
 import { ErrorResponse } from '@/lib/dto';
 import prisma from '@/lib/prisma';
 import {
-  ApiErrorBadRequest,
   allowOnlyAdmins,
   handleTopLevelCatch,
 } from '@/lib/helpers-for-api';
@@ -19,6 +18,11 @@ import {
 import { UserQueryResponseDto } from '@/lib/dto';
 import { createUser } from '@/app/api/users/createUser';
 
+/** List all users.
+ * Only the following users are returned:
+ * * User exists in the database and is not soft-deleted
+ * * User exists in cognito as is enabled
+ */
 async function listUsers(): Promise<User[]> {
   const client = new CognitoIdentityProviderClient({
     region: process.env.COGNITO_REGION ?? 'eu-north-1',

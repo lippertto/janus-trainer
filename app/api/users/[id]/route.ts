@@ -6,7 +6,7 @@ import {
 import prisma from '@/lib/prisma';
 import { CognitoIdentityProviderClient } from '@aws-sdk/client-cognito-identity-provider';
 import { NextRequest, NextResponse } from 'next/server';
-import { deleteCognitoUser, updateCognitoUser } from '../cognito';
+import { disableCognitoUser, updateCognitoUser } from '../cognito';
 import { User, UserCreateRequest } from '@/lib/dto';
 
 async function doDELETE(request: NextRequest, id: string) {
@@ -21,7 +21,7 @@ async function doDELETE(request: NextRequest, id: string) {
   const client = new CognitoIdentityProviderClient({
     region: process.env.COGNITO_REGION,
   });
-  await deleteCognitoUser(client, id);
+  await disableCognitoUser(client, id);
 
   await prisma.userInDb.update({
     where: { id, deletedAt: null },
@@ -44,7 +44,7 @@ export async function DELETE(
 }
 
 async function doHEAD(request: NextRequest, params: { id: string }) {
-  const user = await prisma.userInDb.findFirst({ where: { id: params.id } });
+  const user = await prisma.userInDb.findFirst({ where: { id: params.id, deletedAt: null } });
   if (!user) {
     throw new ApiErrorNotFound();
   }
