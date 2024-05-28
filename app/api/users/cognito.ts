@@ -86,10 +86,11 @@ async function listCognitoUsers(client: CognitoIdentityProviderClient,
       }),
     );
     paginationToken = response.PaginationToken;
+    const usersOfThisBatch = response
+      .Users!.map(convertOneCognitoUser)
+      .filter((u) => u !== null) as ParsedCognitoUser[];
     result.push(
-      ...(response
-        .Users!.map(convertOneCognitoUser)
-        .filter((u) => u !== null) as ParsedCognitoUser[]),
+      ...usersOfThisBatch,
     );
   } while (paginationToken);
   return result;

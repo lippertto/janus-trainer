@@ -4,8 +4,6 @@ import React from 'react';
 import { useSession } from 'next-auth/react';
 
 import Grid from '@mui/material/Unstable_Grid2';
-import Button from '@mui/material/Button';
-import { GridRowId } from '@mui/x-data-grid';
 
 import dayjs from 'dayjs';
 
@@ -20,7 +18,6 @@ import { showError, showSuccess } from '@/lib/notifications';
 
 import DisciplineCard from './DisciplineCard';
 import HolidayCard from './HolidayCard';
-import { clearDatabase } from '@/lib/api-system';
 import { CompensationValue, Discipline, Holiday } from '@prisma/client';
 import CompensationCard from '@/app/configure/CompensationCard';
 import { addCompensationValue, deleteCompensationValue, getCompensationValues } from '@/lib/api-compensation-values';
@@ -36,25 +33,6 @@ function compareByNameProperty(
     return 1;
   }
   return 0;
-}
-
-function clearDatabaseButton(accessToken: string, refresh: () => void) {
-  if (window.location.hostname === 'janus.lippert.dev') {
-    return null;
-  }
-  return (
-    <Grid xs={1}>
-      <Button
-        data-testid="configure-button-clear-database"
-        color="error"
-        onClick={() => {
-          clearDatabase(accessToken).then(() => refresh());
-        }}
-      >
-        Datenbank leeren
-      </Button>
-    </Grid>
-  );
 }
 
 export default function Page() {
@@ -83,17 +61,16 @@ export default function Page() {
   );
 
   const handleDeleteDiscipline = React.useCallback(
-    (id: number | string) => {
+    (discipline: Discipline) => {
       if (!session?.accessToken) return;
-      deleteDiscipline(session.accessToken, id)
+      deleteDiscipline(session.accessToken, discipline.id)
         .then(() => {
-            const toBeDeleted = disciplines.find((d) => d.id === id);
-            setDisciplines(disciplines.filter((d) => d.id !== id));
-            showSuccess(`Sportart ${toBeDeleted?.name ?? ''} wurde gelöscht`);
+            setDisciplines(disciplines.filter((d) => d.id !== discipline.id));
+            showSuccess(`Sportart ${discipline.name} wurde gelöscht`);
           },
         )
         .catch((e) => {
-          showError('Konnte Sportart nicht löschen', e.message);
+          showError(`Konnte Sportart ${discipline.name} nicht löschen`, e.message);
         });
     },
     [session?.accessToken, disciplines, setDisciplines],
@@ -101,11 +78,8 @@ export default function Page() {
 
   const handleAddHoliday = React.useCallback(
     (start: dayjs.Dayjs, end: dayjs.Dayjs, name: string) => {
-      if (!session?.accessToken) {
-        showError(
-          'Es gab ein Problem mit der Anmeldung. Bitte Seite neu laden.',
-        );
-      }
+      if (!session?.accessToken) return;
+
       addHoliday(session.accessToken, start, end, name)
         .then((h) => {
           if (h.start.substring(0, 4) === holidayYear.toString()) {
@@ -123,33 +97,32 @@ export default function Page() {
   );
 
   const handleDeleteHoliday = React.useCallback(
-    (id: GridRowId) => {
+    (holiday: Holiday) => {
       if (!session?.accessToken) return;
-      const holidayToDelete = holidays.find((h) => h.id === id);
-      deleteHoliday(session.accessToken, id as string)
+      deleteHoliday(session.accessToken, holiday.id.toString())
         .then(() => {
-          setHolidays(holidays.filter((h) => h.id !== id));
+          setHolidays(holidays.filter((h) => h.id !== holiday.id));
         })
         .then(() => {
-          showSuccess(`Feiertag ${holidayToDelete?.name ?? ''} gelöscht`);
+          showSuccess(`Feiertag ${holiday?.name ?? ''} gelöscht`);
         })
         .catch((e) => {
-          showError('Konnte den Feiertag nicht löschen', e.message);
+          showError(`Konnte den Feiertag ${holiday?.name ?? ''} nicht löschen`, e.message);
         });
     },
     [session?.accessToken, holidays, setHolidays],
   );
 
-  const handleDeleCompensationValue = React.useCallback(
+  const handleDeleteCompensationValue = React.useCallback(
       (id: number) => {
         if (!session?.accessToken) return;
         deleteCompensationValue(session.accessToken, id).then(
           () => {
-            setCompensationValues(compensationValues.filter((cv) => (cv.id !== id)))
+            setCompensationValues(compensationValues.filter((cv) => (cv.id !== id)));
             showSuccess('Buchbarer Betrag wurde gelöscht');
           },
         ).catch((e) => {
-          showError(`Konnte den buchbaren Beterag nicht löschen`);
+          showError(`Konnte den buchbaren Betrag nicht löschen`, e.message);
         });
 
       }
@@ -211,7 +184,7 @@ export default function Page() {
       getCompensationValues(accessToken)
         .then((v) => setCompensationValues(v))
         .catch((e) => {
-          showError('Konnte die buchbaren Beträge nicht laden');
+          showError('Konnte die buchbaren Beträge nicht laden', e.message);
         });
     }
     , [],
@@ -256,13 +229,9 @@ export default function Page() {
             setHolidayYear={setHolidayYear}
           />
         </Grid>
-        {clearDatabaseButton(session.accessToken, () => {
-          loadDisciplines(session.accessToken);
-          loadHolidays(session.accessToken);
-        })}
         <Grid>
           <CompensationCard values={compensationValues} handleAddCompensationValue={handleAddCompensationValue}
-                            handleDeleteCompensationValue={handleDeleCompensationValue}
+                            handleDeleteCompensationValue={handleDeleteCompensationValue}
           />
         </Grid>
       </Grid>

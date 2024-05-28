@@ -19,8 +19,8 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 
 import DeleteIcon from '@mui/icons-material/Delete';
-import { Typography } from '@mui/material';
 import { Discipline } from '@prisma/client';
+import { useConfirm } from 'material-ui-confirm';
 
 function disciplineToListItem(
   d: Discipline,
@@ -35,6 +35,7 @@ function disciplineToListItem(
           onClick={() => {
             handleDeleteButtonClick(d);
           }}
+          data-testid={`delete-discipline-${d.name}`}
         >
           <DeleteIcon />
         </IconButton>
@@ -108,45 +109,10 @@ function AddDisciplineDialogue(
   );
 }
 
-type DeleteDisciplineDialogProps = {
-  open: boolean;
-  handleClose: () => void;
-  discipline: Discipline | null;
-  handleConfirmDeletion: () => void;
-};
-
-function DeleteDisciplineDialog({
-                                  open,
-                                  handleClose,
-                                  discipline,
-                                  handleConfirmDeletion,
-                                }: DeleteDisciplineDialogProps) {
-  return (
-    <Dialog open={open}>
-      <DialogTitle>Sportart löschen</DialogTitle>
-      <DialogContent>
-        <Typography>Sportart {discipline?.name} löschen?</Typography>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={handleClose}>Abbrechen</Button>
-        <Button
-          color="error"
-          onClick={() => {
-            handleConfirmDeletion();
-            handleClose();
-          }}
-        >
-          Löschen
-        </Button>
-      </DialogActions>
-    </Dialog>
-  );
-}
-
 type DisciplineListProps = {
   disciplines: Discipline[];
   handleAddDiscipline: (name: string) => void;
-  deleteDiscipline: (id: number) => void;
+  deleteDiscipline: (discipline: Discipline) => void;
 };
 
 export default function DisciplineCard({
@@ -155,19 +121,20 @@ export default function DisciplineCard({
                                          deleteDiscipline,
                                        }: DisciplineListProps) {
   const [showEnterDialog, setShowEnterDialog] = React.useState<boolean>(false);
-  const [showDeleteDialog, setShowDeleteDialog] =
     React.useState<boolean>(false);
   const [newDisciplineName, setNewDisciplineName] = React.useState<string>('');
-  const [activeDiscipline, setActiveDiscipline] =
-    React.useState<Discipline | null>(null);
 
-  const handleDeleteButtonClick = React.useCallback(
-    (discipline: Discipline) => {
-      setActiveDiscipline(discipline);
-      setShowDeleteDialog(true);
-    },
-    [setActiveDiscipline, setShowDeleteDialog],
-  );
+  const confirm = useConfirm();
+  const handleDeleteClick = (deletionCandidate: Discipline) => {
+    confirm({
+      title: "Sportart löschen?",
+      description: `Soll die Vergütung "${deletionCandidate.name}" gelöscht werden?`
+    })
+      .then(
+        () => deleteDiscipline(deletionCandidate)
+      );
+  }
+
 
   return (
     <>
@@ -176,7 +143,7 @@ export default function DisciplineCard({
         <CardContent>
           <List style={{ maxHeight: 500, overflow: 'auto' }}>
             {disciplines.map((d) =>
-              disciplineToListItem(d, handleDeleteButtonClick),
+              disciplineToListItem(d, handleDeleteClick),
             )}
           </List>
         </CardContent>
@@ -198,17 +165,6 @@ export default function DisciplineCard({
         setNewDisciplineName={setNewDisciplineName}
         disciplines={disciplines}
         handleAddDiscipline={handleAddDiscipline}
-      />
-      <DeleteDisciplineDialog
-        open={showDeleteDialog}
-        handleClose={() => {
-          setShowDeleteDialog(false);
-          setActiveDiscipline(null);
-        }}
-        discipline={activeDiscipline}
-        handleConfirmDeletion={() => {
-          deleteDiscipline(activeDiscipline!.id);
-        }}
       />
     </>
   );
