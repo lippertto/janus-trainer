@@ -159,6 +159,7 @@ Resources:
     Properties:
       Architectures:
         - x86_64
+      MemorySize: 150
       Code:
         ImageUri: !Ref JanusTrainerAppImage
       PackageType: Image
