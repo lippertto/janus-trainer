@@ -27,15 +27,15 @@ import dayjs from 'dayjs';
 
 import Box from '@mui/material/Box';
 import { toHumanReadableDate } from '@/lib/datagrid-utils';
-import { Typography } from '@mui/material';
 import { Holiday } from '@prisma/client';
+import { useConfirm } from 'material-ui-confirm';
 
 function HolidayTable({
   rows,
-  setHolidayToDelete,
+                        handleDeleteClick,
 }: {
   rows: Holiday[];
-  setHolidayToDelete: (holiday: Holiday | null) => void;
+  handleDeleteClick: (holiday: Holiday | null) => void;
 }) {
   const columns: GridColDef[] = [
     {
@@ -64,14 +64,15 @@ function HolidayTable({
       type: 'actions',
       flex: 0.2,
       getActions: ({ id }) => {
+        const holiday = rows.find((h) => h.id === id);
         return [
           <GridActionsCellItem
             icon={<DeleteIcon />}
             label="bearbeiten"
             onClick={() => {
-              const holiday = rows.find((h) => h.id === id);
-              setHolidayToDelete(holiday ?? null);
+              handleDeleteClick(holiday ?? null);
             }}
+            data-testid={`delete-holiday-${holiday?.name}`}
             key={id}
           />,
         ];
@@ -90,45 +91,6 @@ function HolidayTable({
       }}
       hideFooter={true}
     />
-  );
-}
-
-type DeleteHolidayDialogProps = {
-  open: boolean;
-  handleUserChoice: (confirmed: boolean) => void;
-  holiday: Holiday | null;
-};
-
-function DeleteHolidayDialog({
-  open,
-  holiday,
-  handleUserChoice,
-}: DeleteHolidayDialogProps) {
-  return (
-    <Dialog open={open}>
-      <DialogTitle>Feiertag löschen</DialogTitle>
-      <DialogContent>
-        <Typography>Den Feiertag {holiday?.name} wirklich löschen?</Typography>
-      </DialogContent>
-      <DialogActions>
-        <Button
-          onClick={() => {
-            handleUserChoice(false);
-          }}
-        >
-          Abbrechen
-        </Button>
-        <Button
-          onClick={() => {
-            handleUserChoice(true);
-          }}
-          color="error"
-          autoFocus
-        >
-          Löschen
-        </Button>
-      </DialogActions>
-    </Dialog>
   );
 }
 
@@ -266,7 +228,7 @@ type HolidayCardProps = {
     end: dayjs.Dayjs,
     name: string,
   ) => void;
-  handleDeleteHoliday: (id: GridRowId) => void;
+  handleDeleteHoliday: (holiday: Holiday) => void;
   holidayYear: number;
   setHolidayYear: React.Dispatch<React.SetStateAction<number>>;
 };
@@ -279,19 +241,17 @@ export default function HolidayCard({
   setHolidayYear,
 }: HolidayCardProps) {
   const [showEnterDialog, setShowEnterDialog] = React.useState<boolean>(false);
-  const [holidayToDelete, setHolidayToDelete] = React.useState<Holiday | null>(
-    null,
-  );
 
-  const handleDeleteChoice = React.useCallback(
-    (confirmed: boolean) => {
-      if (confirmed && holidayToDelete) {
-        handleDeleteHoliday(holidayToDelete.id);
-      }
-      setHolidayToDelete(null);
-    },
-    [setHolidayToDelete, holidayToDelete, handleDeleteHoliday],
-  );
+  const confirm = useConfirm();
+  const handleDeleteClick = (holiday: Holiday|null) => {
+    if (!holiday) return;
+    confirm({
+      title: 'Feiertag löschen?',
+      description: `Soll der Feiertag ${holiday.name} wirklich gelöscht werden?`
+    }).then(()=>{
+      handleDeleteHoliday(holiday);
+    })
+  }
 
   return (
     <>
@@ -311,7 +271,7 @@ export default function HolidayCard({
 
           <HolidayTable
             rows={holidays}
-            setHolidayToDelete={setHolidayToDelete}
+            handleDeleteClick={handleDeleteClick}
           />
         </CardContent>
         <CardActions>
@@ -329,11 +289,6 @@ export default function HolidayCard({
         open={showEnterDialog}
         handleClose={() => setShowEnterDialog(false)}
         handleSave={handleAddHoliday}
-      />
-      <DeleteHolidayDialog
-        open={Boolean(holidayToDelete)}
-        holiday={holidayToDelete}
-        handleUserChoice={handleDeleteChoice}
       />
     </>
   );

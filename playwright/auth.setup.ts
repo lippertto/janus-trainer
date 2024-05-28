@@ -8,7 +8,7 @@ import { test as setup, expect } from '@playwright/test';
 const adminFile = 'playwright/.auth/admin.json';
 
 setup('authenticate as admin', async ({ page }) => {
-  await page.goto('http://localhost:3000/');
+  await page.goto('/');
   await page.getByTestId('login-button').click();
   await page.getByRole('button', { name: 'Sign in with Cognito' }).click();
   await page
@@ -19,7 +19,7 @@ setup('authenticate as admin', async ({ page }) => {
     .fill(process.env.COGNITO_ADMIN_PASSWORD!);
   await page.locator('input[name="signInSubmitButton"]:visible').click();
 
-  await page.waitForURL('http://localhost:3000/');
+  await page.waitForURL('/');
   // eslint-disable-next-line playwright/no-standalone-expect
   await expect(page.getByText('Willkommen')).toBeVisible();
   await page.context().storageState({ path: adminFile });
@@ -28,7 +28,7 @@ setup('authenticate as admin', async ({ page }) => {
 const trainerFile = 'playwright/.auth/trainer.json';
 
 setup('authenticate as user', async ({ page }) => {
-  await page.goto('http://localhost:3000/');
+  await page.goto('/');
   await page.getByTestId('login-button').click();
   await page.getByRole('button', { name: 'Sign in with Cognito' }).click();
   await page
@@ -39,7 +39,7 @@ setup('authenticate as user', async ({ page }) => {
     .fill(process.env.COGNITO_TRAINER_PASSWORD!);
   await page.locator('input[name="signInSubmitButton"]:visible').click();
 
-  await page.waitForURL('http://localhost:3000/');
+  await page.waitForURL('/');
   // eslint-disable-next-line playwright/no-standalone-expect
   await expect(page.getByText('Willkommen')).toBeVisible();
   await page.context().storageState({ path: trainerFile });

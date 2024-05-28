@@ -16,19 +16,14 @@ jobs:
         with:
           node-version: '20.x'
           cache: yarn
-      - run: docker compose up -d
       - run: yarn install
-      - run: yarn build
-      - name: create environment
-        run: cp .env.development .env
-      - run: yarn prisma db push
-      - run: yarn prisma db seed
       - run: yarn start:dev &
       - name: Install Playwright Browsers
         run: yarn playwright install firefox --with-deps
       - name: Run Playwright tests
         run: yarn playwright:test
         env:
+          PLAYWRIGHT_BASE_URL: "https://janus-test.lippert.dev"
           COGNITO_ADMIN_USERNAME: ltrd@fastmail.fm
           COGNITO_ADMIN_PASSWORD: ${{ secrets.cognito-admin-password }}
           COGNITO_TRAINER_USERNAME: tobias.lippert@fastmail.com

@@ -28,6 +28,7 @@ async function listUsers(): Promise<User[]> {
     region: process.env.COGNITO_REGION ?? 'eu-north-1',
   });
 
+  console.log("Looking for all users in cognito.");
   const allUsers = new Map(
     (await listAllUsers(client)).map((user) => [user.username, user]),
   );

@@ -14,17 +14,10 @@ jobs:
       aws-ecr-key: ${{ secrets.AWS_ECR_KEY }}
       aws-ecr-secret-access-key: ${{ secrets.AWS_ECR_SECRET_ACCESS_KEY }}
 
-  run-e2e-tests:
-    uses: ./.github/workflows/e2e.yaml
-    secrets:
-      cognito-admin-password: ${{ secrets.COGNITO_ADMIN_PASSWORD }}
-      cognito-trainer-password: ${{ secrets.COGNITO_TRAINER_PASSWORD }}
-
   deploy-prod:
     needs:
       - build
       - lint
-      - run-e2e-tests
     uses: ./.github/workflows/deploy.yaml
     with:
       image-name: ${{needs.build.outputs.image-name}}

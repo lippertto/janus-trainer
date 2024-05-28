@@ -9,18 +9,17 @@ yarn start:dev
 # TODO
 
 ## Tomorrow
-* Document how users are handled (id, email, etc.). Users are not deleted because we want to keep the corresponding 
-  trainings in the db.
+* Concept for management of classes
+* Put disciplines+classes on separate Angebot page
 
 ## Features
-* Make disciplines disabled
-* Concept for management of classes
+* Make disciplines disabled. (Also in the UI.)
 * Find out what happens to log-in session after update. (users have to log out and in to get things working)
 * Allow to go from compensation page to validate page with specific dates+trainer
 * Put user management into Verwaltung. Maybe with tabs
-* Put disciplines+classes on separate Angebot page
 
 ## Tech update
+* Switch to Amazon's RDS
 * Remove BigInt from training. Use Int instead
 * Add proper logging
 * Use lint-staged: https://github.com/lint-staged/lint-staged
@@ -51,6 +50,12 @@ is managed manually.
 
 Only users who exist in cognito and in the database may log in. When a user is deleted, it is soft-deleted in the
 database and disabled in cognito.
+
+## Environments
+We have two environments in the cloud, test and prod. Because we do not use Github Environments, we cannot use manual
+approval/deployment rules, and a further differentiation with a dev-environment would not make too much sense.
+
+There is a dev-cognito which is used for local development. This instance is managed manually.
 
 # Deployment
 The deployment is handled via cloudformation. This will take care of the infrastructure setup and the deployment
