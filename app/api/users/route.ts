@@ -23,23 +23,24 @@ import { createUser } from '@/app/api/users/createUser';
  * * User exists in the database and is not soft-deleted
  * * User exists in cognito as is enabled
  */
-async function listUsers(): Promise<User[]> {
+async function listUsers(request: NextRequest): Promise<User[]> {
   const client = new CognitoIdentityProviderClient({
     region: process.env.COGNITO_REGION ?? 'eu-north-1',
   });
 
-  console.log("Looking for all users in cognito.");
   const allUsers = new Map(
     (await listAllUsers(client)).map((user) => [user.username, user]),
   );
-  console.log(`Found ${allUsers.size} users in cognito.`);
-  const allGroups = await listGroups(client);
-  if (!allGroups) {
-    return [];
-  }
-  console.log(`Found groups: ${JSON.stringify(allGroups)} in cognito`);
 
-  for (const thisGroup of allGroups) {
+  let groupsToReturn: string[];
+  const groupFilter = request.nextUrl.searchParams.get('group');
+  if (groupFilter) {
+    groupsToReturn = [groupFilter]
+  } else {
+    groupsToReturn = await listGroups(client);
+  }
+
+  for (const thisGroup of groupsToReturn) {
     const usersIdsInThisGroup = await findUsersForGroup(client, thisGroup);
     usersIdsInThisGroup.forEach((userId) => {
       allUsers.get(userId)!.groups.push(thisGroup as Group);
@@ -71,7 +72,7 @@ export async function GET(
   try {
     await allowOnlyAdmins(request);
 
-    const value = await listUsers();
+    const value = await listUsers(request);
 
     return NextResponse.json({ value });
   } catch (e) {

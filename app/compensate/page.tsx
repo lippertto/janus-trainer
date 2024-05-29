@@ -9,13 +9,13 @@ import { useSession } from 'next-auth/react';
 import LoginRequired from '../../components/LoginRequired';
 import { JanusSession } from '@/lib/auth';
 import { getCompensations } from '@/lib/api-compensations';
-import { CompensationDtoNew } from '@/lib/dto';
+import { CompensationDto } from '@/lib/dto';
 import { showError } from '@/lib/notifications';
 import { markTrainingsAsCompensated } from '@/lib/api-trainings';
 
 export default function PaymentPage() {
   const [compensations, setCompensations] = React.useState<
-    CompensationDtoNew[]
+    CompensationDto[]
   >([]);
 
   const { data, status: authenticationStatus } = useSession();

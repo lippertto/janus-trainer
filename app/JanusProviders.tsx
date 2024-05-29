@@ -28,7 +28,8 @@ const StyledSnackbarContent = styled(MaterialDesignContent)(() => ({
   },
 }));
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+});
 
 export default function JanusProviders({
                                          children,

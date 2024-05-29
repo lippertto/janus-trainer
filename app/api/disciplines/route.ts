@@ -1,9 +1,9 @@
-import { ErrorResponse } from '@/lib/dto';
+import { DisciplineCreateRequest, ErrorResponse } from '@/lib/dto';
 import prisma from '@/lib/prisma';
 import {
-  allowAnyAuthorized,
+  allowAnyLoggedIn,
   allowOnlyAdmins,
-  handleTopLevelCatch,
+  handleTopLevelCatch, validateOrThrow,
 } from '@/lib/helpers-for-api';
 import { Discipline, Prisma } from '@prisma/client';
 import { NextRequest, NextResponse } from 'next/server';
@@ -13,7 +13,7 @@ export type DisciplineQueryResult = {
 };
 
 async function doGET(request: NextRequest) {
-  allowAnyAuthorized(request);
+  allowAnyLoggedIn(request);
 
   const result = await prisma.discipline.findMany();
   return NextResponse.json({ value: result });
@@ -33,10 +33,9 @@ async function doPOST(request: NextRequest) {
   await allowOnlyAdmins(request);
 
   const body = await request.json();
-  const createInput: Prisma.DisciplineCreateInput =
-    Prisma.validator<Prisma.DisciplineCreateInput>()(body);
+  const req = await validateOrThrow(new DisciplineCreateRequest(body));
 
-  const discipline = await prisma.discipline.create({ data: createInput });
+  const discipline = await prisma.discipline.create({ data: req });
 
   return NextResponse.json(discipline, { status: 201 });
 }

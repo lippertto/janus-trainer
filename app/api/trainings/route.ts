@@ -12,15 +12,14 @@ import {
   handleTopLevelCatch,
   validateOrThrow,
 } from '@/lib/helpers-for-api';
-import { bigIntReplacer } from '@/lib/json-tools';
 import prisma from '@/lib/prisma';
-import { TrainingDtoNew } from '@/lib/dto';
+import { TrainingDto } from '@/lib/dto';
 import { Training, TrainingStatus } from '@prisma/client';
 import { validate } from 'class-validator';
 import { NextRequest, NextResponse } from 'next/server';
 
 export type TrainingQueryResponse = {
-  value: TrainingDtoNew[];
+  value: TrainingDto[];
 };
 
 async function validateCreateRequest(
@@ -42,15 +41,11 @@ async function trainingsByUser(userId: string) {
     where: { userId },
     include: {
       user: true,
-      discipline: true,
+      course: true,
     },
   });
 
-  const data = JSON.stringify(
-    { value } as TrainingQueryResponse,
-    bigIntReplacer,
-  );
-  return new Response(data, { status: 200 });
+  return NextResponse.json({value})
 }
 
 async function trainingsByDate(startDate: string, endDate: string) {
@@ -63,15 +58,11 @@ async function trainingsByDate(startDate: string, endDate: string) {
     },
     include: {
       user: true,
-      discipline: true,
+      course: true,
     },
   });
 
-  const data = JSON.stringify(
-    { value } as TrainingQueryResponse,
-    bigIntReplacer,
-  );
-  return new Response(data, { status: 200 });
+  return NextResponse.json({value})
 }
 
 async function doGET(request: NextRequest): Promise<Response> {
@@ -85,10 +76,10 @@ async function doGET(request: NextRequest): Promise<Response> {
         'userId must not be used together with startDate and endDate',
       );
     }
-    allowAdminOrSelf(request, userId);
+    await allowAdminOrSelf(request, userId);
     return trainingsByUser(userId);
   } else {
-    allowOnlyAdmins(request);
+    await allowOnlyAdmins(request);
     if (!startDate || !endDate) {
       throw new ApiErrorBadRequest('start and end must be provided');
     }
@@ -107,25 +98,23 @@ export async function GET(request: NextRequest) {
 async function doPOST(
   nextRequest: NextRequest,
 ): Promise<NextResponse<Training>> {
-  const request = await validateCreateRequest(await nextRequest.json());
+  const request = await validateOrThrow(new TrainingCreateRequest(await nextRequest.json()))
   await allowAdminOrSelf(nextRequest, request.userId);
 
   const result = await prisma.training.create({
     data: {
       date: request.date,
-      disciplineId: request.disciplineId,
-      group: request.group,
       compensationCents: request.compensationCents,
       userId: request.userId,
       status: TrainingStatus.NEW,
       createdAt: new Date(),
       participantCount: request.participantCount,
+      courseId: request.courseId
     },
-    include: { discipline: true, user: true },
+    include: { user: true, course: true },
   });
 
-  const data = JSON.stringify(result, bigIntReplacer);
-  return new NextResponse(data, { status: 201 });
+  return NextResponse.json(result, { status: 201 });
 }
 
 export async function POST(request: NextRequest) {
@@ -160,7 +149,7 @@ async function doPATCH(
     new TrainingBatchUpdateRequest(await nextRequest.json()),
   );
 
-  const result = await request.operations.map(
+  const result = request.operations.map(
     async (op): Promise<'OK' | ErrorResponse> => {
       try {
         const id = op.id;

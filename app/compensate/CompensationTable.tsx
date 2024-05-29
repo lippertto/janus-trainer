@@ -1,11 +1,11 @@
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import React from 'react';
-import { CompensationDtoNew } from '@/lib/dto';
+import { CompensationDto } from '@/lib/dto';
 
 export default function CompensationTable({
   compensations,
 }: {
-  compensations: CompensationDtoNew[];
+  compensations: CompensationDto[];
 }) {
   const columns: GridColDef[] = [
     {
@@ -37,7 +37,7 @@ export default function CompensationTable({
     <DataGrid
       columns={columns}
       rows={compensations}
-      getRowId={(c: CompensationDtoNew) => c.user.id}
+      getRowId={(c: CompensationDto) => c.user.id}
     />
   );
 }

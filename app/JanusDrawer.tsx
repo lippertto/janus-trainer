@@ -16,6 +16,7 @@ import HomeIcon from '@mui/icons-material/Home';
 import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
 import QrCodeScannerIcon from '@mui/icons-material/QrCodeScanner';
 import SettingsIcon from '@mui/icons-material/Settings';
+import SportsIcon from '@mui/icons-material/Sports';
 
 import { JanusSession } from '@/lib/auth';
 import { useSession } from 'next-auth/react';
@@ -27,6 +28,7 @@ const ADMIN_LINKS = [
   { text: 'Freigeben', href: '/approve', icon: AssignmentTurnedInIcon },
   { text: 'Auszahlen', href: '/compensate', icon: AccountBalanceIcon },
   { text: 'Nutzer anlegen', href: '/manage-users', icon: ManageAccountsIcon },
+  { text: 'Angebot', href: '/offerings', icon: SportsIcon },
   { text: 'Verwaltung', href: '/configure', icon: SettingsIcon },
   { text: 'Scannen', href: '/scan', icon: QrCodeScannerIcon },
 ];

@@ -8,36 +8,18 @@ import Grid from '@mui/material/Unstable_Grid2';
 import dayjs from 'dayjs';
 
 import { JanusSession } from '@/lib/auth';
-import {
-  addDiscipline,
-  deleteDiscipline, getDisciplines,
-} from '@/lib/api-disciplines';
 import LoginRequired from '@/components/LoginRequired';
-import { getHolidays, addHoliday, deleteHoliday } from '@/lib/api-holidays';
+import { addHoliday, deleteHoliday, getHolidays } from '@/lib/api-holidays';
 import { showError, showSuccess } from '@/lib/notifications';
 
-import DisciplineCard from './DisciplineCard';
 import HolidayCard from './HolidayCard';
-import { CompensationValue, Discipline, Holiday } from '@prisma/client';
+import { Holiday } from '@prisma/client';
 import CompensationCard from '@/app/configure/CompensationCard';
 import { addCompensationValue, deleteCompensationValue, getCompensationValues } from '@/lib/api-compensation-values';
-
-function compareByNameProperty(
-  a: { name: string },
-  b: { name: string },
-): number {
-  if (a.name < b.name) {
-    return -1;
-  }
-  if (a.name > b.name) {
-    return 1;
-  }
-  return 0;
-}
+import { CompensationValueDto } from '@/lib/dto';
 
 export default function Page() {
-  const [compensationValues, setCompensationValues] = React.useState<CompensationValue[]>([]);
-  const [disciplines, setDisciplines] = React.useState<Discipline[]>([]);
+  const [compensationValues, setCompensationValues] = React.useState<CompensationValueDto[]>([]);
   const [holidays, setHolidays] = React.useState<Holiday[]>([]);
   const [holidayYear, setHolidayYear] = React.useState<number>(
     new Date().getFullYear(),
@@ -45,36 +27,6 @@ export default function Page() {
 
   const { data, status: authenticationStatus } = useSession();
   const session = data as JanusSession;
-
-  const handleAddDiscipline = React.useCallback(
-    (name: string) => {
-      if (!session?.accessToken) return;
-      addDiscipline(session.accessToken, name).then((d) => {
-        const newDisciplines = [...disciplines, d].toSorted(compareByNameProperty);
-        setDisciplines(newDisciplines);
-        showSuccess(`Sportart ${d.name} wurde hinzugefügt`);
-      }).catch((e: Error) => {
-        showError('Konnte Sportart nicht hinzufügen', e.message);
-      });
-    },
-    [session?.accessToken, disciplines, setDisciplines],
-  );
-
-  const handleDeleteDiscipline = React.useCallback(
-    (discipline: Discipline) => {
-      if (!session?.accessToken) return;
-      deleteDiscipline(session.accessToken, discipline.id)
-        .then(() => {
-            setDisciplines(disciplines.filter((d) => d.id !== discipline.id));
-            showSuccess(`Sportart ${discipline.name} wurde gelöscht`);
-          },
-        )
-        .catch((e) => {
-          showError(`Konnte Sportart ${discipline.name} nicht löschen`, e.message);
-        });
-    },
-    [session?.accessToken, disciplines, setDisciplines],
-  );
 
   const handleAddHoliday = React.useCallback(
     (start: dayjs.Dayjs, end: dayjs.Dayjs, name: string) => {
@@ -152,18 +104,6 @@ export default function Page() {
     [session?.accessToken, holidays, holidayYear, setHolidays],
   );
 
-
-  const loadDisciplines = React.useCallback((accessToken: string) => {
-    getDisciplines(accessToken)
-      .then((d) => d.toSorted(compareByNameProperty))
-      .then((d) => {
-        setDisciplines(d);
-      })
-      .catch((e: Error) => {
-        showError('Konnte die Sportarten nicht laden.', e.message);
-      });
-  }, []);
-
   const loadHolidays = React.useCallback(
     (accessToken: string) => {
       if (!holidayYear) {
@@ -194,9 +134,8 @@ export default function Page() {
     if (!session?.accessToken) {
       return;
     }
-    loadDisciplines(session.accessToken);
     loadCompensationValues(session.accessToken);
-  }, [session?.accessToken, loadDisciplines]);
+  }, [session?.accessToken]);
 
 // TODO - does this need to be split?
   React.useEffect(() => {
@@ -213,13 +152,6 @@ export default function Page() {
   return (
     <>
       <Grid container spacing={2}>
-        <Grid>
-          <DisciplineCard
-            disciplines={disciplines}
-            handleAddDiscipline={handleAddDiscipline}
-            deleteDiscipline={handleDeleteDiscipline}
-          />
-        </Grid>
         <Grid xs={6}>
           <HolidayCard
             holidays={holidays}

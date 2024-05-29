@@ -26,7 +26,7 @@ import {
 import dayjs from 'dayjs';
 
 import Box from '@mui/material/Box';
-import { toHumanReadableDate } from '@/lib/datagrid-utils';
+import { gridValueToHumanReadableDate } from '@/lib/datagrid-utils';
 import { Holiday } from '@prisma/client';
 import { useConfirm } from 'material-ui-confirm';
 
@@ -42,14 +42,14 @@ function HolidayTable({
       headerName: 'Start',
       type: 'date',
       field: 'start',
-      valueFormatter: toHumanReadableDate,
+      valueFormatter: gridValueToHumanReadableDate,
       flex: 1,
     },
     {
       headerName: 'Ende',
       type: 'date',
       field: 'end',
-      valueFormatter: toHumanReadableDate,
+      valueFormatter: gridValueToHumanReadableDate,
       flex: 1,
     },
     {

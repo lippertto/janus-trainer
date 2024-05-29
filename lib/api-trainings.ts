@@ -3,7 +3,7 @@ import { TrainingQueryResponse } from '@/app/api/trainings/route';
 import dayjs from 'dayjs';
 import {
   TrainingBatchUpdateRequest,
-  TrainingDtoNew,
+  TrainingDto,
   TrainingUpdateRequest,
   TrainingCreateRequest,
 } from './dto';
@@ -11,7 +11,7 @@ import {
 export async function getTrainingsForUser(
   accessToken: string,
   userId: string,
-): Promise<TrainingDtoNew[]> {
+): Promise<TrainingDto[]> {
   const response = await fetch(`/api/trainings?userId=${userId}`, {
     headers: {
       Authorization: `Bearer ${accessToken}`,
@@ -31,7 +31,7 @@ export async function getTrainingsForPeriod(
   accessToken: string,
   startDate: dayjs.Dayjs,
   endDate: dayjs.Dayjs,
-): Promise<TrainingDtoNew[]> {
+): Promise<TrainingDto[]> {
   const response = await fetch(
     `/api/trainings?start=${startDate.format(
       'YYYY-MM-DD',
@@ -57,7 +57,7 @@ export async function addTraining(
   compensationCents: number,
   participantCount: number,
   userId: string,
-): Promise<TrainingDtoNew> {
+): Promise<TrainingDto> {
   const request: TrainingCreateRequest = {
     date,
     disciplineId,
@@ -82,7 +82,7 @@ export async function addTraining(
     );
   }
   const data = await response.text();
-  const training = JSON.parse(data, bigIntReviver) as TrainingDtoNew;
+  const training = JSON.parse(data, bigIntReviver) as TrainingDto;
 
   return training;
 }
@@ -95,7 +95,7 @@ export async function updateTraining(
   group: string,
   compensationCents: number,
   participantCount: number,
-): Promise<TrainingDtoNew> {
+): Promise<TrainingDto> {
   const request: TrainingUpdateRequest = {
     date,
     disciplineId,
@@ -112,7 +112,7 @@ export async function updateTraining(
     },
   });
   const data = await response.text();
-  return JSON.parse(data, bigIntReviver) as TrainingDtoNew;
+  return JSON.parse(data, bigIntReviver) as TrainingDto;
 }
 
 export async function deleteTraining(
@@ -130,7 +130,7 @@ export async function deleteTraining(
 export async function approveTraining(
   accessToken: string,
   id: string,
-): Promise<TrainingDtoNew> {
+): Promise<TrainingDto> {
   const response = await fetch(`/api/trainings/${id}`, {
     method: 'PATCH',
     body: JSON.stringify({ status: 'APPROVED' }),
@@ -140,13 +140,13 @@ export async function approveTraining(
     },
   });
   const data = await response.text();
-  return JSON.parse(data, bigIntReviver) as TrainingDtoNew;
+  return JSON.parse(data, bigIntReviver) as TrainingDto;
 }
 
 export async function unapproveTraining(
   accessToken: string,
   id: string,
-): Promise<TrainingDtoNew> {
+): Promise<TrainingDto> {
   const response = await fetch(`/api/trainings/${id}`, {
     method: 'PATCH',
     body: JSON.stringify({ status: 'NEW' }),
@@ -156,7 +156,7 @@ export async function unapproveTraining(
     },
   });
   const data = await response.text();
-  return JSON.parse(data, bigIntReviver) as TrainingDtoNew;
+  return JSON.parse(data, bigIntReviver) as TrainingDto;
 }
 
 export async function markTrainingsAsCompensated(

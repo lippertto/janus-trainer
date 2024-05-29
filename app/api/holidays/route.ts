@@ -3,7 +3,7 @@ import prisma from '@/lib/prisma';
 import { Holiday, Prisma } from '@prisma/client';
 import { ErrorResponse } from '@/lib/dto';
 import { handleTopLevelCatch, errorResponse } from '@/lib/helpers-for-api';
-import { allowAnyAuthorized, allowOnlyAdmins } from '@/lib/helpers-for-api';
+import { allowAnyLoggedIn, allowOnlyAdmins } from '@/lib/helpers-for-api';
 
 export type HolidayQueryResult = {
   value: Holiday[];
@@ -23,7 +23,7 @@ async function doGET(
   request: NextRequest,
 
 ) {
-  await allowAnyAuthorized(request);
+  await allowAnyLoggedIn(request);
 
   const yearAsString = request.nextUrl.searchParams.get('year');
   if (!yearAsString) {

@@ -1,11 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { CompensationValue } from '@prisma/client';
-import { allowAnyAuthorized, allowOnlyAdmins, handleTopLevelCatch, validateOrThrow } from '@/lib/helpers-for-api';
-import { CompensationValueCreateRequest, CompensationValueQueryResponse, ErrorResponse } from '@/lib/dto';
+import { allowAnyLoggedIn, allowOnlyAdmins, handleTopLevelCatch, validateOrThrow } from '@/lib/helpers-for-api';
+import {
+  CompensationValueCreateRequest,
+  CompensationValueDto,
+  CompensationValueQueryResponse,
+  ErrorResponse,
+} from '@/lib/dto';
 import prisma from '@/lib/prisma';
 
 async function doGET(request: NextRequest): Promise<NextResponse<CompensationValueQueryResponse>> {
-  await allowAnyAuthorized(request);
+  await allowAnyLoggedIn(request);
 
   const value = await prisma.compensationValue.findMany({ where: {} });
   return NextResponse.json({ value });
@@ -30,7 +34,7 @@ async function doPOST(nextRequest: NextRequest) {
   return NextResponse.json(result, {status: 201});
 }
 
-export async function POST(request: NextRequest): Promise<NextResponse<CompensationValue|ErrorResponse>> {
+export async function POST(request: NextRequest): Promise<NextResponse<CompensationValueDto|ErrorResponse>> {
   try {
     return await doPOST(request);
   } catch (e) {
