@@ -15,6 +15,15 @@ yarn start:dev
 ## Bugs
 * In the course edit screen, we cannot deselect the existing chips for trainers+compensations.
   Also, duplicate values are possible.
+* The seed does not work correctly. The next id to be assigned for the tables is not updated.
+
+Use the following statement to reset the counters
+```postgresql
+select setval( pg_get_serial_sequence('"public"."Discipline"', 'id'), 
+               (select max(id) from "public"."Discipline")
+             );
+```
+
 
 ## Features
 * Show warning if training not on 

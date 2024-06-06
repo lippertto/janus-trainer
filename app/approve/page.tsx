@@ -33,7 +33,6 @@ export default function ApprovePage(): React.ReactElement {
     dayjs().endOf('quarter'),
   );
   const [trainings, setTrainings] = React.useState<TrainingDto[]>([]);
-  const [disciplines, setDisciplines] = React.useState<Discipline[]>([]);
   const [holidays, setHolidays] = React.useState<Holiday[]>([]);
 
   const { data, status: authenticationStatus } = useSession();
@@ -61,28 +60,11 @@ export default function ApprovePage(): React.ReactElement {
     initialData: [],
   });
 
-  const disciplineResult = useQuery({
-    queryKey: ['disciplines'],
-    queryFn: () => fetchListFromApi<Discipline>(
-      API_DISCIPLINES,
-      session.accessToken,
-    ),
-    throwOnError: true,
-    enabled: !!session?.accessToken,
-    initialData: [],
-  });
-
   useEffect(() => {
     if (!holidayResult.isError && !holidayResult.isLoading) {
       setHolidays(holidayResult.data);
     }
   }, [holidayResult]);
-
-  useEffect(() => {
-    if (!disciplineResult.isLoading && !disciplineResult.isError) {
-      setDisciplines(disciplineResult.data);
-    }
-  }, [disciplineResult]);
 
   useEffect(() => {
     if (!trainingResult.isError && !trainingResult.isLoading) {
@@ -92,6 +74,7 @@ export default function ApprovePage(): React.ReactElement {
 
   // refresh when the dates have changed
   useEffect(() => {
+    // noinspection JSIgnoredPromiseFromCall
     trainingResult.refetch()
   }, [startDate, endDate]);
 
@@ -145,12 +128,10 @@ export default function ApprovePage(): React.ReactElement {
         <TrainingTable
           trainings={trainings}
           setTrainings={setTrainings}
-          disciplines={disciplines}
           holidays={holidays}
           courses={[]}
           refresh={() => {
             holidayResult.refetch()
-            disciplineResult.refetch()
             trainingResult.refetch()
           }}
           approvalMode={true}
