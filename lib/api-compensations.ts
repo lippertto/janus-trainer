@@ -1,8 +1,8 @@
-import { CompensationQueryResponse, CompensationDtoNew } from './dto';
+import { CompensationQueryResponse, CompensationDto } from './dto';
 
 export async function getCompensations(
   accessToken: string,
-): Promise<CompensationDtoNew[]> {
+): Promise<CompensationDto[]> {
   const response = await fetch(`/api/compensations`, {
     headers: { Authorization: `Bearer ${accessToken}` },
   });

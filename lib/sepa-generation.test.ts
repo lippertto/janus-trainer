@@ -3,7 +3,7 @@
  */
 import { validateCreditorID, validateIBAN } from 'sepa';
 import { generateSepaXml } from './sepa-generation';
-import { CompensationDtoNew } from '@/lib/dto';
+import { CompensationDto } from '@/lib/dto';
 import xpath from 'xpath';
 
 describe('Test sepa library', () => {
@@ -22,7 +22,7 @@ const TRANSACTIONS =
 describe('sepa generation works', () => {
   test('Test sepa generation', () => {
     // GIVEN
-    const c1: CompensationDtoNew = {
+    const c1: CompensationDto = {
       user: {
         id: '4',
         name: 'trainer 1',
@@ -34,7 +34,7 @@ describe('sepa generation works', () => {
       totalCompensationCents: 50000,
       totalTrainings: 4,
     };
-    const c2: CompensationDtoNew = {
+    const c2: CompensationDto = {
       user: {
         id: '5',
         name: 'trainer 2',

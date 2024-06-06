@@ -1,11 +1,11 @@
 import { Discipline } from '@prisma/client';
-import { DisciplineCreateRequestDto } from '@/lib/dto';
+import { DisciplineCreateRequest } from '@/lib/dto';
 
 export async function addDiscipline(
   accessToken: string,
   name: string,
 ): Promise<Discipline> {
-  const request: DisciplineCreateRequestDto = {
+  const request: DisciplineCreateRequest = {
     name,
   };
   const response = await fetch(`/api/disciplines`, {
@@ -13,7 +13,6 @@ export async function addDiscipline(
       Authorization: `Bearer ${accessToken}`,
       'Content-Type': 'application/json',
     },
-
     method: 'POST',
     body: JSON.stringify(request),
   });

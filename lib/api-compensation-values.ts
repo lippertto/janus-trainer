@@ -1,9 +1,8 @@
-import { CompensationValue } from '@prisma/client';
-import { CompensationValueCreateRequest, CompensationValueQueryResponse } from '@/lib/dto';
+import { CompensationValueCreateRequest, CompensationValueDto, CompensationValueQueryResponse } from '@/lib/dto';
 
 export async function getCompensationValues(
   accessToken: string,
-): Promise<CompensationValue[]> {
+): Promise<CompensationValueDto[]> {
   try {
     const response = await fetch(`/api/compensation-values`, {
       headers: { Authorization: `Bearer ${accessToken}` },
@@ -38,7 +37,7 @@ export async function addCompensationValue(accessToken: string, cents: number, d
         new Error(`Failed to add compensation value: ${await response.text()}`),
       );
     }
-    return await response.json() as CompensationValue;
+    return await response.json() as CompensationValueDto;
   } catch (e) {
     console.log(JSON.stringify(e));
     throw e;

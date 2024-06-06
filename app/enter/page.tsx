@@ -2,54 +2,24 @@
 
 import React, { useEffect } from 'react';
 
-import TrainingTable from '../../components/TrainingTable';
+import TrainingTable from '@/components/TrainingTable';
 
 import { useSession } from 'next-auth/react';
-import type { JanusSession } from '../../lib/auth';
-import LoginRequired from '../../components/LoginRequired';
-import { CompensationValue, Discipline, Holiday } from '@prisma/client';
-import { TrainingDtoNew } from '@/lib/dto';
+import type { JanusSession } from '@/lib/auth';
+import LoginRequired from '@/components/LoginRequired';
+import { Holiday } from '@prisma/client';
+import { CourseDto, TrainingDto } from '@/lib/dto';
 import { useQuery } from '@tanstack/react-query';
 import { fetchListFromApi } from '@/lib/fetch';
-import { API_COMPENSATION_VALUES, API_DISCIPLINES, API_HOLIDAYS, API_TRAININGS } from '@/lib/routes';
+import { API_COURSES, API_HOLIDAYS, API_TRAININGS } from '@/lib/routes';
 
-function sortDiscipline(a: Discipline, b: Discipline): number {
-  if (a.name < b.name) {
-    return -1;
-  }
-  if (a.name > b.name) {
-    return 1;
-  }
-  return 0;
-}
 
 export default function EnterPage() {
-  const [trainings, setTrainings] = React.useState<TrainingDtoNew[]>([]);
+  const [trainings, setTrainings] = React.useState<TrainingDto[]>([]);
   const [holidays, setHolidays] = React.useState<Holiday[]>([]);
-  const [disciplines, setDisciplines] = React.useState<Discipline[]>([]);
+  const [courses, setCourses] = React.useState<CourseDto[]>([]);
   const { data, status: authenticationStatus } = useSession();
   const session = data as JanusSession;
-
-  const compensationValuesResult = useQuery({
-    queryKey: ['compensationValues'],
-    queryFn: () => fetchListFromApi<CompensationValue>(
-      API_COMPENSATION_VALUES,
-      session.accessToken),
-    throwOnError: true,
-    enabled: !!session?.accessToken,
-    initialData: [],
-  });
-
-  const disciplineResult = useQuery({
-    queryKey: ['disciplines'],
-    queryFn: () => fetchListFromApi<Discipline>(
-      API_DISCIPLINES,
-      session.accessToken,
-    ),
-    throwOnError: true,
-    enabled: !!session?.accessToken,
-    initialData: [],
-  });
 
   const holidayResult = useQuery({
     queryKey: ['holidays'],
@@ -64,7 +34,7 @@ export default function EnterPage() {
 
   const trainingResult = useQuery({
     queryKey: ['trainings'],
-    queryFn: () => fetchListFromApi<TrainingDtoNew>(
+    queryFn: () => fetchListFromApi<TrainingDto>(
       `${API_TRAININGS}?userId=${session.userId}`,
       session.accessToken,
     ),
@@ -73,11 +43,16 @@ export default function EnterPage() {
     initialData: [],
   });
 
-  useEffect(() => {
-    if (!disciplineResult.isLoading && !disciplineResult.isError) {
-      setDisciplines(disciplineResult.data);
+  const courseResult = useQuery({
+      queryKey: ['courses', session?.userId],
+      queryFn: () => fetchListFromApi<CourseDto>(
+        `${API_COURSES}?trainerId=${session.userId}`,
+        session.accessToken,
+      ),
+      throwOnError: true,
+      enabled: Boolean(session?.accessToken),
     }
-  }, [disciplineResult]);
+  );
 
   useEffect(() => {
     if (!holidayResult.isError && !holidayResult.isLoading) {
@@ -89,7 +64,14 @@ export default function EnterPage() {
     if (!trainingResult.isError && !trainingResult.isLoading) {
       setTrainings(trainingResult.data);
     }
-  }, [trainingResult]);
+  }, [trainingResult.data]);
+
+  useEffect(() => {
+    if (!courseResult.isError && !courseResult.isLoading) {
+      setCourses(courseResult.data!);
+    }
+  }, [courseResult.data]);
+
 
   if (authenticationStatus !== 'authenticated') {
     return <LoginRequired authenticationStatus={authenticationStatus} />;
@@ -98,17 +80,14 @@ export default function EnterPage() {
   return (
     <TrainingTable
       trainings={trainings}
-      disciplines={disciplines}
       holidays={holidays}
       setTrainings={setTrainings}
+      courses={courses}
       refresh={() => {
-        compensationValuesResult.refetch();
-        disciplineResult.refetch();
         holidayResult.refetch();
         trainingResult.refetch();
       }}
       approvalMode={false}
-      compensationValues={compensationValuesResult.data}
       data-testid="enter-training-table"
     />
   );

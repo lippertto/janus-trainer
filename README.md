@@ -9,11 +9,28 @@ yarn start:dev
 # TODO
 
 ## Tomorrow
-* Concept for management of classes
-* Put disciplines+classes on separate Angebot page
+* Special edit-mode in approve-screen
+
+
+## Bugs
+* In the course edit screen, we cannot deselect the existing chips for trainers+compensations.
+  Also, duplicate values are possible.
+* The seed does not work correctly. The next id to be assigned for the tables is not updated.
+
+Use the following statement to reset the counters
+```postgresql
+select setval( pg_get_serial_sequence('"public"."Discipline"', 'id'), 
+               (select max(id) from "public"."Discipline")
+             );
+```
+
 
 ## Features
+* Show warning if training not on 
+* e2e tests
 * Make disciplines disabled. (Also in the UI.)
+* Make courses disabled. (Also in the UI.)
+* Do not use cognito-UI. 
 * Find out what happens to log-in session after update. (users have to log out and in to get things working)
 * Allow to go from compensation page to validate page with specific dates+trainer
 * Put user management into Verwaltung. Maybe with tabs
@@ -35,10 +52,14 @@ yarn start:dev
 
 # Common tasks
 
-## Create a new migration
-```shell
-yarn run dotenv -e .env.development -- prisma migrate dev
-```
+## Evolving the database schema
+All commands should be prefixed with `yarn run dotenv -e .env.development -- ` to load the database connection values
+
+Make changes to the schema. Push the changes to the local database with `prisma db push`.
+
+After you are done, you can create a migration like so: `prisma migrate dev`
+
+More information can be found in the [Prisma docs](https://www.prisma.io/docs/orm/prisma-migrate/workflows/prototyping-your-schema) 
 
 # Architecture & Decisions
 

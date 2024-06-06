@@ -6,7 +6,7 @@ import {
   allowOnlyAdmins,
   emptyResponse,
   handleTopLevelCatch,
-  validateOrThrow,
+  validateOrThrow, idAsNumberOrThrow,
 } from '@/lib/helpers-for-api';
 import { bigIntReplacer } from '@/lib/json-tools';
 import prisma from '@/lib/prisma';
@@ -35,26 +35,22 @@ export async function DELETE(
   }
 }
 
-async function doPUT(nextRequest: NextRequest, idAsString: string) {
-  await allowOnlyAdmins(nextRequest);
-  const idAsNumber = parseInt(idAsString);
-  if (!idAsNumber) {
-    throw new ApiErrorBadRequest(`${idAsString} is not a valid id`);
-  }
+async function updateTraining(nextRequest: NextRequest, idAsString: string) {
+  const id = idAsNumberOrThrow(idAsString);
 
   const request = await validateOrThrow(
     new TrainingUpdateRequest(await nextRequest.json()),
   );
 
   const result = await prisma.training.update({
-    where: { id: idAsNumber },
+    where: { id: id },
     data: {
       date: request.date,
-      disciplineId: request.disciplineId,
-      group: request.group,
+      courseId: request.courseId,
       compensationCents: request.compensationCents,
       participantCount: request.participantCount,
     },
+    include: {course: true, user: true}
   });
 
   const data = JSON.stringify(result, bigIntReplacer);
@@ -66,7 +62,8 @@ export async function PUT(
   { params }: { params: { id: string } },
 ) {
   try {
-    return await doPUT(request, params.id);
+    await allowOnlyAdmins(request);
+    return await updateTraining(request, params.id);
   } catch (e) {
     return handleTopLevelCatch(e);
   }

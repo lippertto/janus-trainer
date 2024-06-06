@@ -17,10 +17,10 @@ model Holiday {
 }
 
 model Discipline {
-  id        Int        @id @default(autoincrement())
+  id        Int       @id @default(autoincrement())
   name      String
   deletedAt DateTime?
-  trainings Training[]
+  courses   Course[]
 }
 
 enum TrainingStatus {
@@ -31,24 +31,22 @@ enum TrainingStatus {
 
 model Training {
   id                Int    @id @default(autoincrement())
-  // name of the group
-  group             String
   // date in iso 8601
   date              String
   // cents
-  compensationCents BigInt
+  compensationCents Int
 
   createdAt DateTime
 
-  participantCount BigInt
+  participantCount Int
 
   status TrainingStatus
 
+  course   Course @relation(fields: [courseId], references: [id])
+  courseId Int
+
   user   UserInDb @relation(fields: [userId], references: [id])
   userId String
-
-  discipline   Discipline @relation(fields: [disciplineId], references: [id])
-  disciplineId Int
 }
 
 // The user in the database is only part of the domain object.
@@ -60,13 +58,39 @@ model UserInDb {
   name      String
   deletedAt DateTime?
   trainings Training[]
+  courses   Course[]
 
   // We want the table to be called User
   @@map("User")
 }
 
 model CompensationValue {
-  id          Int    @id @default(autoincrement())
+  id          Int      @id @default(autoincrement())
   cents       Int
   description String
+  courses     Course[]
+}
+
+enum DayOfWeek {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
+}
+
+model Course {
+  id                   Int                 @id @default(autoincrement())
+  name                 String
+  discipline           Discipline          @relation(fields: [disciplineId], references: [id])
+  disciplineId         Int
+  weekdays             DayOfWeek[]
+  startHour            Int
+  startMinute          Int
+  durationMinutes      Int
+  allowedCompensations CompensationValue[]
+  trainers             UserInDb[]
+  trainings            Training[]
 }

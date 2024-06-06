@@ -8,7 +8,7 @@ const logError = (error: Error, info: ErrorInfo) => {
   console.log(error);
 }
 
-export default function EnterLayout({children}: {children: React.ReactNode}) {
+export default function OfferingsLayout({children}: {children: React.ReactNode}) {
   return <React.Fragment>
     <ErrorBoundary fallbackRender={PleaseReload} onError={logError}>
       {children}

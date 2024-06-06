@@ -1,19 +1,19 @@
 import md5 from 'md5';
 import * as sepa from 'sepa';
-import { CompensationDtoNew } from './dto';
+import { CompensationDto } from './dto';
 
 // There are two different formats for the sepa xml files.
 // One is the
 const FORMAT_FOR_TRANSFERS = 'pain.001.003.03';
 
-function compensationHash(compensation: CompensationDtoNew): string {
+function compensationHash(compensation: CompensationDto): string {
   const hash = md5(
     `${compensation.user.id}.${compensation.periodStart}.${compensation.periodEnd}.${compensation.totalCompensationCents}`,
   );
   return hash.substring(0, 4);
 }
 
-export function generateSepaXml(compensations: CompensationDtoNew[]): string {
+export function generateSepaXml(compensations: CompensationDto[]): string {
   const doc = new sepa.Document(FORMAT_FOR_TRANSFERS);
   const hashOfConcatenatedIds = md5(
     compensations.flatMap((c) => c.correspondingIds).join(),

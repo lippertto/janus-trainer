@@ -9,24 +9,12 @@ import { EditUserDialog } from './EditUserDialog';
 import { showError } from '@/lib/notifications';
 
 import { GridRowId } from '@mui/x-data-grid';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import Button from '@mui/material/Button';
-import Typography from '@mui/material/Typography';
 
 import LoginRequired from '../../components/LoginRequired';
 import type { JanusSession } from '@/lib/auth';
 
-import {
-  createUser,
-  deleteUser,
-  getAllUsers,
-  updateUser,
-} from '@/lib/api-users';
+import { createUser, deleteUser, getAllUsers, updateUser } from '@/lib/api-users';
 import { User } from '@/lib/dto';
-import { CompensationValue } from '@prisma/client';
 import { useConfirm } from 'material-ui-confirm';
 
 export default function UserManagementPage() {

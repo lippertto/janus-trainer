@@ -7,7 +7,7 @@
     // TLT: Needed for class-validator
     "strictPropertyInitialization": false /* Check for class properties that are declared but not set in the constructor. */,
     // TLT updatd value from es2016
-    "target": "ES2021" /* Set the JavaScript language version for emitted JavaScript and include compatible library declarations. */,
+    "target": "ES2022" /* Set the JavaScript language version for emitted JavaScript and include compatible library declarations. */,
 
     
     /// copy-paste

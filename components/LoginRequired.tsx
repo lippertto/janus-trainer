@@ -1,6 +1,6 @@
 'use client';
 import React from 'react';
-import { Typography } from '@mui/material';
+import { CircularProgress, Typography } from '@mui/material';
 import { signIn } from 'next-auth/react';
 import Stack from '@mui/system/Stack';
 import Button from '@mui/material/Button';
@@ -19,12 +19,12 @@ function PleaseLogIn() {
 }
 
 function Loading() {
-  return <Typography>Prüfe Login-Daten</Typography>;
+  return <Stack alignItems="center"><CircularProgress /> </Stack>;
 }
 
 export default function LoginRequired({
-  authenticationStatus,
-}: {
+                                        authenticationStatus,
+                                      }: {
   authenticationStatus: 'authenticated' | 'loading' | 'unauthenticated';
 }) {
   return (

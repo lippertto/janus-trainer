@@ -117,7 +117,7 @@ export async function getUserByEmail(
 
 export async function listGroups(
   client: CognitoIdentityProviderClient,
-): Promise<string[] | null> {
+): Promise<string[]> {
   let response: ListGroupsResponse;
   try {
     response = await client.send(
@@ -126,8 +126,8 @@ export async function listGroups(
       }),
     );
   } catch (e) {
-    console.log('Failed to list cognito groups');
-    return null;
+    console.log(JSON.stringify(e));
+    throw new ApiErrorInternalServerError(`Failed to list cognito groups.`);
   }
   return response!.Groups!.map((it) => it.GroupName) as string[];
 }

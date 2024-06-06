@@ -3,13 +3,14 @@ import {
   GridValueSetterParams,
 } from '@mui/x-data-grid';
 import dayjs from 'dayjs';
+import { dateToHumanReadable } from '@/lib/formatters';
 
 require('dayjs/locale/de');
 dayjs.locale('de');
 
 /** formats the day for the front-end (including name of day) */
-export function toHumanReadableDate(params: GridValueFormatterParams): string {
-  return dayjs(params.value).format('DD.MM.YYYY (dd)');
+export function gridValueToHumanReadableDate(params: GridValueFormatterParams): string {
+  return dateToHumanReadable(params.value);
 }
 
 /** The API returns 8601 strings. This method converts the string to a date object to be used by the data grid. */

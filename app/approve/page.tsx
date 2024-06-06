@@ -16,11 +16,12 @@ import { DatePicker } from '@mui/x-date-pickers';
 import quarterOfYear from 'dayjs/plugin/quarterOfYear';
 import ButtonGroup from '@mui/material/ButtonGroup';
 import Button from '@mui/material/Button';
-import { CompensationValue, Discipline, Holiday } from '@prisma/client';
-import { TrainingDtoNew } from '@/lib/dto';
+import { Discipline, Holiday } from '@prisma/client';
+import { TrainingDto } from '@/lib/dto';
 import { useQuery } from '@tanstack/react-query';
 import { fetchListFromApi } from '@/lib/fetch';
-import { API_COMPENSATION_VALUES, API_DISCIPLINES, API_HOLIDAYS, API_TRAININGS } from '@/lib/routes';
+import { API_DISCIPLINES, API_HOLIDAYS, API_TRAININGS } from '@/lib/routes';
+import { compensationValuesQuery } from '@/lib/shared-queries';
 
 dayjs.extend(quarterOfYear);
 
@@ -31,8 +32,7 @@ export default function ApprovePage(): React.ReactElement {
   const [endDate, setEndDate] = React.useState<dayjs.Dayjs | null>(
     dayjs().endOf('quarter'),
   );
-  const [trainings, setTrainings] = React.useState<TrainingDtoNew[]>([]);
-  const [disciplines, setDisciplines] = React.useState<Discipline[]>([]);
+  const [trainings, setTrainings] = React.useState<TrainingDto[]>([]);
   const [holidays, setHolidays] = React.useState<Holiday[]>([]);
 
   const { data, status: authenticationStatus } = useSession();
@@ -40,7 +40,7 @@ export default function ApprovePage(): React.ReactElement {
 
   const trainingResult = useQuery({
     queryKey: ['trainings', startDate, endDate],
-    queryFn: () => fetchListFromApi<TrainingDtoNew>(
+    queryFn: () => fetchListFromApi<TrainingDto>(
       `${API_TRAININGS}?start=${startDate!.format('YYYY-MM-DD')}&end=${endDate!.format('YYYY-MM-DD')}`,
       session.accessToken,
     ),
@@ -60,38 +60,11 @@ export default function ApprovePage(): React.ReactElement {
     initialData: [],
   });
 
-  const compensationValuesResult = useQuery({
-    queryKey: ['compensationValues'],
-    queryFn: () => fetchListFromApi<CompensationValue>(
-      API_COMPENSATION_VALUES,
-      session.accessToken),
-    throwOnError: true,
-    enabled: !!session?.accessToken,
-    initialData: [],
-  });
-
-  const disciplineResult = useQuery({
-    queryKey: ['disciplines'],
-    queryFn: () => fetchListFromApi<Discipline>(
-      API_DISCIPLINES,
-      session.accessToken,
-    ),
-    throwOnError: true,
-    enabled: !!session?.accessToken,
-    initialData: [],
-  });
-
   useEffect(() => {
     if (!holidayResult.isError && !holidayResult.isLoading) {
       setHolidays(holidayResult.data);
     }
   }, [holidayResult]);
-
-  useEffect(() => {
-    if (!disciplineResult.isLoading && !disciplineResult.isError) {
-      setDisciplines(disciplineResult.data);
-    }
-  }, [disciplineResult]);
 
   useEffect(() => {
     if (!trainingResult.isError && !trainingResult.isLoading) {
@@ -101,6 +74,7 @@ export default function ApprovePage(): React.ReactElement {
 
   // refresh when the dates have changed
   useEffect(() => {
+    // noinspection JSIgnoredPromiseFromCall
     trainingResult.refetch()
   }, [startDate, endDate]);
 
@@ -153,13 +127,11 @@ export default function ApprovePage(): React.ReactElement {
       <Grid xs={12}>
         <TrainingTable
           trainings={trainings}
-          disciplines={disciplines}
-          holidays={holidays}
-          compensationValues={compensationValuesResult.data}
           setTrainings={setTrainings}
+          holidays={holidays}
+          courses={[]}
           refresh={() => {
             holidayResult.refetch()
-            disciplineResult.refetch()
             trainingResult.refetch()
           }}
           approvalMode={true}

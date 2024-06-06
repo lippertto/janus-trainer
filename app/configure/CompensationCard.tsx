@@ -1,6 +1,5 @@
 import React from 'react';
 import Card from '@mui/material/Card';
-import { CompensationValue } from '@prisma/client';
 import CardHeader from '@mui/material/CardHeader';
 import CardContent from '@mui/material/CardContent';
 import CardActions from '@mui/material/CardActions';
@@ -18,16 +17,17 @@ import { InputAdornment } from '@mui/material';
 import IconButton from '@mui/material/IconButton';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useConfirm } from 'material-ui-confirm';
+import { CompensationValueDto } from '@/lib/dto';
 
 type CompensationCardProps = {
-  values: CompensationValue[],
+  values: CompensationValueDto[],
   handleAddCompensationValue: (cents: number, description: string) => void
   handleDeleteCompensationValue: (id: number) => void
 }
 
 function compensationValueToListItem(
-  cv: CompensationValue,
-  handleDeleteClick: (value: CompensationValue) => void,
+  cv: CompensationValueDto,
+  handleDeleteClick: (value: CompensationValueDto) => void,
 ) {
   const text = new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(cv.cents / 100);
   return <ListItem key={cv.id} secondaryAction={
@@ -121,7 +121,7 @@ export default function CompensationCard({
   const [showAddDialog, setShowAddDialog] = React.useState<boolean>(false);
 
   const confirm = useConfirm();
-  const handleDeleteClick = (deletionCandidate: CompensationValue) => {
+  const handleDeleteClick = (deletionCandidate: CompensationValueDto) => {
     confirm({
       title: "Vergütung löschen?",
       description: `Soll die Vergütung "${deletionCandidate.description}" gelöscht werden?`

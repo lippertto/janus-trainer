@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ErrorResponse } from './dto';
 import { getToken } from 'next-auth/jwt';
-import { validate } from 'class-validator';
+import { validate, ValidationError } from 'class-validator';
 
 /** Will throw if the token does not have the admin role. */
 export async function allowOnlyAdmins(req: NextRequest) {
@@ -40,12 +40,12 @@ export async function allowAdminOrSelf(
   }
 
   throw new ApiErrorForbidden(
-    "You are trying to change other people's data. You must be admin to do that",
+    'You are trying to change other people\'s data. You must be admin to do that',
   );
 }
 
 /** Will throw if the token is not valid. */
-export async function allowAnyAuthorized(
+export async function allowAnyLoggedIn(
   req: NextRequest,
 ): Promise<void> {
   const token = await getToken({ req });
@@ -168,12 +168,33 @@ export function handleTopLevelCatch(e: any): NextResponse<ErrorResponse> {
   return internalServerErrorResponse();
 }
 
+function validationErrorToMessage(error: ValidationError): string {
+  let result = '';
+  // result += error.property
+  let constraints = error.constraints;
+  if (typeof constraints === 'object') {
+    result += Object.keys(constraints).map((constraint) => (constraints[constraint])).join(", ");
+  }
+  return result;
+}
+
 export async function validateOrThrow<T extends object>(arg: T): Promise<T> {
   const validationErrors = await validate(arg);
+  console.log(validationErrors);
   if (validationErrors.length !== 0) {
+    const validationMessage = validationErrors.map(validationErrorToMessage).join("; ")
     throw new ApiErrorBadRequest(
-      'Request is invalid: ' + JSON.stringify(validationErrors),
+      // 'Request is invalid: ' + JSON.stringify(validationErrors),
+      'Request is invalid: ' + validationMessage
     );
   }
   return arg;
+}
+
+export function idAsNumberOrThrow(id: string) {
+  const result = parseInt(id);
+  if (!result) {
+    throw new ApiErrorBadRequest("Provided id does not seem to be a number");
+  }
+  return result;
 }
