@@ -35,7 +35,7 @@ export default function EnterPage() {
   const trainingResult = useQuery({
     queryKey: ['trainings'],
     queryFn: () => fetchListFromApi<TrainingDto>(
-      `${API_TRAININGS}?userId=${session.userId}`,
+      `${API_TRAININGS}?userId=${session?.userId}`,
       session.accessToken,
     ),
     throwOnError: true,
@@ -46,7 +46,7 @@ export default function EnterPage() {
   const courseResult = useQuery({
       queryKey: ['courses', session?.userId],
       queryFn: () => fetchListFromApi<CourseDto>(
-        `${API_COURSES}?trainerId=${session.userId}`,
+        `${API_COURSES}?trainerId=${session?.userId}`,
         session.accessToken,
       ),
       throwOnError: true,

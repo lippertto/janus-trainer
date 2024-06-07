@@ -465,7 +465,7 @@ export default function TrainingTable(
       />
       <TrainingDialog
         open={showTrainingDialog}
-        userId={session.userId}
+        userId={session?.userId}
         handleClose={() => {
           setRowSelectionModel([]);
           setActiveTraining(null);

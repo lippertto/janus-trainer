@@ -91,7 +91,7 @@ Resources:
       UserPoolId: !Ref JanusUserPool
       ClientName: !Join [ "-", [ "janus-trainer-app", !Ref JanusEnvironment ] ]
       CallbackURLs:
-        - !Join ['', ['https://', !Ref JanusDomain, '/api/auth/callback/cognito']]
+        - !Sub "https://${JanusDomain}/api/auth/callback/cognito"
         - http://localhost:3000/api/auth/callback/cognito
       SupportedIdentityProviders:
         - COGNITO
@@ -166,9 +166,11 @@ Resources:
       PackageType: Image
       Role: !GetAtt JanusTrainerAppRole.Arn
       ReservedConcurrentExecutions: 5
+      # for some reason, the authentication route needs a long time, hence we wait 30s
+      Timeout: 30
       Environment:
         Variables:
-          NEXTAUTH_URL: !Join ["", ["https://", !Ref JanusDomain]]
+          NEXTAUTH_URL: !Sub "https://${JanusDomain}"
           NEXTAUTH_SECRET: tobias-secret-value
           COGNITO_CLIENT_ID: !Ref JanusUserPoolClient
           COGNITO_REGION: eu-north-1
@@ -196,7 +198,7 @@ Resources:
       DistributionConfig:
         Enabled: true
         PriceClass: PriceClass_100  # US+Europe
-        Comment: !Join [ "", [ "Janus Trainer App - ", !Ref JanusEnvironment ] ]
+        Comment: !Sub "Janus Trainer App - ${JanusEnvironment}"
         Origins:
           - Id: janus-trainer-lambda
             DomainName: !Select [2, !Split ["/", !GetAtt JanusTrainerAppLambdaUrl.FunctionUrl]]
