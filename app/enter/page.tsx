@@ -88,6 +88,7 @@ export default function EnterPage() {
         trainingResult.refetch();
       }}
       approvalMode={false}
+      session={session}
       data-testid="enter-training-table"
     />
   );
