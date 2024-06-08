@@ -32,19 +32,30 @@ async function listUsers(request: NextRequest): Promise<UserDto[]> {
     (await listAllUsers(client)).map((user) => [user.username, user]),
   );
 
-  let groupsToReturn: string[];
+  let groupsToAnnotate: string[];
   const groupFilter = request.nextUrl.searchParams.get('group');
   if (groupFilter) {
-    groupsToReturn = [groupFilter]
+    groupsToAnnotate = [groupFilter]
   } else {
-    groupsToReturn = await listGroups(client);
+    groupsToAnnotate = await listGroups(client);
   }
 
-  for (const thisGroup of groupsToReturn) {
+  for (const thisGroup of groupsToAnnotate) {
     const usersIdsInThisGroup = await findUsersForGroup(client, thisGroup);
     usersIdsInThisGroup.forEach((userId) => {
       allUsers.get(userId)!.groups.push(thisGroup as Group);
     });
+  }
+
+  // if a group filter has been set, filter all users which do not have groups
+  // (because of the way we annotate groups above, only users with matching
+  // groups have the group property set
+  if (groupFilter) {
+    for (let [userId, user] of allUsers) {
+      if (user.groups.length === 0) {
+        allUsers.delete(userId);
+      }
+    }
   }
 
   const result: UserDto[] = [];

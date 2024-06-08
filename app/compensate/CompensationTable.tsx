@@ -1,6 +1,7 @@
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import React from 'react';
 import { CompensationDto } from '@/lib/dto';
+import { centsToDisplayString } from '@/lib/formatters';
 
 export default function CompensationTable({
   compensations,
@@ -11,24 +12,26 @@ export default function CompensationTable({
     {
       field: 'user',
       headerName: 'Name',
-      width: 120,
+      flex: 2,
       valueGetter: (p) => p.value.name,
     },
     {
       field: 'totalTrainings',
       headerName: 'Trainings',
+      flex: 0.5,
     },
     {
       field: 'totalCompensationCents',
       headerName: 'Betrag',
       valueFormatter: (params) => {
-        return Number(params.value / 100).toLocaleString() + ' €';
+        return centsToDisplayString(params.value);
       },
+      flex: 1,
     },
     {
       field: 'iban',
       headerName: 'IBAN',
-      width: 250,
+      flex: 2,
       valueGetter: (p) => p.row.user.iban.replace(/(.{4})/g, '$1 ').trim(),
     },
   ];

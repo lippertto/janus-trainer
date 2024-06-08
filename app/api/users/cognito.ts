@@ -87,7 +87,9 @@ async function listCognitoUsers(client: CognitoIdentityProviderClient,
     );
     paginationToken = response.PaginationToken;
     const usersOfThisBatch = response
-      .Users!.map(convertOneCognitoUser)
+      .Users!
+      .filter(u => u.Enabled)
+      .map(convertOneCognitoUser)
       .filter((u) => u !== null) as ParsedCognitoUser[];
     result.push(
       ...usersOfThisBatch,
@@ -148,7 +150,10 @@ export async function findUsersForGroup(
         NextToken: nextToken,
       }),
     );
-    result.push(...response.Users!.map((user) => user.Username!));
+    result.push(...response.Users!
+      .filter((user) => user.Enabled)
+      .map((user) => user.Username!)
+    );
     nextToken = response.NextToken;
   } while (nextToken);
 
