@@ -16,18 +16,14 @@ import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 
 import { DatePicker } from '@mui/x-date-pickers';
-import {
-  DataGrid,
-  GridActionsCellItem,
-  GridColDef,
-} from '@mui/x-data-grid';
+import { DataGrid, GridActionsCellItem, GridColDef, GridValueFormatterParams } from '@mui/x-data-grid';
 
 import dayjs from 'dayjs';
 
 import Box from '@mui/material/Box';
-import { gridValueToHumanReadableDate } from '@/lib/datagrid-utils';
 import { Holiday } from '@prisma/client';
 import { useConfirm } from 'material-ui-confirm';
+import { dateToHumanReadable } from '@/lib/formatters';
 
 function HolidayTable({
   rows,
@@ -41,14 +37,18 @@ function HolidayTable({
       headerName: 'Start',
       type: 'date',
       field: 'start',
-      valueFormatter: gridValueToHumanReadableDate,
+      valueFormatter: function(params: GridValueFormatterParams): string {
+        return dateToHumanReadable(params.value);
+      },
       flex: 1,
     },
     {
       headerName: 'Ende',
       type: 'date',
       field: 'end',
-      valueFormatter: gridValueToHumanReadableDate,
+      valueFormatter: function(params: GridValueFormatterParams): string {
+        return dateToHumanReadable(params.value);
+      },
       flex: 1,
     },
     {

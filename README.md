@@ -11,7 +11,6 @@ yarn start:dev
 ## Tomorrow
 * Special edit-mode in approve-screen
 
-
 ## Bugs
 * In the course edit screen, we cannot deselect the existing chips for trainers+compensations.
   Also, duplicate values are possible.
@@ -29,22 +28,17 @@ select setval( pg_get_serial_sequence('"public"."Discipline"', 'id'),
 * Loadingspinner in user management, evtl. mit Suspense und suspense query:
   * https://tanstack.com/query/latest/docs/framework/react/guides/suspense
   * https://react.dev/reference/react/Suspense
-* Show warning if training not on 
+* Show warning if training not on configured day
 * e2e tests
 * Make disciplines disabled. (Also in the UI.)
 * Make courses disabled. (Also in the UI.)
-* Do not use cognito-UI. 
-* Find out what happens to log-in session after update. (users have to log out and in to get things working)
 * Allow to go from compensation page to validate page with specific dates+trainer
-* Put user management into Verwaltung. Maybe with tabs
 
 ## Tech update
 * Switch to Amazon's RDS
-* Remove BigInt from training. Use Int instead
 * Add proper logging
 * Use lint-staged: https://github.com/lint-staged/lint-staged
 * Put secrets into actual secrets
-* Use column-editing mode for TrainingTable
 
 ## Refinement
 * Read up on MUI's nextjs integration: https://mui.com/material-ui/guides/nextjs/
