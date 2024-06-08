@@ -13,14 +13,14 @@ import { addHoliday, deleteHoliday, getHolidays } from '@/lib/api-holidays';
 import { showError, showSuccess } from '@/lib/notifications';
 
 import HolidayCard from './HolidayCard';
-import { Holiday } from '@prisma/client';
 import CompensationCard from '@/app/configure/CompensationCard';
 import { addCompensationValue, deleteCompensationValue, getCompensationValues } from '@/lib/api-compensation-values';
-import { CompensationValueDto } from '@/lib/dto';
+import { CompensationValueDto, HolidayDto } from '@/lib/dto';
+import { holidaysQuery } from '@/lib/shared-queries';
 
 export default function Page() {
   const [compensationValues, setCompensationValues] = React.useState<CompensationValueDto[]>([]);
-  const [holidays, setHolidays] = React.useState<Holiday[]>([]);
+  const [holidays, setHolidays] = React.useState<HolidayDto[]>([]);
   const [holidayYear, setHolidayYear] = React.useState<number>(
     new Date().getFullYear(),
   );
@@ -49,7 +49,7 @@ export default function Page() {
   );
 
   const handleDeleteHoliday = React.useCallback(
-    (holiday: Holiday) => {
+    (holiday: HolidayDto) => {
       if (!session?.accessToken) return;
       deleteHoliday(session.accessToken, holiday.id.toString())
         .then(() => {
@@ -104,20 +104,7 @@ export default function Page() {
     [session?.accessToken, holidays, holidayYear, setHolidays],
   );
 
-  const loadHolidays = React.useCallback(
-    (accessToken: string) => {
-      if (!holidayYear) {
-        setHolidays([]);
-        return;
-      }
-      getHolidays(accessToken, [holidayYear])
-        .then((h) => setHolidays(h))
-        .catch((e: Error) => {
-          showError('Konnte die Feiertage nicht laden.', e.message);
-        });
-    },
-    [holidayYear],
-  );
+  const holidaysResult = holidaysQuery(session?.accessToken, [holidayYear])
 
   const loadCompensationValues = React.useCallback(
     (accessToken: string) => {
@@ -137,13 +124,11 @@ export default function Page() {
     loadCompensationValues(session.accessToken);
   }, [session?.accessToken]);
 
-// TODO - does this need to be split?
   React.useEffect(() => {
-    if (!session?.accessToken) {
-      return;
+    if (!holidaysResult.isLoading && !holidaysResult.isError && !holidaysResult.isRefetching) {
+      setHolidays(holidaysResult.data!)
     }
-    loadHolidays(session.accessToken);
-  }, [session?.accessToken, loadHolidays]);
+  }, [holidaysResult.data])
 
   if (authenticationStatus !== 'authenticated') {
     return <LoginRequired authenticationStatus={authenticationStatus} />;
@@ -154,7 +139,7 @@ export default function Page() {
       <Grid container spacing={2}>
         <Grid xs={6}>
           <HolidayCard
-            holidays={holidays}
+            holidays={holidays ?? []}
             handleAddHoliday={handleAddHoliday}
             handleDeleteHoliday={handleDeleteHoliday}
             holidayYear={holidayYear}

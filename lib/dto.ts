@@ -1,4 +1,4 @@
-import { CompensationValue, Course, DayOfWeek, Discipline, Training, TrainingStatus } from '@prisma/client';
+import { CompensationValue, Course, DayOfWeek, Discipline, Holiday, Training, TrainingStatus } from '@prisma/client';
 import {
   IsArray,
   IsEmail,
@@ -265,3 +265,5 @@ export function dayOfWeekToHumanReadable(w: DayOfWeek) {
 }
 
 export type CompensationValueLightDto = Pick<CompensationValueDto, 'id' | 'description' | 'cents'>;
+
+export type HolidayDto = Holiday;
