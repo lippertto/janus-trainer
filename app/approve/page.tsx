@@ -20,7 +20,8 @@ import { HolidayDto, TrainingDto } from '@/lib/dto';
 import { useQuery } from '@tanstack/react-query';
 import { fetchListFromApi } from '@/lib/fetch';
 import { API_HOLIDAYS, API_TRAININGS } from '@/lib/routes';
-import { holidaysQuery } from '@/lib/shared-queries';
+import { holidaysQuery, resultHasData } from '@/lib/shared-queries';
+import { CircularProgress } from '@mui/material';
 
 dayjs.extend(quarterOfYear);
 
@@ -37,7 +38,7 @@ export default function ApprovePage(): React.ReactElement {
   const { data, status: authenticationStatus } = useSession();
   const session = data as JanusSession;
 
-  const trainingResult = useQuery({
+  const trainingsResult = useQuery({
     queryKey: ['trainings', startDate, endDate],
     queryFn: () => fetchListFromApi<TrainingDto>(
       `${API_TRAININGS}?start=${startDate!.format('YYYY-MM-DD')}&end=${endDate!.format('YYYY-MM-DD')}`,
@@ -59,20 +60,24 @@ export default function ApprovePage(): React.ReactElement {
   }, [holidayResult]);
 
   useEffect(() => {
-    if (!trainingResult.isError && !trainingResult.isLoading) {
-      setTrainings(trainingResult.data);
+    if (!trainingsResult.isError && !trainingsResult.isLoading) {
+      setTrainings(trainingsResult.data);
     }
-  }, [trainingResult]);
+  }, [trainingsResult]);
 
   // refresh when the dates have changed
   useEffect(() => {
     // noinspection JSIgnoredPromiseFromCall
-    trainingResult.refetch()
+    trainingsResult.refetch()
   }, [startDate, endDate]);
 
 
   if (authenticationStatus !== 'authenticated') {
     return <LoginRequired authenticationStatus={authenticationStatus} />;
+  }
+
+  if (!resultHasData(trainingsResult)) {
+    return <Stack alignItems="center"><CircularProgress /> </Stack>
   }
 
   return (
@@ -124,7 +129,7 @@ export default function ApprovePage(): React.ReactElement {
           courses={[]}
           refresh={() => {
             holidayResult.refetch()
-            trainingResult.refetch()
+            trainingsResult.refetch()
           }}
           approvalMode={true}
           session={session}

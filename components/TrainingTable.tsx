@@ -382,8 +382,8 @@ export default function TrainingTable(
                 setActiveTraining(null);
                 setShowTrainingDialog(true);
               },
-            handleDelete: activeTraining ? () => (handleDeleteClick(activeTraining)) : null,
-            handleEdit: activeTraining ? () => {
+            handleDelete: activeTraining && activeTraining.status === TrainingStatus.NEW ? () => (handleDeleteClick(activeTraining)) : null,
+            handleEdit: activeTraining && activeTraining.status === TrainingStatus.NEW ? () => {
               setShowTrainingDialog(true);
             } : null,
           },
