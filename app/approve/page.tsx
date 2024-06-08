@@ -16,12 +16,11 @@ import { DatePicker } from '@mui/x-date-pickers';
 import quarterOfYear from 'dayjs/plugin/quarterOfYear';
 import ButtonGroup from '@mui/material/ButtonGroup';
 import Button from '@mui/material/Button';
-import { Discipline, Holiday } from '@prisma/client';
-import { TrainingDto } from '@/lib/dto';
+import { HolidayDto, TrainingDto } from '@/lib/dto';
 import { useQuery } from '@tanstack/react-query';
 import { fetchListFromApi } from '@/lib/fetch';
-import { API_DISCIPLINES, API_HOLIDAYS, API_TRAININGS } from '@/lib/routes';
-import { compensationValuesQuery } from '@/lib/shared-queries';
+import { API_HOLIDAYS, API_TRAININGS } from '@/lib/routes';
+import { holidaysQuery } from '@/lib/shared-queries';
 
 dayjs.extend(quarterOfYear);
 
@@ -33,7 +32,7 @@ export default function ApprovePage(): React.ReactElement {
     dayjs().endOf('quarter'),
   );
   const [trainings, setTrainings] = React.useState<TrainingDto[]>([]);
-  const [holidays, setHolidays] = React.useState<Holiday[]>([]);
+  const [holidays, setHolidays] = React.useState<HolidayDto[]>([]);
 
   const { data, status: authenticationStatus } = useSession();
   const session = data as JanusSession;
@@ -49,20 +48,13 @@ export default function ApprovePage(): React.ReactElement {
     initialData: [],
   });
 
-  const holidayResult = useQuery({
-    queryKey: ['holidays'],
-    queryFn: () => fetchListFromApi<Holiday>(
-      `${API_HOLIDAYS}?year=${new Date().getFullYear()},${new Date().getFullYear() - 1}`,
-      session.accessToken,
-    ),
-    throwOnError: true,
-    enabled: !!session?.accessToken,
-    initialData: [],
-  });
+  const holidayResult = holidaysQuery(session?.accessToken,
+    [new Date().getFullYear(), new Date().getFullYear() - 1],
+  )
 
   useEffect(() => {
-    if (!holidayResult.isError && !holidayResult.isLoading) {
-      setHolidays(holidayResult.data);
+    if (!holidayResult.isError && !holidayResult.isLoading && !holidayResult.isRefetching) {
+      setHolidays(holidayResult.data!);
     }
   }, [holidayResult]);
 
