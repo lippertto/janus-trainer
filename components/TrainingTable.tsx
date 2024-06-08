@@ -334,7 +334,7 @@ export default function TrainingTable(
   const [activeTraining, setActiveTraining] =
     React.useState<TrainingDto | null>(null);
 
-
+  // TODO - move up
   const { data } = useSession();
   const session = data as JanusSession;
 

@@ -93,6 +93,9 @@ export class UserCreateRequest {
   groups: Group[];
 }
 
+export class UserUpdateRequest extends UserCreateRequest {
+}
+
 export type UserQueryResponseDto = {
   value: UserDto[];
 };
