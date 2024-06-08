@@ -1,5 +1,5 @@
 import React from 'react';
-import { Group, User } from '@/lib/dto';
+import { Group, UserDto } from '@/lib/dto';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -18,7 +18,7 @@ export function EditUserDialog({
   handleClose,
   handleSave,
 }: {
-  user: User | null;
+  user: UserDto | null;
   open: boolean;
   handleClose: () => void;
   handleSave: (

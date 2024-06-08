@@ -26,6 +26,9 @@ select setval( pg_get_serial_sequence('"public"."Discipline"', 'id'),
 
 
 ## Features
+* Loadingspinner in user management, evtl. mit Suspense und suspense query:
+  * https://tanstack.com/query/latest/docs/framework/react/guides/suspense
+  * https://react.dev/reference/react/Suspense
 * Show warning if training not on 
 * e2e tests
 * Make disciplines disabled. (Also in the UI.)

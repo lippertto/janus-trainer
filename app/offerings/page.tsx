@@ -26,7 +26,7 @@ import {
   CourseDto,
   dayOfWeekToHumanReadable,
   DisciplineDto,
-  User,
+  UserDto,
 } from '@/lib/dto';
 import { CourseDialog } from '@/app/offerings/CourseDialog';
 import { compensationValuesQuery } from '@/lib/shared-queries';
@@ -86,7 +86,7 @@ export default function OfferingsPage() {
 
   const [disciplines, setDisciplines] = React.useState<DisciplineDto[]>([]);
   const [courses, setCourses] = React.useState<CourseDto[]>([]);
-  const [trainers, setTrainers] = React.useState<User[]>([]);
+  const [trainers, setTrainers] = React.useState<UserDto[]>([]);
   const [compensationValues, setCompensationValues] = React.useState<CompensationValueDto[]>([]);
 
   const [activeDiscipline, setActiveDiscipline] = React.useState<DisciplineDto | null>(null);
@@ -115,7 +115,7 @@ export default function OfferingsPage() {
 
   const trainerResult = useQuery({
     queryKey: ['users', 'trainers'],
-    queryFn: () => fetchListFromApi<User>(`${API_USERS}?group=trainers`, session.accessToken),
+    queryFn: () => fetchListFromApi<UserDto>(`${API_USERS}?group=trainers`, session.accessToken),
     enabled: Boolean(session?.accessToken),
     throwOnError: true,
     staleTime: 10 * 60 * 1000,

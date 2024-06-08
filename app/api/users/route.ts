@@ -4,7 +4,7 @@ import {
   allowOnlyAdmins,
   handleTopLevelCatch,
 } from '@/lib/helpers-for-api';
-import { User } from '@/lib/dto';
+import { UserDto } from '@/lib/dto';
 import { Group } from '@/lib/dto';
 import { CognitoIdentityProviderClient } from '@aws-sdk/client-cognito-identity-provider';
 
@@ -23,7 +23,7 @@ import { createUser } from '@/app/api/users/createUser';
  * * User exists in the database and is not soft-deleted
  * * User exists in cognito as is enabled
  */
-async function listUsers(request: NextRequest): Promise<User[]> {
+async function listUsers(request: NextRequest): Promise<UserDto[]> {
   const client = new CognitoIdentityProviderClient({
     region: process.env.COGNITO_REGION ?? 'eu-north-1',
   });
@@ -47,7 +47,7 @@ async function listUsers(request: NextRequest): Promise<User[]> {
     });
   }
 
-  const result: User[] = [];
+  const result: UserDto[] = [];
   for (const [username, cognitoUser] of allUsers.entries()) {
     const userInDatabase = await prisma.userInDb.findFirst({
       where: {
@@ -83,7 +83,7 @@ export async function GET(
 
 export async function POST(
   nextRequest: NextRequest,
-): Promise<NextResponse<User | ErrorResponse>> {
+): Promise<NextResponse<UserDto | ErrorResponse>> {
   try {
     return await createUser(nextRequest);
   } catch (e) {

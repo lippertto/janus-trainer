@@ -1,7 +1,7 @@
-import { User, UserCreateRequest, UserQueryResponseDto } from './dto';
+import { UserDto, UserCreateRequest, UserQueryResponseDto } from './dto';
 import { Group } from './dto';
 
-export async function getAllUsers(accessToken: string): Promise<User[]> {
+export async function getAllUsers(accessToken: string): Promise<UserDto[]> {
   const response = await fetch(`/api/users`, {
     headers: {
       Authorization: `Bearer ${accessToken}`,
@@ -25,7 +25,7 @@ export async function updateUser(
   isTrainer: boolean,
   isAdmin: boolean,
   iban?: string,
-): Promise<User> {
+): Promise<UserDto> {
   const groups = [];
   if (isTrainer) {
     groups.push(Group.TRAINERS);
@@ -58,7 +58,7 @@ export async function updateUser(
       new Error('Could not update user: ' + (await response.text())),
     );
   }
-  return (await response.json()) as User;
+  return (await response.json()) as UserDto;
 }
 
 export async function createUser(
@@ -68,7 +68,7 @@ export async function createUser(
   isTrainer: boolean,
   isAdmin: boolean,
   iban?: string,
-): Promise<User> {
+): Promise<UserDto> {
   const groups = [];
   if (isTrainer) {
     groups.push(Group.TRAINERS);
@@ -99,7 +99,7 @@ export async function createUser(
     );
   }
 
-  return (await response.json()) as User;
+  return (await response.json()) as UserDto;
 }
 
 export async function deleteUser(
