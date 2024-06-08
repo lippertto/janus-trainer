@@ -4,7 +4,7 @@ import {
   GridToolbarContainer,
 } from '@mui/x-data-grid';
 import type { GridColDef, GridRowId } from '@mui/x-data-grid';
-import type { User } from '@/lib/dto';
+import type { UserDto } from '@/lib/dto';
 
 import React from 'react';
 import EditIcon from '@mui/icons-material/Edit';
@@ -41,7 +41,7 @@ export default function UserTable({
   handleUserEditClick,
   handleUserDeleteClick,
 }: {
-  users: User[];
+  users: UserDto[];
   handleAddUser: () => void;
   handleRefresh: () => void;
   handleUserEditClick: (id: GridRowId) => void;

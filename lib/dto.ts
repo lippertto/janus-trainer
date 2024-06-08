@@ -19,7 +19,7 @@ export enum Group {
   TRAINERS = 'trainers',
 }
 
-export type User = {
+export type UserDto = {
   id: string;
   iban: string | null;
   email: string;
@@ -28,7 +28,7 @@ export type User = {
 };
 
 export type TrainingDto = Training & {
-  user: User,
+  user: UserDto,
   course: CourseDto,
 }
 
@@ -94,7 +94,7 @@ export class UserCreateRequest {
 }
 
 export type UserQueryResponseDto = {
-  value: User[];
+  value: UserDto[];
 };
 
 export class TrainingUpdateStatusRequest {

@@ -14,14 +14,19 @@ import LoginRequired from '../../components/LoginRequired';
 import type { JanusSession } from '@/lib/auth';
 
 import { createUser, deleteUser, getAllUsers, updateUser } from '@/lib/api-users';
-import { User } from '@/lib/dto';
+import { TrainingDto, UserDto } from '@/lib/dto';
 import { useConfirm } from 'material-ui-confirm';
+import { useQuery, useSuspenseQuery } from '@tanstack/react-query';
+import { fetchListFromApi } from '@/lib/fetch';
+import { API_TRAININGS, API_USERS } from '@/lib/routes';
+import Stack from '@mui/material/Stack';
+import { CircularProgress } from '@mui/material';
 
 export default function UserManagementPage() {
   const [showCreate, setShowCreate] = React.useState<boolean>(false);
   const [showEdit, setShowEdit] = React.useState<boolean>(false);
-  const [users, setUsers] = React.useState<User[]>([]);
-  const [userToEdit, setUserToEdit] = React.useState<User | null>(null);
+  const [users, setUsers] = React.useState<UserDto[]>([]);
+  const [userToEdit, setUserToEdit] = React.useState<UserDto | null>(null);
 
   const { data, status: authenticationStatus } = useSession();
   const session = data as JanusSession;
@@ -44,20 +49,22 @@ export default function UserManagementPage() {
           }));
   };
 
+  const usersResponse = useQuery({
+    queryKey: ['users'],
+    queryFn: () => fetchListFromApi<UserDto>(
+      `${API_USERS}`,
+      session!.accessToken,
+    ),
+    throwOnError: true,
+    enabled: Boolean(session?.accessToken),
+    staleTime: 10 * 60 * 1000,
+  });
 
-  const refresh = React.useCallback(async () => {
-    setUserToEdit(null);
-    setUsers([]);
-    if (session?.accessToken) {
-      getAllUsers(session.accessToken)
-        .then((result) => {
-          setUsers(result);
-        })
-        .catch((e: Error) => {
-          showError('Konnte die Nutzer nicht laden', e.message);
-        });
+  React.useEffect(() => {
+    if (!usersResponse.isError && !usersResponse.isLoading) {
+      setUsers(usersResponse.data!);
     }
-  }, [session?.accessToken]);
+  }, [usersResponse.data]);
 
   const handleUserEditClick = React.useCallback(
     (id: GridRowId) => {
@@ -71,20 +78,20 @@ export default function UserManagementPage() {
     [setShowEdit, setUserToEdit, users],
   );
 
-  React.useEffect(() => {
-    refresh();
-  }, [session?.accessToken, refresh]);
-
   if (authenticationStatus !== 'authenticated') {
     return <LoginRequired authenticationStatus={authenticationStatus} />;
+  }
+
+  if (usersResponse.isLoading || usersResponse.isRefetching) {
+    return <Stack alignItems="center"><CircularProgress /> </Stack>;
   }
 
   return (
     <>
       <UserTable
-        users={users}
+        users={users ?? []}
         handleAddUser={() => setShowCreate(true)}
-        handleRefresh={refresh}
+        handleRefresh={usersResponse.refetch}
         handleUserEditClick={handleUserEditClick}
         handleUserDeleteClick={handleDeleteClick}
       />

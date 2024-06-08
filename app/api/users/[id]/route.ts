@@ -7,7 +7,7 @@ import prisma from '@/lib/prisma';
 import { CognitoIdentityProviderClient } from '@aws-sdk/client-cognito-identity-provider';
 import { NextRequest, NextResponse } from 'next/server';
 import { disableCognitoUser, updateCognitoUser } from '../cognito';
-import { User, UserCreateRequest } from '@/lib/dto';
+import { UserDto, UserCreateRequest } from '@/lib/dto';
 
 async function doDELETE(request: NextRequest, id: string) {
   await allowOnlyAdmins(request);
@@ -63,7 +63,7 @@ export async function HEAD(
   }
 }
 
-async function doPUT(nextRequest: NextRequest, params: { id: string }): Promise<NextResponse<User>> {
+async function doPUT(nextRequest: NextRequest, params: { id: string }): Promise<NextResponse<UserDto>> {
   await allowOnlyAdmins(nextRequest);
   // CreateRequest is fine. It contains all required fields
   const request = await validateOrThrow<UserCreateRequest>(
