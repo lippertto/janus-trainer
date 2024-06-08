@@ -1,5 +1,5 @@
 import React from 'react';
-import { Group, UserDto } from '@/lib/dto';
+import { Group, UserCreateRequest, UserDto } from '@/lib/dto';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -12,38 +12,42 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
 import FormLabel from '@mui/material/FormLabel';
 
-export function EditUserDialog({
-  user,
+export function UserDialog({
+  userToEdit,
   open,
   handleClose,
   handleSave,
 }: {
-  user: UserDto | null;
+  userToEdit: UserDto | null;
   open: boolean;
   handleClose: () => void;
   handleSave: (
-    id: string | null,
-    name: string,
-    email: string,
-    isTrainer: boolean,
-    isAdmin: boolean,
-    iban?: string,
+    data: UserCreateRequest
   ) => void;
 }) {
-  const [previousUserId, setPreviousUserId] = React.useState<string>('');
+  const [previousUser, setPreviousUser] = React.useState<UserDto|null>(null);
   const [name, setName] = React.useState<string>('');
   const [email, setEmail] = React.useState<string>('');
   const [iban, setIban] = React.useState<string>('');
   const [isTrainer, setIsTrainer] = React.useState<boolean>(false);
   const [isAdmin, setIsAdmin] = React.useState<boolean>(false);
 
-  if (previousUserId !== (user?.id ?? '')) {
-    setName(user?.name ?? '');
-    setEmail(user?.email ?? '');
-    setIban(user?.iban ?? '');
-    setIsTrainer(user ? user.groups.indexOf(Group.TRAINERS) !== -1 : false);
-    setIsAdmin(user ? user.groups.indexOf(Group.ADMINS) !== -1 : false);
-    setPreviousUserId(user?.id ?? '');
+  if (previousUser !== userToEdit) {
+    setPreviousUser(userToEdit);
+    if (userToEdit) {
+      setName(userToEdit.name);
+      setEmail(userToEdit.email);
+      setIban(userToEdit.iban ?? "");
+      setIsTrainer(userToEdit.groups.indexOf(Group.TRAINERS) !== -1);
+      setIsAdmin(userToEdit.groups.indexOf(Group.ADMINS) !== -1);
+    }
+    else {
+      setName('');
+      setEmail('');
+      setIban('');
+      setIsTrainer(false);
+      setIsAdmin(false);
+    }
   }
 
   const nameIsSet = name && name?.length > 0;
@@ -126,7 +130,6 @@ export function EditUserDialog({
       <DialogActions>
         <Button
           onClick={() => {
-            setPreviousUserId('aborted');
             handleClose();
           }}
         >
@@ -135,15 +138,17 @@ export function EditUserDialog({
         <Button
           disabled={!dataIsValid}
           onClick={() => {
+            let groups = [];
+            if (isTrainer) groups.push(Group.TRAINERS);
+            if (isAdmin) groups.push(Group.ADMINS);
             handleSave(
-              user?.id ?? null,
-              name,
-              email,
-              isTrainer,
-              isAdmin,
-              ibanIsSet ? iban : undefined,
+              {
+                name,
+                email,
+                iban: ibanIsSet? iban: undefined,
+                groups
+              }
             );
-            setPreviousUserId('');
             handleClose();
           }}
           autoFocus

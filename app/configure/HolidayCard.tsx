@@ -20,7 +20,6 @@ import {
   DataGrid,
   GridActionsCellItem,
   GridColDef,
-  GridRowId,
 } from '@mui/x-data-grid';
 
 import dayjs from 'dayjs';
