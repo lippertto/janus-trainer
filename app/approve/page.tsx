@@ -19,19 +19,30 @@ import Button from '@mui/material/Button';
 import { HolidayDto, TrainingDto } from '@/lib/dto';
 import { useQuery } from '@tanstack/react-query';
 import { fetchListFromApi } from '@/lib/fetch';
-import { API_HOLIDAYS, API_TRAININGS } from '@/lib/routes';
+import { API_TRAININGS } from '@/lib/routes';
 import { holidaysQuery, resultHasData } from '@/lib/shared-queries';
 import { CircularProgress } from '@mui/material';
+import { usePathname, useSearchParams, useRouter } from 'next/navigation';
 
 dayjs.extend(quarterOfYear);
 
 export default function ApprovePage(): React.ReactElement {
-  const [startDate, setStartDate] = React.useState<dayjs.Dayjs | null>(
+  const searchParams= useSearchParams()
+  const pathname = usePathname();
+  const {replace} = useRouter();
+
+  const [datePickerStart, setDatePickerStart] = React.useState<dayjs.Dayjs | null>(
     dayjs().startOf('quarter'),
   );
-  const [endDate, setEndDate] = React.useState<dayjs.Dayjs | null>(
+  const [datePickerEnd, setDatePickerEnd] = React.useState<dayjs.Dayjs | null>(
     dayjs().endOf('quarter'),
   );
+  const [filterStart, setFilterStart] = React.useState<dayjs.Dayjs|null>(
+    datePickerStart
+  )
+  const [filterEnd, setFilterEnd] = React.useState<dayjs.Dayjs|null>(
+    datePickerEnd
+  )
   const [trainings, setTrainings] = React.useState<TrainingDto[]>([]);
   const [holidays, setHolidays] = React.useState<HolidayDto[]>([]);
 
@@ -39,13 +50,13 @@ export default function ApprovePage(): React.ReactElement {
   const session = data as JanusSession;
 
   const trainingsResult = useQuery({
-    queryKey: ['trainings', startDate, endDate],
+    queryKey: ['trainings', datePickerStart, datePickerEnd],
     queryFn: () => fetchListFromApi<TrainingDto>(
-      `${API_TRAININGS}?start=${startDate!.format('YYYY-MM-DD')}&end=${endDate!.format('YYYY-MM-DD')}`,
+      `${API_TRAININGS}?start=${filterStart!.format('YYYY-MM-DD')}&end=${filterEnd!.format('YYYY-MM-DD')}`,
       session.accessToken,
     ),
     throwOnError: true,
-    enabled: (!!session?.accessToken && startDate?.isValid() && endDate?.isValid()),
+    enabled: (!!session?.accessToken && filterStart?.isValid() && filterEnd?.isValid()),
     initialData: [],
   });
 
@@ -69,14 +80,41 @@ export default function ApprovePage(): React.ReactElement {
   useEffect(() => {
     // noinspection JSIgnoredPromiseFromCall
     trainingsResult.refetch()
-  }, [startDate, endDate]);
+  }, [filterStart, filterEnd]);
 
+  // update the search params when startDate or endDate have changed.
+  useEffect(() => {
+    const params = new URLSearchParams(searchParams);
+    if (datePickerStart) {
+      params.set('startDate', datePickerStart.format('YYYY-MM-DD'))
+      setFilterStart(datePickerStart);
+    }
+    if (datePickerEnd) {
+      params.set('endDate', datePickerEnd.format('YYYY-MM-DD'))
+      setFilterEnd(datePickerEnd)
+    }
+    replace(`${pathname}?${params.toString()}`);
+  }, [datePickerStart, datePickerEnd])
+
+  // update the date pickers when the url has changed
+  useEffect(() => {
+    const urlStart = searchParams.get('startDate')
+    const parsedStart = urlStart ? dayjs(urlStart) : null;
+    if (parsedStart && parsedStart.format('YYYY-MM-DD') != datePickerStart?.format('YYYY-MM-DD')) {
+      setDatePickerStart(parsedStart)
+    }
+    const urlEnd = searchParams.get('endDate')
+    const parsedEnd = urlStart ? dayjs(urlEnd) : null;
+    if (parsedEnd && parsedEnd.format('YYYY-MM-DD') != datePickerEnd?.format('YYYY-MM-DD')) {
+      setDatePickerEnd(parsedEnd)
+    }
+  }, [searchParams])
 
   if (authenticationStatus !== 'authenticated') {
     return <LoginRequired authenticationStatus={authenticationStatus} />;
   }
 
-  if (!resultHasData(trainingsResult)) {
+  if (!resultHasData(trainingsResult) || !resultHasData(holidayResult)) {
     return <Stack alignItems="center"><CircularProgress /> </Stack>
   }
 
@@ -86,16 +124,16 @@ export default function ApprovePage(): React.ReactElement {
         <ButtonGroup>
           <Button
             onClick={() => {
-              setStartDate(dayjs().startOf('quarter'));
-              setEndDate(dayjs().endOf('quarter'));
+              setDatePickerStart(dayjs().startOf('quarter'));
+              setDatePickerEnd(dayjs().endOf('quarter'));
             }}
           >
             aktuelles Quartal
           </Button>
           <Button
             onClick={() => {
-              setStartDate(dayjs().subtract(1, 'quarter').startOf('quarter'));
-              setEndDate(dayjs().subtract(1, 'quarter').endOf('quarter'));
+              setDatePickerStart(dayjs().subtract(1, 'quarter').startOf('quarter'));
+              setDatePickerEnd(dayjs().subtract(1, 'quarter').endOf('quarter'));
             }}
           >
             letztes Quartal
@@ -105,18 +143,18 @@ export default function ApprovePage(): React.ReactElement {
       <Grid xs={2}>
         <DatePicker
           label="Start"
-          value={startDate}
+          value={datePickerStart}
           onChange={(v) => {
-            setStartDate(v);
+            setDatePickerStart(v);
           }}
         />
       </Grid>
       <Grid xs={2}>
         <DatePicker
           label="Ende"
-          value={endDate}
+          value={datePickerEnd}
           onChange={(v) => {
-            setEndDate(v);
+            setDatePickerEnd(v);
           }}
         />
       </Grid>
