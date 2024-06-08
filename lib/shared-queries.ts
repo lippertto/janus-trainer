@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, UseQueryResult } from '@tanstack/react-query';
 import { fetchListFromApi } from '@/lib/fetch';
 import { API_COMPENSATION_VALUES, API_HOLIDAYS } from '@/lib/routes';
 import { CompensationValueDto, HolidayDto } from '@/lib/dto';
@@ -41,4 +41,11 @@ export function holidaysQuery(
     enabled: Boolean(accessToken),
     staleTime: TEN_MINUTES,
   });
+}
+
+export function resultHasData(result: UseQueryResult) {
+  if (result.isError || result.isLoading || result.isRefetching) {
+    return false;
+  }
+  return true;
 }
