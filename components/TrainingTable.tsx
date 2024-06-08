@@ -6,14 +6,12 @@ import {
   DataGrid,
   GridActionsCellItem,
   GridColDef,
-  GridEditInputCell,
-  GridRenderEditCellParams,
   GridRowId,
   GridRowParams,
   GridRowSelectionModel,
   GridToolbarContainer,
+  GridValueFormatterParams,
   GridValueGetterParams,
-  useGridApiContext,
 } from '@mui/x-data-grid';
 
 import AddIcon from '@mui/icons-material/Add';
@@ -33,18 +31,16 @@ import { useSession } from 'next-auth/react';
 import { JanusSession } from '@/lib/auth';
 import TrainingDialog from './TrainingDialog';
 
-import { centsToDisplayString, getDateFromIso8601, gridValueToHumanReadableDate } from '@/lib/datagrid-utils';
 import { showError, showSuccess } from '@/lib/notifications';
 import { styled } from '@mui/material/styles';
-import { DatePicker } from '@mui/x-date-pickers';
 import { approveTraining, unapproveTraining } from '@/lib/api-trainings';
-import { Discipline, Holiday, TrainingStatus } from '@prisma/client';
+import { Holiday, TrainingStatus } from '@prisma/client';
 import { CompensationValueDto, CourseDto, TrainingCreateRequest, TrainingDto, TrainingUpdateRequest } from '@/lib/dto';
 import { useMutation } from '@tanstack/react-query';
 import { createInApi, deleteFromApi, updateInApi } from '@/lib/fetch';
 import { API_TRAININGS } from '@/lib/routes';
 import { useConfirm } from 'material-ui-confirm';
-import { dateToHumanReadable } from '@/lib/formatters';
+import { centsToDisplayString, dateToHumanReadable, getDateFromIso8601 } from '@/lib/formatters';
 
 require('dayjs/locale/de');
 dayjs.locale('de');
@@ -61,22 +57,6 @@ function warningForDate(d: string, holidays: Holiday[]): string | null {
   return null;
 }
 
-function dateIsValid(date: Date | string) {
-  return !dayjs(date).isAfter(dayjs());
-}
-
-function participantCountIsValid(n: number): boolean {
-  return !!n && n >= 0;
-}
-
-function trainingIsValid(t: TrainingDto): boolean {
-  if (!dateIsValid(t.date)) return false;
-  if (!participantCountIsValid(Number(t.participantCount))) {
-    return false;
-  }
-  return true;
-}
-
 const StyledTooltip = styled(({ className, ...props }: TooltipProps) => (
   <Tooltip {...props} classes={{ popper: className }} />
 ))(({ theme }) => ({
@@ -85,43 +65,6 @@ const StyledTooltip = styled(({ className, ...props }: TooltipProps) => (
     color: theme.palette.error.contrastText,
   },
 }));
-
-/** We have to use the MUI X DatePicker. The regular date component gets confused with our setValue/getValue logic. */
-function JanusGridEditDateCell(params: {
-  id: GridRowId;
-  field: string;
-  value?: dayjs.Dayjs;
-  error?: string;
-}) {
-  const apiRef = useGridApiContext();
-  const { error, id, field, value } = params;
-  const propsForDateCell = { ...params, error: !!error };
-
-  const handleChange = (newValue: dayjs.Dayjs | null) => {
-    apiRef.current.setEditCellValue({ id, field, value: newValue });
-  };
-
-  // the div is required for the Tooltip. The GridEditDateCell cannot be wrapped directly.
-  return (
-    <div>
-      <DatePicker
-        {...propsForDateCell}
-        value={value}
-        onChange={handleChange}
-        maxDate={dayjs()}
-      />
-    </div>
-  );
-}
-
-function renderNonEmptyStringCell(params: GridRenderEditCellParams) {
-  const { error, ...otherParams } = params;
-  return (
-    <StyledTooltip open={!!error} title={error}>
-      <GridEditInputCell {...otherParams} />
-    </StyledTooltip>
-  );
-}
 
 function buildGridColumns(
   holidays: Holiday[],
@@ -134,7 +77,9 @@ function buildGridColumns(
       headerName: 'Datum',
       type: 'date',
       flex: 1.5,
-      valueFormatter: gridValueToHumanReadableDate,
+      valueFormatter: function(params: GridValueFormatterParams): string {
+        return dateToHumanReadable(params.value);
+      },
       valueGetter: (params) => getDateFromIso8601(params.value),
     },
     {
