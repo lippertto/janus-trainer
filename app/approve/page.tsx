@@ -135,6 +135,7 @@ export default function ApprovePage(): React.ReactElement {
             trainingResult.refetch()
           }}
           approvalMode={true}
+          session={session}
         />
       </Grid>
       <Grid>

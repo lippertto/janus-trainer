@@ -238,26 +238,11 @@ type TrainingTableProps = {
   refresh: () => void;
   /** Whether the UI should show the approval actions. (User must be admin to actually execute the steps.) */
   approvalMode: boolean;
-  /** List of holidays used to highligh collisions */
+  /** List of holidays used to highlight collisions */
   holidays: Holiday[];
   courses: CourseDto[];
+  session: JanusSession;
 };
-
-// we cannot use Set here, because Firefox does not support it
-function addUnknownValuesToCompensationValues(compensationValues: CompensationValueDto[], trainings: TrainingDto[]): CompensationValueDto[] {
-  const trainingCompensations = trainings.map((t) => Number(t.compensationCents));
-  const uniqueTrainingCompensations = trainingCompensations.filter((value, index, array) => {
-    return array.indexOf(value) === index;
-  });
-  const missingCompensations = uniqueTrainingCompensations.filter(
-    (trainingCompensation) => (compensationValues.find((cv) => (cv.cents === trainingCompensation)) === undefined),
-  );
-  return [...compensationValues, ...missingCompensations.map((cents: number) => ({
-    cents,
-    description: 'unbekannt',
-    id: Math.floor(Math.random() * 100000),
-  }))];
-}
 
 /**
  * Renders a list of Trainings.
@@ -270,6 +255,7 @@ export default function TrainingTable(
     approvalMode,
     holidays,
     courses,
+    session,
     ...props
   }: TrainingTableProps) {
   const [rowSelectionModel, setRowSelectionModel] = React.useState<GridRowSelectionModel>(
@@ -278,10 +264,6 @@ export default function TrainingTable(
   const [showTrainingDialog, setShowTrainingDialog] = React.useState<boolean>(false);
   const [activeTraining, setActiveTraining] =
     React.useState<TrainingDto | null>(null);
-
-  // TODO - move up
-  const { data } = useSession();
-  const session = data as JanusSession;
 
   const handleApproveClick = (id: GridRowId) => () => {
     // TODO - do not use refresh
