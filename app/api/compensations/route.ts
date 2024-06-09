@@ -1,4 +1,4 @@
-import { CompensationQueryResponse, ErrorResponse } from '@/lib/dto';
+import { CompensationQueryResponse, ErrorDto } from '@/lib/dto';
 import { allowOnlyAdmins, handleTopLevelCatch } from '@/lib/helpers-for-api';
 import prisma from '@/lib/prisma';
 import { NextRequest, NextResponse } from 'next/server';
@@ -39,7 +39,7 @@ SELECT CAST(u."id" AS TEXT) AS "userId",
 
 export async function GET(
   request: NextRequest,
-): Promise<NextResponse<CompensationQueryResponse | ErrorResponse>> {
+): Promise<NextResponse<CompensationQueryResponse | ErrorDto>> {
   try {
     return await doGET(request);
   } catch (e) {

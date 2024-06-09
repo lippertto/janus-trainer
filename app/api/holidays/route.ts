@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { Holiday, Prisma } from '@prisma/client';
-import { ErrorResponse } from '@/lib/dto';
+import { ErrorDto } from '@/lib/dto';
 import { handleTopLevelCatch, errorResponse } from '@/lib/helpers-for-api';
 import { allowAnyLoggedIn, allowOnlyAdmins } from '@/lib/helpers-for-api';
 
@@ -54,7 +54,7 @@ async function doGET(
 
 export async function GET(
   request: NextRequest,
-): Promise<NextResponse<HolidayQueryResult | ErrorResponse>> {
+): Promise<NextResponse<HolidayQueryResult | ErrorDto>> {
   try {
     return await doGET(request);
   } catch (e) {
@@ -76,7 +76,7 @@ async function doPOST(request: NextRequest) {
 
 export async function POST(
   request: NextRequest,
-): Promise<NextResponse<Holiday | ErrorResponse>> {
+): Promise<NextResponse<Holiday | ErrorDto>> {
   try {
     return await doPOST(request);
   } catch (e) {

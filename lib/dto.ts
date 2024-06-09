@@ -27,9 +27,16 @@ export type UserDto = {
   groups: Group[];
 };
 
+export type TrainerLight = Pick<UserDto, 'name' | 'id'>
+export type CourseLight = Pick<CourseDto, 'name' | 'id'>
+
 export type TrainingDto = Training & {
-  user: UserDto,
-  course: CourseDto,
+  user: TrainerLight,
+  course: CourseLight,
+}
+
+export type TrainingQueryResponse = {
+  value: TrainingDto[],
 }
 
 export class TrainingCreateRequest {
@@ -127,7 +134,7 @@ export class TrainingBatchUpdateRequest {
 }
 
 export type TrainingBatchUpdateReponse = {
-  value: ('OK' | ErrorResponse)[];
+  value: ('OK' | ErrorDto)[];
 };
 
 type ErrorDetail = {
@@ -135,7 +142,7 @@ type ErrorDetail = {
   code: string;
 };
 
-export type ErrorResponse = {
+export type ErrorDto = {
   error: ErrorDetail;
 };
 

@@ -7,7 +7,7 @@ import {
 } from '@/lib/helpers-for-api';
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { CourseDto, CourseUpdateRequest, ErrorResponse } from '@/lib/dto';
+import { CourseDto, CourseUpdateRequest, ErrorDto } from '@/lib/dto';
 
 async function getOneCourse(id: string) {
   const value = await prisma.course.findUnique({
@@ -69,7 +69,7 @@ async function updateOneCourse(idString: string, data: any) {
 export async function PUT(
   request: NextRequest,
   { params }: { params: { id: string } },
-): Promise<NextResponse<CourseDto|ErrorResponse>> {
+): Promise<NextResponse<CourseDto|ErrorDto>> {
   try {
     await allowOnlyAdmins(request);
     const data = await request.json();

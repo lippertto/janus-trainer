@@ -13,7 +13,14 @@ import Checkbox from '@mui/material/Checkbox';
 import Stack from '@mui/material/Stack';
 import { TimePicker } from '@mui/x-date-pickers';
 import dayjs, { Dayjs } from 'dayjs';
-import { CompensationValueDto, CompensationValueLightDto, CourseCreateRequest, CourseDto, UserDto } from '@/lib/dto';
+import {
+  CompensationValueDto,
+  CompensationValueLightDto,
+  CourseCreateRequest,
+  CourseDto,
+  TrainerLight,
+  UserDto,
+} from '@/lib/dto';
 
 type CourseDialogProps = {
   open: boolean;
@@ -137,8 +144,6 @@ function CompensationDropdown({
     />
   </React.Fragment>;
 }
-
-type TrainerLight = Pick<UserDto, 'name' | 'id'>
 
 type TrainerDropdownProps = {
   trainers: UserDto[],
