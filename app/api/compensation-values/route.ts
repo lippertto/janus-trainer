@@ -4,7 +4,7 @@ import {
   CompensationValueCreateRequest,
   CompensationValueDto,
   CompensationValueQueryResponse,
-  ErrorResponse,
+  ErrorDto,
 } from '@/lib/dto';
 import prisma from '@/lib/prisma';
 
@@ -16,7 +16,7 @@ async function doGET(request: NextRequest): Promise<NextResponse<CompensationVal
 }
 
 export async function GET(request: NextRequest,
-): Promise<NextResponse<CompensationValueQueryResponse | ErrorResponse>> {
+): Promise<NextResponse<CompensationValueQueryResponse | ErrorDto>> {
   try {
     return await doGET(request);
   } catch (e) {
@@ -34,7 +34,7 @@ async function doPOST(nextRequest: NextRequest) {
   return NextResponse.json(result, {status: 201});
 }
 
-export async function POST(request: NextRequest): Promise<NextResponse<CompensationValueDto|ErrorResponse>> {
+export async function POST(request: NextRequest): Promise<NextResponse<CompensationValueDto|ErrorDto>> {
   try {
     return await doPOST(request);
   } catch (e) {

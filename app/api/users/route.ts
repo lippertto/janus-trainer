@@ -1,4 +1,4 @@
-import { ErrorResponse } from '@/lib/dto';
+import { ErrorDto } from '@/lib/dto';
 import prisma from '@/lib/prisma';
 import {
   allowOnlyAdmins,
@@ -79,7 +79,7 @@ async function listUsers(request: NextRequest): Promise<UserDto[]> {
 
 export async function GET(
   request: NextRequest,
-): Promise<NextResponse<UserQueryResponseDto | ErrorResponse>> {
+): Promise<NextResponse<UserQueryResponseDto | ErrorDto>> {
   try {
     await allowOnlyAdmins(request);
 
@@ -94,7 +94,7 @@ export async function GET(
 
 export async function POST(
   nextRequest: NextRequest,
-): Promise<NextResponse<UserDto | ErrorResponse>> {
+): Promise<NextResponse<UserDto | ErrorDto>> {
   try {
     return await createUser(nextRequest);
   } catch (e) {

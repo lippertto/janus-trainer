@@ -7,7 +7,7 @@ import {
 } from '@/lib/helpers-for-api';
 import prisma from '@/lib/prisma';
 import { NextRequest, NextResponse } from 'next/server';
-import { DisciplineDto, DisciplineUpdateRequest, ErrorResponse } from '@/lib/dto';
+import { DisciplineDto, DisciplineUpdateRequest, ErrorDto } from '@/lib/dto';
 
 async function deleteDiscipline(
   params: { id: string },
@@ -47,7 +47,7 @@ async function updateDiscipline(nextRequest: NextRequest, params: { id: string }
 export async function PUT(
   request: NextRequest,
   { params }: { params: { id: string } },
-): Promise<NextResponse<DisciplineDto | ErrorResponse>> {
+): Promise<NextResponse<DisciplineDto | ErrorDto>> {
   try {
     await allowOnlyAdmins(request);
     return await updateDiscipline(request, params);

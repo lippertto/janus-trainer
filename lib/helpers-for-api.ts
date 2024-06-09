@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { ErrorResponse } from './dto';
+import { ErrorDto } from './dto';
 import { getToken } from 'next-auth/jwt';
 import { validate, ValidationError } from 'class-validator';
 
@@ -54,7 +54,7 @@ export async function allowAnyLoggedIn(
 
 export function badRequestResponse(
   message: string,
-): NextResponse<ErrorResponse> {
+): NextResponse<ErrorDto> {
   return errorResponse(message, 400);
 }
 
@@ -67,7 +67,7 @@ export function errorResponse(
   message: string,
   status: number,
   code: string | undefined = undefined,
-): NextResponse<ErrorResponse> {
+): NextResponse<ErrorDto> {
   return NextResponse.json(
     { error: { message, code: code ?? 'UnexpectedError' } },
     { status },
@@ -97,7 +97,7 @@ export class ApiError extends Error {
     this.errorCode = errorCode;
   }
 
-  toResponse(): NextResponse<ErrorResponse> {
+  toResponse(): NextResponse<ErrorDto> {
     return NextResponse.json(
       { error: { message: this.message, code: this.errorCode } },
       { status: this.httpCode },
@@ -157,7 +157,7 @@ export class ApiErrorConflict extends ApiError {
   }
 }
 
-export function handleTopLevelCatch(e: any): NextResponse<ErrorResponse> {
+export function handleTopLevelCatch(e: any): NextResponse<ErrorDto> {
   if (e instanceof ApiError) {
     return e.toResponse();
   }

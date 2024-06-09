@@ -1,4 +1,4 @@
-import { DisciplineCreateRequest, ErrorResponse } from '@/lib/dto';
+import { DisciplineCreateRequest, ErrorDto } from '@/lib/dto';
 import prisma from '@/lib/prisma';
 import {
   allowAnyLoggedIn,
@@ -21,7 +21,7 @@ async function doGET(request: NextRequest) {
 
 export async function GET(
   request: NextRequest,
-): Promise<NextResponse<DisciplineQueryResult | ErrorResponse>> {
+): Promise<NextResponse<DisciplineQueryResult | ErrorDto>> {
   try {
     return await doGET(request);
   } catch (e) {
@@ -42,7 +42,7 @@ async function doPOST(request: NextRequest) {
 
 export async function POST(
   request: NextRequest,
-): Promise<NextResponse<Discipline | ErrorResponse>> {
+): Promise<NextResponse<Discipline | ErrorDto>> {
   try {
     return await doPOST(request);
   } catch (e) {

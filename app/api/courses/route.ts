@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Course } from '@prisma/client';
-import { CourseCreateRequest, CourseQueryResponse, ErrorResponse } from '@/lib/dto';
+import { CourseCreateRequest, CourseQueryResponse, ErrorDto } from '@/lib/dto';
 import {
   allowAnyLoggedIn,
   allowOnlyAdmins,
@@ -36,7 +36,7 @@ async function createCourse(nextRequest: NextRequest) {
   return NextResponse.json(course, { status: 201 });
 }
 
-export async function POST(nextRequest: NextRequest): Promise<NextResponse<Course | ErrorResponse>> {
+export async function POST(nextRequest: NextRequest): Promise<NextResponse<Course | ErrorDto>> {
   try {
     await allowOnlyAdmins(nextRequest);
 
@@ -74,7 +74,7 @@ async function getAllCourses(disciplineId: string | null, trainerId: string | nu
   return NextResponse.json({ value });
 }
 
-export async function GET(request: NextRequest): Promise<NextResponse<CourseQueryResponse | ErrorResponse>> {
+export async function GET(request: NextRequest): Promise<NextResponse<CourseQueryResponse | ErrorDto>> {
   try {
     await allowAnyLoggedIn(request);
     return await getAllCourses(request.nextUrl.searchParams.get('disciplineId'), request.nextUrl.searchParams.get('trainerId'));

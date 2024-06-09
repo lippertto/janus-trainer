@@ -1,93 +1,61 @@
 import {
-  ErrorResponse,
-  TrainingBatchUpdateRequest,
+  ErrorDto,
   TrainingBatchUpdateReponse,
+  TrainingBatchUpdateRequest,
   TrainingCreateRequest,
+  TrainingDto, TrainingQueryResponse,
 } from '@/lib/dto';
 import {
-  ApiErrorBadRequest,
-  ApiError,
   allowAdminOrSelf,
   allowOnlyAdmins,
+  ApiError,
+  ApiErrorBadRequest,
   handleTopLevelCatch,
   validateOrThrow,
 } from '@/lib/helpers-for-api';
 import prisma from '@/lib/prisma';
-import { TrainingDto } from '@/lib/dto';
-import { Training, TrainingStatus } from '@prisma/client';
-import { validate } from 'class-validator';
+import { Prisma, Training, TrainingStatus } from '@prisma/client';
 import { NextRequest, NextResponse } from 'next/server';
 
-export type TrainingQueryResponse = {
-  value: TrainingDto[];
-};
-
-async function validateCreateRequest(
-  incomingRequest: any,
-): Promise<TrainingCreateRequest> {
-  const request = new TrainingCreateRequest(incomingRequest);
-  const validationErrors = await validate(request);
-  if (validationErrors.length !== 0) {
-    throw new ApiErrorBadRequest(
-      'Request to create training is invalid.' +
-        JSON.stringify(validationErrors),
-    );
+async function selectTrainings(trainerId: string|null,
+                               startDate: string|null,
+                               endDate: string|null) {
+  let filter: Prisma.TrainingWhereInput = {}
+  if (trainerId) {
+    filter['userId'] = trainerId
   }
-  return request;
-}
+  if (startDate && endDate) {
+    filter['date'] = {
+      gte: startDate,
+      lte: endDate
+    }
+  }
 
-async function trainingsByUser(userId: string) {
-  const value = await prisma.training.findMany({
-    where: { userId },
+  return prisma.training.findMany({
+    where: filter,
     include: {
       user: true,
       course: true,
     },
   });
-
-  return NextResponse.json({value})
 }
 
-async function trainingsByDate(startDate: string, endDate: string) {
-  const value = await prisma.training.findMany({
-    where: {
-      date: {
-        gte: startDate,
-        lte: endDate,
-      },
-    },
-    include: {
-      user: true,
-      course: true,
-    },
-  });
-
-  return NextResponse.json({value})
-}
-
-async function doGET(request: NextRequest): Promise<Response> {
-  const userId = request.nextUrl.searchParams.get('userId');
+async function doGET(request: NextRequest) {
+  const trainerId = request.nextUrl.searchParams.get('trainerId');
   const startDate = request.nextUrl.searchParams.get('start');
   const endDate = request.nextUrl.searchParams.get('end');
 
-  if (userId) {
-    if (startDate || endDate) {
-      throw new ApiErrorBadRequest(
-        'userId must not be used together with startDate and endDate',
-      );
-    }
-    await allowAdminOrSelf(request, userId);
-    return trainingsByUser(userId);
+  if (trainerId) {
+    await allowAdminOrSelf(request, trainerId);
   } else {
     await allowOnlyAdmins(request);
-    if (!startDate || !endDate) {
-      throw new ApiErrorBadRequest('start and end must be provided');
-    }
-    return trainingsByDate(startDate, endDate);
   }
+
+  const value = await selectTrainings(trainerId, startDate, endDate);
+  return NextResponse.json({value})
 }
 
-export async function GET(request: NextRequest) {
+export async function GET(request: NextRequest): Promise<NextResponse<TrainingQueryResponse|ErrorDto>> {
   try {
     return await doGET(request);
   } catch (e) {
@@ -150,7 +118,7 @@ async function doPATCH(
   );
 
   const result = request.operations.map(
-    async (op): Promise<'OK' | ErrorResponse> => {
+    async (op): Promise<'OK' | ErrorDto> => {
       try {
         const id = op.id;
         switch (op.operation) {
@@ -187,7 +155,7 @@ async function doPATCH(
 
 export async function PATCH(
   request: NextRequest,
-): Promise<NextResponse<TrainingBatchUpdateReponse | ErrorResponse>> {
+): Promise<NextResponse<TrainingBatchUpdateReponse | ErrorDto>> {
   try {
     return await doPATCH(request);
   } catch (e) {
