@@ -29,7 +29,7 @@ import {
   UserDto,
 } from '@/lib/dto';
 import { CourseDialog } from '@/app/offerings/CourseDialog';
-import { compensationValuesQuery } from '@/lib/shared-queries';
+import { compensationValuesQuery, resultHasData, trainersQuery } from '@/lib/shared-queries';
 import { Discipline } from '@prisma/client';
 
 function CourseCard({ activeCourse, thisCourse, setActiveCourse }: {
@@ -113,13 +113,7 @@ export default function OfferingsPage() {
     staleTime: 10 * 60 * 1000,
   });
 
-  const trainerResult = useQuery({
-    queryKey: ['users', 'trainers'],
-    queryFn: () => fetchListFromApi<UserDto>(`${API_USERS}?group=trainers`, session.accessToken),
-    enabled: Boolean(session?.accessToken),
-    throwOnError: true,
-    staleTime: 10 * 60 * 1000,
-  });
+  const trainerResult = trainersQuery(session?.accessToken);
 
   const compensationValuesResult = compensationValuesQuery(session?.accessToken);
 
@@ -238,11 +232,8 @@ export default function OfferingsPage() {
   ]);
 
   React.useEffect(() => {
-    if (trainerResult.isLoading || trainerResult.isError) {
-      return;
-    }
-    if (trainerResult.data) {
-      setTrainers(trainerResult.data.toSorted(sortNamed));
+    if (resultHasData(trainerResult)) {
+        setTrainers(trainerResult.data!.toSorted(sortNamed));
     }
   }, [trainerResult.data]);
 
@@ -283,7 +274,6 @@ export default function OfferingsPage() {
   if (authenticationStatus !== 'authenticated') {
     return <LoginRequired authenticationStatus={authenticationStatus} />;
   }
-  console.log(` ${activeCourse?.id}`);
 
   return <React.Fragment>
     <Stack direction="row" spacing={5}>
