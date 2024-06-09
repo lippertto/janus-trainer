@@ -19,10 +19,12 @@
   "dependencies": {
     "@aws-sdk/client-cognito-identity-provider": "^3.583.0",
     "@aws-sdk/client-sts": "^3.583.0",
+    "@emotion/cache": "^11.11.0",
     "@emotion/react": "^11.11.4",
     "@emotion/styled": "^11.11.5",
     "@mui/icons-material": "^5.15.18",
     "@mui/material": "^5.15.18",
+    "@mui/material-nextjs": "^5.15.11",
     "@mui/system": "^5.15.15",
     "@mui/x-data-grid": "^6.20.0",
     "@mui/x-date-pickers": "^6.20.0",

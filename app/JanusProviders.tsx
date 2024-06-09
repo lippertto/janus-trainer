@@ -13,6 +13,7 @@ import { MaterialDesignContent } from 'notistack';
 import { styled } from '@mui/material/styles';
 import { ConfirmProvider } from 'material-ui-confirm';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { AppRouterCacheProvider } from '@mui/material-nextjs/v13-appRouter';
 
 const theme = createTheme({}, deDE);
 
@@ -28,8 +29,7 @@ const StyledSnackbarContent = styled(MaterialDesignContent)(() => ({
   },
 }));
 
-const queryClient = new QueryClient({
-});
+const queryClient = new QueryClient({});
 
 export default function JanusProviders({
                                          children,
@@ -37,27 +37,29 @@ export default function JanusProviders({
   children: React.ReactElement;
 }) {
   return (
-    <ThemeProvider theme={theme}>
-      <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="de">
-        <SnackbarProvider
-          Components={{
-            success: StyledSnackbarContent,
-            error: StyledSnackbarContent,
-            warning: StyledSnackbarContent,
-          }}
-        >
-          <ConfirmProvider
-            defaultOptions={{
-              confirmationButtonProps: { autoFocus: true },
-              confirmationText: 'Ok',
-              cancellationText: 'Abbrechen',
+    <AppRouterCacheProvider>
+      <ThemeProvider theme={theme}>
+        <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="de">
+          <SnackbarProvider
+            Components={{
+              success: StyledSnackbarContent,
+              error: StyledSnackbarContent,
+              warning: StyledSnackbarContent,
             }}
           >
-            <QueryClientProvider client={queryClient}>
-              <SessionProvider>{children}</SessionProvider>
-            </QueryClientProvider> </ConfirmProvider>
-        </SnackbarProvider>
-      </LocalizationProvider>
-    </ThemeProvider>
+            <ConfirmProvider
+              defaultOptions={{
+                confirmationButtonProps: { autoFocus: true },
+                confirmationText: 'Ok',
+                cancellationText: 'Abbrechen',
+              }}
+            >
+              <QueryClientProvider client={queryClient}>
+                <SessionProvider>{children}</SessionProvider>
+              </QueryClientProvider> </ConfirmProvider>
+          </SnackbarProvider>
+        </LocalizationProvider>
+      </ThemeProvider>
+    </AppRouterCacheProvider>
   );
 }

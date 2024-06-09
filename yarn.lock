@@ -1760,6 +1760,29 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@mui/material-nextjs@npm:^5.15.11":
+  version: 5.15.11
+  resolution: "@mui/material-nextjs@npm:5.15.11"
+  dependencies:
+    "@babel/runtime": "npm:^7.23.9"
+  peerDependencies:
+    "@emotion/cache": ^11.11.0
+    "@emotion/server": ^11.11.0
+    "@mui/material": ^5.0.0
+    "@types/react": ^17.0.0 || ^18.0.0
+    next: ^13.0.0 || ^14.0.0
+    react: ^17.0.0 || ^18.0.0
+  peerDependenciesMeta:
+    "@emotion/cache":
+      optional: true
+    "@emotion/server":
+      optional: true
+    "@types/react":
+      optional: true
+  checksum: 10c0/1d01366b6a9501785571082dd2e5e5dc449ffb7ea95fa65f80508a763e716817f4832575b2f97f7b4749f1ea990ffd1b6b95aa7945ed7d0e6bb83d58be85d22f
+  languageName: node
+  linkType: hard
+
 "@mui/material@npm:^5.15.18":
   version: 5.15.18
   resolution: "@mui/material@npm:5.15.18"
@@ -5977,10 +6000,12 @@ __metadata:
   dependencies:
     "@aws-sdk/client-cognito-identity-provider": "npm:^3.583.0"
     "@aws-sdk/client-sts": "npm:^3.583.0"
+    "@emotion/cache": "npm:^11.11.0"
     "@emotion/react": "npm:^11.11.4"
     "@emotion/styled": "npm:^11.11.5"
     "@mui/icons-material": "npm:^5.15.18"
     "@mui/material": "npm:^5.15.18"
+    "@mui/material-nextjs": "npm:^5.15.11"
     "@mui/system": "npm:^5.15.15"
     "@mui/x-data-grid": "npm:^6.20.0"
     "@mui/x-date-pickers": "npm:^6.20.0"
