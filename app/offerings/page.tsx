@@ -16,7 +16,7 @@ import Button from '@mui/material/Button';
 import { useConfirm } from 'material-ui-confirm';
 import { showError, showSuccess } from '@/lib/notifications';
 import { DisciplineDialogue } from '@/app/offerings/DisciplineDialog';
-import { sortNamed } from '@/lib/sorting';
+import { sortNamed } from '@/lib/sort-and-filter';
 import Grid from '@mui/material/Unstable_Grid2';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';

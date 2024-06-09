@@ -1,22 +1,4 @@
-import { bigIntReviver } from './json-tools';
 import { TrainingBatchUpdateRequest, TrainingDto } from './dto';
-
-
-export async function approveTraining(
-  accessToken: string,
-  id: string,
-): Promise<TrainingDto> {
-  const response = await fetch(`/api/trainings/${id}`, {
-    method: 'PATCH',
-    body: JSON.stringify({ status: 'APPROVED' }),
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      'Content-Type': 'application/json',
-    },
-  });
-  const data = await response.text();
-  return JSON.parse(data, bigIntReviver) as TrainingDto;
-}
 
 export async function unapproveTraining(
   accessToken: string,
@@ -31,7 +13,7 @@ export async function unapproveTraining(
     },
   });
   const data = await response.text();
-  return JSON.parse(data, bigIntReviver) as TrainingDto;
+  return JSON.parse(data) as TrainingDto;
 }
 
 export async function markTrainingsAsCompensated(

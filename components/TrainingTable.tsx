@@ -26,21 +26,20 @@ import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 
 import Tooltip, { tooltipClasses, TooltipProps } from '@mui/material/Tooltip';
 
-import { useSession } from 'next-auth/react';
-
 import { JanusSession } from '@/lib/auth';
 import TrainingDialog from './TrainingDialog';
 
 import { showError, showSuccess } from '@/lib/notifications';
 import { styled } from '@mui/material/styles';
-import { approveTraining, unapproveTraining } from '@/lib/api-trainings';
+import { unapproveTraining } from '@/lib/api-trainings';
 import { Holiday, TrainingStatus } from '@prisma/client';
-import { CompensationValueDto, CourseDto, TrainingCreateRequest, TrainingDto, TrainingUpdateRequest } from '@/lib/dto';
+import { CourseDto, TrainingCreateRequest, TrainingDto, TrainingUpdateRequest } from '@/lib/dto';
 import { useMutation } from '@tanstack/react-query';
-import { createInApi, deleteFromApi, updateInApi } from '@/lib/fetch';
+import { createInApi, deleteFromApi, patchInApi, updateInApi } from '@/lib/fetch';
 import { API_TRAININGS } from '@/lib/routes';
 import { useConfirm } from 'material-ui-confirm';
 import { centsToDisplayString, dateToHumanReadable, getDateFromIso8601 } from '@/lib/formatters';
+import { replaceElementWithId } from '@/lib/sort-and-filter';
 
 require('dayjs/locale/de');
 dayjs.locale('de');
@@ -265,15 +264,39 @@ export default function TrainingTable(
   const [activeTraining, setActiveTraining] =
     React.useState<TrainingDto | null>(null);
 
-  const handleApproveClick = (id: GridRowId) => () => {
-    // TODO - do not use refresh
-    approveTraining(session?.accessToken, id as string).then(refresh);
-  };
+  const approveTrainingMutation = useMutation({
+    mutationFn: (id: number) => {
+      return patchInApi<TrainingDto>(
+        API_TRAININGS,
+        id,
+        { status: 'APPROVED' },
+        session.accessToken,
+      );
+    },
+    onSuccess: (updated) => {
+      setTrainings(replaceElementWithId(trainings, updated));
+    },
+    onError: (e) => {
+      showError(`Fehler bei der Freigabe des Trainings`, e.message);
+    },
+  });
 
-  const handleRevokeClick = (id: GridRowId) => () => {
-    // TODO - do not use refresh
-    unapproveTraining(session?.accessToken, id as string).then(refresh);
-  };
+  const revokeTrainingMutation = useMutation({
+    mutationFn: (id: number) => {
+      return patchInApi<TrainingDto>(
+        API_TRAININGS,
+        id,
+        { status: 'NEW' },
+        session.accessToken,
+      );
+    },
+    onSuccess: (updated) => {
+      setTrainings(replaceElementWithId(trainings, updated));
+    },
+    onError: (e) => {
+      showError(`Fehler beim Widerruf der Freigabe`, e.message);
+    },
+  });
 
   const createTrainingMutation = useMutation({
     mutationFn: (data: TrainingCreateRequest) => {
@@ -336,7 +359,14 @@ export default function TrainingTable(
     });
   };
 
-  const columns = buildGridColumns(holidays, handleApproveClick, handleRevokeClick);
+  const columns = buildGridColumns(holidays,
+    (id: GridRowId) => (
+      () => approveTrainingMutation.mutate(id as number)
+    ),
+    (id: GridRowId) => (
+      () => revokeTrainingMutation.mutate(id as number)
+    ),
+  );
 
   return (
     <>
