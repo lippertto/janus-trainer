@@ -169,20 +169,17 @@ export default function ApprovePage(): React.ReactElement {
 
   // update the filters when the url has changed
   useEffect(() => {
-    const urlStart = searchParams.get(QUERY_PARAM_START);
-    const parsedStart = urlStart ? dayjs(urlStart) : null;
+    const parsedStart = queryParamStart ? dayjs(queryParamStart) : null;
     if (parsedStart && parsedStart.format('YYYY-MM-DD') != datePickerStart?.format('YYYY-MM-DD')) {
       setDatePickerStart(parsedStart);
     }
-    const urlEnd = searchParams.get(QUERY_PARAM_END);
-    const parsedEnd = urlStart ? dayjs(urlEnd) : null;
+    const parsedEnd = queryParamEnd ? dayjs(queryParamEnd) : null;
     if (parsedEnd && parsedEnd.format('YYYY-MM-DD') != datePickerEnd?.format('YYYY-MM-DD')) {
       setDatePickerEnd(parsedEnd);
     }
 
     const trainerId = searchParams.get('trainerId');
     setSelectedTrainerId(trainerId);
-
   }, [searchParams]);
 
   if (authenticationStatus !== 'authenticated') {

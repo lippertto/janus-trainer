@@ -1,7 +1,3 @@
-import { CompensationValueQueryResponse } from '@/lib/dto';
-import { bigIntReviver } from '@/lib/json-tools';
-import { Discipline } from '@prisma/client';
-
 type JanusList<T> = {
   value: T[];
 }
@@ -24,7 +20,7 @@ export async function fetchListFromApi<T>(
       );
     }
     const result = await response.text();
-    const parsedResult = JSON.parse(result, bigIntReviver) as JanusList<T>;
+    const parsedResult = JSON.parse(result) as JanusList<T>;
     return parsedResult.value;
   } catch (e) {
     return Promise.reject(
@@ -78,23 +74,52 @@ export async function createInApi<T>(
   return await response.json() as T;
 }
 
+function callApiWithMethod(route: string, accessToken: string, method: 'PUT'|'PATCH', body: any) {
+  return fetch(route, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+    },
+    method: method,
+    body: JSON.stringify(body),
+  })
+}
+
 export async function updateInApi<T>(
   route: string,
   id: string|number,
   data: any,
   accessToken: string
 ) {
-  const response = await fetch(`${route}/${id}`, {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      'Content-Type': 'application/json',
-    },
-    method: 'PUT',
-    body: JSON.stringify(data),
-  });
+  const response = await callApiWithMethod(
+    `${route}/${id}`,
+    accessToken,
+    'PUT',
+    data
+  );
   if (response.status != 200) {
     return Promise.reject(
       new Error(`Failed to update entity via ${route}`)
+    )
+  }
+  return await response.json() as T;
+}
+
+export async function patchInApi<T>(
+  route: string,
+  id: string|number,
+  data: any,
+  accessToken: string,
+) {
+  const response = await callApiWithMethod(
+    `${route}/${id}`,
+    accessToken,
+    'PATCH',
+    data
+  );
+  if (response.status != 200) {
+    return Promise.reject(
+      new Error(`Failed to patch entity via ${route}`)
     )
   }
   return await response.json() as T;

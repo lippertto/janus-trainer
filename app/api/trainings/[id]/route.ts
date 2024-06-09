@@ -8,10 +8,9 @@ import {
   handleTopLevelCatch,
   validateOrThrow, idAsNumberOrThrow,
 } from '@/lib/helpers-for-api';
-import { bigIntReplacer } from '@/lib/json-tools';
 import prisma from '@/lib/prisma';
 import { TrainingStatus } from '@prisma/client';
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
 async function doDELETE(request: NextRequest, idAsString: string) {
   await allowOnlyAdmins(request);
@@ -53,8 +52,7 @@ async function updateTraining(nextRequest: NextRequest, idAsString: string) {
     include: {course: true, user: true}
   });
 
-  const data = JSON.stringify(result, bigIntReplacer);
-  return new Response(data);
+  return NextResponse.json(result);
 }
 
 export async function PUT(
@@ -70,11 +68,7 @@ export async function PUT(
 }
 
 async function doPATCH(nextRequest: NextRequest, params: { id: string }) {
-  await allowOnlyAdmins(nextRequest);
-  const idAsNumber = parseInt(params.id);
-  if (!idAsNumber) {
-    throw new ApiErrorBadRequest(`${params.id} is not a valid id`);
-  }
+  const idAsNumber = idAsNumberOrThrow(params.id)
 
   const request = await validateOrThrow(
     new TrainingUpdateStatusRequest(await nextRequest.json()),
@@ -101,10 +95,10 @@ async function doPATCH(nextRequest: NextRequest, params: { id: string }) {
     data: {
       status: request.status,
     },
+    include: {course: true, user: true}
   });
 
-  const data = JSON.stringify(result, bigIntReplacer);
-  return new Response(data);
+  return NextResponse.json(result);
 }
 
 export async function PATCH(
@@ -112,6 +106,8 @@ export async function PATCH(
   { params }: { params: { id: string } },
 ): Promise<Response> {
   try {
+    await allowOnlyAdmins(request);
+
     return await doPATCH(request, params);
   } catch (e) {
     return handleTopLevelCatch(e);

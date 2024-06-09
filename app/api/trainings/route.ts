@@ -3,13 +3,12 @@ import {
   TrainingBatchUpdateReponse,
   TrainingBatchUpdateRequest,
   TrainingCreateRequest,
-  TrainingDto, TrainingQueryResponse,
+  TrainingQueryResponse,
 } from '@/lib/dto';
 import {
   allowAdminOrSelf,
   allowOnlyAdmins,
   ApiError,
-  ApiErrorBadRequest,
   handleTopLevelCatch,
   validateOrThrow,
 } from '@/lib/helpers-for-api';
