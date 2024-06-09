@@ -1,9 +1,10 @@
 'use client';
 import React from 'react';
-import { CircularProgress, Typography } from '@mui/material';
+import { Typography } from '@mui/material';
 import { signIn } from 'next-auth/react';
 import Stack from '@mui/system/Stack';
 import Button from '@mui/material/Button';
+import { LoadingSpinner } from '@/components/LoadingSpinner';
 
 function PleaseLogIn() {
   return (
@@ -18,16 +19,12 @@ function PleaseLogIn() {
   );
 }
 
-function Loading() {
-  return <Stack alignItems="center"><CircularProgress /> </Stack>;
-}
-
 export default function LoginRequired({
                                         authenticationStatus,
                                       }: {
   authenticationStatus: 'authenticated' | 'loading' | 'unauthenticated';
 }) {
   return (
-    <>{authenticationStatus === 'loading' ? <Loading /> : <PleaseLogIn />}</>
+    <>{authenticationStatus === 'loading' ? <LoadingSpinner /> : <PleaseLogIn />}</>
   );
 }
