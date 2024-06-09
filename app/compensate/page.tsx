@@ -12,6 +12,13 @@ import { getCompensations } from '@/lib/api-compensations';
 import { CompensationDto } from '@/lib/dto';
 import { showError } from '@/lib/notifications';
 import { markTrainingsAsCompensated } from '@/lib/api-trainings';
+import { resultHasData } from '@/lib/shared-queries';
+import Stack from '@mui/system/Stack';
+import { CircularProgress } from '@mui/material';
+import { useQuery } from '@tanstack/react-query';
+import { fetchListFromApi } from '@/lib/fetch';
+import { Holiday } from '@prisma/client';
+import { API_COMPENSATIONS, API_HOLIDAYS } from '@/lib/routes';
 
 export default function PaymentPage() {
   const [compensations, setCompensations] = React.useState<
@@ -21,20 +28,26 @@ export default function PaymentPage() {
   const { data, status: authenticationStatus } = useSession();
   const session = data as JanusSession;
 
-  const refresh = React.useCallback(() => {
-    if (session?.accessToken) {
-      getCompensations(session.accessToken)
-        .then((v) => setCompensations(v))
-        .catch((e) => {
-          showError('Konnte die Aufwände nicht laden', e.message);
-        });
+  const compensationsResult = useQuery({
+    queryKey: ['compensations'],
+    queryFn: () => fetchListFromApi<CompensationDto>(
+      `${API_COMPENSATIONS}`,
+      session.accessToken,
+    ),
+    throwOnError: true,
+    enabled: Boolean(session?.accessToken),
+  });
+
+  React.useEffect(() => {
+    if (resultHasData(compensationsResult)) {
+      setCompensations(compensationsResult.data!)
     }
-  }, [session?.accessToken, setCompensations]);
+  }, [compensationsResult])
 
   function markAsCompensated() {
     const allIds = compensations.flatMap((c) => c.correspondingIds);
     markTrainingsAsCompensated(session?.accessToken, allIds).then(() =>
-      refresh(),
+      compensationsResult.refetch(),
     );
   }
 
@@ -50,27 +63,27 @@ export default function PaymentPage() {
     link.click();
   }
 
-  React.useEffect(() => {
-    refresh();
-  }, [session?.accessToken, refresh]);
-
   if (authenticationStatus !== 'authenticated') {
     return <LoginRequired authenticationStatus={authenticationStatus} />;
+  }
+
+  if (!resultHasData(compensationsResult)) {
+    return <Stack alignItems="center"><CircularProgress /> </Stack>;
   }
 
   return (
     <Grid container spacing={2}>
       <Grid xsOffset={'auto'} display={'flex'} justifyContent={'center'}>
-        <Button onClick={refresh} endIcon={<RefreshIcon />}>
+        <Button onClick={() => compensationsResult.refetch()} endIcon={<RefreshIcon />}>
           Neu laden
         </Button>
       </Grid>
       <Grid xs={12}>
-        <CompensationTable compensations={compensations} />
+        <CompensationTable compensations={compensations ?? []} />
       </Grid>
       <Grid xs={5} xsOffset={'auto'}>
         <Button
-          disabled={compensations.length === 0}
+          disabled={(compensations?.length) > 0}
           onClick={handleSepaGeneration}
         >
           SEPA XML generieren

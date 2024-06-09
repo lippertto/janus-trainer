@@ -1,7 +1,7 @@
 import { useQuery, UseQueryResult } from '@tanstack/react-query';
 import { fetchListFromApi } from '@/lib/fetch';
-import { API_COMPENSATION_VALUES, API_HOLIDAYS } from '@/lib/routes';
-import { CompensationValueDto, HolidayDto } from '@/lib/dto';
+import { API_COMPENSATION_VALUES, API_HOLIDAYS, API_USERS } from '@/lib/routes';
+import { CompensationValueDto, HolidayDto, UserDto } from '@/lib/dto';
 import { Holiday } from '@prisma/client';
 
 const TEN_MINUTES = 10 * 60 * 1000;
@@ -43,8 +43,24 @@ export function holidaysQuery(
   });
 }
 
+export function trainersQuery(accessToken: string|null) {
+     return useQuery({
+    queryKey: ['trainers'],
+    queryFn: () => fetchListFromApi<UserDto>(
+      `${API_USERS}?group=trainers`,
+      accessToken!,
+    ),
+    throwOnError: true,
+    enabled: Boolean(accessToken),
+    staleTime: TEN_MINUTES,
+  });
+}
+
 export function resultHasData(result: UseQueryResult) {
   if (result.isError || result.isLoading || result.isRefetching) {
+    return false;
+  }
+  if (result.status === "pending") {
     return false;
   }
   return true;

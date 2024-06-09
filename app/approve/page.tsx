@@ -16,106 +16,181 @@ import { DatePicker } from '@mui/x-date-pickers';
 import quarterOfYear from 'dayjs/plugin/quarterOfYear';
 import ButtonGroup from '@mui/material/ButtonGroup';
 import Button from '@mui/material/Button';
-import { HolidayDto, TrainingDto } from '@/lib/dto';
+import { HolidayDto, TrainingDto, UserDto } from '@/lib/dto';
 import { useQuery } from '@tanstack/react-query';
 import { fetchListFromApi } from '@/lib/fetch';
 import { API_TRAININGS } from '@/lib/routes';
-import { holidaysQuery, resultHasData } from '@/lib/shared-queries';
+import { holidaysQuery, resultHasData, trainersQuery } from '@/lib/shared-queries';
 import { CircularProgress } from '@mui/material';
 import { usePathname, useSearchParams, useRouter } from 'next/navigation';
+import Autocomplete from '@mui/material/Autocomplete';
+import TextField from '@mui/material/TextField';
 
 dayjs.extend(quarterOfYear);
 
+function TrainerDropdown({ trainers, selectedTrainerId, setSelectedTrainerId }: {
+  trainers: UserDto[], selectedTrainerId: string|null, setSelectedTrainerId: (v: string | null) => void
+}) {
+  const selectedTrainerDto = trainers.find((t) => (t.id === selectedTrainerId))
+  return <Autocomplete
+    value={selectedTrainerDto ?? null}
+    onChange={(_, value) => {
+      setSelectedTrainerId(value?.id ?? null);
+    }}
+    options={trainers ?? []}
+    getOptionLabel={(t) => (t.name)}
+    renderInput={(params) => (
+      <TextField
+        {...params}
+        label="Trainer"
+      />
+    )}
+  />;
+}
+
+function trainingsQuery(
+  accessToken: string | null,
+  filterStart: dayjs.Dayjs | null,
+  filterEnd: dayjs.Dayjs | null,
+  trainerId?: string,
+) {
+  const startString = filterStart?.format('YYYY-MM-DD');
+  const endString = filterEnd?.format('YYYY-MM-DD');
+  const trainerFilter = trainerId ? `&trainerId=${trainerId}` : '';
+  return useQuery({
+    queryKey: ['trainings', startString, endString, trainerId],
+    queryFn: () => fetchListFromApi<TrainingDto>(
+      `${API_TRAININGS}?start=${startString}&end=${endString}${trainerFilter}`,
+      accessToken!,
+    ),
+    throwOnError: true,
+    enabled: (Boolean(accessToken) && filterStart?.isValid() && filterEnd?.isValid()),
+    initialData: [],
+    staleTime: 10 * 60 * 1000
+  });
+}
+
+const QUERY_PARAM_START = 'startDate';
+const QUERY_PARAM_END = 'endDate';
+const QUERY_PARAM_TRAINER_ID = 'trainerId';
+
 export default function ApprovePage(): React.ReactElement {
-  const searchParams= useSearchParams()
+  const searchParams = useSearchParams();
   const pathname = usePathname();
-  const {replace} = useRouter();
+  const { replace } = useRouter();
+  const queryParamStart = searchParams.get(QUERY_PARAM_START);
+  const queryParamEnd = searchParams.get(QUERY_PARAM_END);
+  const queryParamTrainerId = searchParams.get(QUERY_PARAM_TRAINER_ID);
 
   const [datePickerStart, setDatePickerStart] = React.useState<dayjs.Dayjs | null>(
+    queryParamStart ? dayjs(queryParamStart):
     dayjs().startOf('quarter'),
   );
   const [datePickerEnd, setDatePickerEnd] = React.useState<dayjs.Dayjs | null>(
+    queryParamEnd ? dayjs(queryParamEnd) :
     dayjs().endOf('quarter'),
   );
-  const [filterStart, setFilterStart] = React.useState<dayjs.Dayjs|null>(
-    datePickerStart
-  )
-  const [filterEnd, setFilterEnd] = React.useState<dayjs.Dayjs|null>(
-    datePickerEnd
-  )
+  const [filterStart, setFilterStart] = React.useState<dayjs.Dayjs | null>(
+    datePickerStart,
+  );
+  const [filterEnd, setFilterEnd] = React.useState<dayjs.Dayjs | null>(
+    datePickerEnd,
+  );
+  const [selectedTrainerId, setSelectedTrainerId] = React.useState<string | null>(
+    queryParamTrainerId
+  );
+
   const [trainings, setTrainings] = React.useState<TrainingDto[]>([]);
   const [holidays, setHolidays] = React.useState<HolidayDto[]>([]);
+
+  const [trainers, setTrainers] = React.useState<UserDto[]>([]);
 
   const { data, status: authenticationStatus } = useSession();
   const session = data as JanusSession;
 
-  const trainingsResult = useQuery({
-    queryKey: ['trainings', datePickerStart, datePickerEnd],
-    queryFn: () => fetchListFromApi<TrainingDto>(
-      `${API_TRAININGS}?start=${filterStart!.format('YYYY-MM-DD')}&end=${filterEnd!.format('YYYY-MM-DD')}`,
-      session.accessToken,
-    ),
-    throwOnError: true,
-    enabled: (!!session?.accessToken && filterStart?.isValid() && filterEnd?.isValid()),
-    initialData: [],
-  });
+  const trainingsResult = trainingsQuery(session?.accessToken,
+    filterStart, filterEnd, selectedTrainerId ?? undefined,
+  );
 
   const holidayResult = holidaysQuery(session?.accessToken,
     [new Date().getFullYear(), new Date().getFullYear() - 1],
-  )
+  );
+
+  const trainersResult = trainersQuery(session?.accessToken);
 
   useEffect(() => {
-    if (!holidayResult.isError && !holidayResult.isLoading && !holidayResult.isRefetching) {
+    if (resultHasData(holidayResult)) {
       setHolidays(holidayResult.data!);
     }
-  }, [holidayResult]);
+  }, [holidayResult.data]);
 
   useEffect(() => {
-    if (!trainingsResult.isError && !trainingsResult.isLoading) {
+    if (resultHasData(trainingsResult)) {
       setTrainings(trainingsResult.data);
     }
-  }, [trainingsResult]);
+  }, [trainingsResult.data]);
 
+  useEffect(() => {
+    if (resultHasData(trainersResult)) {
+      setTrainers(trainersResult.data!);
+    }
+  }, [trainersResult.data]);
+
+  // keeps track of the first render where we do not want ot refetch.
+  const didMount = React.useRef(false);
   // refresh when the dates have changed
   useEffect(() => {
-    // noinspection JSIgnoredPromiseFromCall
-    trainingsResult.refetch()
-  }, [filterStart, filterEnd]);
+    if (didMount.current) {
+      // noinspection JSIgnoredPromiseFromCall
+      trainingsResult.refetch();
+    } else {
+      didMount.current = true;
+    }
+  }, [filterStart, filterEnd, selectedTrainerId]);
 
-  // update the search params when startDate or endDate have changed.
+  // update the search params when the filters have changed.
   useEffect(() => {
     const params = new URLSearchParams(searchParams);
     if (datePickerStart) {
-      params.set('startDate', datePickerStart.format('YYYY-MM-DD'))
+      params.set(QUERY_PARAM_START, datePickerStart.format('YYYY-MM-DD'));
       setFilterStart(datePickerStart);
     }
     if (datePickerEnd) {
-      params.set('endDate', datePickerEnd.format('YYYY-MM-DD'))
-      setFilterEnd(datePickerEnd)
+      params.set(QUERY_PARAM_END, datePickerEnd.format('YYYY-MM-DD'));
+      setFilterEnd(datePickerEnd);
+    }
+    if (selectedTrainerId) {
+      params.set('trainerId', selectedTrainerId);
+    } else {
+      params.delete('trainerId');
     }
     replace(`${pathname}?${params.toString()}`);
-  }, [datePickerStart, datePickerEnd])
+  }, [datePickerStart, datePickerEnd, selectedTrainerId]);
 
-  // update the date pickers when the url has changed
+  // update the filters when the url has changed
   useEffect(() => {
-    const urlStart = searchParams.get('startDate')
+    const urlStart = searchParams.get(QUERY_PARAM_START);
     const parsedStart = urlStart ? dayjs(urlStart) : null;
     if (parsedStart && parsedStart.format('YYYY-MM-DD') != datePickerStart?.format('YYYY-MM-DD')) {
-      setDatePickerStart(parsedStart)
+      setDatePickerStart(parsedStart);
     }
-    const urlEnd = searchParams.get('endDate')
+    const urlEnd = searchParams.get(QUERY_PARAM_END);
     const parsedEnd = urlStart ? dayjs(urlEnd) : null;
     if (parsedEnd && parsedEnd.format('YYYY-MM-DD') != datePickerEnd?.format('YYYY-MM-DD')) {
-      setDatePickerEnd(parsedEnd)
+      setDatePickerEnd(parsedEnd);
     }
-  }, [searchParams])
+
+    const trainerId = searchParams.get('trainerId');
+    setSelectedTrainerId(trainerId);
+
+  }, [searchParams]);
 
   if (authenticationStatus !== 'authenticated') {
     return <LoginRequired authenticationStatus={authenticationStatus} />;
   }
 
   if (!resultHasData(trainingsResult) || !resultHasData(holidayResult)) {
-    return <Stack alignItems="center"><CircularProgress /> </Stack>
+    return <Stack alignItems="center"><CircularProgress /> </Stack>;
   }
 
   return (
@@ -158,6 +233,13 @@ export default function ApprovePage(): React.ReactElement {
           }}
         />
       </Grid>
+      <Grid xs={4}>
+        <TrainerDropdown
+          trainers={trainers ?? []}
+          selectedTrainerId={selectedTrainerId}
+          setSelectedTrainerId={setSelectedTrainerId}
+        />
+      </Grid>
 
       <Grid xs={12}>
         <TrainingTable
@@ -166,8 +248,9 @@ export default function ApprovePage(): React.ReactElement {
           holidays={holidays}
           courses={[]}
           refresh={() => {
-            holidayResult.refetch()
-            trainingsResult.refetch()
+            holidayResult.refetch();
+            trainingsResult.refetch();
+            trainersResult.refetch();
           }}
           approvalMode={true}
           session={session}
