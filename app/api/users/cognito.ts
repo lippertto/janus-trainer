@@ -2,6 +2,11 @@ import {
   AdminAddUserToGroupCommand,
   AdminCreateUserCommand,
   AdminCreateUserResponse,
+  AdminDisableUserCommand,
+  AdminEnableUserCommand,
+  AdminGetUserCommand,
+  AdminRemoveUserFromGroupCommand,
+  AdminUpdateUserAttributesCommand,
   AttributeType,
   CognitoIdentityProviderClient,
   ListGroupsCommand,
@@ -10,17 +15,10 @@ import {
   ListUsersCommandOutput,
   ListUsersInGroupCommand,
   ListUsersInGroupResponse,
-  UserType,
   UsernameExistsException,
-  AdminGetUserCommand,
-  AdminUpdateUserAttributesCommand,
-  AdminRemoveUserFromGroupCommand, AdminDisableUserCommand, AdminEnableUserCommand,
 } from '@aws-sdk/client-cognito-identity-provider';
 import { Group } from '@/lib/dto';
-import {
-  ApiConflictError,
-  ApiErrorInternalServerError, ApiErrorNotFound,
-} from '@/lib/helpers-for-api';
+import { ApiConflictError, ApiErrorInternalServerError, ApiErrorNotFound } from '@/lib/helpers-for-api';
 
 
 const USER_POOL_ID = process.env.COGNITO_USER_POOL_ID;

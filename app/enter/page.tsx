@@ -10,7 +10,7 @@ import LoginRequired from '@/components/LoginRequired';
 import { CourseDto, HolidayDto, TrainingDto } from '@/lib/dto';
 import { useQuery } from '@tanstack/react-query';
 import { fetchListFromApi } from '@/lib/fetch';
-import { API_COURSES, API_HOLIDAYS, API_TRAININGS } from '@/lib/routes';
+import { API_COURSES, API_TRAININGS } from '@/lib/routes';
 import { holidaysQuery } from '@/lib/shared-queries';
 
 

@@ -5,9 +5,6 @@ import { ErrorBoundary, FallbackProps } from 'react-error-boundary';
 import { Typography } from '@mui/material';
 import Button from '@mui/material/Button';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
-import { useSession } from 'next-auth/react';
-import type { JanusSession } from '@/lib/auth';
-import LoginRequired from '@/components/LoginRequired';
 
 
 function pleaseReload({ error, resetErrorBoundary }: FallbackProps) {
