@@ -46,29 +46,39 @@ function getCognitoAttributeOrNull(
   return matchingAttribute.Value!;
 }
 
+/** Parse the information of one cognito user.
+ * This method is intended to be used directly with cognito output,
+ * hence all parameters are optional but may cause null to be returned.
+ */
 function convertOneCognitoUser(
-  cognitoUser: UserType,
+  username?: string,
+  attributes?: AttributeType[],
+  enabled?: boolean,
 ): ParsedCognitoUser | null {
+  if (!username || !attributes) {
+    return null;
+  }
   const email = getCognitoAttributeOrNull(
-    cognitoUser.Attributes!,
+    attributes,
     'email',
-    cognitoUser.Username!,
+    username,
   );
   const name = getCognitoAttributeOrNull(
-    cognitoUser.Attributes!,
+    attributes,
     'name',
-    cognitoUser.Username!,
+    username,
   );
   if (!email || !name) {
+    console.log(`User ${username} does not have all required properties`)
     return null;
   }
 
   return {
-    username: cognitoUser.Username!,
+    username: username,
     email: email,
     name: name,
     groups: [],
-    enabled: cognitoUser.Enabled ?? false,
+    enabled: enabled ?? false,
   };
 }
 
@@ -89,7 +99,11 @@ async function listCognitoUsers(client: CognitoIdentityProviderClient,
     const usersOfThisBatch = response
       .Users!
       .filter(u => u.Enabled)
-      .map(convertOneCognitoUser)
+      .map((u) => (convertOneCognitoUser(
+        u.Username!,
+        u.Attributes ?? [],
+        u.Enabled ?? false
+      )))
       .filter((u) => u !== null) as ParsedCognitoUser[];
     result.push(
       ...usersOfThisBatch,
@@ -222,19 +236,25 @@ export async function disableCognitoUser(
   }
 }
 
-async function getCognitoUserById(
+export async function getCognitoUserById(
   client: CognitoIdentityProviderClient,
-  id: string
+  username: string
 ): Promise<ParsedCognitoUser|null> {
   try {
     const response = await client.send(
       new AdminGetUserCommand({
-        Username: id,
+        Username: username,
         UserPoolId: USER_POOL_ID,
       }),
     );
-    return convertOneCognitoUser(response)
+
+    return convertOneCognitoUser(
+      response.Username!!,
+      response.UserAttributes,
+      response.Enabled
+    )
   } catch (e) {
+    console.log(`Error while getting cognito user ${username}`, e)
     return null;
   }
 }
@@ -266,7 +286,7 @@ export async function updateCognitoUser(
     }),
   );
 
-  await setGroupsForUser(client, id, groups);
+  return setGroupsForUser(client, id, groups);
 }
 
 
@@ -340,4 +360,18 @@ export async function enableCognitoUser(
     }
     throw new ApiErrorInternalServerError('unknown error');
   }
+}
+
+export async function listGroupsForUser(
+  client: CognitoIdentityProviderClient,
+  username: string): Promise<Group[]> {
+  const result = []
+  const groups = await listGroups(client);
+  for (const thisGroup of groups) {
+    const usernamesOfThisGroup = await findUsersForGroup(client, thisGroup);
+    if (usernamesOfThisGroup.indexOf(username) !== -1) {
+      result.push(thisGroup);
+    }
+  }
+  return result as Group[];
 }
