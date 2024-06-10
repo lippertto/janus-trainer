@@ -29,7 +29,7 @@ export default function EnterPage() {
   const trainingResult = useQuery({
     queryKey: ['trainings'],
     queryFn: () => fetchListFromApi<TrainingDto>(
-      `${API_TRAININGS}?userId=${session?.userId}`,
+      `${API_TRAININGS}?trainerId=${session?.userId}`,
       session.accessToken,
     ),
     throwOnError: true,
