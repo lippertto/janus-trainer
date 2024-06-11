@@ -32,7 +32,7 @@ import TrainingDialog from './TrainingDialog';
 import { showError, showSuccess } from '@/lib/notifications';
 import { styled } from '@mui/material/styles';
 import { unapproveTraining } from '@/lib/api-trainings';
-import { Holiday, TrainingStatus } from '@prisma/client';
+import { DayOfWeek, Holiday, TrainingStatus } from '@prisma/client';
 import { CourseDto, TrainingCreateRequest, TrainingDto, TrainingUpdateRequest } from '@/lib/dto';
 import { useMutation } from '@tanstack/react-query';
 import { createInApi, deleteFromApi, patchInApi, updateInApi } from '@/lib/fetch';
@@ -44,15 +44,57 @@ import { replaceElementWithId } from '@/lib/sort-and-filter';
 require('dayjs/locale/de');
 dayjs.locale('de');
 
-function warningForDate(d: string, holidays: Holiday[]): string | null {
-  if (new Date(d).getDay() === 0) {
+function dayOfWeekToInt(d: DayOfWeek): number {
+  switch (d) {
+    case 'MONDAY':
+      return 1;
+    case 'TUESDAY':
+      return 2;
+    case 'WEDNESDAY':
+      return 3;
+    case 'THURSDAY':
+      return 4;
+    case 'FRIDAY':
+      return 5;
+    case 'SATURDAY':
+      return 6;
+    case 'SUNDAY':
+      return 0;
+  }
+}
+
+const GERMAN_DAYS: string[] = new Array(7);
+GERMAN_DAYS[0] = 'So';
+GERMAN_DAYS[1] = 'Mo'
+GERMAN_DAYS[2] = 'Di'
+GERMAN_DAYS[3] = 'Mi'
+GERMAN_DAYS[4] = 'Do'
+GERMAN_DAYS[5] = 'Fr'
+GERMAN_DAYS[6] = 'Sa'
+
+function warningForDate(dateString: string, holidays: Holiday[], weekdays: DayOfWeek[]): string | null {
+  let dayNumber = new Date(dateString).getDay();
+  if (dayNumber === 0) {
     return 'Ist ein Sonntag';
   }
   for (const h of holidays) {
-    if (d >= h.start && d <= h.end) {
+    if (dateString >= h.start && dateString <= h.end) {
       return `Kollidiert mit dem Feiertag ${h.name}`;
     }
   }
+  let isOnValidWeekday = false;
+  for (const wd of weekdays) {
+    if (dayNumber === dayOfWeekToInt(wd)) {
+      isOnValidWeekday = true;
+    }
+  }
+  if (!isOnValidWeekday) {
+    const allowedDays = weekdays.map(
+      (wd) => (GERMAN_DAYS.at(dayOfWeekToInt(wd)))
+    ).join(", ");
+    return `Kurs findet nur an diesen Tagen statt: ${allowedDays}`
+  }
+
   return null;
 }
 
@@ -84,8 +126,8 @@ function buildGridColumns(
     {
       field: 'warnings',
       headerName: '',
-      renderCell: (params) => {
-        const dateMessage = warningForDate(params.row.date, holidays);
+      renderCell: ({ row }: {row: TrainingDto}) => {
+        const dateMessage = warningForDate(row.date, holidays, row.course.weekdays);
         if (dateMessage) {
           return (
             <Tooltip title={dateMessage}>
