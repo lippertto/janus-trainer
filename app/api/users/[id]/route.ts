@@ -1,13 +1,19 @@
 import {
   ApiErrorNotFound,
   allowOnlyAdmins,
-  handleTopLevelCatch, validateOrThrow,
+  handleTopLevelCatch, validateOrThrow, allowAdminOrSelf,
 } from '@/lib/helpers-for-api';
 import prisma from '@/lib/prisma';
 import { CognitoIdentityProviderClient } from '@aws-sdk/client-cognito-identity-provider';
 import { NextRequest, NextResponse } from 'next/server';
-import { disableCognitoUser, updateCognitoUser } from '../cognito';
-import { UserDto, UserCreateRequest } from '@/lib/dto';
+import {
+  createCognitoClient,
+  disableCognitoUser,
+  getCognitoUserById,
+  listGroupsForUser,
+  updateCognitoUser,
+} from '../cognito';
+import { UserDto, UserCreateRequest, ErrorDto } from '@/lib/dto';
 
 async function doDELETE(request: NextRequest, id: string) {
   await allowOnlyAdmins(request);
@@ -96,8 +102,40 @@ export async function PUT(
   { params }: { params: { id: string } },
 ) {
   try {
-    console.log(`Updating user ${params.id}`);
     return await doPUT(request, params);
+  } catch (e) {
+    return handleTopLevelCatch(e);
+  }
+}
+
+async function selectOneUser(id: string): Promise<UserDto> {
+  const dbUser = await prisma.userInDb.findUnique({
+    where: {id}
+  });
+  if (dbUser === null) {
+    throw new ApiErrorNotFound(`User with id ${id} not found`);
+  }
+
+  const client = createCognitoClient();
+  const cognitoUser = await getCognitoUserById(client, id);
+
+  if (!cognitoUser) {
+    throw new ApiErrorNotFound(`User ${id} does not exist in cognito`)
+  }
+
+  const groups = await listGroupsForUser(client, id);
+
+  return {...dbUser, email: cognitoUser.email, groups: groups}!;
+}
+
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { id: string } },
+): Promise<NextResponse<UserDto|ErrorDto>> {
+  try {
+    await allowAdminOrSelf(request, params.id);
+    const user = await selectOneUser(params.id);
+    return NextResponse.json(user);
   } catch (e) {
     return handleTopLevelCatch(e);
   }

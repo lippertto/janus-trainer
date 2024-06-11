@@ -10,10 +10,15 @@ import LoginRequired from '../../components/LoginRequired';
 import type { JanusSession } from '@/lib/auth';
 import { UserDto } from '@/lib/dto';
 
+function UserManagementContents(props: {session: JanusSession}) {
+  return <React.Fragment>
+    <UserTable
+      session={props.session}
+    />
+  </React.Fragment>
+}
+
 export default function UserManagementPage() {
-  const [showCreate, setShowCreate] = React.useState<boolean>(false);
-  const [showEdit, setShowEdit] = React.useState<boolean>(false);
-  const [users, setUsers] = React.useState<UserDto[]>([]);
 
   const { data, status: authenticationStatus } = useSession();
   const session = data as JanusSession;
@@ -22,11 +27,5 @@ export default function UserManagementPage() {
     return <LoginRequired authenticationStatus={authenticationStatus} />;
   }
 
-  return (
-    <>
-      <UserTable
-        session={session}
-      />
-    </>
-  );
+  return <UserManagementContents session={session}/>;
 }

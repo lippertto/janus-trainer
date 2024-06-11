@@ -21,22 +21,24 @@ import SportsIcon from '@mui/icons-material/Sports';
 import { JanusSession } from '@/lib/auth';
 import { useSession } from 'next-auth/react';
 import { Group } from '@/lib/dto';
-
+import AccountBoxIcon from '@mui/icons-material/AccountBox';
 const ADMIN_LINKS = [
   { text: 'Home', href: '/', icon: HomeIcon },
   { text: 'Eingeben', href: '/enter', icon: EditCalendarIcon },
   { text: 'Freigeben', href: '/approve', icon: AssignmentTurnedInIcon },
   { text: 'Auszahlen', href: '/compensate', icon: AccountBalanceIcon },
-  { text: 'Nutzer anlegen', href: '/manage-users', icon: ManageAccountsIcon },
+  { text: 'Nutzer anlegen', href: '/users', icon: ManageAccountsIcon },
   { text: 'Angebot', href: '/offerings', icon: SportsIcon },
   { text: 'Verwaltung', href: '/configure', icon: SettingsIcon },
   { text: 'Scannen', href: '/scan', icon: QrCodeScannerIcon },
+  { text: 'Profil', href: '/profile', icon: AccountBoxIcon },
 ];
 
 const TRAINER_LINKS = [
   { text: 'Home', href: '/', icon: HomeIcon },
   { text: 'Eingeben', href: '/enter', icon: EditCalendarIcon },
   { text: 'Scannen', href: '/scan', icon: QrCodeScannerIcon },
+  { text: 'Profil', href: '/profile', icon: AccountBoxIcon },
 ];
 
 export default function JanusDrawer({

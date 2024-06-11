@@ -29,6 +29,28 @@ export async function fetchListFromApi<T>(
   }
 }
 
+export async function fetchSingleEntity<T>(
+  route: string,
+  id: string|number,
+  accessToken: string,
+): Promise<T> {
+  try {
+    const response = await fetch(`${route}/${id}`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    if (response.status !== 200) {
+      return Promise.reject(
+        new Error(`Failed to get data from ${route}. Error is: ${await response.text()}`),
+      );
+    }
+    return response.json();
+  } catch (e) {
+    return Promise.reject(
+      new Error(`Unexpected error while getting data from ${route}: ${JSON.stringify(e)}`)
+    )
+  }
+}
+
 /** Will return the deleted object for confirmation messages, etc. */
 export async function deleteFromApi<T extends {id: number|string}>(
   route: string,
