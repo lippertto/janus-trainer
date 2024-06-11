@@ -9,7 +9,7 @@ test.describe.serial('user management', () => {
     const browser = await newBrowser()
     const page = await browser.newPage();
 
-    await page.goto('/manage-users');
+    await page.goto('/users');
     await expect(page.getByText('spamtl')).toBeHidden();
 
     await page.getByTestId('add-user-button').click();

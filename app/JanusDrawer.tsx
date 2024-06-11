@@ -27,7 +27,7 @@ const ADMIN_LINKS = [
   { text: 'Eingeben', href: '/enter', icon: EditCalendarIcon },
   { text: 'Freigeben', href: '/approve', icon: AssignmentTurnedInIcon },
   { text: 'Auszahlen', href: '/compensate', icon: AccountBalanceIcon },
-  { text: 'Nutzer anlegen', href: '/manage-users', icon: ManageAccountsIcon },
+  { text: 'Nutzer anlegen', href: '/users', icon: ManageAccountsIcon },
   { text: 'Angebot', href: '/offerings', icon: SportsIcon },
   { text: 'Verwaltung', href: '/configure', icon: SettingsIcon },
   { text: 'Scannen', href: '/scan', icon: QrCodeScannerIcon },
