@@ -12,6 +12,7 @@ import { UserDto } from '@/lib/dto';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
+import { Typography } from '@mui/material';
 
 function ProfilePageContents({ session }: { session: JanusSession }) {
   const { data: user } = useSuspenseQuery({
@@ -41,6 +42,9 @@ function ProfilePageContents({ session }: { session: JanusSession }) {
         label="IBAN"
         value={user.iban ?? ''}
       />
+      <Typography>
+        Die Informationen auf dieser Seite werden vom Büro gepflegt und können von dir nicht verändert werden.
+      </Typography>
       <Button
         onClick={() => {
           signOut()
@@ -50,7 +54,6 @@ function ProfilePageContents({ session }: { session: JanusSession }) {
         }}
       >Ausloggen</Button>
     </Stack>
-
   </React.Fragment>;
 }
 
