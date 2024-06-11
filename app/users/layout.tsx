@@ -1,17 +1,20 @@
-"use client";
+'use client';
 
-import React, { ErrorInfo } from 'react';
+import React, { ErrorInfo, Suspense } from 'react';
 import { ErrorBoundary, FallbackProps } from 'react-error-boundary';
 import PleaseReload from '@/components/PleaseReload';
+import { LoadingSpinner } from '@/components/LoadingSpinner';
 
 const logError = (error: Error, info: ErrorInfo) => {
   console.log(error);
-}
+};
 
-export default function ManageUsersLayout({children}: {children: React.ReactNode}) {
+export default function UsersLayout({ children }: { children: React.ReactNode }) {
   return <React.Fragment>
     <ErrorBoundary fallbackRender={PleaseReload} onError={logError}>
-      {children}
+      <Suspense fallback={<LoadingSpinner />}>
+        {children}
+      </Suspense>
     </ErrorBoundary>
-  </React.Fragment>
+  </React.Fragment>;
 }

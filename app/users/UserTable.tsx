@@ -8,11 +8,9 @@ import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import { JanusSession } from '@/lib/auth';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQueryClient, useSuspenseQuery } from '@tanstack/react-query';
 import { createInApi, deleteFromApi, fetchListFromApi, updateInApi } from '@/lib/fetch';
 import { API_USERS } from '@/lib/routes';
-import Stack from '@mui/material/Stack';
-import { CircularProgress } from '@mui/material';
 import { useConfirm } from 'material-ui-confirm';
 import { showError, showSuccess } from '@/lib/notifications';
 import { UserDialog } from './UserDialog';
@@ -60,17 +58,14 @@ export default function UserTable({
                                   }: {
   session: JanusSession;
 }) {
-  const [users, setUsers] = React.useState<UserDto[]>([]);
   const [showUserDialog, setShowUserDialog] = React.useState(false);
-
-  const usersResult = useQuery({
+  const queryClient = useQueryClient();
+  const { data: users } = useSuspenseQuery({
     queryKey: ['users'],
     queryFn: () => fetchListFromApi<UserDto>(
       `${API_USERS}`,
       session!.accessToken,
     ),
-    throwOnError: true,
-    enabled: Boolean(session?.accessToken),
     staleTime: 10 * 60 * 1000,
   });
 
@@ -79,8 +74,8 @@ export default function UserTable({
       return createInApi<UserDto>(API_USERS, data, session?.accessToken ?? '');
     },
     onSuccess: (createdUser: UserDto) => {
-      setUsers([...users, createdUser]);
-      showSuccess(`Nutzer ${createdUser.name} wurdeerstellt`);
+      queryClient.setQueryData(['users'], [...users, createdUser]);
+      showSuccess(`Nutzer ${createdUser.name} wurde erstellt`);
     },
     onError: (e) => {
       showError(`Fehler beim Erstellen des Nutzers`, e.message);
@@ -99,7 +94,7 @@ export default function UserTable({
             return u;
           }
         });
-        setUsers(newUsers);
+        queryClient.setQueryData(['users'], newUsers);
         showSuccess(`Nutzer ${data.name} wurde aktualisiert`);
       },
       onError: (e) => {
@@ -107,8 +102,6 @@ export default function UserTable({
       },
     },
   );
-
-
 
   const confirm = useConfirm();
   const handleDeleteUser = (user: UserDto | null) => {
@@ -120,7 +113,7 @@ export default function UserTable({
         if (!user) return;
         deleteFromApi(API_USERS, user, session.accessToken)
           .then((deleted) => {
-            setUsers(users.filter((u) => u.id !== deleted.id));
+            queryClient.setQueryData(['users'], users.filter((u) => u.id !== deleted.id));
             showSuccess(`Nutzer ${user.name} wurde gelöscht`);
           })
           .catch((err) => {
@@ -129,13 +122,6 @@ export default function UserTable({
       })
     ;
   };
-
-  React.useEffect(() => {
-    if (!usersResult.isError && !usersResult.isLoading) {
-      setUsers(usersResult.data!);
-    }
-  }, [usersResult.data]);
-
 
   const columns: GridColDef[] = [
     { field: 'name', headerName: 'Name', flex: 1 },
@@ -154,10 +140,6 @@ export default function UserTable({
   );
   const [activeUser, setActiveUser] = React.useState<UserDto | null>(null);
 
-  if (usersResult.isLoading || usersResult.isRefetching) {
-    return <Stack alignItems="center"><CircularProgress /> </Stack>;
-  }
-
   return (
     <React.Fragment>
       <DataGrid
@@ -175,7 +157,12 @@ export default function UserTable({
             handleEditUser: () => {
               setShowUserDialog(true);
             },
-            handleRefresh: usersResult.refetch,
+            handleRefresh: () => {
+              queryClient.invalidateQueries({ queryKey: ['users'] })
+                .then(
+                  () => showSuccess('Nutzer wurden neu geladen'),
+                );
+            },
             handleDeleteUser: () => handleDeleteUser(activeUser),
             rowIsSelected: activeUser !== null,
           },
@@ -205,7 +192,7 @@ export default function UserTable({
         }}
         handleSave={(request: UserCreateRequest) => {
           if (activeUser) {
-            updateUserMutation.mutate({userId: activeUser.id, data: request})
+            updateUserMutation.mutate({ userId: activeUser.id, data: request });
           } else {
             createUserMutation.mutate(request);
           }
