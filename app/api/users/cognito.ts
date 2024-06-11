@@ -80,8 +80,10 @@ function convertOneCognitoUser(
   };
 }
 
-async function listCognitoUsers(client: CognitoIdentityProviderClient,
-                         filterString: string
+async function listCognitoUsers(
+  client: CognitoIdentityProviderClient,
+  filterString: string,
+  showDisabled: boolean = false,
 ) {
   const result: ParsedCognitoUser[] = [];
   let paginationToken = undefined;
@@ -96,7 +98,8 @@ async function listCognitoUsers(client: CognitoIdentityProviderClient,
     paginationToken = response.PaginationToken;
     const usersOfThisBatch = response
       .Users!
-      .filter(u => u.Enabled)
+      .filter(
+        u => showDisabled || u.Enabled)
       .map((u) => (convertOneCognitoUser(
         u.Username!,
         u.Attributes ?? [],
@@ -117,11 +120,14 @@ export async function listAllUsers(
   return listCognitoUsers(client, "")
 }
 
+/** Get a user by email.
+ * This method will return disabled users too.
+ * Note: Emails are unique within a cognito user pool. Hence, we have at most one user.
+ */
 export async function getUserByEmail(
   client: CognitoIdentityProviderClient, email: string
 ): Promise<ParsedCognitoUser|null> {
-  const users = await listCognitoUsers(client, `email = \"${email}\"`)
-  // Emails are unique within a cognito user pool. Hence, we have at most one user.
+  const users = await listCognitoUsers(client, `email = \"${email}\"`, true)
   if (users.length === 1) {
     return users[0]
   } else {
