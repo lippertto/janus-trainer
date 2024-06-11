@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { signOut, useSession } from 'next-auth/react';
 import type { JanusSession } from '@/lib/auth';
@@ -13,11 +13,12 @@ import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 
-function ProfilePageContents({session}:{session:JanusSession}) {
-  const {data: user} = useSuspenseQuery({
+function ProfilePageContents({ session }: { session: JanusSession }) {
+  const { data: user } = useSuspenseQuery({
     queryKey: ['users', session.userId],
     queryFn: () => fetchSingleEntity<UserDto>(API_USERS, session.userId, session.accessToken),
   });
+
   return <React.Fragment>
     <Stack spacing={2}>
       <TextField
@@ -38,14 +39,19 @@ function ProfilePageContents({session}:{session:JanusSession}) {
       <TextField
         disabled={true}
         label="IBAN"
-        value={user.iban ?? ""}
+        value={user.iban ?? ''}
       />
       <Button
-      onClick={() => {signOut()}}
+        onClick={() => {
+          signOut()
+            .catch((e) => {
+              console.log('Could not log out properly', JSON.stringify(e));
+            });
+        }}
       >Ausloggen</Button>
     </Stack>
 
-  </React.Fragment>
+  </React.Fragment>;
 }
 
 export default function ProfilePage() {
@@ -56,8 +62,8 @@ export default function ProfilePage() {
     return <LoginRequired authenticationStatus={authenticationStatus} />;
   }
   if (!session) {
-    return <LoadingSpinner />
+    return <LoadingSpinner />;
   }
 
-  return <ProfilePageContents session={session}/>
+  return <ProfilePageContents session={session} />;
 }
