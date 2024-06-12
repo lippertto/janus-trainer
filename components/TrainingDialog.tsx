@@ -28,13 +28,19 @@ function CoursesDropdown({
                            setSelectedCourse,
                            setSelectedCompensationValue,
                          }: CoursesDropdown) {
+  const onlyOneCourse = courses.length === 1;
+  const coursesAreEmpty = courses.length === 0;
+
+  if (onlyOneCourse) setSelectedCourse(courses[0]);
+
   return <Autocomplete
+    disabled={onlyOneCourse || coursesAreEmpty}
     options={courses}
     getOptionLabel={(c) => (c.name)}
     renderInput={(params) => (
       <TextField
         {...params}
-        label="Kurs"
+        label={coursesAreEmpty ? 'Keine Kurse hinterlegt' : 'Kurs'}
       />
     )}
     value={selectedCourse}
@@ -105,7 +111,7 @@ export default function TrainingDialog({
                                        }: TrainingDialogProps) {
   const [date, setDate] = React.useState<dayjs.Dayjs | null>(dayjs());
   const [participantCount, setParticipantCount] = React.useState<number>(0);
-  const [selectedCompoensationValue, setSelectedCompoensationValue] = React.useState<CompensationValueLightDto | null>(null);
+  const [selectedCompensationValue, setSelectedCompensationValue] = React.useState<CompensationValueLightDto | null>(null);
   const [selectedCourse, setSelectedCourse] = React.useState<CourseDto | null>(null);
   const [previousTraining, setPreviousTraining] = React.useState<TrainingDto | null>();
 
@@ -115,12 +121,12 @@ export default function TrainingDialog({
       setSelectedCourse(courses.find((c) => (c.id === trainingToEdit.course.id)) ?? null);
       setDate(dayjs(trainingToEdit.date));
       setParticipantCount(Number(trainingToEdit.participantCount));
-      setSelectedCompoensationValue(null);
+      setSelectedCompensationValue(null);
     } else {
       setSelectedCourse(null);
       setDate(dayjs());
       setParticipantCount(0);
-      setSelectedCompoensationValue(null);
+      setSelectedCompensationValue(null);
     }
   }
 
@@ -161,13 +167,13 @@ export default function TrainingDialog({
             courses={courses}
             selectedCourse={selectedCourse}
             setSelectedCourse={setSelectedCourse}
-            setSelectedCompensationValue={setSelectedCompoensationValue}
+            setSelectedCompensationValue={setSelectedCompensationValue}
           />
 
           <CompensationValueDropdown
             compensations={selectedCourse ? selectedCourse.allowedCompensations : []}
-            selectedCompensationValue={selectedCompoensationValue}
-            setSelectedCompensationValue={setSelectedCompoensationValue}
+            selectedCompensationValue={selectedCompensationValue}
+            setSelectedCompensationValue={setSelectedCompensationValue}
           />
 
           <TextField
@@ -192,7 +198,7 @@ export default function TrainingDialog({
               date: date!.format('YYYY-MM-DD'),
               disciplineId: selectedCourse!.disciplineId,
               courseId: selectedCourse!.id,
-              compensationCents: selectedCompoensationValue!.cents,
+              compensationCents: selectedCompensationValue!.cents,
               participantCount,
               userId,
             });

@@ -7,46 +7,63 @@ import TrainingTable from '@/components/TrainingTable';
 import { useSession } from 'next-auth/react';
 import type { JanusSession } from '@/lib/auth';
 import LoginRequired from '@/components/LoginRequired';
-import { CourseDto, HolidayDto, TrainingDto } from '@/lib/dto';
+import { HolidayDto, TrainingDto } from '@/lib/dto';
 import { useQuery } from '@tanstack/react-query';
 import { fetchListFromApi } from '@/lib/fetch';
-import { API_COURSES, API_TRAININGS } from '@/lib/routes';
-import { holidaysQuery } from '@/lib/shared-queries';
+import { API_TRAININGS } from '@/lib/routes';
+import { coursesForTrainerSuspenseQuery, holidaysQuery } from '@/lib/shared-queries';
+import IconButton from '@mui/material/IconButton';
+import HelpIcon from '@mui/icons-material/Help';
+import Stack from '@mui/system/Stack';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
+function EnterHelpText() {
+  return <React.Fragment>
+    <Typography>
+      Auf dieser Seite kannst du die Trainings eingeben, die du gegeben hast.
+    </Typography>
+    <Typography>
+      Um ein neues Training einzugeben, klick auf "Training hinzufügen".
+      In der Eingabemaske kannst du die Kurse und Vergütungen auswählen, die das Büro für dich hinterlegt hat.
+      Wenn du nichts auswählen kannst, ist nur ein Kurs und/oder eine Vergütung eingetragen.
+    </Typography>
+    <Typography>
+      Wenn du das Training speichert, wird es vom Büro freigegeben, und am Ende des Quartals überwiesen.
+      Du siehst den Status deines Trainings ganz rechts in der Tabelle unter der Spalte "Status".
+    </Typography>
+    <Typography>
+      Um ein Training zu bearbeiten oder zu löschen, klicke erst auf die entsprechende Zeile und klicke dann auf
+      "Löschen" oder "Bearbeiten".
+      Freigegebene (oder überwiesene Kurse) können nicht mehr bearbeitet werden.
+    </Typography>
+  </React.Fragment>;
+}
 
-export default function EnterPage() {
+function EnterPageContents(props: { session: JanusSession }) {
   const [trainings, setTrainings] = React.useState<TrainingDto[]>([]);
   const [holidays, setHolidays] = React.useState<HolidayDto[]>([]);
-  const [courses, setCourses] = React.useState<CourseDto[]>([]);
-  const { data, status: authenticationStatus } = useSession();
-  const session = data as JanusSession;
+  const [showHelp, setShowHelp] = React.useState(false);
+
+  const { data: courses } = coursesForTrainerSuspenseQuery(
+    props.session.userId,
+    props.session.accessToken,
+  );
 
   const holidayResult = holidaysQuery(
-    session?.accessToken,
+    props.session.accessToken,
     [new Date().getFullYear(), new Date().getFullYear() - 1],
   );
 
   const trainingResult = useQuery({
     queryKey: ['trainings'],
     queryFn: () => fetchListFromApi<TrainingDto>(
-      `${API_TRAININGS}?trainerId=${session?.userId}`,
-      session.accessToken,
+      `${API_TRAININGS}?trainerId=${props.session.userId}`,
+      props.session.accessToken,
     ),
     throwOnError: true,
-    enabled: !!session?.accessToken,
     initialData: [],
   });
-
-  const courseResult = useQuery({
-      queryKey: ['courses', session?.userId],
-      queryFn: () => fetchListFromApi<CourseDto>(
-        `${API_COURSES}?trainerId=${session?.userId}`,
-        session.accessToken,
-      ),
-      throwOnError: true,
-      enabled: Boolean(session?.accessToken),
-    },
-  );
 
   useEffect(() => {
     if (!holidayResult.isError && !holidayResult.isLoading && !holidayResult.isRefetching) {
@@ -60,30 +77,39 @@ export default function EnterPage() {
     }
   }, [trainingResult.data]);
 
-  useEffect(() => {
-    if (!courseResult.isError && !courseResult.isLoading) {
-      setCourses(courseResult.data!);
-    }
-  }, [courseResult.data]);
+  return (
+    <Stack spacing={1}>
+      <Box display="flex" justifyContent="flex-end">
+        <IconButton aria-label={'Hilfe'} onClick={() => setShowHelp(!showHelp)}>
+          <HelpIcon />
+        </IconButton>
+      </Box>
+      {showHelp ? <EnterHelpText/> : null}
 
+      <TrainingTable
+        trainings={trainings}
+        holidays={holidays}
+        setTrainings={setTrainings}
+        courses={courses}
+        refresh={() => {
+          holidayResult.refetch();
+          trainingResult.refetch();
+        }}
+        approvalMode={false}
+        session={props.session}
+        data-testid="enter-training-table"
+      />
+    </Stack>
+  );
+}
+
+export default function EnterPage() {
+  const { data, status: authenticationStatus } = useSession();
 
   if (authenticationStatus !== 'authenticated') {
     return <LoginRequired authenticationStatus={authenticationStatus} />;
   }
 
-  return (
-    <TrainingTable
-      trainings={trainings}
-      holidays={holidays}
-      setTrainings={setTrainings}
-      courses={courses}
-      refresh={() => {
-        holidayResult.refetch();
-        trainingResult.refetch();
-      }}
-      approvalMode={false}
-      session={session}
-      data-testid="enter-training-table"
-    />
-  );
+  const session = data as JanusSession;
+  return <EnterPageContents session={session} />;
 }

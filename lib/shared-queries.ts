@@ -1,7 +1,7 @@
-import { useQuery, UseQueryResult } from '@tanstack/react-query';
+import { useQuery, UseQueryResult, useSuspenseQuery } from '@tanstack/react-query';
 import { fetchListFromApi } from '@/lib/fetch';
-import { API_COMPENSATION_VALUES, API_HOLIDAYS, API_USERS } from '@/lib/routes';
-import { CompensationValueDto, HolidayDto, UserDto } from '@/lib/dto';
+import { API_COMPENSATION_VALUES, API_COURSES, API_HOLIDAYS, API_USERS } from '@/lib/routes';
+import { CompensationValueDto, CourseDto, HolidayDto, UserDto } from '@/lib/dto';
 import { Holiday } from '@prisma/client';
 
 const TEN_MINUTES = 10 * 60 * 1000;
@@ -30,7 +30,7 @@ export function holidaysQuery(
 
   if (years.length === 0) throw new Error('years must not be empty');
 
-  const key = ['holidays', ...years]
+  const key = ['holidays', ...years];
   return useQuery({
     queryKey: key,
     queryFn: () => fetchListFromApi<Holiday>(
@@ -43,8 +43,8 @@ export function holidaysQuery(
   });
 }
 
-export function trainersQuery(accessToken: string|null) {
-     return useQuery({
+export function trainersQuery(accessToken: string | null) {
+  return useQuery({
     queryKey: ['trainers'],
     queryFn: () => fetchListFromApi<UserDto>(
       `${API_USERS}?group=trainers`,
@@ -60,8 +60,20 @@ export function resultHasData(result: UseQueryResult) {
   if (result.isError || result.isLoading || result.isRefetching) {
     return false;
   }
-  if (result.status === "pending") {
+  if (result.status === 'pending') {
     return false;
   }
   return true;
+}
+
+export function coursesForTrainerSuspenseQuery(userId: string, accessToken: string) {
+  return useSuspenseQuery({
+      queryKey: ['courses', userId],
+      queryFn: () => fetchListFromApi<CourseDto>(
+        `${API_COURSES}?trainerId=${userId}`,
+        accessToken,
+      ),
+    staleTime: TEN_MINUTES
+    },
+  );
 }

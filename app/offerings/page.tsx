@@ -1,11 +1,11 @@
 'use client';
 import Stack from '@mui/material/Stack';
-import { CardActionArea, CircularProgress, Paper, Typography } from '@mui/material';
+import { CircularProgress, Paper, Typography } from '@mui/material';
 import List from '@mui/material/List';
 import React from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { createInApi, deleteFromApi, fetchListFromApi, updateInApi } from '@/lib/fetch';
-import { API_COURSES, API_DISCIPLINES, API_USERS } from '@/lib/routes';
+import { API_COURSES, API_DISCIPLINES } from '@/lib/routes';
 import { useSession } from 'next-auth/react';
 import { JanusSession } from '@/lib/auth';
 import LoginRequired from '@/components/LoginRequired';
@@ -18,41 +18,11 @@ import { showError, showSuccess } from '@/lib/notifications';
 import { DisciplineDialogue } from '@/app/offerings/DisciplineDialog';
 import { sortNamed } from '@/lib/sort-and-filter';
 import Grid from '@mui/material/Unstable_Grid2';
-import Card from '@mui/material/Card';
-import CardContent from '@mui/material/CardContent';
-import {
-  CompensationValueDto,
-  CourseCreateRequest,
-  CourseDto,
-  dayOfWeekToHumanReadable,
-  DisciplineDto,
-  UserDto,
-} from '@/lib/dto';
+import { CompensationValueDto, CourseCreateRequest, CourseDto, DisciplineDto, UserDto } from '@/lib/dto';
 import { CourseDialog } from '@/app/offerings/CourseDialog';
 import { compensationValuesQuery, resultHasData, trainersQuery } from '@/lib/shared-queries';
 import { Discipline } from '@prisma/client';
-
-function CourseCard({ activeCourse, thisCourse, setActiveCourse }: {
-  thisCourse: CourseDto,
-  activeCourse: CourseDto | null,
-  setActiveCourse(c: CourseDto | null): void
-}) {
-  return <React.Fragment>
-    <Card
-      sx={{ backgroundColor: activeCourse?.id === thisCourse.id ? `rgba(25, 118, 210, 0.08)` : '' }}
-    >
-      <CardActionArea
-        onClick={() => setActiveCourse(thisCourse)}>
-        <CardContent>
-          <Typography variant={'h6'}>{thisCourse.name}</Typography>
-          <Typography>{thisCourse.weekdays.map(dayOfWeekToHumanReadable).join(', ')}</Typography>
-          <Typography>{thisCourse.startHour.toString().padStart(2, '0')}:{thisCourse.startMinute.toString().padStart(2, '0')}, {thisCourse.durationMinutes}min</Typography>
-          <Typography>{thisCourse.trainers.map((t) => (t.name))}</Typography>
-        </CardContent>
-      </CardActionArea>
-    </Card>
-  </React.Fragment>;
-}
+import { CourseCard } from '@/components/CourseCard';
 
 type CourseCardsProps = {
   activeDiscipline: DisciplineDto | null;
@@ -73,7 +43,10 @@ function CourseCards(props: CourseCardsProps) {
     {
       props.courses.map((c) => (
         <Grid key={c.id}>
-          <CourseCard activeCourse={props.activeCourse} setActiveCourse={props.setActiveCourse} thisCourse={c} />
+          <CourseCard
+            highlight={props.activeCourse?.id === c.id}
+            onCourseClicked={props.setActiveCourse}
+            course={c} />
         </Grid>))
     }
   </Grid>;

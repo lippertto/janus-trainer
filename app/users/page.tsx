@@ -8,7 +8,6 @@ import UserTable from './UserTable';
 
 import LoginRequired from '../../components/LoginRequired';
 import type { JanusSession } from '@/lib/auth';
-import { UserDto } from '@/lib/dto';
 
 function UserManagementContents(props: {session: JanusSession}) {
   return <React.Fragment>
