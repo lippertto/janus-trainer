@@ -62,7 +62,7 @@ function AddCompensationValueDialog({ open, handleClose, handleConfirm }: AddCom
   const descriptionIsEmpty = description === '';
 
   return <Dialog open={open}>
-    <DialogTitle>Vergütung hinzufügen</DialogTitle>
+    <DialogTitle>Pauschale hinzufügen</DialogTitle>
     <DialogContent>
       <Stack>
         <TextField
@@ -123,8 +123,8 @@ export default function CompensationCard({
   const confirm = useConfirm();
   const handleDeleteClick = (deletionCandidate: CompensationValueDto) => {
     confirm({
-      title: "Vergütung löschen?",
-      description: `Soll die Vergütung "${deletionCandidate.description}" gelöscht werden?`
+      title: "Pauschale löschen?",
+      description: `Soll die Pauschalde "${deletionCandidate.description}" gelöscht werden?`
     })
       .then(
         () => handleDeleteCompensationValue(deletionCandidate!.id)
@@ -133,7 +133,7 @@ export default function CompensationCard({
 
   return <React.Fragment>
     <Card>
-      <CardHeader title={'Vergütungen'} />
+      <CardHeader title={'Pauschalen'} />
       <CardContent>
         <List style={{ maxHeight: 500, overflow: 'auto' }}>
           {values.map((v) => compensationValueToListItem(v, handleDeleteClick))}
