@@ -200,7 +200,6 @@ function OfferingsPageContents({session}:{session:JanusSession}) {
         }
       }}
       trainers={trainers}
-      compensationValues={compensationValues}
       courseToEdit={activeCourse}
     />
   </React.Fragment>;

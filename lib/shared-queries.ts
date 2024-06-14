@@ -77,3 +77,14 @@ export function coursesForTrainerSuspenseQuery(userId: string, accessToken: stri
     },
   );
 }
+
+export function compensationValuesSuspenseQuery(accessToken: string) {
+  return useSuspenseQuery({
+    queryKey: [API_COMPENSATION_VALUES],
+    queryFn: () => fetchListFromApi<CompensationValueDto>(
+      `${API_COMPENSATION_VALUES}`,
+      accessToken,
+    ),
+    staleTime: 60 * 1000,
+  });
+}

@@ -14,11 +14,11 @@ import { showError, showSuccess } from '@/lib/notifications';
 
 import HolidayCard from './HolidayCard';
 import CompensationCard from '@/app/configure/CompensationCard';
-import { addCompensationValue, deleteCompensationValue } from '@/lib/api-compensation-values';
-import { CompensationValueDto, HolidayDto } from '@/lib/dto';
-import { useQueryClient, useSuspenseQuery } from '@tanstack/react-query';
-import { fetchListFromApi } from '@/lib/fetch';
+import { CompensationValueCreateRequest, CompensationValueDto, HolidayDto } from '@/lib/dto';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { createInApi, deleteFromApi } from '@/lib/fetch';
 import { API_COMPENSATION_VALUES } from '@/lib/routes';
+import { compensationValuesSuspenseQuery } from '@/lib/shared-queries';
 
 function ConfigurationPageContents({session}:{session:JanusSession}) {
   const queryClient = useQueryClient();
@@ -27,14 +27,7 @@ function ConfigurationPageContents({session}:{session:JanusSession}) {
     new Date().getFullYear(),
   );
 
-  const {data: compensationValues} = useSuspenseQuery({
-    queryKey: [API_COMPENSATION_VALUES],
-    queryFn: () => fetchListFromApi<CompensationValueDto>(
-      `${API_COMPENSATION_VALUES}`,
-      session.accessToken,
-    ),
-    staleTime: 60 * 1000,
-  })
+  const {data: compensationValues} = compensationValuesSuspenseQuery(session.accessToken);
 
   const handleAddHoliday = React.useCallback(
     (start: dayjs.Dayjs, end: dayjs.Dayjs, name: string) => {
@@ -70,41 +63,31 @@ function ConfigurationPageContents({session}:{session:JanusSession}) {
     [ holidays, setHolidays],
   );
 
-  const handleDeleteCompensationValue = React.useCallback(
-      (id: number) => {
-        deleteCompensationValue(session.accessToken, id).then(
-          () => {
-            queryClient.setQueryData([API_COMPENSATION_VALUES], compensationValues.filter((cv) => (cv.id !== id)));
-            showSuccess('Pauschale wurde gelöscht');
-          },
-        ).catch((e) => {
-          showError(`Konnte die Pauschale nicht löschen`, e.message);
-        });
-      }
-      ,
-      [compensationValues],
-    )
-  ;
-
-  const handleAddCompensationValue = React.useCallback(
-    (cents: number, description: string) => {
-      addCompensationValue(session.accessToken, cents, description)
-        .then((cv) => {
-          let newValues = [...compensationValues, cv];
-          console.log('newValue', newValues)
-          queryClient.setQueryData([API_COMPENSATION_VALUES], newValues);
-        })
-        .then(() => {
-          showSuccess('Pauschale hinzugefügt');
-        })
-        .catch((e) => {
-          showError('Konnte die Pauschale nicht hinzufügen', e.message);
-        });
+  const createCompensationValueMutation = useMutation({
+    mutationFn: (data: CompensationValueCreateRequest) => {
+      return createInApi<CompensationValueDto>(API_COMPENSATION_VALUES, data, session.accessToken);
     },
-    [compensationValues],
-  );
+    onSuccess: (createdValue: CompensationValueDto) => {
+      queryClient.setQueryData([API_COMPENSATION_VALUES], [...compensationValues, createdValue]);
+      showSuccess(`Pauschale ${createdValue.description} wurde erstellt`);
+    },
+    onError: (e) => {
+      showError(`Fehler beim Erstellen der Pauschale`, e.message);
+    },
+  })
 
-  console.log(JSON.stringify(compensationValues));
+  const deleteCompensationValueMutation = useMutation({
+    mutationFn: (compensationValue: CompensationValueDto) => {
+      return deleteFromApi<CompensationValueDto>(API_COMPENSATION_VALUES, compensationValue, session.accessToken);
+    },
+    onSuccess: (deletedValue: CompensationValueDto) => {
+      queryClient.setQueryData([API_COMPENSATION_VALUES], compensationValues.filter((cv) => (cv.id !== deletedValue.id)))
+      showSuccess(`Pauschale ${deletedValue.description} wurde gelöscht`);
+    },
+    onError: (e) => {
+      showError(`Fehler beim Löschen der Pauschale`, e.message);
+    },
+  })
 
   return (
     <>
@@ -119,8 +102,8 @@ function ConfigurationPageContents({session}:{session:JanusSession}) {
           />
         </Grid>
         <Grid>
-          <CompensationCard values={compensationValues} handleAddCompensationValue={handleAddCompensationValue}
-                            handleDeleteCompensationValue={handleDeleteCompensationValue}
+          <CompensationCard values={compensationValues} handleAddCompensationValue={createCompensationValueMutation.mutate}
+                            handleDeleteCompensationValue={deleteCompensationValueMutation.mutate}
           />
         </Grid>
       </Grid>

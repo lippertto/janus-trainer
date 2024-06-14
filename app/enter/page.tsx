@@ -91,10 +91,6 @@ function EnterPageContents(props: { session: JanusSession }) {
         holidays={holidays}
         setTrainings={setTrainings}
         courses={courses}
-        refresh={() => {
-          holidayResult.refetch();
-          trainingResult.refetch();
-        }}
         approvalMode={false}
         session={props.session}
         data-testid="enter-training-table"

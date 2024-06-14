@@ -12,7 +12,7 @@ import { CourseDto, CourseUpdateRequest, ErrorDto } from '@/lib/dto';
 async function getOneCourse(id: string) {
   const value = await prisma.course.findUnique({
     where: { id: parseInt(id) },
-    include: { trainers: true, allowedCompensations: true },
+    include: { trainers: true },
   });
   return NextResponse.json(value);
 }
@@ -53,16 +53,13 @@ async function updateOneCourse(idString: string, data: any) {
   return prisma.course.update({
     where: { id },
     data: {
-      ...{...request, trainerIds: undefined, allowedCompensationIds: undefined},
+      ...{...request, trainerIds: undefined },
 
       trainers: {
         set: request.trainerIds.map((t) => ({ id: t })),
       },
-      allowedCompensations: {
-        set: request.allowedCompensationIds.map((id) => ({ id }))
-      }
     },
-    include: { trainers: true, allowedCompensations: true }
+    include: { trainers: true }
   });
 }
 

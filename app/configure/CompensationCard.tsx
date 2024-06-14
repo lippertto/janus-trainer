@@ -13,40 +13,48 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import TextField from '@mui/material/TextField';
 import Stack from '@mui/material/Stack';
-import { InputAdornment } from '@mui/material';
+import RadioGroup from '@mui/material/RadioGroup';
+import Radio from '@mui/material/Radio';
+import InputAdornment from '@mui/material/InputAdornment';
+import FormControl from '@mui/material/FormControl';
 import IconButton from '@mui/material/IconButton';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useConfirm } from 'material-ui-confirm';
-import { CompensationValueDto } from '@/lib/dto';
+import { CompensationValueCreateRequest, CompensationValueDto } from '@/lib/dto';
+import { centsToDisplayString } from '@/lib/formatters';
+import FormLabel from '@mui/material/FormLabel';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import { Qualification } from '@prisma/client';
 
 type CompensationCardProps = {
   values: CompensationValueDto[],
-  handleAddCompensationValue: (cents: number, description: string) => void
-  handleDeleteCompensationValue: (id: number) => void
+  handleAddCompensationValue: (c: CompensationValueCreateRequest) => void
+  handleDeleteCompensationValue: (cv: CompensationValueDto) => void
 }
 
-function compensationValueToListItem(
-  cv: CompensationValueDto,
-  handleDeleteClick: (value: CompensationValueDto) => void,
+function CompensationValueListItem(
+  props: {
+  compensationValue: CompensationValueDto,
+  handleDeleteClick: (value: CompensationValueDto) => void},
+  key: string,
 ) {
-  const text = new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(cv.cents / 100);
-  return <ListItem key={cv.id} secondaryAction={
+  return <ListItem key={key} secondaryAction={
     <IconButton
       edge="end"
       onClick={() => {
-        handleDeleteClick(cv);
+        props.handleDeleteClick(props.compensationValue);
       }}>
       <DeleteIcon />
     </IconButton>
   }>
-    <ListItemText primary={text} secondary={cv.description} />
+    <ListItemText primary={centsToDisplayString(props.compensationValue.cents)} secondary={props.compensationValue.description}/>
   </ListItem>;
 }
 
 type AddCompensationValueDialogProps = {
   open: boolean;
   handleClose: () => void;
-  handleConfirm: (cents: number, description: string) => void;
+  handleConfirm: (c: CompensationValueCreateRequest) => void;
 }
 
 function isValidCentValue(value: string): boolean {
@@ -57,6 +65,8 @@ function isValidCentValue(value: string): boolean {
 function AddCompensationValueDialog({ open, handleClose, handleConfirm }: AddCompensationValueDialogProps) {
   const [cents, setCents] = React.useState<string>('');
   const [description, setDescription] = React.useState<string>('');
+  const [qualification, setQualification] = React.useState<Qualification>('ANY')
+  const [durationMinutes, setDurationMinutes] = React.useState<String>("60");
 
   const centsErrorString = isValidCentValue(cents) ? ' ' : 'Bitte einen validen Betrag eingeben';
   const descriptionIsEmpty = description === '';
@@ -64,7 +74,7 @@ function AddCompensationValueDialog({ open, handleClose, handleConfirm }: AddCom
   return <Dialog open={open}>
     <DialogTitle>Pauschale hinzufügen</DialogTitle>
     <DialogContent>
-      <Stack>
+      <Stack spacing={2} sx={{mt: 2}}>
         <TextField
           label="Betrag"
           value={cents}
@@ -91,7 +101,31 @@ function AddCompensationValueDialog({ open, handleClose, handleConfirm }: AddCom
           error={descriptionIsEmpty}
           helperText={descriptionIsEmpty ? 'Bitte eine Beschreibung eintragen' : ' '}
         />
+
+        <TextField
+          value={durationMinutes}
+          onChange={((v) => setDurationMinutes(v.target.value))}
+          label={'Dauer'}
+          type={'number'}
+          inputProps={{ min: 0, step: 15 }}
+        />
+
+        <FormControl>
+          <FormLabel>Qualifikation</FormLabel>
+          <RadioGroup
+            row
+            aria-labelledby="demo-radio-buttons-group-label"
+            value={qualification}
+            onChange={(e) => {setQualification(e.target.value as Qualification)}}
+          >
+            <FormControlLabel value={Qualification.NO_QUALIFICATION} control={<Radio />} label="Ohne" />
+            <FormControlLabel value={Qualification.WITH_QUALIFICATION} control={<Radio />} label="Mit" />
+            <FormControlLabel value={Qualification.ANY} control={<Radio />} label="Egal" />
+          </RadioGroup>
+        </FormControl>
+
       </Stack>
+
     </DialogContent>
     <DialogActions>
       <Button onClick={() => {
@@ -102,7 +136,7 @@ function AddCompensationValueDialog({ open, handleClose, handleConfirm }: AddCom
       <Button
         disabled={centsErrorString !== ' ' || descriptionIsEmpty}
         onClick={() => {
-          handleConfirm(parseInt(cents) * 100, description);
+          handleConfirm({cents: parseInt(cents) * 100, description, qualification});
           setCents('');
           setDescription('');
           handleClose();
@@ -126,16 +160,16 @@ export default function CompensationCard({
       description: `Soll die Pauschalde "${deletionCandidate.description}" gelöscht werden?`
     })
       .then(
-        () => handleDeleteCompensationValue(deletionCandidate!.id)
+        () => handleDeleteCompensationValue(deletionCandidate)
       );
   }
 
   return <React.Fragment>
     <Card>
-      <CardHeader title={'Pauschalen'} />
+      <CardHeader title={'Standard-Pauschalen'} />
       <CardContent>
         <List style={{ maxHeight: 500, overflow: 'auto' }}>
-          {values.map((v) => compensationValueToListItem(v, handleDeleteClick))}
+          {values.map((v) => <CompensationValueListItem key={v.id} compensationValue={v} handleDeleteClick={handleDeleteClick}/>)}
         </List>
       </CardContent>
       <CardActions>

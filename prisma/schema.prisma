@@ -57,11 +57,18 @@ model UserInDb {
   @@map("User")
 }
 
+enum Qualification {
+  WITH_QUALIFICATION
+  NO_QUALIFICATION
+  ANY
+}
+
 model CompensationValue {
-  id          Int      @id @default(autoincrement())
-  cents       Int
-  description String
-  courses     Course[]
+  id              Int           @id @default(autoincrement())
+  cents           Int
+  description     String
+  durationMinutes Int?
+  qualification   Qualification @default(ANY)
 }
 
 enum DayOfWeek {
@@ -75,13 +82,12 @@ enum DayOfWeek {
 }
 
 model Course {
-  id                   Int                 @id @default(autoincrement())
-  name                 String
-  weekdays             DayOfWeek[]
-  startHour            Int
-  startMinute          Int
-  durationMinutes      Int
-  allowedCompensations CompensationValue[]
-  trainers             UserInDb[]
-  trainings            Training[]
+  id              Int         @id @default(autoincrement())
+  name            String
+  weekdays        DayOfWeek[]
+  startHour       Int
+  startMinute     Int
+  durationMinutes Int
+  trainers        UserInDb[]
+  trainings       Training[]
 }

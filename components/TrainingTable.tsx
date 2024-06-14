@@ -267,7 +267,6 @@ type TrainingTableProps = {
   /** The trainings to display. Note: Should be sorted, e.g. with `v.sort((r1, r2) => parseInt(r1.id) - parseInt(r2.id))` */
   trainings: TrainingDto[];
   setTrainings: SetTrainings;
-  refresh: () => void;
   /** Whether the UI should show the approval actions. (User must be admin to actually execute the steps.) */
   approvalMode: boolean;
   /** List of holidays used to highlight collisions */
@@ -283,7 +282,6 @@ export default function TrainingTable(
   {
     trainings,
     setTrainings,
-    refresh,
     approvalMode,
     holidays,
     courses,

@@ -13,21 +13,13 @@ import Checkbox from '@mui/material/Checkbox';
 import Stack from '@mui/material/Stack';
 import { TimePicker } from '@mui/x-date-pickers';
 import dayjs, { Dayjs } from 'dayjs';
-import {
-  CompensationValueDto,
-  CompensationValueLightDto,
-  CourseCreateRequest,
-  CourseDto,
-  TrainerLight,
-  UserDto,
-} from '@/lib/dto';
+import { CourseCreateRequest, CourseDto, TrainerLight, UserDto } from '@/lib/dto';
 
 type CourseDialogProps = {
   open: boolean;
   handleClose: () => void;
   handleSave: (data: CourseCreateRequest) => void;
   trainers: UserDto[];
-  compensationValues: CompensationValueDto[];
   courseToEdit: CourseDto | null;
 };
 
@@ -96,55 +88,6 @@ const EMPTY_DAYS: WeekdaySelection = {
 
 const DEFAULT_TIME = '2024-06-03 00:00';
 
-type CompensationDropdownProps = {
-  compensationValues: CompensationValueDto[],
-  selectedCompensationValues: CompensationValueLightDto[],
-  setSelectedCompensationValues: (v: CompensationValueLightDto[]) => void,
-}
-
-/*
- * Complicated autocomplete setup. We need to render tags and options ourselves or else we get spammed with error messages
- * https://stackoverflow.com/a/75968316/213636
- */
-function CompensationDropdown({
-                                compensationValues,
-                                selectedCompensationValues,
-                                setSelectedCompensationValues,
-                              }: CompensationDropdownProps) {
-  return <React.Fragment>
-    <Autocomplete
-      options={compensationValues}
-      defaultValue={[]}
-      multiple={true}
-      renderTags={(tagValue, getTagProps) => {
-        return tagValue.map((option, index) => (
-          <Chip label={option.description} key={option.id} onDelete={() => {
-            setSelectedCompensationValues(selectedCompensationValues.filter((cv) => (cv.id != option.id)))
-          }}/>
-        ));
-      }}
-      renderOption={(props, option) => {
-        return (
-          <li {...props} key={option.id}>
-            {option.description}
-          </li>
-        );
-      }}
-      getOptionLabel={(cv) => (cv.description)}
-      renderInput={(params) => (
-        <TextField
-          {...params}
-          label="Vergütung"
-        />
-      )}
-      value={selectedCompensationValues}
-      onChange={(_, value) => {
-        setSelectedCompensationValues(value);
-      }}
-    />
-  </React.Fragment>;
-}
-
 type TrainerDropdownProps = {
   trainers: UserDto[],
   selectedTrainers: TrainerLight[],
@@ -157,8 +100,8 @@ function TrainerDropdown({ trainers, selectedTrainers, setSelectedTrainers }: Tr
       options={trainers}
       defaultValue={[]}
       multiple={true}
-      renderTags={(tagValue, getTagProps) => {
-        return tagValue.map((option, index) => (
+      renderTags={(tagValue, _) => {
+        return tagValue.map((option, _) => (
           <Chip
             label={option.name} key={option.id}
                 onDelete={() => {
@@ -191,7 +134,6 @@ export function CourseDialog(
     handleClose,
     handleSave,
     trainers,
-    compensationValues,
     courseToEdit,
   }: CourseDialogProps) {
   const [courseName, setCourseName] = React.useState('');
@@ -199,7 +141,6 @@ export function CourseDialog(
   const [time, setTime] = React.useState<Dayjs | null>(dayjs(DEFAULT_TIME));
   const [duration, setDuration] = React.useState<string>('60');
   const [selectedTrainers, setSelectedTrainers] = React.useState<{ name: string, id: string }[]>([]);
-  const [selectedCompensationValues, setSelectedCompensationValues] = React.useState<CompensationValueLightDto[]>([]);
   const [previousCourse, setPreviousCourse] = React.useState<CourseDto | null>(null);
   if (previousCourse !== courseToEdit) {
     setPreviousCourse(courseToEdit);
@@ -208,14 +149,12 @@ export function CourseDialog(
       setTime(dayjs(`2024-06-03 ${courseToEdit.startHour}:${courseToEdit.startMinute}`));
       setDuration(courseToEdit.durationMinutes.toString());
       setSelectedTrainers(courseToEdit.trainers);
-      setSelectedCompensationValues(courseToEdit.allowedCompensations ?? []);
       setDays(enumToWeekdaySelection(courseToEdit.weekdays));
     } else {
       setCourseName('');
       setTime(dayjs(DEFAULT_TIME));
       setDuration('60');
       setSelectedTrainers([]);
-      setSelectedCompensationValues([]);
       setDays(EMPTY_DAYS);
     }
   }
@@ -269,11 +208,6 @@ export function CourseDialog(
               inputProps={{ step: 15, min: 15 }}
             />
 
-            <CompensationDropdown
-              compensationValues={compensationValues}
-              selectedCompensationValues={selectedCompensationValues}
-              setSelectedCompensationValues={setSelectedCompensationValues} />
-
 
             <TrainerDropdown
               trainers={trainers}
@@ -320,8 +254,6 @@ export function CourseDialog(
                 startMinute: time!.minute(),
                 weekdays: weekdaySelectionToEnum(days),
                 trainerIds: selectedTrainers.map((t) => (t.id)),
-                // allowedCompensationIds: selectedCompensationValues.map((cv) => (cv.id)),
-                allowedCompensationIds: selectedCompensationValues.map((cv) => (cv.id)),
               },
             );
           }}

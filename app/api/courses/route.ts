@@ -25,11 +25,8 @@ async function createCourse(nextRequest: NextRequest) {
       trainers: {
         connect: request.trainerIds.map((t) => ({ id: t })),
       },
-      allowedCompensations: {
-        connect: request.allowedCompensationIds.map((id) => ({ id })),
-      },
     },
-    include: { trainers: true, allowedCompensations: true },
+    include: { trainers: true },
   });
 
   return NextResponse.json(course, { status: 201 });
@@ -59,7 +56,7 @@ async function getAllCourses(trainerId: string | null): Promise<NextResponse<Cou
   const value = await prisma.course.findMany(
     {
       where: filter,
-      include: { trainers: true, allowedCompensations: true },
+      include: { trainers: true },
     },
   );
   return NextResponse.json({ value });

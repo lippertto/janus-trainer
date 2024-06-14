@@ -1,6 +1,6 @@
-import { CompensationValue, Course, DayOfWeek, Holiday, Training, TrainingStatus } from '@prisma/client';
+import { CompensationValue, Course, DayOfWeek, Holiday, Qualification, Training, TrainingStatus } from '@prisma/client';
 import {
-  IsArray,
+  IsArray, IsBoolean,
   IsEmail,
   IsEnum,
   IsIBAN,
@@ -65,7 +65,7 @@ export class TrainingUpdateRequest {
     Object.assign(this, obj);
   }
 
-  @Matches(/([0-9]{4})-(0[0-9]|1[012])-([012][0-9]|[3][01])/)
+  @Matches(/([0-9]{4})-(0[0-9]|1[012])-([012][0-9]|3[01])/)
   date: string;
 
   @IsNumber()
@@ -179,6 +179,13 @@ export class CompensationValueCreateRequest {
 
   @IsString()
   description: string;
+
+  @IsEnum(Qualification)
+  qualification: Qualification;
+
+  @IsOptional()
+  @IsNumber()
+  durationMinutes?: number;
 }
 
 export type CompensationValueQueryResponse = {
@@ -209,10 +216,6 @@ export class CourseCreateRequest {
   @IsArray()
   @IsString({ each: true })
   trainerIds: string[];
-
-  @IsArray()
-  @IsInt({ each: true })
-  allowedCompensationIds: number[];
 }
 
 export type CourseQueryResponse = {
@@ -221,7 +224,6 @@ export type CourseQueryResponse = {
 
 export type CourseDto = Course & {
   trainers: { name: string, id: string }[]
-  allowedCompensations: CompensationValueLightDto[]
 }
 
 export class CourseUpdateRequest extends CourseCreateRequest {

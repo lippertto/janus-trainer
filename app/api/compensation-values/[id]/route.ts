@@ -1,16 +1,12 @@
-import { allowOnlyAdmins, emptyResponse, handleTopLevelCatch } from '@/lib/helpers-for-api';
+import { allowOnlyAdmins, emptyResponse, handleTopLevelCatch, idAsNumberOrThrow } from '@/lib/helpers-for-api';
 import { badRequestResponse } from '@/lib/helpers-for-api';
 import prisma from '@/lib/prisma';
 import { NextRequest } from 'next/server';
 
-async function doDELETE(
-  request: NextRequest,
+async function deleteCompensationValue(
   params: { id: string },
 ) {
-  await allowOnlyAdmins(request);
-
-  const idAsNumber = parseInt(params.id);
-  if (!idAsNumber) return badRequestResponse('id is not valid');
+  const idAsNumber = idAsNumberOrThrow(params.id);
 
   await prisma.compensationValue.delete({ where: { id: idAsNumber } });
 
@@ -22,7 +18,8 @@ export async function DELETE(
   { params }: { params: { id: string } },
 ): Promise<Response> {
   try {
-    return await doDELETE(request, params)
+    await allowOnlyAdmins(request);
+    return await deleteCompensationValue(params)
   } catch (e) {
     return handleTopLevelCatch(e);
   }
