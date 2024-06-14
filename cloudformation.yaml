@@ -140,9 +140,10 @@ Resources:
           - Sid: Statement01
             Effect: Allow
             Action:
+              - cognito-idp:AdminCreateUser
               - cognito-idp:AdminDisableUser
               - cognito-idp:AdminEnableUser
-              - cognito-idp:AdminCreateUser
+              - cognito-idp:AdminGetUser
               - cognito-idp:AdminAddUserToGroup
               - cognito-idp:AdminRemoveUserFromGroup
               - cognito-idp:AdminDeleteUserAttributes
