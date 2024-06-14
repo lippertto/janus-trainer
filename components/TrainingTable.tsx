@@ -228,7 +228,7 @@ function buildGridColumns(
 type TrainingTableToolbarProps = {
   handleAddTraining?: () => void;
   handleDelete: () => void;
-  handleEdit: () => void;
+  handleEdit?: () => void;
 };
 
 function TrainingTableToolbar(
@@ -258,12 +258,15 @@ function TrainingTableToolbar(
         onClick={handleDelete}>
         löschen
       </Button>
+      {handleAddTraining?
       <Button
         startIcon={<EditIcon />}
         disabled={!Boolean(handleEdit)}
         onClick={handleEdit}>
         bearbeiten
       </Button>
+        : null
+      }
     </GridToolbarContainer>
   );
 }
@@ -452,7 +455,7 @@ export default function TrainingTable(
                 setShowTrainingDialog(true);
               },
             handleDelete: activeTraining && activeTraining.status === TrainingStatus.NEW ? () => (handleDeleteClick(activeTraining)) : null,
-            handleEdit: activeTraining && activeTraining.status === TrainingStatus.NEW ? () => {
+            handleEdit: approvalMode ? undefined:  activeTraining && activeTraining.status === TrainingStatus.NEW ? () => {
               setShowTrainingDialog(true);
             } : null,
           },
