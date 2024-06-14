@@ -248,6 +248,4 @@ export function dayOfWeekToHumanReadable(w: DayOfWeek) {
   }
 }
 
-export type CompensationValueLightDto = Pick<CompensationValueDto, 'id' | 'description' | 'cents'>;
-
 export type HolidayDto = Holiday;

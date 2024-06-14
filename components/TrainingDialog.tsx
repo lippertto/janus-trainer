@@ -12,14 +12,19 @@ import TextField from '@mui/material/TextField';
 import { DatePicker } from '@mui/x-date-pickers';
 
 import dayjs from 'dayjs';
-import { CompensationValueLightDto, CourseDto, TrainingCreateRequest, TrainingDto } from '@/lib/dto';
+import {
+  CompensationValueDto,
+  CourseDto,
+  TrainingCreateRequest,
+  TrainingDto,
+} from '@/lib/dto';
 import Autocomplete from '@mui/material/Autocomplete';
 
 type CoursesDropdown = {
   courses: CourseDto[],
   selectedCourse: CourseDto | null,
   setSelectedCourse: (c: CourseDto | null) => void,
-  setSelectedCompensationValue: (cv: CompensationValueLightDto | null) => void
+  setSelectedCompensationValue: (cv: CompensationValueDto | null) => void
 }
 
 function CoursesDropdown({
@@ -54,9 +59,9 @@ function CoursesDropdown({
 }
 
 type CompensationValueDropdownProps = {
-  compensations: CompensationValueLightDto[]
-  selectedCompensationValue: CompensationValueLightDto | null;
-  setSelectedCompensationValue: (v: CompensationValueLightDto | null) => void;
+  compensations: CompensationValueDto[]
+  selectedCompensationValue: CompensationValueDto | null;
+  setSelectedCompensationValue: (v: CompensationValueDto | null) => void;
 }
 
 function CompensationValueDropdown({
@@ -67,7 +72,7 @@ function CompensationValueDropdown({
   const compensationsAreEmpty = compensations.length === 0;
   const onlyOneCompensation = compensations.length === 1;
   if (onlyOneCompensation) {
-    setSelectedCompensationValue(compensations[0])
+    setSelectedCompensationValue(compensations[0]);
   }
   return <Autocomplete
     disabled={compensationsAreEmpty || onlyOneCompensation}
@@ -93,25 +98,28 @@ type TrainingDialogProps = {
   handleClose: () => void;
   handleConfirm: (data: TrainingCreateRequest) => void;
   trainingToEdit: TrainingDto | null;
-  courses: CourseDto[]
+  courses: CourseDto[],
+  compensationValues: CompensationValueDto[],
 };
 
-function compensationValueToText(cv: CompensationValueLightDto) {
+function compensationValueToText(cv: CompensationValueDto) {
   const value = new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(cv.cents / 100);
   return `${cv.description} (${value})`;
 }
 
-export default function TrainingDialog({
-                                         open,
-                                         courses,
-                                         userId,
-                                         handleClose,
-                                         handleConfirm,
-                                         trainingToEdit,
-                                       }: TrainingDialogProps) {
+export default function TrainingDialog(
+  {
+    open,
+    courses,
+    userId,
+    handleClose,
+    handleConfirm,
+    trainingToEdit,
+    compensationValues,
+  }: TrainingDialogProps) {
   const [date, setDate] = React.useState<dayjs.Dayjs | null>(dayjs());
   const [participantCount, setParticipantCount] = React.useState<number>(0);
-  const [selectedCompensationValue, setSelectedCompensationValue] = React.useState<CompensationValueLightDto | null>(null);
+  const [selectedCompensationValue, setSelectedCompensationValue] = React.useState<CompensationValueDto | null>(null);
   const [selectedCourse, setSelectedCourse] = React.useState<CourseDto | null>(null);
   const [previousTraining, setPreviousTraining] = React.useState<TrainingDto | null>();
 
@@ -145,7 +153,7 @@ export default function TrainingDialog({
 
   return (
     <Dialog open={open}>
-      <DialogTitle>{trainingToEdit? "Training bearbeiten" : "Training hinzufügen"}</DialogTitle>
+      <DialogTitle>{trainingToEdit ? 'Training bearbeiten' : 'Training hinzufügen'}</DialogTitle>
       <DialogContent>
         {/* padding is required in <Stack/> so that the label is shown */}
         <Stack spacing={2} padding={1}>
@@ -171,7 +179,7 @@ export default function TrainingDialog({
           />
 
           <CompensationValueDropdown
-            compensations={selectedCourse ? selectedCourse.allowedCompensations : []}
+            compensations={compensationValues}
             selectedCompensationValue={selectedCompensationValue}
             setSelectedCompensationValue={setSelectedCompensationValue}
           />

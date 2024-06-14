@@ -33,7 +33,14 @@ import { showError, showSuccess } from '@/lib/notifications';
 import { styled } from '@mui/material/styles';
 import { unapproveTraining } from '@/lib/api-trainings';
 import { DayOfWeek, Holiday, TrainingStatus } from '@prisma/client';
-import { CourseDto, TrainingCreateRequest, TrainingDto, TrainingUpdateRequest } from '@/lib/dto';
+import {
+  CompensationValueDto,
+  CourseDto,
+  HolidayDto,
+  TrainingCreateRequest,
+  TrainingDto,
+  TrainingUpdateRequest,
+} from '@/lib/dto';
 import { useMutation } from '@tanstack/react-query';
 import { createInApi, deleteFromApi, patchInApi, updateInApi } from '@/lib/fetch';
 import { API_TRAININGS } from '@/lib/routes';
@@ -72,7 +79,7 @@ GERMAN_DAYS[4] = 'Do'
 GERMAN_DAYS[5] = 'Fr'
 GERMAN_DAYS[6] = 'Sa'
 
-function warningForDate(dateString: string, holidays: Holiday[], weekdays: DayOfWeek[]): string | null {
+function warningForDate(dateString: string, holidays: HolidayDto[], weekdays: DayOfWeek[]): string | null {
   let dayNumber = new Date(dateString).getDay();
   if (dayNumber === 0) {
     return 'Ist ein Sonntag';
@@ -273,6 +280,7 @@ type TrainingTableProps = {
   holidays: Holiday[];
   courses: CourseDto[];
   session: JanusSession;
+  compensationValues: CompensationValueDto[];
 };
 
 /**
@@ -282,6 +290,7 @@ export default function TrainingTable(
   {
     trainings,
     setTrainings,
+    compensationValues,
     approvalMode,
     holidays,
     courses,
@@ -450,6 +459,7 @@ export default function TrainingTable(
         }}
         {...props}
       />
+
       <TrainingDialog
         open={showTrainingDialog}
         userId={session?.userId}
@@ -467,6 +477,7 @@ export default function TrainingTable(
         }}
         trainingToEdit={activeTraining}
         courses={courses}
+        compensationValues={compensationValues}
       />
     </>
   );

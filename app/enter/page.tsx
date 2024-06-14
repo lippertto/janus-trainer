@@ -11,12 +11,18 @@ import { HolidayDto, TrainingDto } from '@/lib/dto';
 import { useQuery } from '@tanstack/react-query';
 import { fetchListFromApi } from '@/lib/fetch';
 import { API_TRAININGS } from '@/lib/routes';
-import { coursesForTrainerSuspenseQuery, holidaysQuery } from '@/lib/shared-queries';
+import {
+  compensationValuesSuspenseQuery,
+  coursesForTrainerSuspenseQuery,
+  holidaysQuery,
+  resultHasData,
+} from '@/lib/shared-queries';
 import IconButton from '@mui/material/IconButton';
 import HelpIcon from '@mui/icons-material/Help';
 import Stack from '@mui/system/Stack';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
+import { LoadingSpinner } from '@/components/LoadingSpinner';
 
 function EnterHelpText() {
   return <React.Fragment>
@@ -45,6 +51,8 @@ function EnterPageContents(props: { session: JanusSession }) {
   const [holidays, setHolidays] = React.useState<HolidayDto[]>([]);
   const [showHelp, setShowHelp] = React.useState(false);
 
+  const { data: compensationValues } = compensationValuesSuspenseQuery(props.session.accessToken);
+
   const { data: courses } = coursesForTrainerSuspenseQuery(
     props.session.userId,
     props.session.accessToken,
@@ -56,7 +64,7 @@ function EnterPageContents(props: { session: JanusSession }) {
   );
 
   const trainingResult = useQuery({
-    queryKey: ['trainings'],
+    queryKey: [API_TRAININGS, `trainerId=${props.session.userId}`],
     queryFn: () => fetchListFromApi<TrainingDto>(
       `${API_TRAININGS}?trainerId=${props.session.userId}`,
       props.session.accessToken,
@@ -66,16 +74,17 @@ function EnterPageContents(props: { session: JanusSession }) {
   });
 
   useEffect(() => {
-    if (!holidayResult.isError && !holidayResult.isLoading && !holidayResult.isRefetching) {
+    if (resultHasData(holidayResult)) {
       setHolidays(holidayResult.data!);
     }
   }, [holidayResult]);
 
   useEffect(() => {
-    if (!trainingResult.isError && !trainingResult.isLoading) {
+    if (resultHasData(trainingResult)) {
       setTrainings(trainingResult.data);
     }
-  }, [trainingResult.data]);
+  }, [trainingResult]);
+
 
   return (
     <Stack spacing={1}>
@@ -84,11 +93,12 @@ function EnterPageContents(props: { session: JanusSession }) {
           <HelpIcon />
         </IconButton>
       </Box>
-      {showHelp ? <EnterHelpText/> : null}
+      {showHelp ? <EnterHelpText /> : null}
 
       <TrainingTable
         trainings={trainings}
         holidays={holidays}
+        compensationValues={compensationValues}
         setTrainings={setTrainings}
         courses={courses}
         approvalMode={false}
