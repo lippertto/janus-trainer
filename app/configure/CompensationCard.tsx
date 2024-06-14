@@ -74,7 +74,6 @@ function AddCompensationValueDialog({ open, handleClose, handleConfirm }: AddCom
           // needs to be set in Dialogs according to https://github.com/mui/material-ui/issues/29892#issuecomment-979745849
           margin="dense"
           inputProps={{
-            // 'data-testid': 'enter-discipline-textfield',
           }}
           error={centsErrorString !== ' '}
           helperText={centsErrorString}

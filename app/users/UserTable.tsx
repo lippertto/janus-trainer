@@ -35,6 +35,7 @@ function UserTableToolbar(
       </Button>
       <Button startIcon={<DeleteIcon />} onClick={handleDeleteUser}
               disabled={!Boolean(rowIsSelected)}
+              data-testid='delete-user-button'
       >
         löschen
       </Button>

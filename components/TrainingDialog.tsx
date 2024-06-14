@@ -12,7 +12,7 @@ import TextField from '@mui/material/TextField';
 import { DatePicker } from '@mui/x-date-pickers';
 
 import dayjs from 'dayjs';
-import { CompensationValueLightDto, CourseDto, DisciplineDto, TrainingCreateRequest, TrainingDto } from '@/lib/dto';
+import { CompensationValueLightDto, CourseDto, TrainingCreateRequest, TrainingDto } from '@/lib/dto';
 import Autocomplete from '@mui/material/Autocomplete';
 
 type CoursesDropdown = {
@@ -196,7 +196,6 @@ export default function TrainingDialog({
           onClick={() => {
             handleConfirm({
               date: date!.format('YYYY-MM-DD'),
-              disciplineId: selectedCourse!.disciplineId,
               courseId: selectedCourse!.id,
               compensationCents: selectedCompensationValue!.cents,
               participantCount,

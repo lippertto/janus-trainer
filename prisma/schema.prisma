@@ -16,13 +16,6 @@ model Holiday {
   end   String
 }
 
-model Discipline {
-  id        Int       @id @default(autoincrement())
-  name      String
-  deletedAt DateTime?
-  courses   Course[]
-}
-
 enum TrainingStatus {
   NEW
   APPROVED
@@ -84,8 +77,6 @@ enum DayOfWeek {
 model Course {
   id                   Int                 @id @default(autoincrement())
   name                 String
-  discipline           Discipline          @relation(fields: [disciplineId], references: [id])
-  disciplineId         Int
   weekdays             DayOfWeek[]
   startHour            Int
   startMinute          Int

@@ -18,19 +18,14 @@ yarn start:dev
 
 Use the following statement to reset the counters
 ```postgresql
-select setval( pg_get_serial_sequence('"public"."Discipline"', 'id'), 
-               (select max(id) from "public"."Discipline")
+select setval( pg_get_serial_sequence('"public"."Training"', 'id'), 
+               (select max(id) from "public"."Training")
              );
 ```
 
 
 ## Features
-* Loadingspinner in user management, evtl. mit Suspense und suspense query:
-  * https://tanstack.com/query/latest/docs/framework/react/guides/suspense
-  * https://react.dev/reference/react/Suspense
-* Show warning if training not on configured day
 * e2e tests
-* Make disciplines disabled. (Also in the UI.)
 * Make courses disabled. (Also in the UI.)
 * Allow to go from compensation page to validate page with specific dates+trainer
 

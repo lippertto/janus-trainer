@@ -1,40 +1,31 @@
 'use client';
 import Stack from '@mui/material/Stack';
 import { CircularProgress, Paper, Typography } from '@mui/material';
-import List from '@mui/material/List';
 import React from 'react';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useSuspenseQuery } from '@tanstack/react-query';
 import { createInApi, deleteFromApi, fetchListFromApi, updateInApi } from '@/lib/fetch';
-import { API_COURSES, API_DISCIPLINES } from '@/lib/routes';
+import { API_COURSES } from '@/lib/routes';
 import { useSession } from 'next-auth/react';
 import { JanusSession } from '@/lib/auth';
 import LoginRequired from '@/components/LoginRequired';
-import ListItemButton from '@mui/material/ListItemButton';
-import ListItemText from '@mui/material/ListItemText';
 import ButtonGroup from '@mui/material/ButtonGroup';
 import Button from '@mui/material/Button';
 import { useConfirm } from 'material-ui-confirm';
 import { showError, showSuccess } from '@/lib/notifications';
-import { DisciplineDialogue } from '@/app/offerings/DisciplineDialog';
 import { sortNamed } from '@/lib/sort-and-filter';
 import Grid from '@mui/material/Unstable_Grid2';
-import { CompensationValueDto, CourseCreateRequest, CourseDto, DisciplineDto, UserDto } from '@/lib/dto';
+import { CompensationValueDto, CourseCreateRequest, CourseDto, UserDto } from '@/lib/dto';
 import { CourseDialog } from '@/app/offerings/CourseDialog';
 import { compensationValuesQuery, resultHasData, trainersQuery } from '@/lib/shared-queries';
-import { Discipline } from '@prisma/client';
 import { CourseCard } from '@/components/CourseCard';
 
 type CourseCardsProps = {
-  activeDiscipline: DisciplineDto | null;
   courses: CourseDto[] | null;
   activeCourse: CourseDto | null;
   setActiveCourse: (ac: CourseDto) => void;
 }
 
 function CourseCards(props: CourseCardsProps) {
-  if (props.activeDiscipline === null) {
-    return <Typography sx={{ typography: 'body2', textAlign: 'center' }}>Sportart auswählen</Typography>;
-  }
   if (props.courses === null) {
     return <Stack alignItems="center"><CircularProgress /> </Stack>;
   }
@@ -52,55 +43,25 @@ function CourseCards(props: CourseCardsProps) {
   </Grid>;
 }
 
-export default function OfferingsPage() {
+function OfferingsPageContents({session}:{session:JanusSession}) {
 
-  const { data, status: authenticationStatus } = useSession();
-  const session = data as JanusSession;
-
-  const [disciplines, setDisciplines] = React.useState<DisciplineDto[]>([]);
   const [courses, setCourses] = React.useState<CourseDto[]>([]);
   const [trainers, setTrainers] = React.useState<UserDto[]>([]);
   const [compensationValues, setCompensationValues] = React.useState<CompensationValueDto[]>([]);
 
-  const [activeDiscipline, setActiveDiscipline] = React.useState<DisciplineDto | null>(null);
   const [activeCourse, setActiveCourse] = React.useState<CourseDto | null>(null);
 
-  const [createDialogOpen, setCreateDialogOpen] = React.useState(false);
   const [createCourseOpen, setCourseDialogOpen] = React.useState(false);
 
-  const disciplineResult = useQuery({
-    queryKey: ['disciplines'],
-    queryFn: () => fetchListFromApi<DisciplineDto>(
-      API_DISCIPLINES,
-      session.accessToken,
-    ),
-    throwOnError: true,
-    enabled: !!session?.accessToken,
-    staleTime: 10 * 60 * 1000,
-  });
-
-  const courseResult = useQuery({
-    queryKey: ['courses', activeDiscipline?.id],
-    queryFn: () => fetchListFromApi<CourseDto>(`${API_COURSES}?disciplineId=${activeDiscipline?.id}`, session.accessToken),
-    enabled: (Boolean(session?.accessToken) && Boolean(activeDiscipline?.id)),
+  const courseResult = useSuspenseQuery({
+    queryKey: [API_COURSES],
+    queryFn: () => fetchListFromApi<CourseDto>(`${API_COURSES}`, session.accessToken),
     staleTime: 10 * 60 * 1000,
   });
 
   const trainerResult = trainersQuery(session?.accessToken);
 
   const compensationValuesResult = compensationValuesQuery(session?.accessToken);
-
-  const deleteDisciplineMutation = useMutation({
-      mutationFn: (d: DisciplineDto) => deleteFromApi(API_DISCIPLINES, d, session.accessToken),
-      onSuccess: (deleted) => {
-        showSuccess(`Sportart ${deleted.name} gelöscht`);
-        setDisciplines(disciplines.filter(d => (d.id !== deleted.id)));
-      },
-      onError: (e) => {
-        showError(`Fehler beim Löschen von ${activeDiscipline?.name}`, e.message);
-      },
-    },
-  );
 
   const deleteCourseMutation = useMutation({
     mutationFn: (course: CourseDto) => deleteFromApi(API_COURSES, course, session.accessToken),
@@ -112,20 +73,6 @@ export default function OfferingsPage() {
       showError(`Fehler beim Löschen von ${activeCourse?.name}`, e.message);
     },
   });
-
-  const createDisciplineMutation = useMutation({
-      mutationFn: (data: { name: string }) => {
-        return createInApi<DisciplineDto>(API_DISCIPLINES, data, session?.accessToken ?? '');
-      },
-      onSuccess: (data: DisciplineDto) => {
-        setDisciplines([...disciplines, data].toSorted(sortNamed));
-        showSuccess(`Sportart ${data.name} erstellt`);
-      },
-      onError: (e) => {
-        showError(`Fehler beim Erstellen von ${activeDiscipline?.name}`, e.message);
-      },
-    },
-  );
 
   const createCourseMutation = useMutation({
     mutationFn: (props: CourseCreateRequest) => {
@@ -140,29 +87,9 @@ export default function OfferingsPage() {
     },
   });
 
-  const updateDisciplineMutation = useMutation({
-    mutationFn: (data: { name: string }) => {
-      return updateInApi<DisciplineDto>(API_DISCIPLINES, activeDiscipline?.id ?? '', data, session?.accessToken ?? '');
-    },
-    onSuccess: (data: DisciplineDto) => {
-      const newDisciplines = disciplines.map((d) => {
-        if (d.id === data.id) {
-          return data;
-        } else {
-          return d;
-        }
-      });
-      setDisciplines(newDisciplines.toSorted(sortNamed));
-      showSuccess(`Sportart ${data.name} aktualisiert`);
-    },
-    onError: (e) => {
-      showError(`Fehler beim Erstellen von ${activeDiscipline?.name}`, e.message);
-    },
-  });
-
   const updateCourseMutation = useMutation({
-    mutationFn: (props: { data: any, activeCourse: CourseDto, activeDiscipline: Discipline }) => {
-      const updateRequest = { ...props.data, disciplineId: props.activeDiscipline.id };
+    mutationFn: (props: { data: any, activeCourse: CourseDto }) => {
+      const updateRequest = { ...props.data };
       return updateInApi<CourseDto>(API_COURSES, props.activeCourse?.id ?? '', updateRequest, session?.accessToken ?? '');
     },
     onSuccess: (data: CourseDto) => {
@@ -181,22 +108,12 @@ export default function OfferingsPage() {
     },
   });
 
-
-  React.useEffect(() => {
-    if (disciplineResult.isLoading || disciplineResult.isError) {
-      return;
-    }
-    if (disciplineResult.data) {
-      setDisciplines(disciplineResult.data.toSorted(sortNamed));
-    }
-  }, [disciplineResult.data]);
-
   React.useEffect(() => {
     if (courseResult.isLoading) {
       return;
     }
     if (courseResult.isError) {
-      showError(`Konnte Termine für ${activeDiscipline?.name} nicht laden. Bitte ab- und wieder anwählen.`);
+      showError(`Konnte Termine für nicht laden.`);
       return;
     }
     setCourses(courseResult.data!);
@@ -217,19 +134,6 @@ export default function OfferingsPage() {
   }, [compensationValuesResult.data]);
 
   const confirm = useConfirm();
-  const handleDeleteDisciplineClick = () => {
-    confirm({
-      title: 'Sportart löschen?',
-      description: `Soll die Sportart "${activeDiscipline?.name}" gelöscht werden?`,
-    })
-      .then(
-        () => {
-          if (activeDiscipline) {
-            deleteDisciplineMutation.mutate(activeDiscipline);
-          }
-        },
-      );
-  };
   const handleDeleteCourseClick = () => {
     confirm({
       title: 'Kurs löschen?',
@@ -244,58 +148,8 @@ export default function OfferingsPage() {
       );
   };
 
-  if (authenticationStatus !== 'authenticated') {
-    return <LoginRequired authenticationStatus={authenticationStatus} />;
-  }
-
   return <React.Fragment>
     <Stack direction="row" spacing={5}>
-      <Paper sx={{ padding: 3 }}>
-        <Stack spacing={2}>
-          <Typography variant={'h5'}>Sportarten</Typography>
-          <ButtonGroup>
-            <Button
-              color={'error'}
-              disabled={activeDiscipline === null}
-              onClick={handleDeleteDisciplineClick}
-              data-testid={'discipline-delete-button'}
-            >
-              löschen
-            </Button>
-            <Button
-              disabled={activeDiscipline === null}
-              onClick={() => setCreateDialogOpen(true)}
-            >
-              bearbeiten
-            </Button>
-            <Button onClick={
-              () => {
-                setActiveDiscipline(null);
-                setCreateDialogOpen(true);
-              }
-            }
-                    data-testid={'add-discipline-button'}
-            >
-              hinzufügen
-            </Button>
-          </ButtonGroup>
-          <List>
-            {disciplines.map((d) => (
-              <ListItemButton
-                selected={d.id === activeDiscipline?.id}
-                onClick={() => {
-                  setActiveDiscipline(d);
-                  setActiveCourse(null);
-                }}
-                key={d.id}
-              >
-                <ListItemText primary={d.name} />
-              </ListItemButton>
-            ))}
-          </List>
-
-        </Stack>
-      </Paper>
       <Stack>
         <Paper sx={{ padding: 3 }}>
           <Stack spacing={2}>
@@ -305,16 +159,15 @@ export default function OfferingsPage() {
                       onClick={() => {
                         handleDeleteCourseClick();
                       }}
-                      disabled={activeDiscipline === null || activeCourse === null}
+                      disabled={activeCourse === null}
               >löschen</Button>
               <Button
-                disabled={activeDiscipline === null || activeCourse === null}
+                disabled={activeCourse === null}
                 onClick={(() => {
                   setCourseDialogOpen(true);
                 })}
               >bearbeiten</Button>
               <Button
-                disabled={activeDiscipline === null}
                 onClick={() => {
                   setActiveCourse(null);
                   setCourseDialogOpen(true);
@@ -325,7 +178,6 @@ export default function OfferingsPage() {
             </ButtonGroup>
             <CourseCards
               courses={courses !== undefined ? courses: null}
-              activeDiscipline={activeDiscipline}
               activeCourse={activeCourse}
               setActiveCourse={setActiveCourse}
             />
@@ -334,33 +186,17 @@ export default function OfferingsPage() {
       </Stack>
     </Stack>
 
-    <DisciplineDialogue
-      open={createDialogOpen}
-      disciplines={disciplines}
-      handleClose={() => {
-        setCreateDialogOpen(false);
-      }}
-      handleSave={(data: { name: string }) => {
-        if (activeDiscipline) {
-          updateDisciplineMutation.mutate(data);
-        } else {
-          createDisciplineMutation.mutate(data);
-        }
-      }
-      }
-      disciplineToEdit={activeDiscipline}
-    />
     <CourseDialog
       open={createCourseOpen}
       handleClose={() => {
         setCourseDialogOpen(false);
         setActiveCourse(null);
       }}
-      handleSave={(data: Omit<CourseCreateRequest, 'disciplineId'>) => {
+      handleSave={(data: CourseCreateRequest) => {
         if (activeCourse) {
-          updateCourseMutation.mutate({ data, activeCourse: activeCourse!, activeDiscipline: activeDiscipline! });
+          updateCourseMutation.mutate({ data, activeCourse: activeCourse! });
         } else {
-          createCourseMutation.mutate({ ...data, disciplineId: activeDiscipline!.id });
+          createCourseMutation.mutate({ ...data });
         }
       }}
       trainers={trainers}
@@ -368,4 +204,15 @@ export default function OfferingsPage() {
       courseToEdit={activeCourse}
     />
   </React.Fragment>;
+}
+
+export default function OfferingsPage() {
+  const { data, status: authenticationStatus } = useSession();
+  const session = data as JanusSession;
+
+  if (authenticationStatus !== 'authenticated') {
+    return <LoginRequired authenticationStatus={authenticationStatus} />;
+  }
+
+  return <OfferingsPageContents session={session} />;
 }

@@ -25,7 +25,7 @@ import {
 type CourseDialogProps = {
   open: boolean;
   handleClose: () => void;
-  handleSave: (data: Omit<CourseCreateRequest, 'disciplineId'>) => void;
+  handleSave: (data: CourseCreateRequest) => void;
   trainers: UserDto[];
   compensationValues: CompensationValueDto[];
   courseToEdit: CourseDto | null;
@@ -325,7 +325,6 @@ export function CourseDialog(
               },
             );
           }}
-          data-testid="enter-discipline-confirm-button"
         >
           Speichern
         </Button>

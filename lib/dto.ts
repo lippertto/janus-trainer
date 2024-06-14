@@ -1,4 +1,4 @@
-import { CompensationValue, Course, DayOfWeek, Discipline, Holiday, Training, TrainingStatus } from '@prisma/client';
+import { CompensationValue, Course, DayOfWeek, Holiday, Training, TrainingStatus } from '@prisma/client';
 import {
   IsArray,
   IsEmail,
@@ -46,8 +46,6 @@ export class TrainingCreateRequest {
 
   @IsISO8601()
   date: string;
-
-  disciplineId: number;
 
   @IsNumber()
   courseId: number;
@@ -169,26 +167,6 @@ export type AppUser = {
   membershipNumber: string;
 };
 
-export class DisciplineCreateRequest {
-  constructor(obj: any) {
-    Object.assign(this, obj);
-  }
-
-  @IsString()
-  name: string;
-}
-
-export type DisciplineDto = Discipline;
-
-export class DisciplineUpdateRequest {
-  constructor(obj: any) {
-    Object.assign(this, obj);
-  }
-
-  @IsString()
-  name: string;
-}
-
 export type CompensationValueDto = CompensationValue;
 
 export class CompensationValueCreateRequest {
@@ -235,9 +213,6 @@ export class CourseCreateRequest {
   @IsArray()
   @IsInt({ each: true })
   allowedCompensationIds: number[];
-
-  @IsNumber()
-  disciplineId: number;
 }
 
 export type CourseQueryResponse = {
