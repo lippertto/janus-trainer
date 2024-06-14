@@ -2,7 +2,6 @@ import { DataGrid, GridColDef, GridRowSelectionModel, GridToolbarContainer } fro
 import { UserCreateRequest, UserDto, UserUpdateRequest } from '@/lib/dto';
 
 import React from 'react';
-import RefreshIcon from '@mui/icons-material/Refresh';
 
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
@@ -20,13 +19,11 @@ import EditIcon from '@mui/icons-material/Edit';
 function UserTableToolbar(
   {
     handleAddUser,
-    handleRefresh,
     handleDeleteUser,
     handleEditUser,
     rowIsSelected,
   }: {
     handleAddUser: () => void;
-    handleRefresh: () => void;
     handleDeleteUser: () => void;
     handleEditUser: () => void;
     rowIsSelected: boolean
@@ -45,9 +42,6 @@ function UserTableToolbar(
               disabled={!Boolean(rowIsSelected)}
       >
         bearbeiten
-      </Button>
-      <Button startIcon={<RefreshIcon />} onClick={handleRefresh}>
-        Neu laden
       </Button>
     </GridToolbarContainer>
   );
@@ -156,12 +150,6 @@ export default function UserTable({
             },
             handleEditUser: () => {
               setShowUserDialog(true);
-            },
-            handleRefresh: () => {
-              queryClient.invalidateQueries({ queryKey: ['users'] })
-                .then(
-                  () => showSuccess('Nutzer wurden neu geladen'),
-                );
             },
             handleDeleteUser: () => handleDeleteUser(activeUser),
             rowIsSelected: activeUser !== null,

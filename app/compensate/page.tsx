@@ -73,11 +73,6 @@ export default function PaymentPage() {
 
   return (
     <Grid container spacing={2}>
-      <Grid xsOffset={'auto'} display={'flex'} justifyContent={'center'}>
-        <Button onClick={() => compensationsResult.refetch()} endIcon={<RefreshIcon />}>
-          Neu laden
-        </Button>
-      </Grid>
       <Grid xs={12}>
         <CompensationTable compensations={compensations ?? []} />
       </Grid>

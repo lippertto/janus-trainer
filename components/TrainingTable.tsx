@@ -219,7 +219,6 @@ function buildGridColumns(
 }
 
 type TrainingTableToolbarProps = {
-  handleRefresh: () => void;
   handleAddTraining?: () => void;
   handleDelete: () => void;
   handleEdit: () => void;
@@ -227,7 +226,6 @@ type TrainingTableToolbarProps = {
 
 function TrainingTableToolbar(
   {
-    handleRefresh,
     handleAddTraining,
     handleDelete,
     handleEdit,
@@ -247,9 +245,6 @@ function TrainingTableToolbar(
       ) : (
         <></>
       )}
-      <Button startIcon={<RefreshIcon />} onClick={handleRefresh}>
-        neu laden
-      </Button>
       <Button
         startIcon={<DeleteIcon />}
         disabled={!Boolean(handleDelete)}
@@ -264,10 +259,6 @@ function TrainingTableToolbar(
       </Button>
     </GridToolbarContainer>
   );
-}
-
-interface Row extends TrainingDto {
-  isNew?: boolean;
 }
 
 type SetTrainings = React.Dispatch<React.SetStateAction<TrainingDto[]>>;
@@ -447,7 +438,6 @@ export default function TrainingTable(
         }}
         slotProps={{
           toolbar: {
-            handleRefresh: refresh,
             handleAddTraining: approvalMode
               ? undefined
               : () => {
