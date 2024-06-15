@@ -1,0 +1,52 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Parameters:
+  DbPassword:
+    Type: String
+    NoEcho: true
+    Description: The master user password for the database
+
+Resources:
+  JanusTrainerDb:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      AllocatedStorage: 20
+      DBInstanceClass: db.t3.micro
+      Engine: postgres
+      MasterUsername: postgres
+      MasterUserPassword:
+        !Ref DbPassword
+      MultiAZ: false
+      PubliclyAccessible: yes
+      StorageType: gp2
+      VPCSecurityGroups:
+        - !Ref DbSecurityGroup
+
+  DbSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId: vpc-0573e560ef7102ce2
+      GroupDescription: "Database Security Group"
+
+  DbSecurityGroupIngress:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      Description: "Allow access from the internet"
+      GroupId: !Ref DbSecurityGroup
+      CidrIp: '0.0.0.0/0'
+      IpProtocol: tcp
+      FromPort: 5432
+      ToPort: 5432
+
+
+Outputs:
+  JanusDbEndpoint:
+    Value: !GetAtt JanusTrainerDb.Endpoint.Address
+    Export:
+      Name:
+        JanusDbEndpoint
+  JanusDbPort:
+    Value: !GetAtt JanusTrainerDb.Endpoint.Port
+    Export:
+      Name:
+        JanusDbPort

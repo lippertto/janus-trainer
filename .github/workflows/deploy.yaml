@@ -4,9 +4,6 @@ on:
       image-name:
         required: true
         type: string
-      postgres-host:
-        required: true
-        type: string
       postgres-database:
         required: true
         type: string
@@ -35,7 +32,6 @@ on:
         required: true
 
 env:
-  POSTGRES_CONNECTION_URL: postgres://${{inputs.postgres-username}}:${{secrets.postgres-password}}@${{inputs.postgres-host}}:5432/${{inputs.postgres-database}}?connection_limit=1
   STACK_NAME: janus-trainer-${{ inputs.environment }}
 
 jobs:
@@ -50,8 +46,16 @@ jobs:
         with:
           node-version: '20.x'
           cache: yarn
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.aws-ecr-key }}
+          aws-secret-access-key: ${{ secrets.aws-ecr-secret-access-key }}
+          aws-region: eu-north-1
       - name: migrate database
         run: |
+          export POSTGRES_HOST=$(aws cloudformation --region eu-north-1 describe-stacks --stack-name janus-trainer-db | jq '.Stacks[0].Outputs[] | select(.OutputKey=="JanusDbEndpoint").OutputValue' | tr -d '"')
+          export POSTGRES_CONNECTION_URL=postgres://${{ inputs.postgres-username }}:${{ secrets.postgres-password }}@$POSTGRES_HOST:5432/${{ inputs.postgres-database }}
           yarn dlx prisma migrate deploy
   deploy:
     needs: ['migrate-database']
@@ -78,7 +82,9 @@ jobs:
                          ParameterKey=JanusDomain,ParameterValue=${{inputs.domain}} \
                          ParameterKey=JanusTrainerAppImage,ParameterValue=${{inputs.image-name}} \
                          ParameterKey=JanusDomainCertificateArn,ParameterValue=${{inputs.certificate-arn}} \
-                         ParameterKey=PostgresConnectionUrl,ParameterValue=${POSTGRES_CONNECTION_URL}
+                         ParameterKey=PostgresUsername,ParameterValue=${{inputs.postgres-username}} \
+                         ParameterKey=PostgresPassword,ParameterValue=${{secrets.postgres-password}} \
+                         ParameterKey=PostgresDatabase,ParameterValue=${{inputs.postgres-database}}
           aws cloudformation wait stack-update-complete --stack-name ${STACK_NAME}
       - name: Invalidate CloudFront cache
         run: |
