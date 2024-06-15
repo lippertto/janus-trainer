@@ -98,10 +98,9 @@ function ProfilePageContents({ session }: { session: JanusSession }) {
       <Grid xs={12}>
         <Typography variant={'h5'}>Kurse</Typography>
       </Grid>
-
       {
         courses.length === 0 ? <Grid xs={12}><Typography>Keine Kurse hinterlegt.</Typography></Grid> :
-          courses.map((c) => (<Grid><CourseCard course={c} /></Grid>))
+          courses.map((c) => (<Grid key={c.id}><CourseCard course={c} /></Grid>))
       }
 
 

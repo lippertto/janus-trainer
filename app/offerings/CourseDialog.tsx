@@ -182,7 +182,6 @@ export function CourseDialog(
               label="Name des Kurses"
               value={courseName}
               onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-                console.log(`CHANGE! ${event.target.value}`)
                 setCourseName(event.target.value);
               }}
               // needs to be set in Dialogs according to https://github.com/mui/material-ui/issues/29892#issuecomment-979745849
