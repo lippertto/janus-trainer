@@ -199,6 +199,7 @@ export class CompensationValueCreateRequest {
   @IsNumber()
   durationMinutes?: number;
 }
+export class CompensationValueUpdateRequest extends CompensationValueCreateRequest {}
 
 export type CompensationValueQueryResponse = {
   value: CompensationValueDto[]

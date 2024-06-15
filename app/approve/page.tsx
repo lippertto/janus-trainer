@@ -21,7 +21,7 @@ import { useQuery } from '@tanstack/react-query';
 import { fetchListFromApi } from '@/lib/fetch';
 import { API_TRAININGS } from '@/lib/routes';
 import { compensationValuesSuspenseQuery, holidaysQuery, resultHasData, trainersQuery } from '@/lib/shared-queries';
-import { CircularProgress } from '@mui/material';
+import CircularProgress from '@mui/material/CircularProgress';
 import { usePathname, useSearchParams, useRouter } from 'next/navigation';
 import Autocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
