@@ -10,7 +10,7 @@ CREATE TYPE "CompensationGroup" AS ENUM ('WITH_QUALIFICATION', 'NO_QUALIFICATION
 
 -- AlterTable
 ALTER TABLE "CompensationValue" DROP COLUMN "qualification",
-ADD COLUMN     "compensationGroup" "CompensationGroup" NOT NULL;
+ADD COLUMN     "compensationGroup" "CompensationGroup" NOT NULL DEFAULT 'NO_QUALIFICATION';
 
 -- AlterTable
 ALTER TABLE "User" ADD COLUMN     "compensationGroups" "CompensationGroup"[] DEFAULT ARRAY[]::"CompensationGroup"[];
