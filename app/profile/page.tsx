@@ -5,14 +5,10 @@ import type { JanusSession } from '@/lib/auth';
 import LoginRequired from '@/components/LoginRequired';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import React from 'react';
-import { useSuspenseQuery } from '@tanstack/react-query';
-import { fetchSingleEntity } from '@/lib/fetch';
-import { API_USERS } from '@/lib/routes';
-import { UserDto } from '@/lib/dto';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import { Typography } from '@mui/material';
-import { coursesForTrainerSuspenseQuery } from '@/lib/shared-queries';
+import { coursesForTrainerSuspenseQuery, userSuspenseQuery } from '@/lib/shared-queries';
 import { CourseCard } from '@/components/CourseCard';
 import IconButton from '@mui/material/IconButton';
 import HelpIcon from '@mui/icons-material/Help';
@@ -23,10 +19,7 @@ import { compensationGroupToHumanReadable } from '@/lib/formatters';
 function ProfilePageContents({ session }: { session: JanusSession }) {
   const [showHelp, setShowHelp] = React.useState(false);
 
-  const { data: user } = useSuspenseQuery({
-    queryKey: ['users', session.userId],
-    queryFn: () => fetchSingleEntity<UserDto>(API_USERS, session.userId, session.accessToken),
-  });
+  const { data: user } = userSuspenseQuery(session.userId, session.accessToken);
 
   const { data: courses } = coursesForTrainerSuspenseQuery(
     session.userId,

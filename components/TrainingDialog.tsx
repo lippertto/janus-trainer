@@ -19,6 +19,7 @@ import {
   TrainingDto,
 } from '@/lib/dto';
 import Autocomplete from '@mui/material/Autocomplete';
+import { centsToDisplayString, compensationGroupToHumanReadable } from '@/lib/formatters';
 
 type CoursesDropdown = {
   courses: CourseDto[],
@@ -103,8 +104,8 @@ type TrainingDialogProps = {
 };
 
 function compensationValueToText(cv: CompensationValueDto) {
-  const value = new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(cv.cents / 100);
-  return `${cv.description} (${value})`;
+  const value = centsToDisplayString(cv.cents);
+  return `${compensationGroupToHumanReadable(cv.compensationGroup)}: ${cv.description} (${value})`;
 }
 
 export default function TrainingDialog(

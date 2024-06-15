@@ -1,7 +1,7 @@
 import { useQuery, UseQueryResult, useSuspenseQuery } from '@tanstack/react-query';
-import { fetchListFromApi } from '@/lib/fetch';
+import { fetchListFromApi, fetchSingleEntity } from '@/lib/fetch';
 import { API_COMPENSATION_VALUES, API_COURSES, API_HOLIDAYS, API_USERS } from '@/lib/routes';
-import { CompensationValueDto, CourseDto, HolidayDto, UserDto } from '@/lib/dto';
+import { CompensationValueDto, CourseDto, UserDto } from '@/lib/dto';
 import { Holiday } from '@prisma/client';
 
 const TEN_MINUTES = 10 * 60 * 1000;
@@ -86,5 +86,12 @@ export function compensationValuesSuspenseQuery(accessToken: string) {
       accessToken,
     ),
     staleTime: 60 * 1000,
+  });
+}
+
+export function userSuspenseQuery(userId: string, accessToken: string) {
+  return   useSuspenseQuery({
+    queryKey: [API_USERS, userId],
+    queryFn: () => fetchSingleEntity<UserDto>(API_USERS, userId, accessToken),
   });
 }

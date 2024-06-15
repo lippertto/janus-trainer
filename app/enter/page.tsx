@@ -7,7 +7,7 @@ import TrainingTable from '@/components/TrainingTable';
 import { useSession } from 'next-auth/react';
 import type { JanusSession } from '@/lib/auth';
 import LoginRequired from '@/components/LoginRequired';
-import { HolidayDto, TrainingDto } from '@/lib/dto';
+import { CompensationValueDto, HolidayDto, TrainingDto } from '@/lib/dto';
 import { useQuery } from '@tanstack/react-query';
 import { fetchListFromApi } from '@/lib/fetch';
 import { API_TRAININGS } from '@/lib/routes';
@@ -15,14 +15,19 @@ import {
   compensationValuesSuspenseQuery,
   coursesForTrainerSuspenseQuery,
   holidaysQuery,
-  resultHasData,
+  resultHasData, userSuspenseQuery,
 } from '@/lib/shared-queries';
 import IconButton from '@mui/material/IconButton';
 import HelpIcon from '@mui/icons-material/Help';
 import Stack from '@mui/system/Stack';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import { LoadingSpinner } from '@/components/LoadingSpinner';
+import { CompensationGroup } from '@prisma/client';
+
+
+function allowedCompensationValues(values: CompensationValueDto[], groups: CompensationGroup[]) {
+  return values.filter((v) => (groups.indexOf(v.compensationGroup) !== -1))
+}
 
 function EnterHelpText() {
   return <React.Fragment>
@@ -47,27 +52,28 @@ function EnterHelpText() {
 }
 
 function EnterPageContents(props: { session: JanusSession }) {
+  const {session} = props;
   const [trainings, setTrainings] = React.useState<TrainingDto[]>([]);
   const [holidays, setHolidays] = React.useState<HolidayDto[]>([]);
   const [showHelp, setShowHelp] = React.useState(false);
 
-  const { data: compensationValues } = compensationValuesSuspenseQuery(props.session.accessToken);
-
+  const { data: user } = userSuspenseQuery(session.userId, session.accessToken);
+  const { data: compensationValues } = compensationValuesSuspenseQuery(session.accessToken);
   const { data: courses } = coursesForTrainerSuspenseQuery(
-    props.session.userId,
-    props.session.accessToken,
+    session.userId,
+    session.accessToken,
   );
 
   const holidayResult = holidaysQuery(
-    props.session.accessToken,
+    session.accessToken,
     [new Date().getFullYear(), new Date().getFullYear() - 1],
   );
 
   const trainingResult = useQuery({
-    queryKey: [API_TRAININGS, `trainerId=${props.session.userId}`],
+    queryKey: [API_TRAININGS, `trainerId=${session.userId}`],
     queryFn: () => fetchListFromApi<TrainingDto>(
-      `${API_TRAININGS}?trainerId=${props.session.userId}`,
-      props.session.accessToken,
+      `${API_TRAININGS}?trainerId=${session.userId}`,
+      session.accessToken,
     ),
     throwOnError: true,
     initialData: [],
@@ -98,11 +104,11 @@ function EnterPageContents(props: { session: JanusSession }) {
       <TrainingTable
         trainings={trainings}
         holidays={holidays}
-        compensationValues={compensationValues}
+        compensationValues={allowedCompensationValues(compensationValues, user.compensationGroups)}
         setTrainings={setTrainings}
         courses={courses}
         approvalMode={false}
-        session={props.session}
+        session={session}
         data-testid="enter-training-table"
       />
     </Stack>

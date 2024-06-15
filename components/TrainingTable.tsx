@@ -19,7 +19,6 @@ import FastRewindIcon from '@mui/icons-material/FastRewind';
 import FastForwardIcon from '@mui/icons-material/FastForward';
 
 import Button from '@mui/material/Button';
-import RefreshIcon from '@mui/icons-material/Refresh';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
@@ -31,7 +30,6 @@ import TrainingDialog from './TrainingDialog';
 
 import { showError, showSuccess } from '@/lib/notifications';
 import { styled } from '@mui/material/styles';
-import { unapproveTraining } from '@/lib/api-trainings';
 import { DayOfWeek, Holiday, TrainingStatus } from '@prisma/client';
 import {
   CompensationValueDto,
