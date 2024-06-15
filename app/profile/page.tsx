@@ -13,7 +13,7 @@ import { CourseCard } from '@/components/CourseCard';
 import IconButton from '@mui/material/IconButton';
 import HelpIcon from '@mui/icons-material/Help';
 import Grid from '@mui/material/Unstable_Grid2';
-import { compensationGroupToHumanReadable } from '@/lib/formatters';
+import { compensationGroupToHumanReadable, groupToHumanReadable } from '@/lib/formatters';
 
 
 function ProfilePageContents({ session }: { session: JanusSession }) {
@@ -70,7 +70,7 @@ function ProfilePageContents({ session }: { session: JanusSession }) {
             readOnly: true,
           }}
           label="Gruppen"
-          value={user.groups.join(', ')}
+          value={user.groups.map(groupToHumanReadable).join(', ')}
         />
       </Grid>
       <Grid>

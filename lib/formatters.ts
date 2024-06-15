@@ -1,5 +1,6 @@
 import dayjs from 'dayjs';
 import { CompensationGroup } from '@prisma/client';
+import { Group } from '@/lib/dto';
 
 require('dayjs/locale/de');
 dayjs.locale('de');
@@ -25,13 +26,24 @@ export function getDateFromIso8601(value: string): dayjs.Dayjs {
 
 export function compensationGroupToHumanReadable(option: CompensationGroup) {
   switch (option) {
-    case 'WITH_QUALIFICATION':
+    case CompensationGroup.WITH_QUALIFICATION:
       return 'Mit Quali';
-    case 'NO_QUALIFICATION':
+    case CompensationGroup.NO_QUALIFICATION:
       return 'Ohne Quali';
-    case 'LEAGUE':
+    case CompensationGroup.LEAGUE:
       return 'Liga';
     default:
       return '???';
+  }
+}
+
+export function groupToHumanReadable(group: Group) {
+  switch (group) {
+    case Group.ADMINS:
+      return "Administratoren";
+    case Group.TRAINERS:
+      return "Übungsleiter";
+    default:
+      return "???";
   }
 }
