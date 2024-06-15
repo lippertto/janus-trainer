@@ -1,4 +1,5 @@
 import dayjs from 'dayjs';
+import { CompensationGroup } from '@prisma/client';
 
 require('dayjs/locale/de');
 dayjs.locale('de');
@@ -20,4 +21,17 @@ export function centsToDisplayString(cents: number) {
 export function getDateFromIso8601(value: string): dayjs.Dayjs {
   const [year, month, day] = value.split('-');
   return dayjs(new Date(parseInt(year), parseInt(month) - 1, parseInt(day)));
+}
+
+export function compensationGroupToHumanReadable(option: CompensationGroup) {
+  switch (option) {
+    case 'WITH_QUALIFICATION':
+      return 'Mit Quali';
+    case 'NO_QUALIFICATION':
+      return 'Ohne Quali';
+    case 'LEAGUE':
+      return 'Liga';
+    default:
+      return '???';
+  }
 }

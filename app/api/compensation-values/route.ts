@@ -7,6 +7,7 @@ import {
   ErrorDto,
 } from '@/lib/dto';
 import prisma from '@/lib/prisma';
+import { CompensationGroup } from '@prisma/client';
 
 async function getAllCompensations(): Promise<NextResponse<CompensationValueQueryResponse>> {
   const value = await prisma.compensationValue.findMany({ where: {} });
@@ -30,7 +31,7 @@ async function createCompensationValue(nextRequest: NextRequest) {
     data: {
       description: request.description,
       cents: request.cents,
-      qualification: request.qualification,
+      compensationGroup: request.compensationGroup,
       durationMinutes: request.durationMinutes,
     },
   });

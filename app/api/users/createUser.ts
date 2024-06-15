@@ -54,17 +54,16 @@ export async function createUser(nextRequest: NextRequest) {
         id: cognitoUser.username,
         name: request.name,
         iban: request.iban,
+        compensationGroups: request.compensationGroups,
       },
     });
   }
 
   return NextResponse.json(
     {
-      id: dbUser.id,
-      email: cognitoUser.email,
-      name: dbUser.name,
-      iban: dbUser.iban,
+      ...dbUser,
       groups: cognitoUser.groups,
+      email: cognitoUser.email,
     },
     { status: 201 },
   );

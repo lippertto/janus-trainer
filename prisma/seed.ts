@@ -20,17 +20,6 @@ async function main() {
     })
   )));
 
-  const compensationValues = [{ id: 1, cents: 2000, description: 'klein' },
-    { id: 2, cents: 3000, description: 'groß' },
-  ];
-
-  await Promise.all(compensationValues.map(async (d) => {
-    await prisma.compensationValue.upsert({
-      where: { id: d.id },
-      create: d,
-      update: {},
-    });
-  }));
 }
 
 await main()

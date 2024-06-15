@@ -162,6 +162,7 @@ export function handleTopLevelCatch(e: any): NextResponse<ErrorDto> {
     return e.toResponse();
   }
   if (e instanceof Error) {
+    console.log(e);
     return internalServerErrorResponse(e.message);
   }
 

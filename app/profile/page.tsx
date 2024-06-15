@@ -8,17 +8,16 @@ import React from 'react';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { fetchSingleEntity } from '@/lib/fetch';
 import { API_USERS } from '@/lib/routes';
-import { CourseDto, UserDto } from '@/lib/dto';
-import Stack from '@mui/material/Stack';
+import { UserDto } from '@/lib/dto';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
-import { Paper, Typography } from '@mui/material';
+import { Typography } from '@mui/material';
 import { coursesForTrainerSuspenseQuery } from '@/lib/shared-queries';
 import { CourseCard } from '@/components/CourseCard';
-import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
 import HelpIcon from '@mui/icons-material/Help';
 import Grid from '@mui/material/Unstable_Grid2';
+import { compensationGroupToHumanReadable } from '@/lib/formatters';
 
 
 function ProfilePageContents({ session }: { session: JanusSession }) {
@@ -88,6 +87,19 @@ function ProfilePageContents({ session }: { session: JanusSession }) {
           }}
           label="IBAN"
           value={user.iban ?? 'keine IBAN angegeben'}
+        />
+      </Grid>
+      <Grid>
+        <TextField
+          InputProps={{
+            readOnly: true,
+          }}
+          label="Pauschalen-Gruppen"
+          value={
+            user.compensationGroups.length > 1 ?
+              user.compensationGroups.map(compensationGroupToHumanReadable).join(', ') :
+              'keine'
+          }
         />
       </Grid>
       <Grid xs={12}>

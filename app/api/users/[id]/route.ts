@@ -70,7 +70,6 @@ export async function HEAD(
 }
 
 async function doPUT(nextRequest: NextRequest, params: { id: string }): Promise<NextResponse<UserDto>> {
-  await allowOnlyAdmins(nextRequest);
   // CreateRequest is fine. It contains all required fields
   const request = await validateOrThrow<UserCreateRequest>(
     new UserCreateRequest(await nextRequest.json()),
@@ -82,16 +81,19 @@ async function doPUT(nextRequest: NextRequest, params: { id: string }): Promise<
 
   await updateCognitoUser(client, params.id, request.email, request.name, request.groups);
 
+  // TODO - Find out why we need an upsert here.
   const dbResult = await prisma.userInDb.upsert({
     where: { id: params.id },
     update: {
       iban: request.iban,
       name: request.name,
+      compensationGroups: request.compensationGroups,
     },
     create: {
       id: params.id,
       iban: request.iban,
       name: request.name,
+      compensationGroups: request.compensationGroups,
     },
   });
   return NextResponse.json({ ...dbResult, groups: request.groups, email: request.email });
@@ -102,6 +104,8 @@ export async function PUT(
   { params }: { params: { id: string } },
 ) {
   try {
+    await allowOnlyAdmins(request);
+
     return await doPUT(request, params);
   } catch (e) {
     return handleTopLevelCatch(e);

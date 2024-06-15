@@ -1,6 +1,14 @@
-import { CompensationValue, Course, DayOfWeek, Holiday, Qualification, Training, TrainingStatus } from '@prisma/client';
 import {
-  IsArray, IsBoolean,
+  CompensationGroup,
+  CompensationValue,
+  Course,
+  DayOfWeek,
+  Holiday,
+  Training,
+  TrainingStatus,
+} from '@prisma/client';
+import {
+  IsArray,
   IsEmail,
   IsEnum,
   IsIBAN,
@@ -25,6 +33,7 @@ export type UserDto = {
   email: string;
   name: string;
   groups: Group[];
+  compensationGroups: CompensationGroup[];
 };
 
 export type TrainerLight = Pick<UserDto, 'name' | 'id'>
@@ -96,6 +105,9 @@ export class UserCreateRequest {
 
   @IsEnum(Group, { each: true })
   groups: Group[];
+
+  @IsEnum(CompensationGroup, { each: true })
+  compensationGroups: CompensationGroup[];
 }
 
 export class UserUpdateRequest extends UserCreateRequest {
@@ -180,8 +192,8 @@ export class CompensationValueCreateRequest {
   @IsString()
   description: string;
 
-  @IsEnum(Qualification)
-  qualification: Qualification;
+  @IsEnum(CompensationGroup)
+  compensationGroup: CompensationGroup;
 
   @IsOptional()
   @IsNumber()

@@ -46,29 +46,30 @@ model Training {
 // The groups and the email are stored in cognito.
 model UserInDb {
   // This is an external id, in our case cognito
-  id        String     @id
-  iban      String?
-  name      String
-  deletedAt DateTime?
-  trainings Training[]
-  courses   Course[]
+  id                 String              @id
+  iban               String?
+  name               String
+  deletedAt          DateTime?
+  trainings          Training[]
+  courses            Course[]
+  compensationGroups CompensationGroup[] @default([])
 
   // We want the table to be called User
   @@map("User")
 }
 
-enum Qualification {
+enum CompensationGroup {
   WITH_QUALIFICATION
   NO_QUALIFICATION
-  ANY
+  LEAGUE
 }
 
 model CompensationValue {
-  id              Int           @id @default(autoincrement())
-  cents           Int
-  description     String
-  durationMinutes Int?
-  qualification   Qualification @default(ANY)
+  id                Int               @id @default(autoincrement())
+  cents             Int
+  description       String
+  durationMinutes   Int?
+  compensationGroup CompensationGroup
 }
 
 enum DayOfWeek {
