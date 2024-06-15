@@ -16,19 +16,24 @@ import HolidayCard from './HolidayCard';
 import CompensationCard from '@/app/configure/CompensationCard';
 import { HolidayDto } from '@/lib/dto';
 import { useQueryClient } from '@tanstack/react-query';
+import { holidaysQuery, resultHasData } from '@/lib/shared-queries';
+import { API_HOLIDAYS } from '@/lib/routes';
 
-function ConfigurationPageContents({session}:{session:JanusSession}) {
-  const queryClient = useQueryClient();
+function ConfigurationPageContents({ session }: { session: JanusSession }) {
   const [holidays, setHolidays] = React.useState<HolidayDto[]>([]);
   const [holidayYear, setHolidayYear] = React.useState<number>(
     new Date().getFullYear(),
   );
+  const queryClient = useQueryClient();
+
+  const holidaysResult = holidaysQuery(session?.accessToken, [holidayYear]);
 
   const handleAddHoliday = React.useCallback(
     (start: dayjs.Dayjs, end: dayjs.Dayjs, name: string) => {
       addHoliday(session.accessToken, start, end, name)
         .then((h) => {
           if (h.start.substring(0, 4) === holidayYear.toString()) {
+            queryClient.invalidateQueries({queryKey: [API_HOLIDAYS, holidayYear]})
             setHolidays([...holidays, h]);
           }
         })
@@ -39,13 +44,14 @@ function ConfigurationPageContents({session}:{session:JanusSession}) {
           showError('Konnte den Feiertag nicht hinzufügen', e.message);
         });
     },
-    [ holidays, holidayYear, setHolidays],
+    [holidays, holidayYear, setHolidays],
   );
 
   const handleDeleteHoliday = React.useCallback(
     (holiday: HolidayDto) => {
       deleteHoliday(session.accessToken, holiday.id.toString())
         .then(() => {
+          queryClient.invalidateQueries({queryKey: [API_HOLIDAYS, holidayYear]})
           setHolidays(holidays.filter((h) => h.id !== holiday.id));
         })
         .then(() => {
@@ -55,8 +61,15 @@ function ConfigurationPageContents({session}:{session:JanusSession}) {
           showError(`Konnte den Feiertag ${holiday?.name ?? ''} nicht löschen`, e.message);
         });
     },
-    [ holidays, setHolidays],
+    [holidays, setHolidays],
   );
+
+  React.useEffect(() => {
+    if (resultHasData(holidaysResult)) {
+      setHolidays(holidaysResult.data!);
+    }
+  }, [holidaysResult.data]);
+
 
   return (
     <>
@@ -86,5 +99,5 @@ export default function ConfigurationPage() {
     return <LoginRequired authenticationStatus={authenticationStatus} />;
   }
 
-  return <ConfigurationPageContents session={session}/>
+  return <ConfigurationPageContents session={session} />;
 }

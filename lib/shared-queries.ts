@@ -30,7 +30,7 @@ export function holidaysQuery(
 
   if (years.length === 0) throw new Error('years must not be empty');
 
-  const key = ['holidays', ...years];
+  const key = [API_HOLIDAYS, ...years];
   return useQuery({
     queryKey: key,
     queryFn: () => fetchListFromApi<Holiday>(
