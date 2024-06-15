@@ -197,7 +197,7 @@ export class CompensationValueCreateRequest {
 
   @IsOptional()
   @IsNumber()
-  durationMinutes?: number;
+  durationMinutes: number|null;
 }
 export class CompensationValueUpdateRequest extends CompensationValueCreateRequest {}
 

@@ -35,11 +35,15 @@ function CompensationValueListItem(
   key: string,
 ) {
   const { compensationValue } = props;
+  let secondary=`${compensationGroupToHumanReadable(compensationValue.compensationGroup)}`
+  if (compensationValue.durationMinutes) {
+    secondary += `, ${compensationValue.durationMinutes}min`
+  }
   return <ListItemButton
     key={key} onClick={() => props.handleClick(compensationValue)}
     selected={props.selected}>
-    <ListItemText primary={centsToDisplayString(compensationValue.cents)}
-                  secondary={`${compensationGroupToHumanReadable(compensationValue.compensationGroup)}, ${compensationValue.description}`}
+    <ListItemText primary={`${compensationValue.description}: ${centsToDisplayString(compensationValue.cents)}`}
+                  secondary={secondary}
     />
   </ListItemButton>;
 }
@@ -59,7 +63,7 @@ function isValidCentValue(value: string): boolean {
 function AddCompensationValueDialog({ open, handleClose, handleConfirm, toEdit }: AddCompensationValueDialogProps) {
   const [cents, setCents] = React.useState<string>('');
   const [description, setDescription] = React.useState<string>('');
-  const [durationMinutes, setDurationMinutes] = React.useState<String>('');
+  const [durationMinutes, setDurationMinutes] = React.useState<string>('');
   const [compensationGroup, setCompensationGroup] = React.useState<CompensationGroup | null>(null);
   const [previousToEdit, setPreviousToEdit] = React.useState<CompensationValueDto | null>(null);
 
@@ -143,6 +147,7 @@ function AddCompensationValueDialog({ open, handleClose, handleConfirm, toEdit }
           handleConfirm({
             cents: parseInt(cents) * 100, description,
             compensationGroup: compensationGroup!,
+            durationMinutes: durationMinutes !== '' ? parseInt(durationMinutes) : null,
           });
           handleClose();
         }}>Bestätigen</Button>
