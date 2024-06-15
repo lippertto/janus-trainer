@@ -42,7 +42,7 @@ export default function PaymentPage() {
     if (resultHasData(compensationsResult)) {
       setCompensations(compensationsResult.data!)
     }
-  }, [compensationsResult])
+  }, [compensationsResult.data])
 
   function markAsCompensated() {
     const allIds = compensations.flatMap((c) => c.correspondingIds);

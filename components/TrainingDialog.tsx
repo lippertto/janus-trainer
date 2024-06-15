@@ -25,19 +25,15 @@ type CoursesDropdown = {
   courses: CourseDto[],
   selectedCourse: CourseDto | null,
   setSelectedCourse: (c: CourseDto | null) => void,
-  setSelectedCompensationValue: (cv: CompensationValueDto | null) => void
 }
 
 function CoursesDropdown({
                            courses,
                            selectedCourse,
                            setSelectedCourse,
-                           setSelectedCompensationValue,
                          }: CoursesDropdown) {
   const onlyOneCourse = courses.length === 1;
   const coursesAreEmpty = courses.length === 0;
-
-  if (onlyOneCourse) setSelectedCourse(courses[0]);
 
   return <Autocomplete
     disabled={onlyOneCourse || coursesAreEmpty}
@@ -52,9 +48,6 @@ function CoursesDropdown({
     value={selectedCourse}
     onChange={(_, value) => {
       setSelectedCourse(value);
-      if (value === null) {
-        setSelectedCompensationValue(null);
-      }
     }}
   />;
 }
@@ -132,7 +125,11 @@ export default function TrainingDialog(
       setParticipantCount(Number(trainingToEdit.participantCount));
       setSelectedCompensationValue(null);
     } else {
-      setSelectedCourse(null);
+      if (courses.length > 0) {
+        setSelectedCourse(courses[0]);
+      } else {
+        setSelectedCourse(null)
+      }
       setDate(dayjs());
       setParticipantCount(0);
       setSelectedCompensationValue(null);
@@ -151,6 +148,7 @@ export default function TrainingDialog(
 
   const thereIsAnError =
     Boolean(dateError) || participantCountError !== ' ';
+
 
   return (
     <Dialog open={open}>
@@ -176,7 +174,6 @@ export default function TrainingDialog(
             courses={courses}
             selectedCourse={selectedCourse}
             setSelectedCourse={setSelectedCourse}
-            setSelectedCompensationValue={setSelectedCompensationValue}
           />
 
           <CompensationValueDropdown

@@ -83,13 +83,13 @@ function EnterPageContents(props: { session: JanusSession }) {
     if (resultHasData(holidayResult)) {
       setHolidays(holidayResult.data!);
     }
-  }, [holidayResult]);
+  }, [holidayResult.data]);
 
   useEffect(() => {
     if (resultHasData(trainingResult)) {
       setTrainings(trainingResult.data);
     }
-  }, [trainingResult]);
+  }, [trainingResult.data]);
 
 
   return (
@@ -105,7 +105,9 @@ function EnterPageContents(props: { session: JanusSession }) {
         trainings={trainings}
         holidays={holidays}
         compensationValues={allowedCompensationValues(compensationValues, user.compensationGroups)}
-        setTrainings={setTrainings}
+        setTrainings={(t) => {
+          setTrainings(t);
+        }}
         courses={courses}
         approvalMode={false}
         session={session}
