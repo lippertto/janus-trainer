@@ -25,22 +25,18 @@ select setval( pg_get_serial_sequence('"public"."Training"', 'id'),
 
 
 ## Features
+* Trainers can change their IBAN
 * e2e tests
 * Make courses disabled. (Also in the UI.)
 * Allow to go from compensation page to validate page with specific dates+trainer
 
 ## Tech update
-* Switch to Amazon's RDS
+* Hide password in POSTGRES_CONNECTION_URL of lambda. --> Use Secret
 * Add proper logging
-* Use lint-staged: https://github.com/lint-staged/lint-staged
-* Put secrets into actual secrets
 
 ## Refinement
 * Read up on MUI's nextjs integration: https://mui.com/material-ui/guides/nextjs/
 * Sort imports with eslint: https://eslint.org/docs/latest/rules/sort-imports
-
-## Future
-* Trainers can change their IBAN
 
 # Common tasks
 
@@ -70,9 +66,27 @@ approval/deployment rules, and a further differentiation with a dev-environment 
 
 There is a dev-cognito which is used for local development. This instance is managed manually.
 
+## Database
+I chose RDS because of the (time-limited) free tier that aws offers.
+
+The database is publicly accessible via 5432 because I did not want to integrate CI with RDS authentication and
+the required VPC connectivity setup.
+
 # Deployment
 The deployment is handled via cloudformation. This will take care of the infrastructure setup and the deployment
 of the lambda function. (Make sure to update the Parameter JanusTrainerAppImage)
+
+## Database
+The database is shared by both instances. To create it, execute:
+```shell
+aws cloudformation update-stack \
+  --region eu-north-1 \
+  --stack-name janus-trainer-db \
+  --template-body file://cloudformation-db.yaml \
+  --parameter ParameterKey=DbPassword,ParameterValue=$DB_PASSWORD
+```
+
+## Rest of the deployment
 
 ```shell
 aws cloudformation update-stack \

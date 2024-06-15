@@ -16,9 +16,15 @@ Parameters:
   JanusTrainerAppImage:
     Type: String
     Description: The image to deploy to the lambda function.
-  PostgresConnectionUrl:
+  PostgresUsername:
     Type: String
-    Description: How to connect to the database
+    Description: Username for the database
+  PostgresPassword:
+    Type: String
+    Description: Username for the database
+  PostgresDatabase:
+    Type: String
+    Description: Username for the database
 
 Mappings:
   Constants:
@@ -133,7 +139,7 @@ Resources:
     Type: AWS::IAM::RolePolicy
     Properties:
       RoleName: !Ref JanusTrainerAppRole
-      PolicyName: !Join ["-", ["JanusTrainerAppPolicy", !Ref JanusEnvironment ] ]
+      PolicyName: !Sub "JanusTrainerAppPolicy-${JanusEnvironment}"
       PolicyDocument:
         Version: '2012-10-17'
         Statement:
@@ -156,6 +162,7 @@ Resources:
               - cognito-idp:GetUser
             Resource: !GetAtt JanusUserPool.Arn
 
+  ############################################################################################ Lambda
   JanusTrainerAppLambda:
     Type: AWS::Lambda::Function
     Properties:
@@ -166,7 +173,6 @@ Resources:
         ImageUri: !Ref JanusTrainerAppImage
       PackageType: Image
       Role: !GetAtt JanusTrainerAppRole.Arn
-      ReservedConcurrentExecutions: 5
       # for some reason, the authentication route needs a long time, hence we wait 30s
       Timeout: 30
       Environment:
@@ -176,7 +182,7 @@ Resources:
           COGNITO_CLIENT_ID: !Ref JanusUserPoolClient
           COGNITO_REGION: eu-north-1
           COGNITO_USER_POOL_ID: !Ref JanusUserPool
-          POSTGRES_CONNECTION_URL: !Ref PostgresConnectionUrl
+          POSTGRES_CONNECTION_URL: !Join [ '', ['postgres://', !Ref PostgresUsername, ':', !Ref PostgresPassword, '@', !ImportValue JanusDbEndpoint, ':', !ImportValue JanusDbPort, '/', !Ref PostgresDatabase, '?connection_limit=1' ]]
 
   JanusTrainerAppLambdaUrl:
     Type: AWS::Lambda::Url

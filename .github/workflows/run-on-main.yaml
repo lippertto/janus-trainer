@@ -21,9 +21,8 @@ jobs:
     uses: ./.github/workflows/deploy.yaml
     with:
       image-name: ${{needs.build.outputs.image-name}}
-      postgres-host: snuffleupagus.db.elephantsql.com
-      postgres-database: vudaklvt
-      postgres-username: vudaklvt
+      postgres-database: janus-trainer-prod
+      postgres-username: janus-trainer-prod
       environment: prod
       domain: janus.lippert.dev
       certificate-arn: arn:aws:acm:us-east-1:930650061532:certificate/4ce7a60c-c98c-41ad-bf37-a9da99974cd9
