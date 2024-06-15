@@ -91,7 +91,7 @@ type TrainingDialogProps = {
   userId: string;
   handleClose: () => void;
   handleConfirm: (data: TrainingCreateRequest) => void;
-  trainingToEdit: TrainingDto | null;
+  toEdit: TrainingDto | null;
   courses: CourseDto[],
   compensationValues: CompensationValueDto[],
 };
@@ -108,7 +108,7 @@ export default function TrainingDialog(
     userId,
     handleClose,
     handleConfirm,
-    trainingToEdit,
+    toEdit,
     compensationValues,
   }: TrainingDialogProps) {
   const [date, setDate] = React.useState<dayjs.Dayjs | null>(dayjs());
@@ -117,13 +117,13 @@ export default function TrainingDialog(
   const [selectedCourse, setSelectedCourse] = React.useState<CourseDto | null>(null);
   const [previousTraining, setPreviousTraining] = React.useState<TrainingDto | null>();
 
-  if (trainingToEdit !== previousTraining) {
-    setPreviousTraining(trainingToEdit);
-    if (trainingToEdit) {
-      setSelectedCourse(courses.find((c) => (c.id === trainingToEdit.course.id)) ?? null);
-      setDate(dayjs(trainingToEdit.date));
-      setParticipantCount(Number(trainingToEdit.participantCount));
-      setSelectedCompensationValue(null);
+  if (toEdit !== previousTraining) {
+    setPreviousTraining(toEdit);
+    if (toEdit) {
+      setSelectedCourse(courses.find((c) => (c.id === toEdit.course.id)) ?? null);
+      setDate(dayjs(toEdit.date));
+      setParticipantCount(Number(toEdit.participantCount));
+      setSelectedCompensationValue(compensationValues.find((cv)=> (cv.cents === toEdit.compensationCents)) ?? null);
     } else {
       if (courses.length > 0) {
         setSelectedCourse(courses[0]);
@@ -132,9 +132,14 @@ export default function TrainingDialog(
       }
       setDate(dayjs());
       setParticipantCount(0);
-      setSelectedCompensationValue(null);
     }
   }
+
+  React.useEffect(() => {
+    if (selectedCourse) {
+      setSelectedCompensationValue(compensationValues.find((cv)=> (cv.durationMinutes === selectedCourse.durationMinutes))?? null);
+    }
+  }, [selectedCourse])
 
   let participantCountError = ' ';
   if (participantCount === 0) {
@@ -152,7 +157,7 @@ export default function TrainingDialog(
 
   return (
     <Dialog open={open}>
-      <DialogTitle>{trainingToEdit ? 'Training bearbeiten' : 'Training hinzufügen'}</DialogTitle>
+      <DialogTitle>{toEdit ? 'Training bearbeiten' : 'Training hinzufügen'}</DialogTitle>
       <DialogContent>
         {/* padding is required in <Stack/> so that the label is shown */}
         <Stack spacing={2} padding={1}>

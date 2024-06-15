@@ -476,7 +476,7 @@ export default function TrainingTable(
             createTrainingMutation.mutate(data);
           }
         }}
-        trainingToEdit={activeTraining}
+        toEdit={activeTraining}
         courses={courses}
         compensationValues={compensationValues}
       />
