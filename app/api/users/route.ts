@@ -68,8 +68,9 @@ async function listUsers(request: NextRequest): Promise<UserDto[]> {
     });
     if (!userInDatabase) continue;
     const userResponse = {
-      ...cognitoUser,
-      id: username,
+      ...userInDatabase,
+      email: cognitoUser.email,
+      groups: cognitoUser.groups,
       iban: userInDatabase.iban ?? null,
     };
     result.push(userResponse);

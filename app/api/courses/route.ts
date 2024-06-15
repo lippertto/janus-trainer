@@ -22,15 +22,11 @@ async function createCourse(nextRequest: NextRequest) {
       startMinute: request.startMinute,
       durationMinutes: request.durationMinutes,
       weekdays: request.weekdays,
-      disciplineId: request.disciplineId,
       trainers: {
         connect: request.trainerIds.map((t) => ({ id: t })),
       },
-      allowedCompensations: {
-        connect: request.allowedCompensationIds.map((id) => ({ id })),
-      },
     },
-    include: { trainers: true, allowedCompensations: true },
+    include: { trainers: true },
   });
 
   return NextResponse.json(course, { status: 201 });
@@ -46,29 +42,21 @@ export async function POST(nextRequest: NextRequest): Promise<NextResponse<Cours
   }
 }
 
-async function getAllCourses(disciplineId: string | null, trainerId: string | null): Promise<NextResponse<CourseQueryResponse>> {
-
-  if (!disciplineId && !trainerId) {
-    throw new ApiErrorBadRequest('Must provide a filter, either disciplineId or trainerId');
-  }
-  if (disciplineId && trainerId) {
-    throw new ApiErrorBadRequest('Can process only one filter, either disciplineId or trainerId');
-  }
-
+async function getAllCourses(trainerId: string | null): Promise<NextResponse<CourseQueryResponse>> {
   let filter;
-  if (disciplineId) {
-    filter = { disciplineId: parseInt(disciplineId) };
-  } else {
+  if (trainerId) {
     filter = {
       trainers: {
-        some: { id: trainerId! },
+        some: { id: trainerId },
       },
     };
+  } else {
+    filter = {};
   }
   const value = await prisma.course.findMany(
     {
       where: filter,
-      include: { trainers: true, allowedCompensations: true },
+      include: { trainers: true },
     },
   );
   return NextResponse.json({ value });
@@ -77,7 +65,7 @@ async function getAllCourses(disciplineId: string | null, trainerId: string | nu
 export async function GET(request: NextRequest): Promise<NextResponse<CourseQueryResponse | ErrorDto>> {
   try {
     await allowAnyLoggedIn(request);
-    return await getAllCourses(request.nextUrl.searchParams.get('disciplineId'), request.nextUrl.searchParams.get('trainerId'));
+    return await getAllCourses(request.nextUrl.searchParams.get('trainerId'));
   } catch (e) {
     return handleTopLevelCatch(e);
   }

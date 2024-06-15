@@ -5,29 +5,21 @@ import type { JanusSession } from '@/lib/auth';
 import LoginRequired from '@/components/LoginRequired';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import React from 'react';
-import { useSuspenseQuery } from '@tanstack/react-query';
-import { fetchSingleEntity } from '@/lib/fetch';
-import { API_USERS } from '@/lib/routes';
-import { CourseDto, UserDto } from '@/lib/dto';
-import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
-import { Paper, Typography } from '@mui/material';
-import { coursesForTrainerSuspenseQuery } from '@/lib/shared-queries';
+import { Typography } from '@mui/material';
+import { coursesForTrainerSuspenseQuery, userSuspenseQuery } from '@/lib/shared-queries';
 import { CourseCard } from '@/components/CourseCard';
-import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
 import HelpIcon from '@mui/icons-material/Help';
 import Grid from '@mui/material/Unstable_Grid2';
+import { compensationGroupToHumanReadable, groupToHumanReadable } from '@/lib/formatters';
 
 
 function ProfilePageContents({ session }: { session: JanusSession }) {
   const [showHelp, setShowHelp] = React.useState(false);
 
-  const { data: user } = useSuspenseQuery({
-    queryKey: ['users', session.userId],
-    queryFn: () => fetchSingleEntity<UserDto>(API_USERS, session.userId, session.accessToken),
-  });
+  const { data: user } = userSuspenseQuery(session.userId, session.accessToken);
 
   const { data: courses } = coursesForTrainerSuspenseQuery(
     session.userId,
@@ -78,7 +70,7 @@ function ProfilePageContents({ session }: { session: JanusSession }) {
             readOnly: true,
           }}
           label="Gruppen"
-          value={user.groups.join(', ')}
+          value={user.groups.map(groupToHumanReadable).join(', ')}
         />
       </Grid>
       <Grid>
@@ -90,13 +82,25 @@ function ProfilePageContents({ session }: { session: JanusSession }) {
           value={user.iban ?? 'keine IBAN angegeben'}
         />
       </Grid>
+      <Grid>
+        <TextField
+          InputProps={{
+            readOnly: true,
+          }}
+          label="Pauschalen-Gruppen"
+          value={
+            user.compensationGroups.length > 1 ?
+              user.compensationGroups.map(compensationGroupToHumanReadable).join(', ') :
+              'keine'
+          }
+        />
+      </Grid>
       <Grid xs={12}>
         <Typography variant={'h5'}>Kurse</Typography>
       </Grid>
-
       {
         courses.length === 0 ? <Grid xs={12}><Typography>Keine Kurse hinterlegt.</Typography></Grid> :
-          courses.map((c) => (<Grid><CourseCard course={c} /></Grid>))
+          courses.map((c) => (<Grid key={c.id}><CourseCard course={c} /></Grid>))
       }
 
 

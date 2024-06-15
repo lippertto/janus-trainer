@@ -16,13 +16,6 @@ model Holiday {
   end   String
 }
 
-model Discipline {
-  id        Int       @id @default(autoincrement())
-  name      String
-  deletedAt DateTime?
-  courses   Course[]
-}
-
 enum TrainingStatus {
   NEW
   APPROVED
@@ -53,22 +46,30 @@ model Training {
 // The groups and the email are stored in cognito.
 model UserInDb {
   // This is an external id, in our case cognito
-  id        String     @id
-  iban      String?
-  name      String
-  deletedAt DateTime?
-  trainings Training[]
-  courses   Course[]
+  id                 String              @id
+  iban               String?
+  name               String
+  deletedAt          DateTime?
+  trainings          Training[]
+  courses            Course[]
+  compensationGroups CompensationGroup[] @default([])
 
   // We want the table to be called User
   @@map("User")
 }
 
+enum CompensationGroup {
+  WITH_QUALIFICATION
+  NO_QUALIFICATION
+  LEAGUE
+}
+
 model CompensationValue {
-  id          Int      @id @default(autoincrement())
-  cents       Int
-  description String
-  courses     Course[]
+  id                Int               @id @default(autoincrement())
+  cents             Int
+  description       String
+  durationMinutes   Int?
+  compensationGroup CompensationGroup
 }
 
 enum DayOfWeek {
@@ -82,15 +83,12 @@ enum DayOfWeek {
 }
 
 model Course {
-  id                   Int                 @id @default(autoincrement())
-  name                 String
-  discipline           Discipline          @relation(fields: [disciplineId], references: [id])
-  disciplineId         Int
-  weekdays             DayOfWeek[]
-  startHour            Int
-  startMinute          Int
-  durationMinutes      Int
-  allowedCompensations CompensationValue[]
-  trainers             UserInDb[]
-  trainings            Training[]
+  id              Int         @id @default(autoincrement())
+  name            String
+  weekdays        DayOfWeek[]
+  startHour       Int
+  startMinute     Int
+  durationMinutes Int
+  trainers        UserInDb[]
+  trainings       Training[]
 }

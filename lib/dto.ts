@@ -1,4 +1,12 @@
-import { CompensationValue, Course, DayOfWeek, Discipline, Holiday, Training, TrainingStatus } from '@prisma/client';
+import {
+  CompensationGroup,
+  CompensationValue,
+  Course,
+  DayOfWeek,
+  Holiday,
+  Training,
+  TrainingStatus,
+} from '@prisma/client';
 import {
   IsArray,
   IsEmail,
@@ -25,6 +33,7 @@ export type UserDto = {
   email: string;
   name: string;
   groups: Group[];
+  compensationGroups: CompensationGroup[];
 };
 
 export type TrainerLight = Pick<UserDto, 'name' | 'id'>
@@ -47,8 +56,6 @@ export class TrainingCreateRequest {
   @IsISO8601()
   date: string;
 
-  disciplineId: number;
-
   @IsNumber()
   courseId: number;
 
@@ -67,7 +74,7 @@ export class TrainingUpdateRequest {
     Object.assign(this, obj);
   }
 
-  @Matches(/([0-9]{4})-(0[0-9]|1[012])-([012][0-9]|[3][01])/)
+  @Matches(/([0-9]{4})-(0[0-9]|1[012])-([012][0-9]|3[01])/)
   date: string;
 
   @IsNumber()
@@ -98,6 +105,9 @@ export class UserCreateRequest {
 
   @IsEnum(Group, { each: true })
   groups: Group[];
+
+  @IsEnum(CompensationGroup, { each: true })
+  compensationGroups: CompensationGroup[];
 }
 
 export class UserUpdateRequest extends UserCreateRequest {
@@ -169,26 +179,6 @@ export type AppUser = {
   membershipNumber: string;
 };
 
-export class DisciplineCreateRequest {
-  constructor(obj: any) {
-    Object.assign(this, obj);
-  }
-
-  @IsString()
-  name: string;
-}
-
-export type DisciplineDto = Discipline;
-
-export class DisciplineUpdateRequest {
-  constructor(obj: any) {
-    Object.assign(this, obj);
-  }
-
-  @IsString()
-  name: string;
-}
-
 export type CompensationValueDto = CompensationValue;
 
 export class CompensationValueCreateRequest {
@@ -201,7 +191,15 @@ export class CompensationValueCreateRequest {
 
   @IsString()
   description: string;
+
+  @IsEnum(CompensationGroup)
+  compensationGroup: CompensationGroup;
+
+  @IsOptional()
+  @IsNumber()
+  durationMinutes: number|null;
 }
+export class CompensationValueUpdateRequest extends CompensationValueCreateRequest {}
 
 export type CompensationValueQueryResponse = {
   value: CompensationValueDto[]
@@ -231,13 +229,6 @@ export class CourseCreateRequest {
   @IsArray()
   @IsString({ each: true })
   trainerIds: string[];
-
-  @IsArray()
-  @IsInt({ each: true })
-  allowedCompensationIds: number[];
-
-  @IsNumber()
-  disciplineId: number;
 }
 
 export type CourseQueryResponse = {
@@ -246,7 +237,6 @@ export type CourseQueryResponse = {
 
 export type CourseDto = Course & {
   trainers: { name: string, id: string }[]
-  allowedCompensations: CompensationValueLightDto[]
 }
 
 export class CourseUpdateRequest extends CourseCreateRequest {
@@ -270,7 +260,5 @@ export function dayOfWeekToHumanReadable(w: DayOfWeek) {
       return 'Sunday';
   }
 }
-
-export type CompensationValueLightDto = Pick<CompensationValueDto, 'id' | 'description' | 'cents'>;
 
 export type HolidayDto = Holiday;

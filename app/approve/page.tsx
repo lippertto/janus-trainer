@@ -20,8 +20,8 @@ import { HolidayDto, TrainingDto, UserDto } from '@/lib/dto';
 import { useQuery } from '@tanstack/react-query';
 import { fetchListFromApi } from '@/lib/fetch';
 import { API_TRAININGS } from '@/lib/routes';
-import { holidaysQuery, resultHasData, trainersQuery } from '@/lib/shared-queries';
-import { CircularProgress } from '@mui/material';
+import { compensationValuesSuspenseQuery, holidaysQuery, resultHasData, trainersQuery } from '@/lib/shared-queries';
+import CircularProgress from '@mui/material/CircularProgress';
 import { usePathname, useSearchParams, useRouter } from 'next/navigation';
 import Autocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
@@ -29,9 +29,9 @@ import TextField from '@mui/material/TextField';
 dayjs.extend(quarterOfYear);
 
 function TrainerDropdown({ trainers, selectedTrainerId, setSelectedTrainerId }: {
-  trainers: UserDto[], selectedTrainerId: string|null, setSelectedTrainerId: (v: string | null) => void
+  trainers: UserDto[], selectedTrainerId: string | null, setSelectedTrainerId: (v: string | null) => void
 }) {
-  const selectedTrainerDto = trainers.find((t) => (t.id === selectedTrainerId))
+  const selectedTrainerDto = trainers.find((t) => (t.id === selectedTrainerId));
   return <Autocomplete
     value={selectedTrainerDto ?? null}
     onChange={(_, value) => {
@@ -66,7 +66,7 @@ function trainingsQuery(
     throwOnError: true,
     enabled: (Boolean(accessToken) && filterStart?.isValid() && filterEnd?.isValid()),
     initialData: [],
-    staleTime: 10 * 60 * 1000
+    staleTime: 10 * 60 * 1000,
   });
 }
 
@@ -74,7 +74,11 @@ const QUERY_PARAM_START = 'startDate';
 const QUERY_PARAM_END = 'endDate';
 const QUERY_PARAM_TRAINER_ID = 'trainerId';
 
-export default function ApprovePage(): React.ReactElement {
+interface ApprovePageContentsProps {
+  session: JanusSession;
+}
+
+function ApprovePageContents({ session }: ApprovePageContentsProps): React.ReactElement {
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const { replace } = useRouter();
@@ -83,12 +87,12 @@ export default function ApprovePage(): React.ReactElement {
   const queryParamTrainerId = searchParams.get(QUERY_PARAM_TRAINER_ID);
 
   const [datePickerStart, setDatePickerStart] = React.useState<dayjs.Dayjs | null>(
-    queryParamStart ? dayjs(queryParamStart):
-    dayjs().startOf('quarter'),
+    queryParamStart ? dayjs(queryParamStart) :
+      dayjs().startOf('quarter'),
   );
   const [datePickerEnd, setDatePickerEnd] = React.useState<dayjs.Dayjs | null>(
     queryParamEnd ? dayjs(queryParamEnd) :
-    dayjs().endOf('quarter'),
+      dayjs().endOf('quarter'),
   );
   const [filterStart, setFilterStart] = React.useState<dayjs.Dayjs | null>(
     datePickerStart,
@@ -97,16 +101,13 @@ export default function ApprovePage(): React.ReactElement {
     datePickerEnd,
   );
   const [selectedTrainerId, setSelectedTrainerId] = React.useState<string | null>(
-    queryParamTrainerId
+    queryParamTrainerId,
   );
 
   const [trainings, setTrainings] = React.useState<TrainingDto[]>([]);
   const [holidays, setHolidays] = React.useState<HolidayDto[]>([]);
 
   const [trainers, setTrainers] = React.useState<UserDto[]>([]);
-
-  const { data, status: authenticationStatus } = useSession();
-  const session = data as JanusSession;
 
   const trainingsResult = trainingsQuery(session?.accessToken,
     filterStart, filterEnd, selectedTrainerId ?? undefined,
@@ -117,6 +118,8 @@ export default function ApprovePage(): React.ReactElement {
   );
 
   const trainersResult = trainersQuery(session?.accessToken);
+
+  const { data: compensationValues } = compensationValuesSuspenseQuery(session.accessToken);
 
   useEffect(() => {
     if (resultHasData(holidayResult)) {
@@ -182,10 +185,6 @@ export default function ApprovePage(): React.ReactElement {
     setSelectedTrainerId(trainerId);
   }, [searchParams]);
 
-  if (authenticationStatus !== 'authenticated') {
-    return <LoginRequired authenticationStatus={authenticationStatus} />;
-  }
-
   if (!resultHasData(trainingsResult) || !resultHasData(holidayResult)) {
     return <Stack alignItems="center"><CircularProgress /> </Stack>;
   }
@@ -244,13 +243,9 @@ export default function ApprovePage(): React.ReactElement {
           setTrainings={setTrainings}
           holidays={holidays}
           courses={[]}
-          refresh={() => {
-            holidayResult.refetch();
-            trainingsResult.refetch();
-            trainersResult.refetch();
-          }}
           approvalMode={true}
           session={session}
+          compensationValues={compensationValues}
         />
       </Grid>
       <Grid>
@@ -265,4 +260,15 @@ export default function ApprovePage(): React.ReactElement {
       </Grid>
     </Grid>
   );
+}
+
+export default function ApprovePage() {
+  const { data, status: authenticationStatus } = useSession();
+  const session = data as JanusSession;
+
+  if (authenticationStatus !== 'authenticated') {
+    return <LoginRequired authenticationStatus={authenticationStatus} />;
+  }
+
+  return <ApprovePageContents session={session} />;
 }

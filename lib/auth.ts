@@ -1,14 +1,10 @@
-import type {
-  GetServerSidePropsContext,
-  NextApiRequest,
-  NextApiResponse,
-} from 'next';
+import type { GetServerSidePropsContext, NextApiRequest, NextApiResponse } from 'next';
 import type { AuthOptions, NextAuthOptions, Profile, Session } from 'next-auth';
-import type { JWT } from 'next-auth/jwt';
 import { getServerSession } from 'next-auth';
+import type { JWT } from 'next-auth/jwt';
 import CognitoProvider from 'next-auth/providers/cognito';
-import { checkIfUserExists } from './api-users';
 import { Group } from './dto';
+import { retry } from '@lifeomic/attempt';
 
 // refresh logic copied from https://github.com/nextauthjs/next-auth-refresh-token-example/blob/57f84dbc50f30233d4ee389c7239212858ecae14/pages/api/auth/%5B...nextauth%5D.js#L1
 // TODO - update according to https://authjs.dev/guides/basics/refresh-token-rotation?frameworks=core
@@ -57,6 +53,27 @@ async function refreshAccessToken(token: JWT) {
 }
 
 const COGNITO_ISSUER = `https://cognito-idp.${process.env.COGNITO_REGION}.amazonaws.com/${process.env.COGNITO_USER_POOL_ID}`
+
+async function doCheckIfUserExists(userId: string) {
+  try {
+    const response = await fetch(
+      `${process.env.NEXTAUTH_URL}/api/users/${userId}`,
+      {
+        method: 'HEAD',
+      },
+    );
+    if (response.status >= 500) {
+      return Promise.reject(new Error(`Bad status code: ${response.status}`));
+    }
+    return response.status === 200;
+  } catch (e) {
+    return Promise.reject(e);
+  }
+}
+
+async function checkIfUserExists(userId: string) {
+  return retry(() => doCheckIfUserExists(userId))
+}
 
 // configuration according to https://github.com/nextauthjs/next-auth/issues/4707
 export const config: AuthOptions = {

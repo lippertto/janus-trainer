@@ -12,26 +12,28 @@ import TextField from '@mui/material/TextField';
 import { DatePicker } from '@mui/x-date-pickers';
 
 import dayjs from 'dayjs';
-import { CompensationValueLightDto, CourseDto, DisciplineDto, TrainingCreateRequest, TrainingDto } from '@/lib/dto';
+import {
+  CompensationValueDto,
+  CourseDto,
+  TrainingCreateRequest,
+  TrainingDto,
+} from '@/lib/dto';
 import Autocomplete from '@mui/material/Autocomplete';
+import { centsToDisplayString, compensationGroupToHumanReadable } from '@/lib/formatters';
 
 type CoursesDropdown = {
   courses: CourseDto[],
   selectedCourse: CourseDto | null,
   setSelectedCourse: (c: CourseDto | null) => void,
-  setSelectedCompensationValue: (cv: CompensationValueLightDto | null) => void
 }
 
 function CoursesDropdown({
                            courses,
                            selectedCourse,
                            setSelectedCourse,
-                           setSelectedCompensationValue,
                          }: CoursesDropdown) {
   const onlyOneCourse = courses.length === 1;
   const coursesAreEmpty = courses.length === 0;
-
-  if (onlyOneCourse) setSelectedCourse(courses[0]);
 
   return <Autocomplete
     disabled={onlyOneCourse || coursesAreEmpty}
@@ -46,17 +48,14 @@ function CoursesDropdown({
     value={selectedCourse}
     onChange={(_, value) => {
       setSelectedCourse(value);
-      if (value === null) {
-        setSelectedCompensationValue(null);
-      }
     }}
   />;
 }
 
 type CompensationValueDropdownProps = {
-  compensations: CompensationValueLightDto[]
-  selectedCompensationValue: CompensationValueLightDto | null;
-  setSelectedCompensationValue: (v: CompensationValueLightDto | null) => void;
+  compensations: CompensationValueDto[]
+  selectedCompensationValue: CompensationValueDto | null;
+  setSelectedCompensationValue: (v: CompensationValueDto | null) => void;
 }
 
 function CompensationValueDropdown({
@@ -67,7 +66,7 @@ function CompensationValueDropdown({
   const compensationsAreEmpty = compensations.length === 0;
   const onlyOneCompensation = compensations.length === 1;
   if (onlyOneCompensation) {
-    setSelectedCompensationValue(compensations[0])
+    setSelectedCompensationValue(compensations[0]);
   }
   return <Autocomplete
     disabled={compensationsAreEmpty || onlyOneCompensation}
@@ -92,43 +91,55 @@ type TrainingDialogProps = {
   userId: string;
   handleClose: () => void;
   handleConfirm: (data: TrainingCreateRequest) => void;
-  trainingToEdit: TrainingDto | null;
-  courses: CourseDto[]
+  toEdit: TrainingDto | null;
+  courses: CourseDto[],
+  compensationValues: CompensationValueDto[],
 };
 
-function compensationValueToText(cv: CompensationValueLightDto) {
-  const value = new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(cv.cents / 100);
-  return `${cv.description} (${value})`;
+function compensationValueToText(cv: CompensationValueDto) {
+  const value = centsToDisplayString(cv.cents);
+  return `${compensationGroupToHumanReadable(cv.compensationGroup)}: ${cv.description} (${value})`;
 }
 
-export default function TrainingDialog({
-                                         open,
-                                         courses,
-                                         userId,
-                                         handleClose,
-                                         handleConfirm,
-                                         trainingToEdit,
-                                       }: TrainingDialogProps) {
+export default function TrainingDialog(
+  {
+    open,
+    courses,
+    userId,
+    handleClose,
+    handleConfirm,
+    toEdit,
+    compensationValues,
+  }: TrainingDialogProps) {
   const [date, setDate] = React.useState<dayjs.Dayjs | null>(dayjs());
   const [participantCount, setParticipantCount] = React.useState<number>(0);
-  const [selectedCompensationValue, setSelectedCompensationValue] = React.useState<CompensationValueLightDto | null>(null);
+  const [selectedCompensationValue, setSelectedCompensationValue] = React.useState<CompensationValueDto | null>(null);
   const [selectedCourse, setSelectedCourse] = React.useState<CourseDto | null>(null);
   const [previousTraining, setPreviousTraining] = React.useState<TrainingDto | null>();
 
-  if (trainingToEdit !== previousTraining) {
-    setPreviousTraining(trainingToEdit);
-    if (trainingToEdit) {
-      setSelectedCourse(courses.find((c) => (c.id === trainingToEdit.course.id)) ?? null);
-      setDate(dayjs(trainingToEdit.date));
-      setParticipantCount(Number(trainingToEdit.participantCount));
-      setSelectedCompensationValue(null);
+  if (toEdit !== previousTraining) {
+    setPreviousTraining(toEdit);
+    if (toEdit) {
+      setSelectedCourse(courses.find((c) => (c.id === toEdit.course.id)) ?? null);
+      setDate(dayjs(toEdit.date));
+      setParticipantCount(Number(toEdit.participantCount));
+      setSelectedCompensationValue(compensationValues.find((cv)=> (cv.cents === toEdit.compensationCents)) ?? null);
     } else {
-      setSelectedCourse(null);
+      if (courses.length > 0) {
+        setSelectedCourse(courses[0]);
+      } else {
+        setSelectedCourse(null)
+      }
       setDate(dayjs());
       setParticipantCount(0);
-      setSelectedCompensationValue(null);
     }
   }
+
+  React.useEffect(() => {
+    if (selectedCourse) {
+      setSelectedCompensationValue(compensationValues.find((cv)=> (cv.durationMinutes === selectedCourse.durationMinutes))?? null);
+    }
+  }, [selectedCourse])
 
   let participantCountError = ' ';
   if (participantCount === 0) {
@@ -143,9 +154,10 @@ export default function TrainingDialog({
   const thereIsAnError =
     Boolean(dateError) || participantCountError !== ' ';
 
+
   return (
     <Dialog open={open}>
-      <DialogTitle>{trainingToEdit? "Training bearbeiten" : "Training hinzufügen"}</DialogTitle>
+      <DialogTitle>{toEdit ? 'Training bearbeiten' : 'Training hinzufügen'}</DialogTitle>
       <DialogContent>
         {/* padding is required in <Stack/> so that the label is shown */}
         <Stack spacing={2} padding={1}>
@@ -167,11 +179,10 @@ export default function TrainingDialog({
             courses={courses}
             selectedCourse={selectedCourse}
             setSelectedCourse={setSelectedCourse}
-            setSelectedCompensationValue={setSelectedCompensationValue}
           />
 
           <CompensationValueDropdown
-            compensations={selectedCourse ? selectedCourse.allowedCompensations : []}
+            compensations={compensationValues}
             selectedCompensationValue={selectedCompensationValue}
             setSelectedCompensationValue={setSelectedCompensationValue}
           />
@@ -196,7 +207,6 @@ export default function TrainingDialog({
           onClick={() => {
             handleConfirm({
               date: date!.format('YYYY-MM-DD'),
-              disciplineId: selectedCourse!.disciplineId,
               courseId: selectedCourse!.id,
               compensationCents: selectedCompensationValue!.cents,
               participantCount,

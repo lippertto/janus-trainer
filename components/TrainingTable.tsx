@@ -19,7 +19,6 @@ import FastRewindIcon from '@mui/icons-material/FastRewind';
 import FastForwardIcon from '@mui/icons-material/FastForward';
 
 import Button from '@mui/material/Button';
-import RefreshIcon from '@mui/icons-material/Refresh';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
@@ -31,9 +30,15 @@ import TrainingDialog from './TrainingDialog';
 
 import { showError, showSuccess } from '@/lib/notifications';
 import { styled } from '@mui/material/styles';
-import { unapproveTraining } from '@/lib/api-trainings';
 import { DayOfWeek, Holiday, TrainingStatus } from '@prisma/client';
-import { CourseDto, TrainingCreateRequest, TrainingDto, TrainingUpdateRequest } from '@/lib/dto';
+import {
+  CompensationValueDto,
+  CourseDto,
+  HolidayDto,
+  TrainingCreateRequest,
+  TrainingDto,
+  TrainingUpdateRequest,
+} from '@/lib/dto';
 import { useMutation } from '@tanstack/react-query';
 import { createInApi, deleteFromApi, patchInApi, updateInApi } from '@/lib/fetch';
 import { API_TRAININGS } from '@/lib/routes';
@@ -72,7 +77,7 @@ GERMAN_DAYS[4] = 'Do'
 GERMAN_DAYS[5] = 'Fr'
 GERMAN_DAYS[6] = 'Sa'
 
-function warningForDate(dateString: string, holidays: Holiday[], weekdays: DayOfWeek[]): string | null {
+function warningForDate(dateString: string, holidays: HolidayDto[], weekdays: DayOfWeek[]): string | null {
   let dayNumber = new Date(dateString).getDay();
   if (dayNumber === 0) {
     return 'Ist ein Sonntag';
@@ -219,15 +224,13 @@ function buildGridColumns(
 }
 
 type TrainingTableToolbarProps = {
-  handleRefresh: () => void;
   handleAddTraining?: () => void;
   handleDelete: () => void;
-  handleEdit: () => void;
+  handleEdit?: () => void;
 };
 
 function TrainingTableToolbar(
   {
-    handleRefresh,
     handleAddTraining,
     handleDelete,
     handleEdit,
@@ -247,27 +250,23 @@ function TrainingTableToolbar(
       ) : (
         <></>
       )}
-      <Button startIcon={<RefreshIcon />} onClick={handleRefresh}>
-        neu laden
-      </Button>
       <Button
         startIcon={<DeleteIcon />}
         disabled={!Boolean(handleDelete)}
         onClick={handleDelete}>
         löschen
       </Button>
+      {handleAddTraining?
       <Button
         startIcon={<EditIcon />}
         disabled={!Boolean(handleEdit)}
         onClick={handleEdit}>
         bearbeiten
       </Button>
+        : null
+      }
     </GridToolbarContainer>
   );
-}
-
-interface Row extends TrainingDto {
-  isNew?: boolean;
 }
 
 type SetTrainings = React.Dispatch<React.SetStateAction<TrainingDto[]>>;
@@ -276,13 +275,13 @@ type TrainingTableProps = {
   /** The trainings to display. Note: Should be sorted, e.g. with `v.sort((r1, r2) => parseInt(r1.id) - parseInt(r2.id))` */
   trainings: TrainingDto[];
   setTrainings: SetTrainings;
-  refresh: () => void;
   /** Whether the UI should show the approval actions. (User must be admin to actually execute the steps.) */
   approvalMode: boolean;
   /** List of holidays used to highlight collisions */
   holidays: Holiday[];
   courses: CourseDto[];
   session: JanusSession;
+  compensationValues: CompensationValueDto[];
 };
 
 /**
@@ -292,7 +291,7 @@ export default function TrainingTable(
   {
     trainings,
     setTrainings,
-    refresh,
+    compensationValues,
     approvalMode,
     holidays,
     courses,
@@ -447,7 +446,6 @@ export default function TrainingTable(
         }}
         slotProps={{
           toolbar: {
-            handleRefresh: refresh,
             handleAddTraining: approvalMode
               ? undefined
               : () => {
@@ -455,13 +453,14 @@ export default function TrainingTable(
                 setShowTrainingDialog(true);
               },
             handleDelete: activeTraining && activeTraining.status === TrainingStatus.NEW ? () => (handleDeleteClick(activeTraining)) : null,
-            handleEdit: activeTraining && activeTraining.status === TrainingStatus.NEW ? () => {
+            handleEdit: approvalMode ? undefined:  activeTraining && activeTraining.status === TrainingStatus.NEW ? () => {
               setShowTrainingDialog(true);
             } : null,
           },
         }}
         {...props}
       />
+
       <TrainingDialog
         open={showTrainingDialog}
         userId={session?.userId}
@@ -477,8 +476,9 @@ export default function TrainingTable(
             createTrainingMutation.mutate(data);
           }
         }}
-        trainingToEdit={activeTraining}
+        toEdit={activeTraining}
         courses={courses}
+        compensationValues={compensationValues}
       />
     </>
   );

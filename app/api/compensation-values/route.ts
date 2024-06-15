@@ -7,10 +7,9 @@ import {
   ErrorDto,
 } from '@/lib/dto';
 import prisma from '@/lib/prisma';
+import { CompensationGroup } from '@prisma/client';
 
-async function doGET(request: NextRequest): Promise<NextResponse<CompensationValueQueryResponse>> {
-  await allowAnyLoggedIn(request);
-
+async function getAllCompensations(): Promise<NextResponse<CompensationValueQueryResponse>> {
   const value = await prisma.compensationValue.findMany({ where: {} });
   return NextResponse.json({ value });
 }
@@ -18,25 +17,32 @@ async function doGET(request: NextRequest): Promise<NextResponse<CompensationVal
 export async function GET(request: NextRequest,
 ): Promise<NextResponse<CompensationValueQueryResponse | ErrorDto>> {
   try {
-    return await doGET(request);
+    await allowAnyLoggedIn(request);
+    return await getAllCompensations();
   } catch (e) {
     return handleTopLevelCatch(e);
   }
 }
 
-async function doPOST(nextRequest: NextRequest) {
-  await allowOnlyAdmins(nextRequest);
-
+async function createCompensationValue(nextRequest: NextRequest) {
   const request = await validateOrThrow<CompensationValueCreateRequest>(await nextRequest.json());
 
-  const result = await prisma.compensationValue.create({data: {description: request.description, cents: request.cents}})
+  const result = await prisma.compensationValue.create({
+    data: {
+      description: request.description,
+      cents: request.cents,
+      compensationGroup: request.compensationGroup,
+      durationMinutes: request.durationMinutes,
+    },
+  });
 
-  return NextResponse.json(result, {status: 201});
+  return NextResponse.json(result, { status: 201 });
 }
 
-export async function POST(request: NextRequest): Promise<NextResponse<CompensationValueDto|ErrorDto>> {
+export async function POST(request: NextRequest): Promise<NextResponse<CompensationValueDto | ErrorDto>> {
   try {
-    return await doPOST(request);
+    await allowOnlyAdmins(request);
+    return await createCompensationValue(request);
   } catch (e) {
     return handleTopLevelCatch(e);
   }

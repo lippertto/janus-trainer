@@ -1693,6 +1693,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@lifeomic/attempt@npm:^3.1.0":
+  version: 3.1.0
+  resolution: "@lifeomic/attempt@npm:3.1.0"
+  checksum: 10c0/c9963737cb4697e62f9de9504ce235d209c7588568cc1dcd1a26c24f2cbcee0184af82a9f5efa7eec5831c020fb962d722f19819b88ff94d020b83df31f3ad20
+  languageName: node
+  linkType: hard
+
 "@mui/base@npm:5.0.0-beta.40":
   version: 5.0.0-beta.40
   resolution: "@mui/base@npm:5.0.0-beta.40"
@@ -6003,6 +6010,7 @@ __metadata:
     "@emotion/cache": "npm:^11.11.0"
     "@emotion/react": "npm:^11.11.4"
     "@emotion/styled": "npm:^11.11.5"
+    "@lifeomic/attempt": "npm:^3.1.0"
     "@mui/icons-material": "npm:^5.15.18"
     "@mui/material": "npm:^5.15.18"
     "@mui/material-nextjs": "npm:^5.15.11"
