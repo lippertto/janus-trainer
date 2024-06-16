@@ -12,14 +12,9 @@ import TextField from '@mui/material/TextField';
 import { DatePicker } from '@mui/x-date-pickers';
 
 import dayjs from 'dayjs';
-import {
-  CompensationValueDto,
-  CourseDto,
-  TrainingCreateRequest,
-  TrainingDto,
-} from '@/lib/dto';
+import { CompensationValueDto, CourseDto, TrainingCreateRequest, TrainingDto } from '@/lib/dto';
 import Autocomplete from '@mui/material/Autocomplete';
-import { centsToDisplayString, compensationGroupToHumanReadable } from '@/lib/formatters';
+import { centsToDisplayString } from '@/lib/formatters';
 
 type CoursesDropdown = {
   courses: CourseDto[],
@@ -30,11 +25,11 @@ type CoursesDropdown = {
 
 function CoursesDropdown(
   {
-                           courses,
-                           selectedCourse,
-                           setSelectedCourse,
-  error
-                         }: CoursesDropdown) {
+    courses,
+    selectedCourse,
+    setSelectedCourse,
+    error,
+  }: CoursesDropdown) {
   const onlyOneCourse = courses.length === 1;
   const coursesAreEmpty = courses.length === 0;
 
@@ -66,11 +61,11 @@ type CompensationValueDropdownProps = {
 
 function CompensationValueDropdown(
   {
-                                     compensations,
-                                     selectedCompensationValue,
-                                     setSelectedCompensationValue,
-  error
-                                   }: CompensationValueDropdownProps) {
+    compensations,
+    selectedCompensationValue,
+    setSelectedCompensationValue,
+    error,
+  }: CompensationValueDropdownProps) {
   const compensationsAreEmpty = compensations.length === 0;
   const onlyOneCompensation = compensations.length === 1;
   if (onlyOneCompensation) {
@@ -107,8 +102,7 @@ type TrainingDialogProps = {
 };
 
 function compensationValueToText(cv: CompensationValueDto) {
-  const value = centsToDisplayString(cv.cents);
-  return `${compensationGroupToHumanReadable(cv.compensationGroup)}: ${cv.description} (${value})`;
+  return `${cv.description} (${(centsToDisplayString(cv.cents))})`;
 }
 
 export default function TrainingDialog(
@@ -133,12 +127,12 @@ export default function TrainingDialog(
       setSelectedCourse(courses.find((c) => (c.id === toEdit.course.id)) ?? null);
       setDate(dayjs(toEdit.date));
       setParticipantCount(Number(toEdit.participantCount));
-      setSelectedCompensationValue(compensationValues.find((cv)=> (cv.cents === toEdit.compensationCents)) ?? null);
+      setSelectedCompensationValue(compensationValues.find((cv) => (cv.cents === toEdit.compensationCents)) ?? null);
     } else {
       if (courses.length > 0) {
         setSelectedCourse(courses[0]);
       } else {
-        setSelectedCourse(null)
+        setSelectedCourse(null);
       }
       setDate(dayjs());
       setParticipantCount(0);
@@ -147,14 +141,14 @@ export default function TrainingDialog(
 
   React.useEffect(() => {
     if (selectedCourse) {
-      setSelectedCompensationValue(compensationValues.find((cv)=> (cv.durationMinutes === selectedCourse.durationMinutes))?? null);
+      setSelectedCompensationValue(compensationValues.find((cv) => (cv.durationMinutes === selectedCourse.durationMinutes)) ?? null);
     }
-  }, [selectedCourse])
+  }, [selectedCourse]);
 
-  const participantCountError = Boolean(participantCount)? ' ': 'Muss gesetzt sein';
+  const participantCountError = Boolean(participantCount) ? ' ' : 'Muss gesetzt sein';
   const dateError = date ? ' ' : 'Muss gesetzt sein';
-  const compensationError = selectedCompensationValue ? " " : "Muss gesetzt sein";
-  const coursesError = selectedCourse ? " " : "Muss gesetzt sein";
+  const compensationError = selectedCompensationValue ? ' ' : 'Muss gesetzt sein';
+  const coursesError = selectedCourse ? ' ' : 'Muss gesetzt sein';
 
   const thereIsAnError =
     dateError !== ' ' || participantCountError !== ' ' || compensationError !== ' ' || coursesError !== ' ';
@@ -165,7 +159,7 @@ export default function TrainingDialog(
       <DialogTitle>{toEdit ? 'Training bearbeiten' : 'Training hinzufügen'}</DialogTitle>
       <DialogContent>
         {/* padding is required in <Stack/> so that the label is shown */}
-        <Stack  sx={{pt: 1}}>
+        <Stack sx={{ pt: 1 }}>
           <DatePicker
             label="Datum"
             maxDate={dayjs()}

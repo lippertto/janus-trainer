@@ -103,15 +103,6 @@ function warningForDate(dateString: string, holidays: HolidayDto[], weekdays: Da
   return null;
 }
 
-const StyledTooltip = styled(({ className, ...props }: TooltipProps) => (
-  <Tooltip {...props} classes={{ popper: className }} />
-))(({ theme }) => ({
-  [`& .${tooltipClasses.tooltip}`]: {
-    backgroundColor: theme.palette.error.main,
-    color: theme.palette.error.contrastText,
-  },
-}));
-
 function buildGridColumns(
   holidays: Holiday[],
   handleApproveClick: { (id: GridRowId): () => void },
