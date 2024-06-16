@@ -113,6 +113,15 @@ export class UserCreateRequest {
 export class UserUpdateRequest extends UserCreateRequest {
 }
 
+export class UserPatchRequest {
+  constructor(obj: any) {
+    Object.assign(this, obj);
+  }
+
+  @IsIBAN()
+  iban: string;
+}
+
 export type UserQueryResponseDto = {
   value: UserDto[];
 };

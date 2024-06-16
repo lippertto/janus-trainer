@@ -13,7 +13,7 @@ import {
   listGroupsForUser,
   updateCognitoUser,
 } from '../cognito';
-import { UserDto, UserCreateRequest, ErrorDto } from '@/lib/dto';
+import { UserDto, UserCreateRequest, ErrorDto, UserPatchRequest } from '@/lib/dto';
 
 async function doDELETE(request: NextRequest, id: string) {
   await allowOnlyAdmins(request);
@@ -140,6 +140,35 @@ export async function GET(
     await allowAdminOrSelf(request, params.id);
     const user = await selectOneUser(params.id);
     return NextResponse.json(user);
+  } catch (e) {
+    return handleTopLevelCatch(e);
+  }
+}
+
+async function patchOneUser(id: string, data: any) {
+  const dbUser = await prisma.userInDb.findUnique({
+    where: {id}
+  });
+  if (dbUser === null) {
+    throw new ApiErrorNotFound(`User with id ${id} not found`);
+  }
+  const request = await validateOrThrow(new UserPatchRequest(data));
+
+  return prisma.userInDb.update({
+    where: { id },
+    data: { iban: request.iban }
+  });
+}
+
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+): Promise<NextResponse<UserDto|ErrorDto>> {
+  try {
+    await allowAdminOrSelf(request, params.id);
+    await patchOneUser(params.id, await request.json());
+    const result = await selectOneUser(params.id);
+    return NextResponse.json(result);
   } catch (e) {
     return handleTopLevelCatch(e);
   }
