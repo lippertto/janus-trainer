@@ -77,7 +77,7 @@ The deployment is handled via cloudformation. This will take care of the infrast
 of the lambda function. (Make sure to update the Parameter JanusTrainerAppImage)
 
 ## Database
-The database is shared by both instances. To create it, execute:
+The database is shared by both instances and is created manually. To create it, execute:
 ```shell
 aws cloudformation update-stack \
   --region eu-north-1 \
