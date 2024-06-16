@@ -9,7 +9,7 @@ function CourseContents({ course }: { course: CourseDto }) {
     <Typography variant={'h6'}>{course.name}</Typography>
     <Typography>{course.weekdays.map(dayOfWeekToHumanReadable).join(', ')}</Typography>
     <Typography>{course.startHour.toString().padStart(2, '0')}:{course.startMinute.toString().padStart(2, '0')}, {course.durationMinutes}min</Typography>
-    <Typography>{course.trainers.map((t) => (t.name))}</Typography>
+    <Typography>{course.trainers.map((t) => (t.name)).join(', ')}</Typography>
   </CardContent>;
 }
 
