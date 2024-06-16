@@ -23,13 +23,12 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 
-import Tooltip, { tooltipClasses, TooltipProps } from '@mui/material/Tooltip';
+import Tooltip from '@mui/material/Tooltip';
 
 import { JanusSession } from '@/lib/auth';
 import TrainingDialog from './TrainingDialog';
 
 import { showError, showSuccess } from '@/lib/notifications';
-import { styled } from '@mui/material/styles';
 import { DayOfWeek, Holiday, TrainingStatus } from '@prisma/client';
 import {
   CompensationValueDto,
@@ -159,7 +158,7 @@ function buildGridColumns(
     },
     {
       field: 'compensationCents',
-      headerName: 'Vergütung',
+      headerName: 'Pauschale',
       flex: 1,
       valueFormatter: (value) => (centsToDisplayString(value.value)),
     },
