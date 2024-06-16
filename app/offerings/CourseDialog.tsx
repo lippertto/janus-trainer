@@ -145,6 +145,15 @@ export function CourseDialog(
   const [duration, setDuration] = React.useState<string>('60');
   const [selectedTrainers, setSelectedTrainers] = React.useState<{ name: string, id: string }[]>([]);
   const [previousCourse, setPreviousCourse] = React.useState<CourseDto | null>(null);
+
+  const resetFields = React.useCallback(() => {
+    setCourseName('');
+    setTime(dayjs(DEFAULT_TIME));
+    setDuration('60');
+    setSelectedTrainers([]);
+    setDays({...EMPTY_DAYS});
+  }, [setCourseName, setTime, setDuration, setSelectedTrainers, setDays])
+
   if (previousCourse !== courseToEdit) {
     setPreviousCourse(courseToEdit);
     if (courseToEdit) {
@@ -154,11 +163,7 @@ export function CourseDialog(
       setSelectedTrainers(courseToEdit.trainers);
       setDays(enumToWeekdaySelection(courseToEdit.weekdays));
     } else {
-      setCourseName('');
-      setTime(dayjs(DEFAULT_TIME));
-      setDuration('60');
-      setSelectedTrainers([]);
-      setDays(EMPTY_DAYS);
+      resetFields();
     }
   }
 
@@ -242,11 +247,13 @@ export function CourseDialog(
 
       <DialogActions>
         <Button onClick={() => {
+          setTimeout(resetFields, 200);
           handleClose();
         }}>Abbrechen</Button>
         <Button
           disabled={errorMessage !== ' '}
           onClick={() => {
+            setTimeout(resetFields, 200);
             handleClose();
             handleSave(
               {
