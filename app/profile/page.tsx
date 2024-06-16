@@ -35,7 +35,7 @@ function ProfilePageContents({ session }: { session: JanusSession }) {
 
   const updateIbanMutation = useMutation({
     mutationFn: (iban: string) => patchInApi<UserDto>(API_USERS, session.userId, { iban }, session.accessToken),
-    onSuccess: (data) => {
+    onSuccess: (_) => {
       showSuccess(`Iban aktualisiert`);
       queryClient.invalidateQueries({ queryKey: [API_USERS, session.userId] });
     },
@@ -64,22 +64,24 @@ function ProfilePageContents({ session }: { session: JanusSession }) {
         </IconButton>
       </Grid>
 
-      <Grid>
+      <Grid xs={4}>
         <TextField
+          fullWidth
           disabled={true}
           label="Name"
           value={user.name}
         />
-
       </Grid>
-      <Grid>
+
+      <Grid xs={4}>
         <TextField
+          fullWidth
           disabled={true}
           label="Email"
           value={user.email}
         />
       </Grid>
-      <Grid xs={2}>
+      <Grid xs={4}>
         <TextField
           fullWidth
           disabled={true}
@@ -87,7 +89,7 @@ function ProfilePageContents({ session }: { session: JanusSession }) {
           value={user.groups.toSorted().map(groupToHumanReadable).join(', ')}
         />
       </Grid>
-      <Grid xs={2}>
+      <Grid xs={6}>
         <TextField
           fullWidth
           disabled={true}
@@ -100,8 +102,9 @@ function ProfilePageContents({ session }: { session: JanusSession }) {
           }}
         />
       </Grid>
-      <Grid>
+      <Grid xs={6}>
         <TextField
+          fullWidth={true}
           disabled={true}
           label="Pauschalen-Gruppen"
           value={
