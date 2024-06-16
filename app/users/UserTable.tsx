@@ -15,6 +15,7 @@ import { showError, showSuccess } from '@/lib/notifications';
 import { UserDialog } from './UserDialog';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
+import { groupToHumanReadable } from '@/lib/formatters';
 
 function UserTableToolbar(
   {
@@ -126,7 +127,7 @@ export default function UserTable({
       headerName: 'Gruppen',
       flex: 1,
       renderCell: (params) => (
-        <Typography>{params.value?.join(', ')}</Typography>
+        <Typography>{params.value?.map(groupToHumanReadable).join(', ')}</Typography>
       ),
     }];
 
