@@ -25,12 +25,15 @@ type CoursesDropdown = {
   courses: CourseDto[],
   selectedCourse: CourseDto | null,
   setSelectedCourse: (c: CourseDto | null) => void,
+  error: string,
 }
 
-function CoursesDropdown({
+function CoursesDropdown(
+  {
                            courses,
                            selectedCourse,
                            setSelectedCourse,
+  error
                          }: CoursesDropdown) {
   const onlyOneCourse = courses.length === 1;
   const coursesAreEmpty = courses.length === 0;
@@ -43,6 +46,8 @@ function CoursesDropdown({
       <TextField
         {...params}
         label={coursesAreEmpty ? 'Keine Kurse hinterlegt' : 'Kurs'}
+        error={error !== ' '}
+        helperText={error}
       />
     )}
     value={selectedCourse}
@@ -56,12 +61,15 @@ type CompensationValueDropdownProps = {
   compensations: CompensationValueDto[]
   selectedCompensationValue: CompensationValueDto | null;
   setSelectedCompensationValue: (v: CompensationValueDto | null) => void;
+  error: string;
 }
 
-function CompensationValueDropdown({
+function CompensationValueDropdown(
+  {
                                      compensations,
                                      selectedCompensationValue,
                                      setSelectedCompensationValue,
+  error
                                    }: CompensationValueDropdownProps) {
   const compensationsAreEmpty = compensations.length === 0;
   const onlyOneCompensation = compensations.length === 1;
@@ -75,7 +83,9 @@ function CompensationValueDropdown({
     renderInput={(params) => (
       <TextField
         {...params}
-        label={compensationsAreEmpty ? 'Erst Kurs auswählen' : 'Vergütung'}
+        label={compensationsAreEmpty ? 'Erst Kurs auswählen' : 'Pauschale'}
+        error={error !== ' '}
+        helperText={error}
       />
     )}
     value={selectedCompensationValue}
@@ -141,18 +151,13 @@ export default function TrainingDialog(
     }
   }, [selectedCourse])
 
-  let participantCountError = ' ';
-  if (participantCount === 0) {
-    participantCountError = 'Muss gesetzt sein';
-  }
-
-  let dateError = null;
-  if (!date) {
-    dateError = 'Muss gesetzt sein';
-  }
+  const participantCountError = Boolean(participantCount)? ' ': 'Muss gesetzt sein';
+  const dateError = date ? ' ' : 'Muss gesetzt sein';
+  const compensationError = selectedCompensationValue ? " " : "Muss gesetzt sein";
+  const coursesError = selectedCourse ? " " : "Muss gesetzt sein";
 
   const thereIsAnError =
-    Boolean(dateError) || participantCountError !== ' ';
+    dateError !== ' ' || participantCountError !== ' ' || compensationError !== ' ' || coursesError !== ' ';
 
 
   return (
@@ -160,7 +165,7 @@ export default function TrainingDialog(
       <DialogTitle>{toEdit ? 'Training bearbeiten' : 'Training hinzufügen'}</DialogTitle>
       <DialogContent>
         {/* padding is required in <Stack/> so that the label is shown */}
-        <Stack spacing={2} padding={1}>
+        <Stack  sx={{pt: 1}}>
           <DatePicker
             label="Datum"
             maxDate={dayjs()}
@@ -168,7 +173,7 @@ export default function TrainingDialog(
             onChange={(e) => setDate(e)}
             slotProps={{
               textField: {
-                error: Boolean(dateError),
+                error: dateError !== ' ',
                 helperText: dateError,
                 inputProps: { 'data-testid': 'add-training-date-field' },
               },
@@ -179,12 +184,14 @@ export default function TrainingDialog(
             courses={courses}
             selectedCourse={selectedCourse}
             setSelectedCourse={setSelectedCourse}
+            error={coursesError}
           />
 
           <CompensationValueDropdown
             compensations={compensationValues}
             selectedCompensationValue={selectedCompensationValue}
             setSelectedCompensationValue={setSelectedCompensationValue}
+            error={compensationError}
           />
 
           <TextField

@@ -36,17 +36,17 @@ function EnterHelpText() {
     </Typography>
     <Typography>
       Um ein neues Training einzugeben, klick auf "Training hinzufügen".
-      In der Eingabemaske kannst du die Kurse und Vergütungen auswählen, die das Büro für dich hinterlegt hat.
-      Wenn du nichts auswählen kannst, ist nur ein Kurs und/oder eine Vergütung eingetragen.
+      In der Eingabemaske kannst du die Kurse und Pauschalen auswählen, die das Büro für dich hinterlegt hat.
+      Wenn etwas fehlt, melde dich bitte beim Büro.
     </Typography>
     <Typography>
-      Wenn du das Training speichert, wird es vom Büro freigegeben, und am Ende des Quartals überwiesen.
+      Wenn du das Training speichert, wird es vom Büro freigegeben, und die zugehören Pauschale am Ende des Quartals gesammelt überwiesen.
       Du siehst den Status deines Trainings ganz rechts in der Tabelle unter der Spalte "Status".
     </Typography>
     <Typography>
-      Um ein Training zu bearbeiten oder zu löschen, klicke erst auf die entsprechende Zeile und klicke dann auf
+      Um ein Training zu bearbeiten oder zu löschen, klicke erst auf die entsprechende Zeile und dann auf
       "Löschen" oder "Bearbeiten".
-      Freigegebene (oder überwiesene Kurse) können nicht mehr bearbeitet werden.
+      Kurse, die schon freigegeben oder überwiesen worden sind, können nicht mehr bearbeitet werden.
     </Typography>
   </React.Fragment>;
 }
