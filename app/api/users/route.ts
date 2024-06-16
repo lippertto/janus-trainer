@@ -97,7 +97,8 @@ export async function POST(
   nextRequest: NextRequest,
 ): Promise<NextResponse<UserDto | ErrorDto>> {
   try {
-    return await createUser(nextRequest);
+    await allowOnlyAdmins(nextRequest);
+    return await createUser(await nextRequest.json());
   } catch (e) {
     return handleTopLevelCatch(e);
   }

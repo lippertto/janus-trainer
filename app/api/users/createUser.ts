@@ -1,6 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { allowOnlyAdmins, validateOrThrow } from '@/lib/helpers-for-api';
-import { v4 as uuidv4 } from 'uuid';
+import { NextResponse } from 'next/server';
+import { validateOrThrow } from '@/lib/helpers-for-api';
 import prisma from '@/lib/prisma';
 import { UserCreateRequest } from '@/lib/dto';
 import {
@@ -8,37 +7,23 @@ import {
   createCognitoUser,
   enableCognitoUser,
   getUserByEmail,
-  ParsedCognitoUser, setGroupsForUser,
+  setGroupsForUser,
 } from '@/app/api/users/cognito';
 
 /** Creates a users in cognito and in the database. */
-export async function createUser(nextRequest: NextRequest) {
-  await allowOnlyAdmins(nextRequest);
-  const request = await validateOrThrow<UserCreateRequest>(await nextRequest.json());
+export async function createUser(payload: any) {
+  const request = await validateOrThrow<UserCreateRequest>(payload);
 
-  let cognitoUser: ParsedCognitoUser | null;
-  if (!process.env.JEST_WORKER_ID) {
-    // we skip the cognito communication in unit tests.1
-    const client = createCognitoClient();
+  const client = createCognitoClient();
 
-    cognitoUser = await getUserByEmail(client, request.email);
-
-    if (!cognitoUser) {
-      cognitoUser = await createCognitoUser(client, request.email, request.name);
-      await setGroupsForUser(client, cognitoUser.username, request.groups)
-    } else if (!cognitoUser.enabled) {
-      await enableCognitoUser(client, request.email);
-      await setGroupsForUser(client, cognitoUser.username, request.groups);
-      cognitoUser = {...cognitoUser, enabled: true, groups: request.groups};
-    }
-  } else {
-    cognitoUser = {
-      username: uuidv4(),
-      email: request.email,
-      name: request.name,
-      groups: request.groups,
-      enabled: true,
-    };
+  let cognitoUser = await getUserByEmail(client, request.email);
+  if (!cognitoUser) {
+    cognitoUser = await createCognitoUser(client, request.email, request.name);
+    cognitoUser.groups = await setGroupsForUser(client, cognitoUser.username, request.groups);
+  } else if (!cognitoUser.enabled) {
+    await enableCognitoUser(client, request.email);
+    cognitoUser.enabled = true;
+    cognitoUser.groups = await setGroupsForUser(client, cognitoUser.username, request.groups);
   }
 
   let dbUser = await prisma.userInDb.findFirst({ where: { id: cognitoUser.username } });

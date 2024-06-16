@@ -290,7 +290,7 @@ export async function updateCognitoUser(
     }),
   );
 
-  return setGroupsForUser(client, id, groups);
+  await setGroupsForUser(client, id, groups);
 }
 
 
@@ -299,7 +299,7 @@ export async function setGroupsForUser(
   client: CognitoIdentityProviderClient,
   username: string,
   groups: Group[],
-): Promise<void> {
+): Promise<Group[]> {
   for (const groupString in Group) {
     const group = Group[groupString as any as keyof typeof Group];
     await ensureOneGroupMembership(
@@ -309,6 +309,7 @@ export async function setGroupsForUser(
       groups.indexOf(group) !== -1,
     );
   }
+  return groups;
 }
 
 
