@@ -61,6 +61,16 @@ export function UserDialog({
   const [isAdmin, setIsAdmin] = React.useState<boolean>(false);
   const [compensationGroups, setCompensationGroups] = React.useState<CompensationGroupState>({ ...NO_COMPENSATION_GROUPS });
 
+  const resetFields = React.useCallback(() => {
+    setName('');
+    setEmail('');
+    setIban('');
+    setIsTrainer(false);
+    setIsAdmin(false);
+    setCompensationGroups({ ...NO_COMPENSATION_GROUPS });
+    }, [setName, setEmail, setIban, setIsTrainer, setIsAdmin, setCompensationGroups]
+  )
+
   if (previousUser !== userToEdit) {
     setPreviousUser(userToEdit);
     if (userToEdit) {
@@ -74,14 +84,8 @@ export function UserDialog({
         withQualification: userToEdit.compensationGroups.indexOf(CompensationGroup.WITH_QUALIFICATION) !== -1,
         league: userToEdit.compensationGroups.indexOf(CompensationGroup.LEAGUE) !== -1,
       });
-
     } else {
-      setName('');
-      setEmail('');
-      setIban('');
-      setIsTrainer(false);
-      setIsAdmin(false);
-      setCompensationGroups({ ...NO_COMPENSATION_GROUPS });
+      resetFields();
     }
   }
 
@@ -190,6 +194,7 @@ export function UserDialog({
       <DialogActions>
         <Button
           onClick={() => {
+            setInterval(resetFields, 200);
             handleClose();
           }}
         >
@@ -210,6 +215,7 @@ export function UserDialog({
                 compensationGroups: compensationGroupStateToCompensationGroups(compensationGroups),
               },
             );
+            setInterval(resetFields, 200);
             handleClose();
           }}
           autoFocus
