@@ -98,7 +98,6 @@ function TrainerDropdown({ trainers, selectedTrainers, setSelectedTrainers }: Tr
   return <React.Fragment>
     <Autocomplete
       options={trainers}
-      defaultValue={[]}
       multiple={true}
       renderTags={(tagValue, _) => {
         return tagValue.map((option, _) => (
@@ -122,6 +121,10 @@ function TrainerDropdown({ trainers, selectedTrainers, setSelectedTrainers }: Tr
       value={selectedTrainers}
       onChange={(_, value) => {
         setSelectedTrainers(value);
+      }}
+      // this method needs to be set to sync the value with the list
+      isOptionEqualToValue={(option: TrainerLight, value: TrainerLight) => {
+        return option.id === value.id;
       }}
     />
 
@@ -176,7 +179,7 @@ export function CourseDialog(
       <DialogTitle>{courseToEdit ? 'Kurs bearbeiten' : 'Kurs hinzufügen'}</DialogTitle>
 
       <DialogContent>
-        <Stack direction={'row'} spacing={2}>
+        <Stack direction={'row'} spacing={2}  sx={{pt: 1}}>
           <Stack spacing={2}>
             <TextField
               label="Name des Kurses"
