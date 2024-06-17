@@ -1,5 +1,5 @@
 import dayjs from 'dayjs';
-import { CompensationGroup } from '@prisma/client';
+import { CompensationGroup, TrainingStatus } from '@prisma/client';
 import { Group } from '@/lib/dto';
 
 require('dayjs/locale/de');
@@ -14,7 +14,7 @@ export function dateToHumanReadable(value: string) {
 }
 
 /** Takes a number of cents and displays them formatted in Euros */
-export function centsToDisplayString(cents: number) {
+export function centsToHumanReadable(cents: number) {
   return new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(cents / 100);
 }
 
@@ -45,5 +45,18 @@ export function groupToHumanReadable(group: Group) {
       return "Übungsleiter";
     default:
       return "???";
+  }
+}
+
+export function trainingStatusToHumanReadable(value: TrainingStatus) {
+  if (value === TrainingStatus.NEW) {
+    return 'neu';
+  } else if (value === TrainingStatus.APPROVED) {
+    return 'freigegeben';
+  } else if (value === TrainingStatus.COMPENSATED) {
+    return 'überwiesen';
+  } else {
+    console.log(`Found bad status '${value}'`);
+    return '?';
   }
 }

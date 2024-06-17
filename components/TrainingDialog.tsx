@@ -14,7 +14,8 @@ import { DatePicker } from '@mui/x-date-pickers';
 import dayjs from 'dayjs';
 import { CompensationValueDto, CourseDto, TrainingCreateRequest, TrainingDto } from '@/lib/dto';
 import Autocomplete from '@mui/material/Autocomplete';
-import { centsToDisplayString } from '@/lib/formatters';
+import { centsToHumanReadable, dateToHumanReadable } from '@/lib/formatters';
+import { useConfirm } from 'material-ui-confirm';
 
 type CoursesDropdown = {
   courses: CourseDto[],
@@ -95,14 +96,15 @@ type TrainingDialogProps = {
   open: boolean;
   userId: string;
   handleClose: () => void;
-  handleConfirm: (data: TrainingCreateRequest) => void;
+  handleSave: (data: TrainingCreateRequest) => void;
+  handleDelete?: (v: TrainingDto) => void;
   toEdit: TrainingDto | null;
   courses: CourseDto[],
   compensationValues: CompensationValueDto[],
 };
 
 function compensationValueToText(cv: CompensationValueDto) {
-  return `${cv.description} (${(centsToDisplayString(cv.cents))})`;
+  return `${cv.description} (${(centsToHumanReadable(cv.cents))})`;
 }
 
 export default function TrainingDialog(
@@ -111,7 +113,8 @@ export default function TrainingDialog(
     courses,
     userId,
     handleClose,
-    handleConfirm,
+    handleSave,
+    handleDelete,
     toEdit,
     compensationValues,
   }: TrainingDialogProps) {
@@ -121,6 +124,16 @@ export default function TrainingDialog(
   const [selectedCourse, setSelectedCourse] = React.useState<CourseDto | null>(null);
   const [previousTraining, setPreviousTraining] = React.useState<TrainingDto | null>();
 
+  const resetFields = React.useCallback(() => {
+    if (courses.length > 0) {
+      setSelectedCourse(courses[0]);
+    } else {
+      setSelectedCourse(null);
+    }
+    setDate(dayjs());
+    setParticipantCount(0);
+  }, [courses, setSelectedCourse, setDate, setParticipantCount]);
+
   if (toEdit !== previousTraining) {
     setPreviousTraining(toEdit);
     if (toEdit) {
@@ -129,13 +142,7 @@ export default function TrainingDialog(
       setParticipantCount(Number(toEdit.participantCount));
       setSelectedCompensationValue(compensationValues.find((cv) => (cv.cents === toEdit.compensationCents)) ?? null);
     } else {
-      if (courses.length > 0) {
-        setSelectedCourse(courses[0]);
-      } else {
-        setSelectedCourse(null);
-      }
-      setDate(dayjs());
-      setParticipantCount(0);
+      resetFields();
     }
   }
 
@@ -152,6 +159,21 @@ export default function TrainingDialog(
 
   const thereIsAnError =
     dateError !== ' ' || participantCountError !== ' ' || compensationError !== ' ' || coursesError !== ' ';
+
+  const confirm = useConfirm();
+  const handleDeleteClick = (training: TrainingDto) => {
+    confirm({
+      title: 'Training löschen?',
+      description: `Soll das Training "${training.course.name}" vom ${dateToHumanReadable(training.date)} gelöscht werden?`,
+    })
+      .then(
+        () => {
+          handleDelete!(training);
+          handleClose();
+        },
+      ).catch(() => {
+    });
+  };
 
 
   return (
@@ -201,12 +223,21 @@ export default function TrainingDialog(
         </Stack>
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleClose}>Abbrechen</Button>
+        <Button onClick={
+          () => {
+            handleClose();
+            setTimeout(resetFields, 300);
+          }}>Abbrechen</Button>
+        {
+          handleDelete ?
+            <Button onClick={() => handleDeleteClick(toEdit!)} color={'error'}>löschen</Button>
+            : null
+        }
         <Button
           disabled={thereIsAnError}
           data-testid="add-training-save-button"
           onClick={() => {
-            handleConfirm({
+            handleSave({
               date: date!.format('YYYY-MM-DD'),
               courseId: selectedCourse!.id,
               compensationCents: selectedCompensationValue!.cents,
@@ -214,6 +245,7 @@ export default function TrainingDialog(
               userId,
             });
             handleClose();
+            setTimeout(resetFields, 300);
           }}
         >
           Speichern

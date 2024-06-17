@@ -13,7 +13,7 @@ import Stack from '@mui/material/Stack';
 import InputAdornment from '@mui/material/InputAdornment';
 import { useConfirm } from 'material-ui-confirm';
 import { CompensationValueCreateRequest, CompensationValueDto } from '@/lib/dto';
-import { centsToDisplayString, compensationGroupToHumanReadable } from '@/lib/formatters';
+import { centsToHumanReadable, compensationGroupToHumanReadable } from '@/lib/formatters';
 import { CompensationGroup } from '@prisma/client';
 import Autocomplete from '@mui/material/Autocomplete';
 import { compensationValuesSuspenseQuery } from '@/lib/shared-queries';
@@ -42,7 +42,7 @@ function CompensationValueListItem(
   return <ListItemButton
     key={key} onClick={() => props.handleClick(compensationValue)}
     selected={props.selected}>
-    <ListItemText primary={`${compensationValue.description}: ${centsToDisplayString(compensationValue.cents)}`}
+    <ListItemText primary={`${compensationValue.description}: ${centsToHumanReadable(compensationValue.cents)}`}
                   secondary={secondary}
     />
   </ListItemButton>;
