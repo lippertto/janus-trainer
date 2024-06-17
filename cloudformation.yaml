@@ -44,7 +44,7 @@ Resources:
         InviteMessageTemplate:
           EmailMessage: !Sub |
             Hallo, ein Konto in der Janus Trainer App wurde für dich erstellt.
-            Dein Account hat die email {username}, dein temporäres Passwort ist {####}
+            Dein Account hat die email {username}, dein temporäres Passwort ist "{####}" ohne Anführungszeichen.
             Du musst es beim ersten Einloggen ändern.
             Du findest die App unter https://${JanusDomain} Sportliche Grüße Dein SC Janus.
           EmailSubject: 'Neues Konto in der Janus Trainer App'
