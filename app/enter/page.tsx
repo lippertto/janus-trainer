@@ -107,7 +107,7 @@ function EnterPageContents(props: { session: JanusSession }) {
     <Stack spacing={1}>
 
       <Paper>
-        {trainings.length > 1 ?
+        {trainings.length > 0 ?
         <TrainingList
           trainings={trainings}
           holidays={holidays}
