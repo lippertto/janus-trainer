@@ -69,10 +69,10 @@ function EnterPageContents(props: { session: JanusSession }) {
     session.userId,
     session.accessToken,
   );
-  const {data: user} = userSuspenseQuery(session.userId, session.accessToken)
+  const { data: user } = userSuspenseQuery(session.userId, session.accessToken);
 
-  const createTrainingMutation = trainingCreateQuery(session.accessToken, trainings, setTrainings, "DESC");
-  const updateTrainingMutation = trainingUpdateQuery(session.accessToken, trainings, setTrainings, "DESC");
+  const createTrainingMutation = trainingCreateQuery(session.accessToken, trainings, setTrainings, 'DESC');
+  const updateTrainingMutation = trainingUpdateQuery(session.accessToken, trainings, setTrainings, 'DESC');
   const deleteTrainingMutation = trainingDeleteQuery(session.accessToken, trainings, setTrainings);
 
   const holidayResult = holidaysQuery(
@@ -98,7 +98,7 @@ function EnterPageContents(props: { session: JanusSession }) {
 
   useEffect(() => {
     if (resultHasData(trainingResult)) {
-      setTrainings(trainingResult.data.toSorted((a, b) => compareByStringField(a, b, "date")).toReversed());
+      setTrainings(trainingResult.data.toSorted((a, b) => compareByStringField(a, b, 'date')).toReversed());
     }
   }, [trainingResult.data]);
 
@@ -107,14 +107,17 @@ function EnterPageContents(props: { session: JanusSession }) {
     <Stack spacing={1}>
 
       <Paper>
-      <TrainingList
-        trainings={trainings}
-        holidays={holidays}
-        handleEdit={(v) => {
-          setTrainingToEdit(v);
-          setShowTrainingDialog(true);
-        }}
-      />
+        {trainings.length > 1 ?
+        <TrainingList
+          trainings={trainings}
+          holidays={holidays}
+          handleEdit={(v) => {
+            setTrainingToEdit(v);
+            setShowTrainingDialog(true);
+          }}
+        />
+          : "Noch keine Trainings eingetragen."
+        }
       </Paper>
     </Stack>
 
@@ -126,9 +129,9 @@ function EnterPageContents(props: { session: JanusSession }) {
         right: 16,
       }}
       onClick={() => {
-      setTrainingToEdit(null);
-      setShowTrainingDialog(true);
-    }}>
+        setTrainingToEdit(null);
+        setShowTrainingDialog(true);
+      }}>
       <AddIcon />
     </Fab>
 
@@ -152,9 +155,9 @@ function EnterPageContents(props: { session: JanusSession }) {
       }
       handleDelete={
         trainingToEdit ? (v: TrainingDto) => {
-          deleteTrainingMutation.mutate(v)
-      } : undefined
-    }
+          deleteTrainingMutation.mutate(v);
+        } : undefined
+      }
     />
   </React.Fragment>
 
