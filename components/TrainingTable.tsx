@@ -23,85 +23,30 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 
-import Tooltip, { tooltipClasses, TooltipProps } from '@mui/material/Tooltip';
+import Tooltip from '@mui/material/Tooltip';
 
 import { JanusSession } from '@/lib/auth';
 import TrainingDialog from './TrainingDialog';
 
-import { showError, showSuccess } from '@/lib/notifications';
-import { styled } from '@mui/material/styles';
-import { DayOfWeek, Holiday, TrainingStatus } from '@prisma/client';
-import {
-  CompensationValueDto,
-  CourseDto,
-  HolidayDto,
-  TrainingCreateRequest,
-  TrainingDto,
-  TrainingUpdateRequest,
-} from '@/lib/dto';
+import { showError } from '@/lib/notifications';
+import { Holiday, TrainingStatus } from '@prisma/client';
+import { CompensationValueDto, CourseDto, TrainingCreateRequest, TrainingDto } from '@/lib/dto';
 import { useMutation } from '@tanstack/react-query';
-import { createInApi, deleteFromApi, patchInApi, updateInApi } from '@/lib/fetch';
+import { patchInApi } from '@/lib/fetch';
 import { API_TRAININGS } from '@/lib/routes';
 import { useConfirm } from 'material-ui-confirm';
-import { centsToDisplayString, dateToHumanReadable, getDateFromIso8601 } from '@/lib/formatters';
+import {
+  centsToHumanReadable,
+  dateToHumanReadable,
+  getDateFromIso8601,
+  trainingStatusToHumanReadable,
+} from '@/lib/formatters';
 import { replaceElementWithId } from '@/lib/sort-and-filter';
+import { warningsForDate } from '@/lib/warnings-for-date';
+import { trainingCreateQuery, trainingDeleteQuery, trainingUpdateQuery } from '@/lib/shared-queries';
 
 require('dayjs/locale/de');
 dayjs.locale('de');
-
-function dayOfWeekToInt(d: DayOfWeek): number {
-  switch (d) {
-    case 'MONDAY':
-      return 1;
-    case 'TUESDAY':
-      return 2;
-    case 'WEDNESDAY':
-      return 3;
-    case 'THURSDAY':
-      return 4;
-    case 'FRIDAY':
-      return 5;
-    case 'SATURDAY':
-      return 6;
-    case 'SUNDAY':
-      return 0;
-  }
-}
-
-const GERMAN_DAYS: string[] = new Array(7);
-GERMAN_DAYS[0] = 'So';
-GERMAN_DAYS[1] = 'Mo'
-GERMAN_DAYS[2] = 'Di'
-GERMAN_DAYS[3] = 'Mi'
-GERMAN_DAYS[4] = 'Do'
-GERMAN_DAYS[5] = 'Fr'
-GERMAN_DAYS[6] = 'Sa'
-
-function warningForDate(dateString: string, holidays: HolidayDto[], weekdays: DayOfWeek[]): string | null {
-  let dayNumber = new Date(dateString).getDay();
-  if (dayNumber === 0) {
-    return 'Ist ein Sonntag';
-  }
-  for (const h of holidays) {
-    if (dateString >= h.start && dateString <= h.end) {
-      return `Kollidiert mit dem Feiertag ${h.name}`;
-    }
-  }
-  let isOnValidWeekday = false;
-  for (const wd of weekdays) {
-    if (dayNumber === dayOfWeekToInt(wd)) {
-      isOnValidWeekday = true;
-    }
-  }
-  if (!isOnValidWeekday) {
-    const allowedDays = weekdays.map(
-      (wd) => (GERMAN_DAYS.at(dayOfWeekToInt(wd)))
-    ).join(", ");
-    return `Kurs findet nur an diesen Tagen statt: ${allowedDays}`
-  }
-
-  return null;
-}
 
 function buildGridColumns(
   holidays: Holiday[],
@@ -123,10 +68,10 @@ function buildGridColumns(
       field: 'warnings',
       headerName: '',
       renderCell: ({ row }: {row: TrainingDto}) => {
-        const dateMessage = warningForDate(row.date, holidays, row.course.weekdays);
-        if (dateMessage) {
+        const dateMessages = warningsForDate(row.date, holidays, row.course.weekdays);
+        if (dateMessages.length !== 0) {
           return (
-            <Tooltip title={dateMessage}>
+            <Tooltip title={dateMessages.join(", ")}>
               <WarningAmberIcon sx={{ color: 'orange' }} />
             </Tooltip>
           );
@@ -159,26 +104,15 @@ function buildGridColumns(
     },
     {
       field: 'compensationCents',
-      headerName: 'Vergütung',
+      headerName: 'Pauschale',
       flex: 1,
-      valueFormatter: (value) => (centsToDisplayString(value.value)),
+      valueFormatter: (value) => (centsToHumanReadable(value.value)),
     },
     {
       field: 'status',
       headerName: 'Status',
       flex: 1,
-      valueGetter: (params) => {
-        if (params.value === TrainingStatus.NEW) {
-          return 'neu';
-        } else if (params.value === TrainingStatus.APPROVED) {
-          return 'freigegeben';
-        } else if (params.value === TrainingStatus.COMPENSATED) {
-          return 'überwiesen';
-        } else {
-          console.log(`Found bad status '${params.value}'`);
-          return '?';
-        }
-      },
+      valueGetter: (params) => (trainingStatusToHumanReadable(params.value)),
     },
     {
       field: 'approvalActions',
@@ -330,52 +264,9 @@ export default function TrainingTable(
     },
   });
 
-  const createTrainingMutation = useMutation({
-    mutationFn: (data: TrainingCreateRequest) => {
-      return createInApi<TrainingDto>(API_TRAININGS, data, session?.accessToken ?? '');
-    },
-    onSuccess: (createdTraining: TrainingDto) => {
-      setTrainings([...trainings, createdTraining]);
-      showSuccess(`Training für ${createdTraining.course.name} erstellt`);
-    },
-    onError: (e) => {
-      showError(`Fehler beim Erstellen des Trainings`, e.message);
-    },
-  });
-
-  const deleteTrainingMutation = useMutation({
-    mutationFn: (t: TrainingDto) => {
-      return deleteFromApi<TrainingDto>(API_TRAININGS, t, session?.accessToken ?? '');
-    },
-    onSuccess: (deleted: TrainingDto) => {
-      setTrainings(trainings.filter((t) => (t.id !== deleted.id)));
-      showSuccess(`Training für ${deleted.course.name} gelöscht`);
-    },
-    onError: (e) => {
-      showError(`Fehler beim Löschen des Trainings`, e.message);
-    },
-  });
-
-  const updateTrainingMutation = useMutation({
-      mutationFn: (props: { data: TrainingUpdateRequest, trainingId: number }) => {
-        return updateInApi<TrainingDto>(API_TRAININGS, props.trainingId, props.data, session?.accessToken ?? '');
-      },
-      onSuccess: (data: TrainingDto) => {
-        const newTrainings = trainings.map((d) => {
-          if (d.id === data.id) {
-            return data;
-          } else {
-            return d;
-          }
-        });
-        setTrainings(newTrainings);
-        showSuccess(`Training ${data.course.name} vom ${dateToHumanReadable(data.date)} aktualisiert`);
-      },
-      onError: (e) => {
-        showError(`Fehler beim Aktualisieren des Trainings`, e.message);
-      },
-    },
-  );
+  const createTrainingMutation = trainingCreateQuery(session.accessToken, trainings, setTrainings);
+  const deleteTrainingMutation = trainingDeleteQuery(session.accessToken, trainings, setTrainings);
+  const updateTrainingMutation = trainingUpdateQuery(session.accessToken, trainings, setTrainings);
 
   const confirm = useConfirm();
   const handleDeleteClick = (training: TrainingDto) => {
@@ -460,7 +351,7 @@ export default function TrainingTable(
           setActiveTraining(null);
           setShowTrainingDialog(false);
         }}
-        handleConfirm={(data: TrainingCreateRequest) => {
+        handleSave={(data: TrainingCreateRequest) => {
           if (activeTraining) {
             updateTrainingMutation.mutate({ trainingId: activeTraining.id, data });
           } else {

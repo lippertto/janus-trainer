@@ -108,7 +108,7 @@ function ProfilePageContents({ session }: { session: JanusSession }) {
           disabled={true}
           label="Pauschalen-Gruppen"
           value={
-            user.compensationGroups.length > 1 ?
+            user.compensationGroups.length > 0 ?
               user.compensationGroups.map(compensationGroupToHumanReadable).join(', ') :
               'keine'
           }

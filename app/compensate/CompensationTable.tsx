@@ -1,7 +1,7 @@
 import { DataGrid, GridActionsCellItem, GridColDef, GridRowParams } from '@mui/x-data-grid';
 import React from 'react';
 import { CompensationDto } from '@/lib/dto';
-import { centsToDisplayString } from '@/lib/formatters';
+import { centsToHumanReadable } from '@/lib/formatters';
 import LaunchIcon from '@mui/icons-material/Launch';
 import { useRouter } from 'next/navigation';
 
@@ -28,7 +28,7 @@ export default function CompensationTable({
       field: 'totalCompensationCents',
       headerName: 'Betrag',
       valueFormatter: (params) => {
-        return centsToDisplayString(params.value);
+        return centsToHumanReadable(params.value);
       },
       flex: 1,
     },

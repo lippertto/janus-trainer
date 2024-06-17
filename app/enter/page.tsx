@@ -2,8 +2,6 @@
 
 import React, { useEffect } from 'react';
 
-import TrainingTable from '@/components/TrainingTable';
-
 import { useSession } from 'next-auth/react';
 import type { JanusSession } from '@/lib/auth';
 import LoginRequired from '@/components/LoginRequired';
@@ -15,18 +13,24 @@ import {
   compensationValuesSuspenseQuery,
   coursesForTrainerSuspenseQuery,
   holidaysQuery,
-  resultHasData, userSuspenseQuery,
+  resultHasData,
+  trainingCreateQuery,
+  trainingDeleteQuery,
+  trainingUpdateQuery, userSuspenseQuery,
 } from '@/lib/shared-queries';
-import IconButton from '@mui/material/IconButton';
-import HelpIcon from '@mui/icons-material/Help';
 import Stack from '@mui/system/Stack';
-import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { CompensationGroup } from '@prisma/client';
+import { TrainingList } from '@/app/enter/TrainingList';
+import TrainingDialog from '@/components/TrainingDialog';
+import Paper from '@mui/material/Paper';
+import { compareByStringField } from '@/lib/sort-and-filter';
+import { Fab } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
 
 
 function allowedCompensationValues(values: CompensationValueDto[], groups: CompensationGroup[]) {
-  return values.filter((v) => (groups.indexOf(v.compensationGroup) !== -1))
+  return values.filter((v) => (groups.indexOf(v.compensationGroup) !== -1));
 }
 
 function EnterHelpText() {
@@ -40,7 +44,8 @@ function EnterHelpText() {
       Wenn etwas fehlt, melde dich bitte beim Büro.
     </Typography>
     <Typography>
-      Wenn du das Training speichert, wird es vom Büro freigegeben, und die zugehören Pauschale am Ende des Quartals gesammelt überwiesen.
+      Wenn du das Training speichert, wird es vom Büro freigegeben, und die zugehören Pauschale am Ende des Quartals
+      gesammelt überwiesen.
       Du siehst den Status deines Trainings ganz rechts in der Tabelle unter der Spalte "Status".
     </Typography>
     <Typography>
@@ -52,17 +57,23 @@ function EnterHelpText() {
 }
 
 function EnterPageContents(props: { session: JanusSession }) {
-  const {session} = props;
+  const { session } = props;
   const [trainings, setTrainings] = React.useState<TrainingDto[]>([]);
   const [holidays, setHolidays] = React.useState<HolidayDto[]>([]);
   const [showHelp, setShowHelp] = React.useState(false);
+  const [trainingToEdit, setTrainingToEdit] = React.useState<TrainingDto | null>(null);
+  const [showTrainingDialog, setShowTrainingDialog] = React.useState<boolean>(false);
 
-  const { data: user } = userSuspenseQuery(session.userId, session.accessToken);
   const { data: compensationValues } = compensationValuesSuspenseQuery(session.accessToken);
   const { data: courses } = coursesForTrainerSuspenseQuery(
     session.userId,
     session.accessToken,
   );
+  const { data: user } = userSuspenseQuery(session.userId, session.accessToken);
+
+  const createTrainingMutation = trainingCreateQuery(session.accessToken, trainings, setTrainings, 'DESC');
+  const updateTrainingMutation = trainingUpdateQuery(session.accessToken, trainings, setTrainings, 'DESC');
+  const deleteTrainingMutation = trainingDeleteQuery(session.accessToken, trainings, setTrainings);
 
   const holidayResult = holidaysQuery(
     session.accessToken,
@@ -87,34 +98,70 @@ function EnterPageContents(props: { session: JanusSession }) {
 
   useEffect(() => {
     if (resultHasData(trainingResult)) {
-      setTrainings(trainingResult.data);
+      setTrainings(trainingResult.data.toSorted((a, b) => compareByStringField(a, b, 'date')).toReversed());
     }
   }, [trainingResult.data]);
 
 
-  return (
+  return <React.Fragment>
     <Stack spacing={1}>
-      <Box display="flex" justifyContent="flex-end">
-        <IconButton aria-label={'Hilfe'} onClick={() => setShowHelp(!showHelp)}>
-          <HelpIcon />
-        </IconButton>
-      </Box>
-      {showHelp ? <EnterHelpText /> : null}
 
-      <TrainingTable
-        trainings={trainings}
-        holidays={holidays}
-        compensationValues={allowedCompensationValues(compensationValues, user.compensationGroups)}
-        setTrainings={(t) => {
-          setTrainings(t);
-        }}
-        courses={courses}
-        approvalMode={false}
-        session={session}
-        data-testid="enter-training-table"
-      />
+      <Paper>
+        {trainings.length > 1 ?
+        <TrainingList
+          trainings={trainings}
+          holidays={holidays}
+          handleEdit={(v) => {
+            setTrainingToEdit(v);
+            setShowTrainingDialog(true);
+          }}
+        />
+          : "Noch keine Trainings eingetragen."
+        }
+      </Paper>
     </Stack>
-  );
+
+    <Fab
+      color="primary"
+      sx={{
+        position: 'absolute',
+        bottom: 16,
+        right: 16,
+      }}
+      onClick={() => {
+        setTrainingToEdit(null);
+        setShowTrainingDialog(true);
+      }}>
+      <AddIcon />
+    </Fab>
+
+    <TrainingDialog
+      compensationValues={allowedCompensationValues(compensationValues, user.compensationGroups)}
+      courses={courses}
+      userId={session.userId}
+      open={showTrainingDialog}
+      toEdit={trainingToEdit}
+      handleClose={() => {
+        setShowTrainingDialog(false);
+        setTimeout(() => {
+          setTrainingToEdit(null);
+        }, 300);
+      }}
+      handleSave={
+        trainingToEdit ? (data) => {
+            updateTrainingMutation.mutate({ data, trainingId: trainingToEdit.id });
+          } :
+          createTrainingMutation.mutate
+      }
+      handleDelete={
+        trainingToEdit ? (v: TrainingDto) => {
+          deleteTrainingMutation.mutate(v);
+        } : undefined
+      }
+    />
+  </React.Fragment>
+
+    ;
 }
 
 export default function EnterPage() {
