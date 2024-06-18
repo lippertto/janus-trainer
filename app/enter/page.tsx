@@ -111,12 +111,12 @@ function EnterPageContents(props: { session: JanusSession }) {
         <TrainingList
           trainings={trainings}
           holidays={holidays}
-          handleEdit={(v) => {
+          handleEdit={(v: TrainingDto) => {
             setTrainingToEdit(v);
             setShowTrainingDialog(true);
           }}
         />
-          : "Noch keine Trainings eingetragen."
+          : <Typography>Noch keine Trainings eingetragen.</Typography>
         }
       </Paper>
     </Stack>
