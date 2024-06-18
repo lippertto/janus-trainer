@@ -20,13 +20,15 @@ jobs:
       - run: yarn start:dev &
       - name: Install Playwright Browsers
         run: yarn playwright install firefox --with-deps
+      - name: Remove .env for tests
+        run: rm -f playwright/.env
       - name: Run Playwright tests
         run: yarn playwright:test
         env:
           PLAYWRIGHT_BASE_URL: "https://janus-test.lippert.dev"
-          COGNITO_ADMIN_USERNAME: ltrd@fastmail.fm
+          COGNITO_ADMIN_USERNAME: janus.test.admin@fastmail.com
           COGNITO_ADMIN_PASSWORD: ${{ secrets.cognito-admin-password }}
-          COGNITO_TRAINER_USERNAME: tobias.lippert@fastmail.com
+          COGNITO_TRAINER_USERNAME: janus.test.trainer.1@fastmail.com
           COGNITO_TRAINER_PASSWORD: ${{ secrets.cognito-trainer-password }}
       - uses: actions/upload-artifact@v4
         if: always()
