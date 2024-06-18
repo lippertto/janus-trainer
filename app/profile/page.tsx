@@ -44,6 +44,9 @@ function ProfilePageContents({ session }: { session: JanusSession }) {
     },
   });
 
+  // Beate Kubny reported an empty groups array.
+  const groupsDisplayString = user.groups ? user.groups.map(groupToHumanReadable).toSorted().join(', ') : "Keine Gruppen zugewiesen";
+
   return <React.Fragment>
     <Grid container display={'flex'} spacing={2} sx={{ pl: 2, pr: 2 }}>
       <Grid xs={12}>
@@ -86,7 +89,7 @@ function ProfilePageContents({ session }: { session: JanusSession }) {
           fullWidth
           disabled={true}
           label="Gruppen"
-          value={user.groups.toSorted().map(groupToHumanReadable).join(', ')}
+          value={groupsDisplayString}
         />
       </Grid>
       <Grid xs={6}>
