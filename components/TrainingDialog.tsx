@@ -213,24 +213,28 @@ export default function TrainingDialog(
           <TextField
             type="number"
             label="Anzahl Teilnehmer"
-            data-testid="add-training-participant-count-field"
             value={participantCount}
             onChange={(e) => setParticipantCount(parseInt(e.target.value))}
-            inputProps={{ min: 1 }}
+            inputProps={{
+              min: 1, "data-testid": 'add-training-participant-count-field',
+            }}
             error={participantCountError !== ' '}
             helperText={participantCountError}
           />
         </Stack>
       </DialogContent>
       <DialogActions>
-        <Button onClick={
+        <Button
+          onClick={
           () => {
             handleClose();
             setTimeout(resetFields, 300);
           }}>Abbrechen</Button>
         {
           handleDelete ?
-            <Button onClick={() => handleDeleteClick(toEdit!)} color={'error'}>löschen</Button>
+            <Button
+              data-testid="add-training-delete-button"
+              onClick={() => handleDeleteClick(toEdit!)} color={'error'}>löschen</Button>
             : null
         }
         <Button

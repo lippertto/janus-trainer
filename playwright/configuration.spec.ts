@@ -30,6 +30,7 @@ test.describe.serial('Configuration page', () => {
     await page.getByRole('button', { name: 'Ok' }).click();
     await expect(page.getByText(holidayName, {exact: true})).toBeHidden();
 
+    await page.close();
     await browser.close();
   });
 

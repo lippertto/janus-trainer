@@ -123,7 +123,9 @@ function EnterPageContents(props: { session: JanusSession }) {
       onClick={() => {
         setTrainingToEdit(null);
         setShowTrainingDialog(true);
-      }}>
+      }}
+      data-testid="enter-training-button"
+    >
       <AddIcon />
     </Fab>
 
