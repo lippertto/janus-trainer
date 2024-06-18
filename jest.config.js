@@ -5,4 +5,9 @@ module.exports = {
   moduleNameMapper: {
     '@/(.*)$': ['<rootDir>/$1'],
   },
+  modulePathIgnorePatterns: ["playwright"],
+  transform: {
+    "^.+\\.[jt]sx$": ["babel-jest", {configFile: './babel.config.testing.js'}],
+  },
+  testMatch: ["**/*.test.tsx", "**/*.test.ts"]
 };

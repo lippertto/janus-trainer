@@ -57,11 +57,11 @@ describe('sepa generation works', () => {
     const transactions = select(TRANSACTIONS, sepaDom, false);
     expect(transactions).toHaveLength(2);
     // test the text for the first transaction
-    const remittanceInfo = select(
+    const remittanceInfo: Node[] = select(
       `${TRANSACTIONS}/pain:RmtInf/pain:Ustrd/text()`,
       sepaDom,
       false,
-    );
+    ) as any;
     expect(remittanceInfo[0].textContent).toBe(
       'Aufwandsentschädigung 2023-04-01..2023-04-30',
     );
@@ -70,16 +70,16 @@ describe('sepa generation works', () => {
       `${TRANSACTIONS}/pain:Amt/pain:InstdAmt/text()`,
       sepaDom,
       false,
-    );
+    )as any as Node[];
     expect(instructedAmounts).toHaveLength(2);
-    expect(instructedAmounts[0].textContent).toBe('500.00');
-    expect(instructedAmounts[1].textContent).toBe('100.00');
+    expect(instructedAmounts[0]?.textContent).toBe('500.00');
+    expect(instructedAmounts[1]?.textContent).toBe('100.00');
     // test the names
     const creditorNames = select(
       `${TRANSACTIONS}/pain:Cdtr/pain:Nm/text()`,
       sepaDom,
       false,
-    );
+    ) as any as Node[];
     expect(creditorNames).toHaveLength(2);
     expect(creditorNames[0].textContent).toBe('trainer 1');
     expect(creditorNames[1].textContent).toBe('trainer 2');
@@ -88,7 +88,7 @@ describe('sepa generation works', () => {
       `${TRANSACTIONS}/pain:CdtrAcct/pain:Id/pain:IBAN/text()`,
       sepaDom,
       false,
-    );
+    ) as any as Node[];
     expect(creditorAccounts).toHaveLength(2);
     expect(creditorAccounts[0].textContent).toBe('DE11500105171658347596');
     expect(creditorAccounts[1].textContent).toBe('DE78500105172112588369');
