@@ -28,6 +28,13 @@ export function compensationValuesQuery(accessToken: string | null) {
   });
 }
 
+function holidaysQueryFunction(accessToken: string, years: number[]) {
+  return fetchListFromApi<Holiday>(
+    `${API_HOLIDAYS}?year=${years.map((y) => (y.toString())).join(',')}`,
+    accessToken,
+  )
+}
+
 /**
  * Query for the holidays.
  *
@@ -35,7 +42,7 @@ export function compensationValuesQuery(accessToken: string | null) {
  * @param years Which years to include. Must not be empty
  */
 export function holidaysQuery(
-  accessToken: string | null,
+  accessToken: string,
   years: number[]) {
 
   if (years.length === 0) throw new Error('years must not be empty');
@@ -43,13 +50,22 @@ export function holidaysQuery(
   const key = [API_HOLIDAYS, ...years];
   return useQuery({
     queryKey: key,
-    queryFn: () => fetchListFromApi<Holiday>(
-      `${API_HOLIDAYS}?year=${years.map((y) => (y.toString())).join(',')}`,
-      accessToken!,
-    ),
+    queryFn: () => holidaysQueryFunction(accessToken, years),
     throwOnError: true,
     enabled: Boolean(accessToken),
     staleTime: TEN_MINUTES,
+  });
+}
+
+export function holidaysSuspenseQuery(
+  accessToken: string,
+  years: number[]) {
+  if (years.length === 0) throw new Error('years must not be empty');
+
+  const key = [API_HOLIDAYS, ...years];
+  return useSuspenseQuery({
+    queryKey: key,
+    queryFn: () => holidaysQueryFunction(accessToken, years),
   });
 }
 
@@ -110,18 +126,18 @@ export function trainingCreateQuery(
   accessToken: string,
   trainings: TrainingDto[],
   setTrainings: (v: TrainingDto[]) => void,
-  sorting: "ASC" | "DESC" | "NONE" = "NONE",
-  ) {
+  sorting: 'ASC' | 'DESC' | 'NONE' = 'NONE',
+) {
   return useMutation({
     mutationFn: (data: TrainingCreateRequest) => {
       return createInApi<TrainingDto>(API_TRAININGS, data, accessToken);
     },
     onSuccess: (createdTraining: TrainingDto) => {
       const newTrainings = [...trainings, createdTraining];
-      if (sorting === "ASC") {
-        newTrainings.sort((a, b) => (compareByStringField(a, b, "date")));
-      } else if (sorting === "DESC") {
-        newTrainings.sort((a, b) => (compareByStringField(b, a, "date")));
+      if (sorting === 'ASC') {
+        newTrainings.sort((a, b) => (compareByStringField(a, b, 'date')));
+      } else if (sorting === 'DESC') {
+        newTrainings.sort((a, b) => (compareByStringField(b, a, 'date')));
       }
       setTrainings(newTrainings);
       showSuccess(`Training für ${createdTraining.course.name} erstellt`);
@@ -136,7 +152,7 @@ export function trainingUpdateQuery(
   accessToken: string,
   trainings: TrainingDto[],
   setTrainings: (v: TrainingDto[]) => void,
-  sorting: "ASC" | "DESC" | "NONE" = "NONE",
+  sorting: 'ASC' | 'DESC' | 'NONE' = 'NONE',
 ) {
   return useMutation({
       mutationFn: (props: { data: TrainingUpdateRequest, trainingId: number }) => {
@@ -150,10 +166,10 @@ export function trainingUpdateQuery(
             return d;
           }
         });
-        if (sorting === "ASC") {
-          newTrainings.sort((a, b) => (compareByStringField(a, b, "date")));
-        } else if (sorting === "DESC") {
-          newTrainings.sort((a, b) => (compareByStringField(b, a, "date")));
+        if (sorting === 'ASC') {
+          newTrainings.sort((a, b) => (compareByStringField(a, b, 'date')));
+        } else if (sorting === 'DESC') {
+          newTrainings.sort((a, b) => (compareByStringField(b, a, 'date')));
         }
         setTrainings(newTrainings);
         showSuccess(`Training ${data.course.name} vom ${dateToHumanReadable(data.date)} aktualisiert`);

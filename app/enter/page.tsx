@@ -12,7 +12,7 @@ import { API_TRAININGS } from '@/lib/routes';
 import {
   compensationValuesSuspenseQuery,
   coursesForTrainerSuspenseQuery,
-  holidaysQuery,
+  holidaysQuery, holidaysSuspenseQuery,
   resultHasData,
   trainingCreateQuery,
   trainingDeleteQuery,
@@ -27,6 +27,7 @@ import Paper from '@mui/material/Paper';
 import { compareByStringField } from '@/lib/sort-and-filter';
 import { Fab } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
+import { LoadingSpinner } from '@/components/LoadingSpinner';
 
 
 function allowedCompensationValues(values: CompensationValueDto[], groups: CompensationGroup[]) {
@@ -59,7 +60,6 @@ function EnterHelpText() {
 function EnterPageContents(props: { session: JanusSession }) {
   const { session } = props;
   const [trainings, setTrainings] = React.useState<TrainingDto[]>([]);
-  const [holidays, setHolidays] = React.useState<HolidayDto[]>([]);
   const [showHelp, setShowHelp] = React.useState(false);
   const [trainingToEdit, setTrainingToEdit] = React.useState<TrainingDto | null>(null);
   const [showTrainingDialog, setShowTrainingDialog] = React.useState<boolean>(false);
@@ -70,15 +70,11 @@ function EnterPageContents(props: { session: JanusSession }) {
     session.accessToken,
   );
   const { data: user } = userSuspenseQuery(session.userId, session.accessToken);
+  const {data: holidays} = holidaysSuspenseQuery(session.accessToken, [new Date().getFullYear(), new Date().getFullYear() - 1]);
 
   const createTrainingMutation = trainingCreateQuery(session.accessToken, trainings, setTrainings, 'DESC');
   const updateTrainingMutation = trainingUpdateQuery(session.accessToken, trainings, setTrainings, 'DESC');
   const deleteTrainingMutation = trainingDeleteQuery(session.accessToken, trainings, setTrainings);
-
-  const holidayResult = holidaysQuery(
-    session.accessToken,
-    [new Date().getFullYear(), new Date().getFullYear() - 1],
-  );
 
   const trainingResult = useQuery({
     queryKey: [API_TRAININGS, `trainerId=${session.userId}`],
@@ -87,21 +83,17 @@ function EnterPageContents(props: { session: JanusSession }) {
       session.accessToken,
     ),
     throwOnError: true,
-    initialData: [],
   });
 
   useEffect(() => {
-    if (resultHasData(holidayResult)) {
-      setHolidays(holidayResult.data!);
-    }
-  }, [holidayResult.data]);
-
-  useEffect(() => {
     if (resultHasData(trainingResult)) {
-      setTrainings(trainingResult.data.toSorted((a, b) => compareByStringField(a, b, 'date')).toReversed());
+      setTrainings(trainingResult.data!.toSorted((a, b) => compareByStringField(a, b, 'date')).toReversed());
     }
   }, [trainingResult.data]);
 
+  if (trainingResult.data === undefined) {
+    return <LoadingSpinner/>
+  }
 
   return <React.Fragment>
     <Stack spacing={1}>
