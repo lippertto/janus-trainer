@@ -7837,7 +7837,7 @@ __metadata:
     typescript: "npm:^5.4.5"
     use-debounce: "npm:^10.0.1"
     use-local-storage-state: "npm:^19.3.1"
-    uuid: "npm:^9.0.1"
+    uuid: "npm:^10.0.0"
     xpath: "npm:^0.0.34"
   languageName: unknown
   linkType: soft
@@ -10866,6 +10866,15 @@ __metadata:
     react: ">=18"
     react-dom: ">=18"
   checksum: 10c0/4f87ee4261a7689cfd4f5cb317e4d893ad752966f36c4a2639286efb3e166dc38a4a63f154bc2ffe5b38644de648a44ffcf8514332a7994ef257591c44678998
+  languageName: node
+  linkType: hard
+
+"uuid@npm:^10.0.0":
+  version: 10.0.0
+  resolution: "uuid@npm:10.0.0"
+  bin:
+    uuid: dist/bin/uuid
+  checksum: 10c0/eab18c27fe4ab9fb9709a5d5f40119b45f2ec8314f8d4cf12ce27e4c6f4ffa4a6321dc7db6c515068fa373c075b49691ba969f0010bf37f44c37ca40cd6bf7fe
   languageName: node
   linkType: hard
 
