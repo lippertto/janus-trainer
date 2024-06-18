@@ -6,7 +6,7 @@ import 'dayjs/locale/de';
 import React from 'react';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { SessionProvider } from 'next-auth/react';
-import { deDE } from '@mui/x-data-grid';
+import { deDE } from '@mui/x-data-grid/locales';
 import { SnackbarProvider } from 'notistack';
 
 import { MaterialDesignContent } from 'notistack';

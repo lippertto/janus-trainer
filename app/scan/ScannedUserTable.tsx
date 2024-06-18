@@ -25,13 +25,13 @@ function buildColumns(
       headerName: 'Registrierung',
       field: 'scanDate',
       width: 200,
-      valueFormatter: ({ value }) => value.format('DD.MM.YYYY (dd) HH:mm'),
+      valueFormatter: (value: dayjs.Dayjs) => value.format('DD.MM.YYYY (dd) HH:mm'),
     },
     {
       field: 'Vorname',
-      valueGetter: ({ row }) => row.user.firstname,
+      valueGetter: (_value, row) => row.user.firstname,
     },
-    { field: 'Nachname', valueGetter: ({ row }) => row.user.name },
+    { field: 'Nachname', valueGetter: (_value, row) => row.user.name },
     {
       field: 'actions',
       headerName: '',
@@ -49,8 +49,15 @@ function buildColumns(
 }
 
 type ScannedUserToolbarProps = {
-  handleClear: () => void;
+  handleClear?: () => void;
 };
+declare module '@mui/x-data-grid' {
+  // required for typechecking
+  interface ToolbarPropsOverrides {
+    handleClear?: () => void;
+  }
+}
+
 
 function ScannedUserTableToolbar({ handleClear }: ScannedUserToolbarProps) {
   return (
@@ -59,7 +66,9 @@ function ScannedUserTableToolbar({ handleClear }: ScannedUserToolbarProps) {
         data-testid="clear-checkin-button"
         startIcon={<ClearIcon />}
         onClick={() => {
-          handleClear();
+          if (handleClear) {
+            handleClear()
+          }
         }}
       >
         Liste leeren

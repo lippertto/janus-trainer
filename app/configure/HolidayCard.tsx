@@ -16,7 +16,7 @@ import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 
 import { DatePicker } from '@mui/x-date-pickers';
-import { DataGrid, GridActionsCellItem, GridColDef, GridValueFormatterParams } from '@mui/x-data-grid';
+import { DataGrid, GridActionsCellItem, GridColDef } from '@mui/x-data-grid';
 
 import dayjs from 'dayjs';
 
@@ -37,8 +37,8 @@ function HolidayTable({
       headerName: 'Start',
       type: 'date',
       field: 'start',
-      valueFormatter: function(params: GridValueFormatterParams): string {
-        return dateToHumanReadable(params.value);
+      valueFormatter: (value: string) => {
+        return dateToHumanReadable(value);
       },
       flex: 1,
     },
@@ -46,8 +46,8 @@ function HolidayTable({
       headerName: 'Ende',
       type: 'date',
       field: 'end',
-      valueFormatter: function(params: GridValueFormatterParams): string {
-        return dateToHumanReadable(params.value);
+      valueFormatter: (value: string) => {
+        return dateToHumanReadable(value);
       },
       flex: 1,
     },
@@ -171,7 +171,7 @@ function EnterHolidayDialog({
               setEnd(v);
             }}
             disabled={!start}
-            minDate={start}
+            minDate={start ?? undefined}
             slotProps={{
               textField: {
                 id: 'holiday-date-picker-end',

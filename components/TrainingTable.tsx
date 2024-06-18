@@ -10,8 +10,6 @@ import {
   GridRowParams,
   GridRowSelectionModel,
   GridToolbarContainer,
-  GridValueFormatterParams,
-  GridValueGetterParams,
 } from '@mui/x-data-grid';
 
 import AddIcon from '@mui/icons-material/Add';
@@ -59,10 +57,10 @@ function buildGridColumns(
       headerName: 'Datum',
       type: 'date',
       flex: 1.5,
-      valueFormatter: function(params: GridValueFormatterParams): string {
-        return dateToHumanReadable(params.value);
+      valueFormatter: (value: string) => {
+        return dateToHumanReadable(value);
       },
-      valueGetter: (params) => getDateFromIso8601(params.value),
+      valueGetter: (value: string) => getDateFromIso8601(value),
     },
     {
       field: 'warnings',
@@ -84,16 +82,16 @@ function buildGridColumns(
       field: 'userName',
       headerName: 'Übungsleitung',
       flex: 2,
-      valueGetter: (params: GridValueGetterParams<TrainingDto>) => {
-        return params.row.user.name;
+      valueGetter: (_value, row: TrainingDto) => {
+        return row.user.name;
       },
     },
     {
       field: 'course',
       headerName: 'Kurs',
       flex: 2,
-      valueGetter: (params: GridValueGetterParams<TrainingDto>) => {
-        return params.row.course.name;
+      valueGetter: (_value, row: TrainingDto) => {
+        return row.course.name;
       },
     },
     {
@@ -106,13 +104,13 @@ function buildGridColumns(
       field: 'compensationCents',
       headerName: 'Pauschale',
       flex: 1,
-      valueFormatter: (value) => (centsToHumanReadable(value.value)),
+      valueFormatter: (value: number) => (centsToHumanReadable(value)),
     },
     {
       field: 'status',
       headerName: 'Status',
       flex: 1,
-      valueGetter: (params) => (trainingStatusToHumanReadable(params.value)),
+      valueGetter: (value: TrainingStatus) => (trainingStatusToHumanReadable(value)),
     },
     {
       field: 'approvalActions',
@@ -150,9 +148,18 @@ function buildGridColumns(
 
 type TrainingTableToolbarProps = {
   handleAddTraining?: () => void;
-  handleDelete: () => void;
+  handleDelete?: () => void;
   handleEdit?: () => void;
 };
+
+declare module '@mui/x-data-grid' {
+  // required for typechecking
+  interface ToolbarPropsOverrides {
+    handleAddTraining?: () => void;
+    handleDelete?: () => void;
+    handleEdit?: () => void;
+  }
+}
 
 function TrainingTableToolbar(
   {
@@ -334,10 +341,10 @@ export default function TrainingTable(
                 setActiveTraining(null);
                 setShowTrainingDialog(true);
               },
-            handleDelete: activeTraining && activeTraining.status === TrainingStatus.NEW ? () => (handleDeleteClick(activeTraining)) : null,
+            handleDelete: activeTraining && activeTraining.status === TrainingStatus.NEW ? () => (handleDeleteClick(activeTraining)) : undefined,
             handleEdit: approvalMode ? undefined:  activeTraining && activeTraining.status === TrainingStatus.NEW ? () => {
               setShowTrainingDialog(true);
-            } : null,
+            } : undefined,
           },
         }}
         {...props}

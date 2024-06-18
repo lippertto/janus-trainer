@@ -25,7 +25,7 @@ test.describe.serial('user management', () => {
     await page.getByTestId('save-user-button').click()
     await expect(page.getByText('Playwright Test User', {exact: true})).toBeVisible();
 
-    await page.getByRole('cell', { name: 'spamtl@fastmail.fm' }).click();
+    await page.getByRole('cell', { name: 'spamtl@fastmail.fm'}).click();
     await page.getByTestId("delete-user-button").click()
 
     await page.getByRole('button', { name: 'Ok' }).click();
