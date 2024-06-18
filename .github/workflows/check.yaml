@@ -2,7 +2,7 @@ on:
   workflow_call: { }
 
 jobs:
-  lint-and-format:
+  lint-format-test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -17,3 +17,5 @@ jobs:
         run: yarn install
       - name: yarn format
         run: yarn format
+      - name: yarn test
+        run: yarn test

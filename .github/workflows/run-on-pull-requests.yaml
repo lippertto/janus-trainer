@@ -4,8 +4,8 @@ on:
     types: [opened, synchronize]
 
 jobs:
-  lint:
-    uses: ./.github/workflows/lint.yaml
+  check:
+    uses: ./.github/workflows/check.yaml
 
   build:
     uses: ./.github/workflows/build.yaml
@@ -16,7 +16,7 @@ jobs:
   deploy-test:
     needs:
       - build
-      - lint
+      - check
     uses: ./.github/workflows/deploy.yaml
     with:
       image-name: ${{needs.build.outputs.image-name}}
