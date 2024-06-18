@@ -1,25 +1,31 @@
 import { TrainingUpdateRequest, TrainingUpdateStatusRequest } from '@/lib/dto';
 import {
-  ApiErrorBadRequest,
+  allowAdminOrSelf,
+  allowAnyLoggedIn,
+  allowOnlyAdmins,
   ApiErrorConflict,
   ApiErrorNotFound,
-  allowOnlyAdmins,
   emptyResponse,
   handleTopLevelCatch,
-  validateOrThrow, idAsNumberOrThrow, allowAnyLoggedIn, allowAdminOrSelf,
+  idAsNumberOrThrow,
+  validateOrThrow,
 } from '@/lib/helpers-for-api';
 import prisma from '@/lib/prisma';
 import { TrainingStatus } from '@prisma/client';
 import { NextRequest, NextResponse } from 'next/server';
 
-async function doDELETE(request: NextRequest, idAsString: string) {
-  await allowOnlyAdmins(request);
-  const idAsNumber = parseInt(idAsString);
-  if (!idAsNumber) {
-    throw new ApiErrorBadRequest(`${idAsString} is not a valid id`);
+async function checkIfTrainingExistsAndIsOwn(id: number, nextRequest: NextRequest) {
+  const training = await prisma.training.findUnique({where:{id}, include: {user: true}})
+  if (!training) {
+    throw new ApiErrorNotFound(`Training with id=${id} was not found`)
   }
+  await allowAdminOrSelf(nextRequest, training.user.id);
+}
 
-  await prisma.training.delete({ where: { id: idAsNumber } });
+async function deleteTraining(nextRequest: NextRequest, idAsString: string) {
+  const id = idAsNumberOrThrow(idAsString);
+  await checkIfTrainingExistsAndIsOwn(id, nextRequest)
+  await prisma.training.delete({ where: { id } });
   return emptyResponse();
 }
 
@@ -28,7 +34,9 @@ export async function DELETE(
   { params }: { params: { id: string } },
 ) {
   try {
-    return await doDELETE(request, params.id);
+    // first test that we are logged in. Further down, we do more checks
+    await allowAnyLoggedIn(request);
+    return await deleteTraining(request, params.id);
   } catch (e) {
     return handleTopLevelCatch(e);
   }
@@ -36,17 +44,11 @@ export async function DELETE(
 
 async function updateTraining(nextRequest: NextRequest, idAsString: string) {
   const id = idAsNumberOrThrow(idAsString);
+  await checkIfTrainingExistsAndIsOwn(id, nextRequest)
 
   const request = await validateOrThrow(
     new TrainingUpdateRequest(await nextRequest.json()),
   );
-
-  const training = await prisma.training.findUnique({where:{id}, include: {user: true}})
-  if (!training) {
-    throw new ApiErrorNotFound(`Training with id=${id} was not found`)
-  }
-
-  await allowAdminOrSelf(nextRequest, training.user.id);
 
   const result = await prisma.training.update({
     where: { id: id },
