@@ -25,7 +25,7 @@ export default function RootLayout({
         <JanusProviders>
           <>
             <JanusAppbar />
-            <Box sx={{ pt: 5 }}>{children}</Box>
+            <Box sx={{ pt: 3 }}>{children}</Box>
           </>
         </JanusProviders>
       </body>

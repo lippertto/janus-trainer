@@ -1,4 +1,10 @@
-import { DataGrid, GridColDef, GridRowSelectionModel, GridToolbarContainer } from '@mui/x-data-grid';
+import {
+  DataGrid,
+  GridColDef,
+  GridRowSelectionModel,
+  GridToolbarContainer,
+  ToolbarPropsOverrides,
+} from '@mui/x-data-grid';
 import { UserCreateRequest, UserDto, UserUpdateRequest } from '@/lib/dto';
 
 import React from 'react';
@@ -17,18 +23,22 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import { groupToHumanReadable } from '@/lib/formatters';
 
+declare module '@mui/x-data-grid' {
+  // required for typechecking
+  interface ToolbarPropsOverrides {
+    handleAddUser: () => void;
+    handleDeleteUser: () => void;
+    handleEditUser: () => void;
+    rowIsSelected: boolean  }
+}
+
 function UserTableToolbar(
   {
     handleAddUser,
     handleDeleteUser,
     handleEditUser,
     rowIsSelected,
-  }: {
-    handleAddUser: () => void;
-    handleDeleteUser: () => void;
-    handleEditUser: () => void;
-    rowIsSelected: boolean
-  }) {
+  }: ToolbarPropsOverrides) {
   return (
     <GridToolbarContainer>
       <Button startIcon={<PersonAddIcon />} onClick={handleAddUser} data-testid={'add-user-button'}>

@@ -6,7 +6,7 @@ import {
   allowOnlyAdmins,
   emptyResponse,
   handleTopLevelCatch,
-  validateOrThrow, idAsNumberOrThrow,
+  validateOrThrow, idAsNumberOrThrow, allowAnyLoggedIn, allowAdminOrSelf,
 } from '@/lib/helpers-for-api';
 import prisma from '@/lib/prisma';
 import { TrainingStatus } from '@prisma/client';
@@ -41,6 +41,13 @@ async function updateTraining(nextRequest: NextRequest, idAsString: string) {
     new TrainingUpdateRequest(await nextRequest.json()),
   );
 
+  const training = await prisma.training.findUnique({where:{id}, include: {user: true}})
+  if (!training) {
+    throw new ApiErrorNotFound(`Training with id=${id} was not found`)
+  }
+
+  await allowAdminOrSelf(nextRequest, training.user.id);
+
   const result = await prisma.training.update({
     where: { id: id },
     data: {
@@ -60,7 +67,8 @@ export async function PUT(
   { params }: { params: { id: string } },
 ) {
   try {
-    await allowOnlyAdmins(request);
+    // first test that we are logged in. Further down, we do more checks
+    await allowAnyLoggedIn(request);
     return await updateTraining(request, params.id);
   } catch (e) {
     return handleTopLevelCatch(e);
