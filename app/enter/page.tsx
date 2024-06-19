@@ -47,7 +47,7 @@ function EnterPageContents(props: { session: JanusSession }) {
     session.accessToken,
   );
   const { data: user } = userSuspenseQuery(session.userId, session.accessToken);
-  const {data: holidays} = holidaysSuspenseQuery(session.accessToken, [new Date().getFullYear(), new Date().getFullYear() - 1]);
+  const { data: holidays } = holidaysSuspenseQuery(session.accessToken, [new Date().getFullYear(), new Date().getFullYear() - 1]);
 
   const createTrainingMutation = trainingCreateQuery(session.accessToken, trainings, setTrainings, 'DESC');
   const updateTrainingMutation = trainingUpdateQuery(session.accessToken, trainings, setTrainings, 'DESC');
@@ -69,14 +69,11 @@ function EnterPageContents(props: { session: JanusSession }) {
   }, [trainingResult.data]);
 
   if (trainingResult.data === undefined) {
-    return <LoadingSpinner/>
+    return <LoadingSpinner />;
   }
 
   return <React.Fragment>
-    <Stack spacing={1}>
-
-      <Paper>
-        {trainings.length > 0 ?
+      {trainings.length > 0 ?
         <TrainingList
           trainings={trainings}
           holidays={holidays}
@@ -85,15 +82,13 @@ function EnterPageContents(props: { session: JanusSession }) {
             setShowTrainingDialog(true);
           }}
         />
-          : <Typography>Noch keine Trainings eingetragen.</Typography>
-        }
-      </Paper>
-    </Stack>
+        : <Typography>Noch keine Trainings eingetragen.</Typography>
+      }
 
     <Fab
       color="primary"
       sx={{
-        position: 'absolute',
+        position: 'fixed',
         bottom: 16,
         right: 16,
       }}
