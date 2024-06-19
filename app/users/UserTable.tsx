@@ -8,8 +8,6 @@ import {
 import { UserCreateRequest, UserDto, UserUpdateRequest } from '@/lib/dto';
 
 import React from 'react';
-
-import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import { JanusSession } from '@/lib/auth';
@@ -137,7 +135,7 @@ export default function UserTable({
       headerName: 'Gruppen',
       flex: 1,
       renderCell: (params) => (
-        <Typography>{params.value?.map(groupToHumanReadable).join(', ')}</Typography>
+        params.value?.map(groupToHumanReadable).join(', ')
       ),
     }];
 
