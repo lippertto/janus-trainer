@@ -5,7 +5,7 @@ import { Typography } from '@mui/material';
 import IconButton from '@mui/material/IconButton';
 import TextField from '@mui/material/TextField';
 import EditIcon from '@mui/icons-material/Edit';
-import { compensationGroupToHumanReadable, groupToHumanReadable } from '@/lib/formatters';
+import { compensationGroupToHumanReadable, groupToHumanReadable, ibanToHumanReadable } from '@/lib/formatters';
 import { CourseCard } from '@/components/CourseCard';
 import Button from '@mui/material/Button';
 import { signOut } from 'next-auth/react';
@@ -60,7 +60,7 @@ export default function Profile(
         fullWidth
         disabled={true}
         label="IBAN"
-        value={user.iban ?? 'keine IBAN angegeben'}
+        value={user.iban ? ibanToHumanReadable(user.iban) : 'keine IBAN angegeben'}
         InputProps={{
           endAdornment: <IconButton onClick={() => {
             props.handleEditIbanClick();

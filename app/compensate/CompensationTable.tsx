@@ -1,7 +1,7 @@
 import { DataGrid, GridActionsCellItem, GridColDef, GridRowParams } from '@mui/x-data-grid';
 import React from 'react';
 import { CompensationDto, UserDto } from '@/lib/dto';
-import { centsToHumanReadable } from '@/lib/formatters';
+import { centsToHumanReadable, ibanToHumanReadable } from '@/lib/formatters';
 import LaunchIcon from '@mui/icons-material/Launch';
 import { useRouter } from 'next/navigation';
 
@@ -36,7 +36,7 @@ export default function CompensationTable({
       field: 'iban',
       headerName: 'IBAN',
       flex: 2,
-      valueGetter: (_value, row) => row.user.iban.replace(/(.{4})/g, '$1 ').trim(),
+      valueGetter: (_value, row) => ibanToHumanReadable(row.user.iban),
     },
     {
       field: 'actions',

@@ -70,9 +70,7 @@ function CompensationValueDropdown(
   }: CompensationValueDropdownProps) {
   const compensationsAreEmpty = compensations.length === 0;
   const onlyOneCompensation = compensations.length === 1;
-  if (onlyOneCompensation) {
-    setSelectedCompensationValue(compensations[0]);
-  }
+
   return <Autocomplete
     disabled={compensationsAreEmpty || onlyOneCompensation}
     options={compensations}
@@ -133,7 +131,7 @@ export default function TrainingDialog(
     compensationValues,
   }: TrainingDialogProps) {
   const [date, setDate] = React.useState<dayjs.Dayjs | null>(dayjs());
-  const [participantCount, setParticipantCount] = React.useState<number>(0);
+  const [participantCount, setParticipantCount] = React.useState<string>("0");
   const [selectedCourse, setSelectedCourse] = React.useState<CourseDto | null>((courses && courses.length > 0) ? courses[0] : null);
   const [selectedCompensationValue, setSelectedCompensationValue] = React.useState<CompensationValueDto | null>(selectCompensationValue(selectedCourse, compensationValues));
   const [previousTraining, setPreviousTraining] = React.useState<TrainingDto | null>(null);
@@ -145,7 +143,7 @@ export default function TrainingDialog(
       setSelectedCourse(null);
     }
     setDate(dayjs());
-    setParticipantCount(0);
+    setParticipantCount("0");
   }, [courses, setSelectedCourse, setDate, setParticipantCount]);
 
   if (toEdit !== previousTraining) {
@@ -153,7 +151,7 @@ export default function TrainingDialog(
     if (toEdit) {
       setSelectedCourse(courses.find((c) => (c.id === toEdit.course.id)) ?? null);
       setDate(dayjs(toEdit.date));
-      setParticipantCount(Number(toEdit.participantCount));
+      setParticipantCount(toEdit.participantCount.toString());
       setSelectedCompensationValue(compensationValues.find((cv) => (cv.cents === toEdit.compensationCents)) ?? null);
     } else {
       resetFields();
@@ -166,7 +164,7 @@ export default function TrainingDialog(
     }
   }, [selectedCourse]);
 
-  const participantCountError = Boolean(participantCount) ? ' ' : 'Muss gesetzt sein';
+  const participantCountError = parseInt(participantCount) > 0 ? ' ' : 'Muss gesetzt sein';
   const dateError = date ? ' ' : 'Muss gesetzt sein';
   const compensationError = selectedCompensationValue ? ' ' : 'Muss gesetzt sein';
   const coursesError = selectedCourse ? ' ' : 'Muss gesetzt sein';
@@ -227,7 +225,10 @@ export default function TrainingDialog(
             type="number"
             label="Anzahl Mitglieder"
             value={participantCount}
-            onChange={(e) => setParticipantCount(parseInt(e.target.value))}
+            onChange={(e) => setParticipantCount(
+              e.target.value
+            )
+          }
             inputProps={{
               min: 1, 'data-testid': 'add-training-participant-count-field',
             }}
@@ -258,7 +259,7 @@ export default function TrainingDialog(
               date: date!.format('YYYY-MM-DD'),
               courseId: selectedCourse!.id,
               compensationCents: selectedCompensationValue!.cents,
-              participantCount,
+              participantCount: parseInt(participantCount),
               userId,
             });
             handleClose();

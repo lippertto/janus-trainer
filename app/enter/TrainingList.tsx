@@ -41,7 +41,7 @@ export function TrainingList(props: {
 }) {
   const { trainings } = props;
   return <React.Fragment>
-    <List>
+    <List style={{maxHeight: '85vh', overflow: 'auto'}}>
       {trainings.map((t) => <TrainingListElement
         key={t.id} training={t} holidays={props.holidays} handleEdit={props.handleEdit}/>)}
     </List>

@@ -34,29 +34,6 @@ function allowedCompensationValues(values: CompensationValueDto[], groups: Compe
   return values.filter((v) => (groups.indexOf(v.compensationGroup) !== -1));
 }
 
-function EnterHelpText() {
-  return <React.Fragment>
-    <Typography>
-      Auf dieser Seite kannst du die Trainings eingeben, die du gegeben hast.
-    </Typography>
-    <Typography>
-      Um ein neues Training einzugeben, klick auf "Training hinzufügen".
-      In der Eingabemaske kannst du die Kurse und Pauschalen auswählen, die das Büro für dich hinterlegt hat.
-      Wenn etwas fehlt, melde dich bitte beim Büro.
-    </Typography>
-    <Typography>
-      Wenn du das Training speichert, wird es vom Büro freigegeben, und die zugehören Pauschale am Ende des Quartals
-      gesammelt überwiesen.
-      Du siehst den Status deines Trainings ganz rechts in der Tabelle unter der Spalte "Status".
-    </Typography>
-    <Typography>
-      Um ein Training zu bearbeiten oder zu löschen, klicke erst auf die entsprechende Zeile und dann auf
-      "Löschen" oder "Bearbeiten".
-      Kurse, die schon freigegeben oder überwiesen worden sind, können nicht mehr bearbeitet werden.
-    </Typography>
-  </React.Fragment>;
-}
-
 function EnterPageContents(props: { session: JanusSession }) {
   const { session } = props;
   const [trainings, setTrainings] = React.useState<TrainingDto[]>([]);
@@ -70,7 +47,7 @@ function EnterPageContents(props: { session: JanusSession }) {
     session.accessToken,
   );
   const { data: user } = userSuspenseQuery(session.userId, session.accessToken);
-  const {data: holidays} = holidaysSuspenseQuery(session.accessToken, [new Date().getFullYear(), new Date().getFullYear() - 1]);
+  const { data: holidays } = holidaysSuspenseQuery(session.accessToken, [new Date().getFullYear(), new Date().getFullYear() - 1]);
 
   const createTrainingMutation = trainingCreateQuery(session.accessToken, trainings, setTrainings, 'DESC');
   const updateTrainingMutation = trainingUpdateQuery(session.accessToken, trainings, setTrainings, 'DESC');
@@ -92,14 +69,11 @@ function EnterPageContents(props: { session: JanusSession }) {
   }, [trainingResult.data]);
 
   if (trainingResult.data === undefined) {
-    return <LoadingSpinner/>
+    return <LoadingSpinner />;
   }
 
   return <React.Fragment>
-    <Stack spacing={1}>
-
-      <Paper>
-        {trainings.length > 0 ?
+      {trainings.length > 0 ?
         <TrainingList
           trainings={trainings}
           holidays={holidays}
@@ -108,15 +82,13 @@ function EnterPageContents(props: { session: JanusSession }) {
             setShowTrainingDialog(true);
           }}
         />
-          : <Typography>Noch keine Trainings eingetragen.</Typography>
-        }
-      </Paper>
-    </Stack>
+        : <Typography>Noch keine Trainings eingetragen.</Typography>
+      }
 
     <Fab
       color="primary"
       sx={{
-        position: 'absolute',
+        position: 'fixed',
         bottom: 16,
         right: 16,
       }}
