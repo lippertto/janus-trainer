@@ -7,6 +7,7 @@ import MenuIcon from '@mui/icons-material/Menu';
 import Typography from '@mui/material/Typography';
 import React from 'react';
 import JanusDrawer from './JanusDrawer';
+import HelpButton from '@/app/HelpButton';
 
 export default function JanusAppbar() {
   const [drawerOpen, setDrawerOpen] = React.useState(false);
@@ -30,6 +31,7 @@ export default function JanusAppbar() {
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             Janus Trainerstunden App
           </Typography>
+         <HelpButton/>
         </Toolbar>
       </AppBar>
       <JanusDrawer state={drawerOpen} setState={setDrawerOpen} />

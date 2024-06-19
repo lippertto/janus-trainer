@@ -34,29 +34,6 @@ function allowedCompensationValues(values: CompensationValueDto[], groups: Compe
   return values.filter((v) => (groups.indexOf(v.compensationGroup) !== -1));
 }
 
-function EnterHelpText() {
-  return <React.Fragment>
-    <Typography>
-      Auf dieser Seite kannst du die Trainings eingeben, die du gegeben hast.
-    </Typography>
-    <Typography>
-      Um ein neues Training einzugeben, klick auf "Training hinzufügen".
-      In der Eingabemaske kannst du die Kurse und Pauschalen auswählen, die das Büro für dich hinterlegt hat.
-      Wenn etwas fehlt, melde dich bitte beim Büro.
-    </Typography>
-    <Typography>
-      Wenn du das Training speichert, wird es vom Büro freigegeben, und die zugehören Pauschale am Ende des Quartals
-      gesammelt überwiesen.
-      Du siehst den Status deines Trainings ganz rechts in der Tabelle unter der Spalte "Status".
-    </Typography>
-    <Typography>
-      Um ein Training zu bearbeiten oder zu löschen, klicke erst auf die entsprechende Zeile und dann auf
-      "Löschen" oder "Bearbeiten".
-      Kurse, die schon freigegeben oder überwiesen worden sind, können nicht mehr bearbeitet werden.
-    </Typography>
-  </React.Fragment>;
-}
-
 function EnterPageContents(props: { session: JanusSession }) {
   const { session } = props;
   const [trainings, setTrainings] = React.useState<TrainingDto[]>([]);
