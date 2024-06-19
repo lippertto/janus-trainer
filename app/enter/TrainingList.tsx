@@ -17,7 +17,7 @@ function TrainingListElement(props: {
   const { training } = props;
 
   const primary = `${dateToHumanReadable(training.date)} - ${training.course.name}`;
-  const secondary = `${centsToHumanReadable(training.compensationCents)}, ${training.participantCount} Teilnehmer, ${trainingStatusToHumanReadable(training.status)}`;
+  const secondary = `${centsToHumanReadable(training.compensationCents)}, ${training.participantCount} Mitglieder, ${trainingStatusToHumanReadable(training.status)}`;
   const warnings = warningsForDate(training.date, props.holidays, training.course.weekdays)
 
   return <ListItem

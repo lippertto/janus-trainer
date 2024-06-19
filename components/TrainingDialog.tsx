@@ -225,7 +225,7 @@ export default function TrainingDialog(
 
           <TextField
             type="number"
-            label="Anzahl Teilnehmer"
+            label="Anzahl Mitglieder"
             value={participantCount}
             onChange={(e) => setParticipantCount(parseInt(e.target.value))}
             inputProps={{
