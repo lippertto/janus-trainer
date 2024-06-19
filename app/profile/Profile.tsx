@@ -3,7 +3,6 @@ import React from 'react';
 import Grid from '@mui/material/Unstable_Grid2';
 import { Typography } from '@mui/material';
 import IconButton from '@mui/material/IconButton';
-import HelpIcon from '@mui/icons-material/Help';
 import TextField from '@mui/material/TextField';
 import EditIcon from '@mui/icons-material/Edit';
 import { compensationGroupToHumanReadable, groupToHumanReadable } from '@/lib/formatters';
@@ -11,6 +10,8 @@ import { CourseCard } from '@/components/CourseCard';
 import Button from '@mui/material/Button';
 import { signOut } from 'next-auth/react';
 import { CourseDto, UserDto } from '@/lib/dto';
+
+import 'core-js/modules/es.array.to-sorted';
 
 
 export default function Profile(
