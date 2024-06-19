@@ -194,7 +194,7 @@ export function UserDialog({
       <DialogActions>
         <Button
           onClick={() => {
-            setTimeout(resetFields, 200);
+            setTimeout(resetFields, 300);
             handleClose();
           }}
         >
@@ -215,7 +215,7 @@ export function UserDialog({
                 compensationGroups: compensationGroupStateToCompensationGroups(compensationGroups),
               },
             );
-            setTimeout(resetFields, 200);
+            setTimeout(resetFields, 300);
             handleClose();
           }}
           autoFocus

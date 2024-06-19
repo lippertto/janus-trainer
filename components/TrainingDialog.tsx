@@ -44,6 +44,7 @@ function CoursesDropdown(
         label={coursesAreEmpty ? 'Keine Kurse hinterlegt' : 'Kurs'}
         error={error !== ' '}
         helperText={error}
+        inputProps={{ ...params.inputProps, 'data-testid': 'courses-dropdown-input' }}
       />
     )}
     value={selectedCourse}
@@ -82,6 +83,7 @@ function CompensationValueDropdown(
         label={compensationsAreEmpty ? 'Erst Kurs auswählen' : 'Pauschale'}
         error={error !== ' '}
         helperText={error}
+        inputProps={{ ...params.inputProps, 'data-testid': 'compensation-value-dropdown-input' }}
       />
     )}
     value={selectedCompensationValue}
@@ -107,6 +109,18 @@ function compensationValueToText(cv: CompensationValueDto) {
   return `${cv.description} (${(centsToHumanReadable(cv.cents))})`;
 }
 
+export function selectCompensationValue(course: Pick<CompensationValueDto, 'durationMinutes'> | null, compensationValues: CompensationValueDto[]) {
+  if (!course) return null;
+  if (compensationValues.length === 0) {
+    return null;
+  }
+  const cvWithMatchinTime = compensationValues.find((cv) => (cv.durationMinutes === course.durationMinutes));
+  if (cvWithMatchinTime) {
+    return cvWithMatchinTime;
+  }
+  return compensationValues[0];
+}
+
 export default function TrainingDialog(
   {
     open,
@@ -120,9 +134,9 @@ export default function TrainingDialog(
   }: TrainingDialogProps) {
   const [date, setDate] = React.useState<dayjs.Dayjs | null>(dayjs());
   const [participantCount, setParticipantCount] = React.useState<number>(0);
-  const [selectedCompensationValue, setSelectedCompensationValue] = React.useState<CompensationValueDto | null>(null);
-  const [selectedCourse, setSelectedCourse] = React.useState<CourseDto | null>(null);
-  const [previousTraining, setPreviousTraining] = React.useState<TrainingDto | null>();
+  const [selectedCourse, setSelectedCourse] = React.useState<CourseDto | null>((courses && courses.length > 0) ? courses[0] : null);
+  const [selectedCompensationValue, setSelectedCompensationValue] = React.useState<CompensationValueDto | null>(selectCompensationValue(selectedCourse, compensationValues));
+  const [previousTraining, setPreviousTraining] = React.useState<TrainingDto | null>(null);
 
   const resetFields = React.useCallback(() => {
     if (courses.length > 0) {
@@ -148,7 +162,7 @@ export default function TrainingDialog(
 
   React.useEffect(() => {
     if (selectedCourse) {
-      setSelectedCompensationValue(compensationValues.find((cv) => (cv.durationMinutes === selectedCourse.durationMinutes)) ?? null);
+      setSelectedCompensationValue(selectCompensationValue(selectedCourse, compensationValues));
     }
   }, [selectedCourse]);
 
@@ -174,7 +188,6 @@ export default function TrainingDialog(
       ).catch(() => {
     });
   };
-
 
   return (
     <Dialog open={open}>
@@ -212,25 +225,29 @@ export default function TrainingDialog(
 
           <TextField
             type="number"
-            label="Anzahl Teilnehmer"
-            data-testid="add-training-participant-count-field"
+            label="Anzahl Mitglieder"
             value={participantCount}
             onChange={(e) => setParticipantCount(parseInt(e.target.value))}
-            inputProps={{ min: 1 }}
+            inputProps={{
+              min: 1, 'data-testid': 'add-training-participant-count-field',
+            }}
             error={participantCountError !== ' '}
             helperText={participantCountError}
           />
         </Stack>
       </DialogContent>
       <DialogActions>
-        <Button onClick={
-          () => {
-            handleClose();
-            setTimeout(resetFields, 300);
-          }}>Abbrechen</Button>
+        <Button
+          onClick={
+            () => {
+              handleClose();
+              setTimeout(resetFields, 300);
+            }}>Abbrechen</Button>
         {
           handleDelete ?
-            <Button onClick={() => handleDeleteClick(toEdit!)} color={'error'}>löschen</Button>
+            <Button
+              data-testid="add-training-delete-button"
+              onClick={() => handleDeleteClick(toEdit!)} color={'error'}>löschen</Button>
             : null
         }
         <Button

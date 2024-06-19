@@ -96,7 +96,7 @@ function buildGridColumns(
     },
     {
       field: 'participantCount',
-      headerName: 'Teilnehmer',
+      headerName: 'Mitglieder',
       type: 'number',
       flex: 1,
     },
