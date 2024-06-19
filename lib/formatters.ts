@@ -60,3 +60,8 @@ export function trainingStatusToHumanReadable(value: TrainingStatus) {
     return '?';
   }
 }
+
+/** Returns a nice version of an IBAN. */
+export function ibanToHumanReadable(value: string) {
+  return value.replace(/(.{4})/g, '$1 ').trim()
+}

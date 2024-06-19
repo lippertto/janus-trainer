@@ -6,6 +6,7 @@ import TextField from '@mui/material/TextField';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import { validateIBAN } from 'sepa';
+import { ibanToHumanReadable } from '@/lib/formatters';
 
 export function EditIbanDialog(props: {
   open: boolean, handleClose: () => void,
@@ -21,12 +22,13 @@ export function EditIbanDialog(props: {
     <DialogContent>
       <TextField
         autoFocus
+        sx={{width: 300}}
         margin="dense"
         label="IBAN"
         type="text"
         fullWidth
-        value={iban}
-        onChange={(e) => setIban(e.target.value.toUpperCase())}
+        value={ibanToHumanReadable(iban)}
+        onChange={(e) => setIban(e.target.value.replaceAll(" ", "").toUpperCase())}
         error={!ibanIsValid}
         helperText={ibanIsValid ? ' ' : 'Keine valide IBAN'}
       />
