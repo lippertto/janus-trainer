@@ -5,29 +5,30 @@ import React, { useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import type { JanusSession } from '@/lib/auth';
 import LoginRequired from '@/components/LoginRequired';
-import { CompensationValueDto, HolidayDto, TrainingDto } from '@/lib/dto';
+import { CompensationValueDto, TrainingDto } from '@/lib/dto';
 import { useQuery } from '@tanstack/react-query';
 import { fetchListFromApi } from '@/lib/fetch';
 import { API_TRAININGS } from '@/lib/routes';
 import {
   compensationValuesSuspenseQuery,
   coursesForTrainerSuspenseQuery,
-  holidaysQuery, holidaysSuspenseQuery,
+  holidaysSuspenseQuery,
   resultHasData,
   trainingCreateQuery,
   trainingDeleteQuery,
-  trainingUpdateQuery, userSuspenseQuery,
+  trainingUpdateQuery,
+  userSuspenseQuery,
 } from '@/lib/shared-queries';
-import Stack from '@mui/system/Stack';
 import Typography from '@mui/material/Typography';
 import { CompensationGroup } from '@prisma/client';
 import { TrainingList } from '@/app/enter/TrainingList';
 import TrainingDialog from '@/components/TrainingDialog';
-import Paper from '@mui/material/Paper';
 import { compareByStringField } from '@/lib/sort-and-filter';
 import { Fab } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
+
+import 'core-js/modules/es.array.to-sorted';
 
 
 function allowedCompensationValues(values: CompensationValueDto[], groups: CompensationGroup[]) {
@@ -37,7 +38,6 @@ function allowedCompensationValues(values: CompensationValueDto[], groups: Compe
 function EnterPageContents(props: { session: JanusSession }) {
   const { session } = props;
   const [trainings, setTrainings] = React.useState<TrainingDto[]>([]);
-  const [showHelp, setShowHelp] = React.useState(false);
   const [trainingToEdit, setTrainingToEdit] = React.useState<TrainingDto | null>(null);
   const [showTrainingDialog, setShowTrainingDialog] = React.useState<boolean>(false);
 
