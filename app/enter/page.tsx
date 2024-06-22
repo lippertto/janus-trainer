@@ -29,6 +29,7 @@ import AddIcon from '@mui/icons-material/Add';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 
 import 'core-js/modules/es.array.to-sorted';
+import 'core-js/modules/es.array.to-reversed';
 
 
 function allowedCompensationValues(values: CompensationValueDto[], groups: CompensationGroup[]) {
