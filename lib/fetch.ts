@@ -9,10 +9,12 @@ type JanusList<T> = {
 export async function fetchListFromApi<T>(
   route: string,
   accessToken: string,
+  method: string = "GET"
 ): Promise<T[]> {
   try {
     const response = await fetch(route, {
       headers: { Authorization: `Bearer ${accessToken}` },
+      method
     });
     if (response.status !== 200) {
       return Promise.reject(

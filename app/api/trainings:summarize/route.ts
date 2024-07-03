@@ -1,17 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ApiErrorBadRequest, handleTopLevelCatch } from '@/lib/helpers-for-api';
 import dayjs from 'dayjs';
-import { TrainingSummaryDto } from '@/lib/dto';
+import { TrainingSummaryListDto } from '@/lib/dto';
 import prisma from '@/lib/prisma';
 
-async function summarizeTrainings(startDate: dayjs.Dayjs, endDate: dayjs.Dayjs): Promise<NextResponse<TrainingSummaryDto>> {
+async function summarizeTrainings(startDate: dayjs.Dayjs, endDate: dayjs.Dayjs): Promise<NextResponse<TrainingSummaryListDto>> {
   const sqlResult: any[] = await prisma.$queryRaw`
 SELECT CAST(u."id" AS TEXT) AS "trainerId",
             u.name as "trainerName",
-            COUNT(*) as "newTrainingCount"
+            SUM(case when gt.status = 'NEW' then 1 else 0 end) as "newTrainingCount",
+            SUM(case when gt.status = 'APPROVED' then 1 else 0 end) as "approvedTrainingCount"
     FROM "Training" AS gt INNER JOIN "User" AS u ON gt."userId" = u."id"
-    WHERE gt.status = 'NEW'
-    AND "u"."deletedAt" IS NULL
+    WHERE "u"."deletedAt" IS NULL
     AND "gt"."date" >= ${startDate}
     AND "gt"."date" <= ${endDate}
     GROUP BY ("u"."id", "u"."name");
@@ -20,6 +20,7 @@ SELECT CAST(u."id" AS TEXT) AS "trainerId",
     trainerId: r.trainerId,
     trainerName: r.trainerName,
     newTrainingCount: Number(r.newTrainingCount),
+    approvedTrainingCount: Number(r.approvedTrainingCount),
   }));
   return NextResponse.json({value});
 }

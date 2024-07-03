@@ -42,7 +42,7 @@ export function groupToHumanReadable(group: Group) {
     case Group.ADMINS:
       return "Administratoren";
     case Group.TRAINERS:
-      return "Übungsleiter";
+      return "Übungsleitung";
     default:
       return "???";
   }
