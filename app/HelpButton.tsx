@@ -8,6 +8,7 @@ import DialogContent from '@mui/material/DialogContent';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 
 function EnterHelpText() {
   return <React.Fragment>
@@ -53,8 +54,36 @@ function ProfileHelpText() {
   </React.Fragment>;
 }
 
+function ApprovalHelpText() {
+  return <React.Fragment>
+    <DialogContentText>Auf dieser Seite kannst du Trainings freigeben, die von den Übungsleitungen eingegeben worden sind.</DialogContentText>
+    <DialogContentText>
+      Über die Datums-Eingabe "<b>Start</b>" und <b>"Ende</b>" kannst du die Trainings einschränken, die angezeigt werden.
+      Es gibt Knöpfe für das aktuelle und das letzte Quartal, die das Datum automatisch auf den jeweiligen Zeitraum setzen.
+    </DialogContentText>
+    <DialogContentText>
+      Über das Eingabefeld "<b>Übungsleitung</b>" kannst du auswählen, welche Übungsleitung angezeigt wird.
+      Normalerweise werden nur Übungsleitungen angezeigt, die Trainings haben, die in dem Zeitraum noch nicht freigegeben worden sind.
+      Neben dem Namen steht N und F. Das steht für die Anzahl an neuen (N) und freigegebenen (F) Trainings in dem Zeitraum.
+      Über einen Klick auf "<b>Nur ÜL mit neu</b>" kannst du alle Übungsleitungen anzeigen, die in dem Zeitraum Trainings eingegeben haben.
+    </DialogContentText>
+    <DialogContentText>
+      Wenn ein <b>gelbes Ausrufezeichen</b> <WarningAmberIcon />  erscheint, gibt es eine Warnung zu dem Datum. Du kannst Details sehen, wenn du dem
+      Mauszeiger über das Ausrufezeichen bewegst.
+    </DialogContentText>
+    <DialogContentText>
+      Ganz Rechts sind kleine Symbole, die es dir ermöglichen, ein Training <b>freizugeben</b> oder die Freigabe rückgängig zu machen.
+    </DialogContentText>
+    <DialogContentText>
+      Wenn du ein Training löschen möchtest, wähle es aus und klicke dann auf den "<b>Löschen</b>"-Knopf.
+      Nur neue Trainings können gelöscht werden. Bei freigegebenen ist das nicht möglich.
+    </DialogContentText>
+  </React.Fragment>
+}
+
 function dialogContents(pathname: string) {
-  switch (pathname) {
+  const pathnameWithoutQuery = pathname.split("?").pop()
+  switch (pathnameWithoutQuery) {
     case '/':
       return <DialogContentText>Wenn du auf den ? Knopf drückst, bekommst du Hilfe für die aktuelle Funktionalität
         angezeigt.</DialogContentText>;
@@ -62,6 +91,8 @@ function dialogContents(pathname: string) {
       return <EnterHelpText />;
     case '/profile':
       return <ProfileHelpText />;
+    case '/approve':
+      return <ApprovalHelpText />;
     default:
       return <DialogContentText>Leider keine Hilfe verfügbar</DialogContentText>;
   }
