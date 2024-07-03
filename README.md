@@ -6,29 +6,23 @@ podman-compose up -d
 yarn start:dev
 ```
 
+## Execute API tests
+To execute the API tests, you have to start the server with the environment variable
+`DISABLE_JWT_CHECKS=1` set.
+
 # TODO
 
 ## Tomorrow
-* Special edit-mode in approve-screen
+* Bug: trainings in /approve do not load when opening page
+* Add /trainings:summarize?startDate&endDate&status route
+* Evaluate summarized trainings on /approve (trainer drop-down). Also: statistics.
 
 ## Bugs
-* In the course edit screen, we cannot deselect the existing chips for trainers+compensations.
-  Also, duplicate values are possible.
-* The seed does not work correctly. The next id to be assigned for the tables is not updated.
-
-Use the following statement to reset the counters
-```postgresql
-select setval( pg_get_serial_sequence('"public"."Training"', 'id'), 
-               (select max(id) from "public"."Training")
-             );
-```
-
 
 ## Features
-* Trainers can change their IBAN
-* e2e tests
 * Make courses disabled. (Also in the UI.)
 * Allow to go from compensation page to validate page with specific dates+trainer
+* Show statistics on /profile
 
 ## Tech update
 * Hide password in POSTGRES_CONNECTION_URL of lambda. --> Use Secret

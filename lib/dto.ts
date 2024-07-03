@@ -271,3 +271,14 @@ export function dayOfWeekToHumanReadable(w: DayOfWeek) {
 }
 
 export type HolidayDto = Holiday;
+
+export type TrainingSummaryDto = {
+  trainerId: string,
+  trainerName: string,
+  newTrainingCount: number,
+  approvedTrainingCount: number,
+}
+
+export type TrainingSummaryListDto = {
+  value: TrainingSummaryDto[]
+};

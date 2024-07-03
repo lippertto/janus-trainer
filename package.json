@@ -54,6 +54,7 @@
     "uuid": "^10.0.0"
   },
   "devDependencies": {
+    "@babel/core": "^7.24.7",
     "@babel/plugin-proposal-decorators": "^7.24.7",
     "@babel/preset-env": "^7.24.7",
     "@babel/preset-react": "^7.24.7",
@@ -62,6 +63,7 @@
     "@testing-library/dom": "^10.1.0",
     "@testing-library/jest-dom": "^6.4.6",
     "@testing-library/react": "^16.0.0",
+    "@types/babel__core": "^7",
     "@types/babel__preset-env": "^7.9.7",
     "@types/core-js": "^2.5.8",
     "@types/jest": "^29.5.12",
@@ -69,6 +71,7 @@
     "@types/node": "^20.14.5",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
+    "@types/superagent": "^8.1.7",
     "@types/uuid": "^9.0.8",
     "@typescript-eslint/eslint-plugin": "^7.13.1",
     "@typescript-eslint/parser": "^7.13.1",
@@ -85,6 +88,7 @@
     "jest-environment-jsdom": "^29.7.0",
     "prettier": "^3.3.2",
     "prisma": "^5.15.0",
+    "superagent": "^9.0.2",
     "ts-jest": "^29.1.5",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.5",
