@@ -15,17 +15,18 @@ import { DatePicker } from '@mui/x-date-pickers';
 import quarterOfYear from 'dayjs/plugin/quarterOfYear';
 import ButtonGroup from '@mui/material/ButtonGroup';
 import Button from '@mui/material/Button';
-import { HolidayDto, TrainingDto, TrainingSummaryDto, TrainingSummaryListDto, UserDto } from '@/lib/dto';
+import { HolidayDto, TrainingDto, TrainingSummaryDto } from '@/lib/dto';
 import { useQueryClient, useSuspenseQuery } from '@tanstack/react-query';
 import { fetchListFromApi } from '@/lib/fetch';
 import { API_TRAININGS, API_TRAININGS_SUMMARIZE } from '@/lib/routes';
-import { compensationValuesSuspenseQuery, holidaysQuery, resultHasData, trainersQuery } from '@/lib/shared-queries';
+import { holidaysQuery, resultHasData } from '@/lib/shared-queries';
 import { usePathname, useSearchParams, useRouter } from 'next/navigation';
 import Autocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormGroup from '@mui/material/FormGroup';
 import { Switch } from '@mui/material';
+import {throttle} from 'throttle-debounce'
 
 dayjs.extend(quarterOfYear);
 
@@ -152,6 +153,19 @@ function ApprovePageContents(props: ApprovePageContentsProps): React.ReactElemen
     [new Date().getFullYear(), new Date().getFullYear() - 1],
   );
 
+  const refresh = throttle(
+    3000,
+    () => {
+      queryClient.invalidateQueries({
+        queryKey: queryKeyForTrainings(
+          props.startDate, props.endDate, props.trainerId ?? undefined,
+        ),
+      });
+      queryClient.invalidateQueries({queryKey: [API_TRAININGS_SUMMARIZE, filterStart, filterEnd]})
+    },
+    {noLeading: true}
+  )
+
   React.useEffect(() => {
     setTrainings(trainingData.toSorted(compareTrainings));
   }, [trainingData]);
@@ -251,12 +265,7 @@ function ApprovePageContents(props: ApprovePageContentsProps): React.ReactElemen
           setTrainings={
             (trainings) => {
               setTrainings(trainings.toSorted(compareTrainings));
-              queryClient.invalidateQueries({
-                queryKey: queryKeyForTrainings(
-                  props.startDate, props.endDate, props.trainerId ?? undefined,
-                ),
-              });
-              queryClient.invalidateQueries({queryKey: [API_TRAININGS_SUMMARIZE, filterStart, filterEnd]})
+              refresh();
             }
           }
           holidays={holidays}
