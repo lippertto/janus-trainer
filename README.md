@@ -12,16 +12,15 @@ To execute the API tests, you have to start the server with the environment vari
 
 # TODO
 
-## Tomorrow
-* Bug: trainings in /approve do not load when opening page
-* Add /trainings:summarize?startDate&endDate&status route
-* Evaluate summarized trainings on /approve (trainer drop-down). Also: statistics.
+## Next up 
+* Clean up Training Table
+* Add Comment field
 
 ## Bugs
+* Strange behavior on approve page: drop down appears without table
 
 ## Features
 * Make courses disabled. (Also in the UI.)
-* Allow to go from compensation page to validate page with specific dates+trainer
 * Show statistics on /profile
 
 ## Tech update
