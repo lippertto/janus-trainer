@@ -24,14 +24,14 @@ import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import Tooltip from '@mui/material/Tooltip';
 
 import { JanusSession } from '@/lib/auth';
-import TrainingDialog from './TrainingDialog';
+import TrainingDialog from '../../components/TrainingDialog';
 
 import { showError } from '@/lib/notifications';
 import { Holiday, TrainingStatus } from '@prisma/client';
 import { CompensationValueDto, CourseDto, TrainingCreateRequest, TrainingDto } from '@/lib/dto';
-import { useMutation } from '@tanstack/react-query';
-import { patchInApi } from '@/lib/fetch';
-import { API_TRAININGS } from '@/lib/routes';
+import { useMutation, useQueryClient, useSuspenseQuery } from '@tanstack/react-query';
+import { fetchListFromApi, patchInApi } from '@/lib/fetch';
+import { API_TRAININGS, API_TRAININGS_SUMMARIZE } from '@/lib/routes';
 import { useConfirm } from 'material-ui-confirm';
 import {
   centsToHumanReadable,
@@ -42,6 +42,7 @@ import {
 import { replaceElementWithId } from '@/lib/sort-and-filter';
 import { warningsForDate } from '@/lib/warnings-for-date';
 import { trainingCreateQuery, trainingDeleteQuery, trainingUpdateQuery } from '@/lib/shared-queries';
+import { throttle } from 'throttle-debounce';
 
 require('dayjs/locale/de');
 dayjs.locale('de');
@@ -163,55 +164,59 @@ declare module '@mui/x-data-grid' {
 
 function TrainingTableToolbar(
   {
-    handleAddTraining,
     handleDelete,
-    handleEdit,
   }: TrainingTableToolbarProps) {
   return (
     <GridToolbarContainer>
-      {handleAddTraining ? (
-        <Button
-          data-testid="add-training-button"
-          startIcon={<AddIcon />}
-          onClick={() => {
-            handleAddTraining();
-          }}
-        >
-          Training hinzufügen
-        </Button>
-      ) : (
-        <></>
-      )}
       <Button
         startIcon={<DeleteIcon />}
         disabled={!Boolean(handleDelete)}
         onClick={handleDelete}>
         löschen
       </Button>
-      {handleAddTraining?
-      <Button
-        startIcon={<EditIcon />}
-        disabled={!Boolean(handleEdit)}
-        onClick={handleEdit}>
-        bearbeiten
-      </Button>
-        : null
-      }
     </GridToolbarContainer>
   );
 }
 
+function queryKeyForTrainings(start: dayjs.Dayjs, end: dayjs.Dayjs, trainerId?: string) {
+  return [API_TRAININGS, start.format('YYYY-MM-DD'), end.format('YYYY-MM-DD'), trainerId];
+}
+
+function trainingsQuery(
+  accessToken: string,
+  filterStart: dayjs.Dayjs,
+  filterEnd: dayjs.Dayjs,
+  trainerId?: string,
+) {
+  const startString = filterStart.format('YYYY-MM-DD');
+  const endString = filterEnd.format('YYYY-MM-DD');
+  const trainerFilter = trainerId ? `&trainerId=${trainerId}` : '';
+  return useSuspenseQuery({
+    queryKey: queryKeyForTrainings(filterStart, filterEnd, trainerId),
+    queryFn: () => fetchListFromApi<TrainingDto>(
+      `${API_TRAININGS}?start=${startString}&end=${endString}${trainerFilter}`,
+      accessToken!,
+    ),
+    staleTime: 10 * 60 * 1000,
+  });
+}
+
+function compareTrainings(a: TrainingDto, b: TrainingDto) {
+  if (a.date < b.date) return -1;
+  if (a.date > b.date) return 1;
+  if (a.id < b.id) return -1;
+  if (a.id > b.id) return 1;
+  return 0;
+}
+
+
 type TrainingTableProps = {
-  /** The trainings to display. Note: Should be sorted, e.g. with `v.sort((r1, r2) => parseInt(r1.id) - parseInt(r2.id))` */
-  trainings: TrainingDto[];
-  setTrainings: (trainings: TrainingDto[]) => void;
-  /** Whether the UI should show the approval actions. (User must be admin to actually execute the steps.) */
-  approvalMode: boolean;
   /** List of holidays used to highlight collisions */
   holidays: Holiday[];
-  courses: CourseDto[];
   session: JanusSession;
-  compensationValues: CompensationValueDto[];
+  trainerId: string|null;
+  startDate: dayjs.Dayjs;
+  endDate: dayjs.Dayjs;
 };
 
 /**
@@ -219,21 +224,43 @@ type TrainingTableProps = {
  */
 export default function TrainingTable(
   {
-    trainings,
-    setTrainings,
-    compensationValues,
-    approvalMode,
     holidays,
-    courses,
     session,
     ...props
   }: TrainingTableProps) {
+  const queryClient = useQueryClient();
+
   const [rowSelectionModel, setRowSelectionModel] = React.useState<GridRowSelectionModel>(
     [],
   );
-  const [showTrainingDialog, setShowTrainingDialog] = React.useState<boolean>(false);
   const [activeTraining, setActiveTraining] =
     React.useState<TrainingDto | null>(null);
+
+  const [trainings, setTrainings] = React.useState<TrainingDto[]>([]);
+
+  const { data: trainingData } = props.trainerId ?
+    trainingsQuery(session.accessToken,
+    props.startDate, props.endDate, props.trainerId
+  ) : {data: []};
+
+
+  React.useEffect(() => {
+    setTrainings(trainingData.toSorted(compareTrainings));
+  }, [trainingData]);
+
+
+  const refresh = throttle(
+    3000,
+    () => {
+      queryClient.invalidateQueries({
+        queryKey: queryKeyForTrainings(
+          props.startDate, props.endDate, props.trainerId ?? undefined,
+        ),
+      });
+      queryClient.invalidateQueries({ queryKey: [API_TRAININGS_SUMMARIZE, props.startDate, props.endDate] });
+    },
+    { noLeading: true },
+  );
 
   const approveTrainingMutation = useMutation({
     mutationFn: (id: number) => {
@@ -246,6 +273,7 @@ export default function TrainingTable(
     },
     onSuccess: (updated) => {
       setTrainings(replaceElementWithId(trainings, updated));
+      refresh();
     },
     onError: (e) => {
       showError(`Fehler bei der Freigabe des Trainings`, e.message);
@@ -263,15 +291,14 @@ export default function TrainingTable(
     },
     onSuccess: (updated) => {
       setTrainings(replaceElementWithId(trainings, updated));
+      refresh();
     },
     onError: (e) => {
       showError(`Fehler beim Widerruf der Freigabe`, e.message);
     },
   });
 
-  const createTrainingMutation = trainingCreateQuery(session.accessToken, trainings, setTrainings);
   const deleteTrainingMutation = trainingDeleteQuery(session.accessToken, trainings, setTrainings);
-  const updateTrainingMutation = trainingUpdateQuery(session.accessToken, trainings, setTrainings);
 
   const confirm = useConfirm();
   const handleDeleteClick = (training: TrainingDto) => {
@@ -282,6 +309,7 @@ export default function TrainingTable(
       .then(
         () => {
           deleteTrainingMutation.mutate(training);
+          refresh();
         },
       ).catch(() => {
     });
@@ -302,12 +330,6 @@ export default function TrainingTable(
         initialState={{
           sorting: {
             sortModel: [{ field: 'date', sort: 'asc' }],
-          },
-          columns: {
-            columnVisibilityModel: {
-              userName: approvalMode,
-              approvalActions: approvalMode,
-            },
           },
         }}
         columns={columns}
@@ -333,39 +355,10 @@ export default function TrainingTable(
         }}
         slotProps={{
           toolbar: {
-            handleAddTraining: approvalMode
-              ? undefined
-              : () => {
-                setActiveTraining(null);
-                setShowTrainingDialog(true);
-              },
             handleDelete: activeTraining && activeTraining.status === TrainingStatus.NEW ? () => (handleDeleteClick(activeTraining)) : undefined,
-            handleEdit: approvalMode ? undefined:  activeTraining && activeTraining.status === TrainingStatus.NEW ? () => {
-              setShowTrainingDialog(true);
-            } : undefined,
           },
         }}
         {...props}
-      />
-
-      <TrainingDialog
-        open={showTrainingDialog}
-        userId={session?.userId}
-        handleClose={() => {
-          setRowSelectionModel([]);
-          setActiveTraining(null);
-          setShowTrainingDialog(false);
-        }}
-        handleSave={(data: TrainingCreateRequest) => {
-          if (activeTraining) {
-            updateTrainingMutation.mutate({ trainingId: activeTraining.id, data });
-          } else {
-            createTrainingMutation.mutate(data);
-          }
-        }}
-        toEdit={activeTraining}
-        courses={courses}
-        compensationValues={compensationValues}
       />
     </>
   );
