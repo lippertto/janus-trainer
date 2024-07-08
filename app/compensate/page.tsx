@@ -78,7 +78,7 @@ export default function PaymentPage() {
       </Grid>
       <Grid xs={5} xsOffset={'auto'}>
         <Button
-          disabled={(compensations?.length) > 0}
+          disabled={!(compensations?.length)}
           onClick={handleSepaGeneration}
         >
           SEPA XML generieren
