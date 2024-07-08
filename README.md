@@ -15,15 +15,17 @@ To execute the API tests, you have to start the server with the environment vari
 ## Next up 
 * Clean up Training Table
 * Add Comment field
+* Update help for approve page
 
 ## Bugs
-* Strange behavior on approve page: drop down appears without table
+* Going back to compensate page leaves the table empty
 
 ## Features
 * Vertretungen
 * Flexible compensation groups
 * Make courses disabled. (Also in the UI.)
 * Show statistics on /profile
+* Dashboard for all trainers: Number of trainings + Sum
 
 ## Tech update
 * Hide password in POSTGRES_CONNECTION_URL of lambda. --> Use Secret
