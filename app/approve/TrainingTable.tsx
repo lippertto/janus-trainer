@@ -57,7 +57,7 @@ function buildGridColumns(
       field: 'date',
       headerName: 'Datum',
       type: 'date',
-      flex: 1.5,
+      flex: 1.1,
       valueFormatter: (value: string) => {
         return dateToHumanReadable(value);
       },
@@ -71,13 +71,13 @@ function buildGridColumns(
         if (dateMessages.length !== 0) {
           return (
             <Tooltip title={dateMessages.join(", ")}>
-              <WarningAmberIcon sx={{ color: 'orange' }} />
+              <WarningAmberIcon sx={{ color: 'orange' }} style={{verticalAlign: 'middle'}}/>
             </Tooltip>
           );
         }
         return null;
       },
-      flex: 0.5,
+      flex: 0.1,
     },
     {
       field: 'userName',
@@ -92,14 +92,16 @@ function buildGridColumns(
       headerName: 'Kurs',
       flex: 2,
       valueGetter: (_value, row: TrainingDto) => {
-        return row.course.name;
+        const hour = row.course.startHour.toString().padStart(2, '0')
+        const minute = row.course.startMinute.toString().padStart(2, '0')
+        return `${row.course.name} ${hour}:${minute}, ${row.course.durationMinutes}min`;
       },
     },
     {
       field: 'participantCount',
       headerName: 'Mitglieder',
       type: 'number',
-      flex: 1,
+      flex: .7,
     },
     {
       field: 'compensationCents',
