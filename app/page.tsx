@@ -9,7 +9,7 @@ function Contents() {
   return (
     <React.Fragment>
       <Typography component="p">
-        Willkommen in der Janus Trainerstunden App.
+        Willkommen in der Janus Sportstunden App.
       </Typography>
       <Typography component="p" sx={{ display: 'flex', alignItems: 'top' }}>
         Um in der App zu navigieren, klicke oben links auf das &nbsp;{' '}

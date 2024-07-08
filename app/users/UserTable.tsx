@@ -79,10 +79,10 @@ export default function UserTable({
     },
     onSuccess: (createdUser: UserDto) => {
       queryClient.setQueryData(['users'], [...users, createdUser]);
-      showSuccess(`Nutzer ${createdUser.name} wurde erstellt`);
+      showSuccess(`Konto für ${createdUser.name} wurde erstellt`);
     },
     onError: (e) => {
-      showError(`Fehler beim Erstellen des Nutzers`, e.message);
+      showError(`Fehler beim Erstellen des Kontos`, e.message);
     },
   });
 
@@ -99,10 +99,10 @@ export default function UserTable({
           }
         });
         queryClient.setQueryData(['users'], newUsers);
-        showSuccess(`Nutzer ${data.name} wurde aktualisiert`);
+        showSuccess(`Konto für ${data.name} wurde aktualisiert`);
       },
       onError: (e) => {
-        showError(`Fehler beim Aktualisieren des Nutzers`, e.message);
+        showError(`Fehler beim Aktualisieren des Kontos`, e.message);
       },
     },
   );
@@ -110,18 +110,18 @@ export default function UserTable({
   const confirm = useConfirm();
   const handleDeleteUser = (user: UserDto | null) => {
     confirm({
-      title: 'Nutzer löschen?',
-      description: `Soll der Nutzer "${user?.email}" gelöscht werden?`,
+      title: 'Konto löschen?',
+      description: `Soll der Konto "${user?.email}" gelöscht werden?`,
     })
       .then(() => {
         if (!user) return;
         deleteFromApi(API_USERS, user, session.accessToken)
           .then((deleted) => {
             queryClient.setQueryData(['users'], users.filter((u) => u.id !== deleted.id));
-            showSuccess(`Nutzer ${user.name} wurde gelöscht`);
+            showSuccess(`Konto ${user.name} wurde gelöscht`);
           })
           .catch((err) => {
-            showError(`Konnte Nutzer ${user.email} nicht löschen`, err.message);
+            showError(`Konnte Konto ${user.email} nicht löschen`, err.message);
           });
       })
     ;

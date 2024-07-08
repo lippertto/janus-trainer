@@ -27,7 +27,7 @@ test('happy case: handles groups', async () => {
 
   const groupField = screen.getByTestId('profile-groups-textfield');
   // @ts-ignore IntelliJ thinks that value does not exist
-  expect(groupField.value).toBe("Administratoren")
+  expect(groupField.value).toBe("Administration")
 });
 
 test('handles missing groups', async () => {

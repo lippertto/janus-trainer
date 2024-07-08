@@ -20,6 +20,8 @@ To execute the API tests, you have to start the server with the environment vari
 * Strange behavior on approve page: drop down appears without table
 
 ## Features
+* Vertretungen
+* Flexible compensation groups
 * Make courses disabled. (Also in the UI.)
 * Show statistics on /profile
 

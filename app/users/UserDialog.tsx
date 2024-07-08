@@ -106,7 +106,7 @@ export function UserDialog({
 
   return (
     <Dialog open={open} onClose={handleClose}>
-      <DialogTitle>Nutzer bearbeiten</DialogTitle>
+      <DialogTitle>Konto bearbeiten</DialogTitle>
       <DialogContent>
         {/* We need a bit of space or the top will be cut off*/}
         <Grid container sx={{ pt: 2 }} spacing={2}>

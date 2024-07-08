@@ -31,7 +31,7 @@ export function compensationGroupToHumanReadable(option: CompensationGroup) {
     case CompensationGroup.NO_QUALIFICATION:
       return 'Ohne Quali';
     case CompensationGroup.LEAGUE:
-      return 'Liga';
+      return 'Ligabetrieb';
     default:
       return '???';
   }
@@ -40,7 +40,7 @@ export function compensationGroupToHumanReadable(option: CompensationGroup) {
 export function groupToHumanReadable(group: Group) {
   switch (group) {
     case Group.ADMINS:
-      return "Administratoren";
+      return "Administration";
     case Group.TRAINERS:
       return "Übungsleitung";
     default:
