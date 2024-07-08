@@ -117,7 +117,7 @@ function TrainerDropdown({ trainers, selectedTrainers, setSelectedTrainers }: Tr
         );
       }}
       getOptionLabel={(t) => (t.name)}
-      renderInput={(params) => <TextField {...params} label="Trainer" />}
+      renderInput={(params) => <TextField {...params} label="Übungsleitung" />}
       value={selectedTrainers}
       onChange={(_, value) => {
         setSelectedTrainers(value);

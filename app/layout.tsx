@@ -5,8 +5,8 @@ import JanusAppbar from './JanusAppbar';
 import JanusProviders from './JanusProviders';
 
 export const metadata = {
-  title: 'Janus Trainerstunden',
-  description: 'Verwaltung von Trainerstunden für den SC Janus',
+  title: 'Janus Sportstunden',
+  description: 'Verwaltung von Sportstunden für den SC Janus',
 };
 
 export default function RootLayout({

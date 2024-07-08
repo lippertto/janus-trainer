@@ -37,7 +37,7 @@ export type UserDto = {
 };
 
 export type TrainerLight = Pick<UserDto, 'name' | 'id'>
-export type CourseLight = Pick<CourseDto, 'name' | 'id' | 'weekdays'>
+export type CourseLight = Pick<CourseDto, 'name' | 'id' | 'weekdays' | 'startHour' | 'startMinute' | 'durationMinutes'>
 
 export type TrainingDto = Training & {
   user: TrainerLight,

@@ -12,8 +12,8 @@ SELECT CAST(u."id" AS TEXT) AS "trainerId",
             SUM(case when gt.status = 'APPROVED' then 1 else 0 end) as "approvedTrainingCount"
     FROM "Training" AS gt INNER JOIN "User" AS u ON gt."userId" = u."id"
     WHERE "u"."deletedAt" IS NULL
-    AND "gt"."date" >= ${startDate}
-    AND "gt"."date" <= ${endDate}
+    AND "gt"."date" >= ${startDate.format("YYYY-MM-DD")}
+    AND "gt"."date" <= ${endDate.format("YYYY-MM-DD")}
     GROUP BY ("u"."id", "u"."name");
 `;
   const value = sqlResult.map((r) => ({

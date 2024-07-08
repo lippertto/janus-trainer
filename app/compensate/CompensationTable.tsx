@@ -1,9 +1,10 @@
-import { DataGrid, GridActionsCellItem, GridColDef, GridRowParams } from '@mui/x-data-grid';
+import { DataGrid, GridActionsCellItem, GridColDef, GridRowParams, GridToolbar } from '@mui/x-data-grid';
 import React from 'react';
 import { CompensationDto, UserDto } from '@/lib/dto';
 import { centsToHumanReadable, ibanToHumanReadable } from '@/lib/formatters';
 import LaunchIcon from '@mui/icons-material/Launch';
 import { useRouter } from 'next/navigation';
+import dayjs from 'dayjs';
 
 export default function CompensationTable({
                                             compensations,
@@ -53,6 +54,8 @@ export default function CompensationTable({
 
   return (
     <DataGrid
+      slots={{toolbar: GridToolbar }}
+      slotProps={{toolbar: {csvOptions: {fileName: `${dayjs().format('YYYY-MM-DD')} Pauschalen-Export.csv`}}}}
       columns={columns}
       rows={compensations}
       getRowId={(c: CompensationDto) => c.user.id}
