@@ -72,6 +72,7 @@ async function listUsers(request: NextRequest): Promise<UserDto[]> {
       email: cognitoUser.email,
       groups: cognitoUser.groups,
       iban: userInDatabase.iban ?? null,
+      termsAcceptedAt: userInDatabase.termsAcceptedAt?.toLocaleDateString() ?? null
     };
     result.push(userResponse);
   }

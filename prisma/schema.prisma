@@ -54,6 +54,9 @@ model UserInDb {
   courses            Course[]
   compensationGroups CompensationGroup[] @default([])
 
+  termsAcceptedAt      DateTime? @db.Timestamptz()
+  termsAcceptedVersion String?
+
   // We want the table to be called User
   @@map("User")
 }

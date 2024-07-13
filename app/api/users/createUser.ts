@@ -49,6 +49,7 @@ export async function createUser(payload: any) {
       ...dbUser,
       groups: cognitoUser.groups,
       email: cognitoUser.email,
+      termsAcceptedAt: dbUser.termsAcceptedAt?.toLocaleDateString() ?? null,
     },
     { status: 201 },
   );

@@ -13,7 +13,7 @@ export default function JanusAppbar() {
   const [drawerOpen, setDrawerOpen] = React.useState(false);
 
   return (
-    <>
+    <React.Fragment>
       <AppBar position="static">
         <Toolbar>
           <IconButton
@@ -35,6 +35,6 @@ export default function JanusAppbar() {
         </Toolbar>
       </AppBar>
       <JanusDrawer state={drawerOpen} setState={setDrawerOpen} />
-    </>
+    </React.Fragment>
   );
 }

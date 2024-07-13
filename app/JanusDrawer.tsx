@@ -30,14 +30,14 @@ const ADMIN_LINKS = [
   { text: 'Kontos', href: '/users', icon: ManageAccountsIcon },
   { text: 'Angebot', href: '/offerings', icon: SportsIcon },
   { text: 'Verwaltung', href: '/configure', icon: SettingsIcon },
-  { text: 'Scannen', href: '/scan', icon: QrCodeScannerIcon },
+  // { text: 'Scannen', href: '/scan', icon: QrCodeScannerIcon },
   { text: 'Profil', href: '/profile', icon: AccountBoxIcon },
 ];
 
 const TRAINER_LINKS = [
   { text: 'Home', href: '/', icon: HomeIcon },
   { text: 'Eingeben', href: '/enter', icon: EditCalendarIcon },
-  { text: 'Scannen', href: '/scan', icon: QrCodeScannerIcon },
+  // { text: 'Scannen', href: '/scan', icon: QrCodeScannerIcon },
   { text: 'Profil', href: '/profile', icon: AccountBoxIcon },
 ];
 

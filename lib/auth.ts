@@ -149,8 +149,8 @@ export function auth(
     | [GetServerSidePropsContext['req'], GetServerSidePropsContext['res']]
     | [NextApiRequest, NextApiResponse]
     | []
-) {
-  return getServerSession(...args, config);
+): JanusSession {
+  return getServerSession(...args, config) as any as JanusSession;
 }
 
 export interface JanusSession extends Session {

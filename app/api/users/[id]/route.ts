@@ -14,6 +14,7 @@ import {
   updateCognitoUser,
 } from '../cognito';
 import { UserDto, UserCreateRequest, ErrorDto, UserPatchRequest } from '@/lib/dto';
+import dayjs from 'dayjs';
 
 async function doDELETE(request: NextRequest, id: string) {
   await allowOnlyAdmins(request);
@@ -96,7 +97,9 @@ async function doPUT(nextRequest: NextRequest, params: { id: string }): Promise<
       compensationGroups: request.compensationGroups,
     },
   });
-  return NextResponse.json({ ...dbResult, groups: request.groups, email: request.email });
+  return NextResponse.json({ ...dbResult, groups: request.groups, email: request.email,
+    termsAcceptedAt: dbResult.termsAcceptedAt?.toLocaleDateString() ?? null,
+  });
 }
 
 export async function PUT(
@@ -129,7 +132,11 @@ async function selectOneUser(id: string): Promise<UserDto> {
 
   const groups = await listGroupsForUser(client, id);
 
-  return {...dbUser, email: cognitoUser.email, groups: groups}!;
+  return {...dbUser,
+    email: cognitoUser.email,
+    groups: groups,
+    termsAcceptedAt: dbUser.termsAcceptedAt?.toLocaleDateString() ?? null,
+  }!;
 }
 
 export async function GET(
@@ -145,18 +152,27 @@ export async function GET(
   }
 }
 
-async function patchOneUser(id: string, data: any) {
+async function patchOneUser(id: string, payload: any) {
   const dbUser = await prisma.userInDb.findUnique({
     where: {id}
   });
   if (dbUser === null) {
     throw new ApiErrorNotFound(`User with id ${id} not found`);
   }
-  const request = await validateOrThrow(new UserPatchRequest(data));
+  const request = await validateOrThrow(new UserPatchRequest(payload));
+
+  let data: any  = {};
+  if (request.iban) {
+    data['iban'] = request.iban;
+  }
+  if (request.termsAcceptedVersion) {
+    data['termsAcceptedVersion'] = request.termsAcceptedVersion;
+    data['termsAcceptedAt'] = new Date();
+  }
 
   return prisma.userInDb.update({
     where: { id },
-    data: { iban: request.iban }
+    data
   });
 }
 

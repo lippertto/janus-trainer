@@ -4,9 +4,7 @@ import prisma from '@/lib/prisma';
 import { NextRequest, NextResponse } from 'next/server';
 
 async function doGET(
-  request: NextRequest,
 ): Promise<NextResponse<CompensationQueryResponse>> {
-  await allowOnlyAdmins(request);
 
   const sqlResult: any[] = await prisma.$queryRaw`
 SELECT CAST(u."id" AS TEXT) AS "userId",
@@ -41,7 +39,8 @@ export async function GET(
   request: NextRequest,
 ): Promise<NextResponse<CompensationQueryResponse | ErrorDto>> {
   try {
-    return await doGET(request);
+    await allowOnlyAdmins(request);
+    return await doGET();
   } catch (e) {
     return handleTopLevelCatch(e);
   }
