@@ -34,6 +34,9 @@ export type UserDto = {
   name: string;
   groups: Group[];
   compensationGroups: CompensationGroup[];
+
+  termsAcceptedAt: string | null;
+  termsAcceptedVersion: string | null;
 };
 
 export type TrainerLight = Pick<UserDto, 'name' | 'id'>
@@ -118,8 +121,13 @@ export class UserPatchRequest {
     Object.assign(this, obj);
   }
 
+  @IsOptional()
   @IsIBAN()
   iban: string;
+
+  @IsOptional()
+  @IsString()
+  termsAcceptedVersion: string;
 }
 
 export type UserQueryResponseDto = {

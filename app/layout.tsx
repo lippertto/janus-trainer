@@ -3,6 +3,7 @@ import React from 'react';
 import Box from '@mui/system/Box';
 import JanusAppbar from './JanusAppbar';
 import JanusProviders from './JanusProviders';
+import TermsAcceptance from '@/app/TermsAcceptance';
 
 export const metadata = {
   title: 'Janus Sportstunden',
@@ -24,6 +25,7 @@ export default function RootLayout({
       <body>
         <JanusProviders>
           <>
+            <TermsAcceptance />
             <JanusAppbar />
             <Box sx={{ pt: 3 }}>{children}</Box>
           </>

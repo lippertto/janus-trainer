@@ -1,21 +1,5 @@
 import { TrainingBatchUpdateRequest, TrainingDto } from './dto';
 
-export async function unapproveTraining(
-  accessToken: string,
-  id: string,
-): Promise<TrainingDto> {
-  const response = await fetch(`/api/trainings/${id}`, {
-    method: 'PATCH',
-    body: JSON.stringify({ status: 'NEW' }),
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      'Content-Type': 'application/json',
-    },
-  });
-  const data = await response.text();
-  return JSON.parse(data) as TrainingDto;
-}
-
 export async function markTrainingsAsCompensated(
   accessToken: string,
   ids: number[],
