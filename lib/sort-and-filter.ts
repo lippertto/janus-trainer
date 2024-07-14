@@ -1,4 +1,4 @@
-export function sortNamed(a: { name: string }, b: { name: string }): number {
+export function compareNamed(a: { name: string }, b: { name: string }): number {
   if (a.name < b.name) {
     return -1;
   }

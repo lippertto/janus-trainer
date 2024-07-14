@@ -1,9 +1,16 @@
 import { useMutation, useQuery, UseQueryResult, useSuspenseQuery } from '@tanstack/react-query';
 import { createInApi, deleteFromApi, fetchListFromApi, fetchSingleEntity, updateInApi } from '@/lib/fetch';
-import { API_COMPENSATION_VALUES, API_COURSES, API_HOLIDAYS, API_TRAININGS, API_USERS } from '@/lib/routes';
+import {
+  API_COMPENSATION_VALUES,
+  API_COURSES,
+  API_DISCIPLINES,
+  API_HOLIDAYS,
+  API_TRAININGS,
+  API_USERS,
+} from '@/lib/routes';
 import {
   CompensationValueDto,
-  CourseDto,
+  CourseDto, DisciplineDto,
   TrainingCreateRequest,
   TrainingDto,
   TrainingUpdateRequest,
@@ -69,15 +76,13 @@ export function holidaysSuspenseQuery(
   });
 }
 
-export function trainersQuery(accessToken: string | null) {
-  return useQuery({
-    queryKey: ['trainers'],
+export function trainersSuspenseQuery(accessToken: string | null) {
+  return useSuspenseQuery({
+    queryKey: [API_USERS, 'group=trainers'],
     queryFn: () => fetchListFromApi<UserDto>(
       `${API_USERS}?group=trainers`,
       accessToken!,
     ),
-    throwOnError: true,
-    enabled: Boolean(accessToken),
     staleTime: TEN_MINUTES,
   });
 }
@@ -198,4 +203,16 @@ export function trainingDeleteQuery(
       showError(`Fehler beim Löschen des Trainings`, e.message);
     },
   });
+}
+
+export function disciplinesSuspenseQuery(accessToken: string) {
+  return useSuspenseQuery({
+      queryKey: [API_DISCIPLINES],
+      queryFn: () => fetchListFromApi<DisciplineDto>(
+        `${API_DISCIPLINES}`,
+        accessToken,
+      ),
+      staleTime: TEN_MINUTES,
+    },
+  );
 }

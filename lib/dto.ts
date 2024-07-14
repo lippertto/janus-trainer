@@ -2,7 +2,7 @@ import {
   CompensationGroup,
   CompensationValue,
   Course,
-  DayOfWeek,
+  DayOfWeek, Discipline,
   Holiday,
   Training,
   TrainingStatus,
@@ -246,6 +246,9 @@ export class CourseCreateRequest {
   @IsArray()
   @IsString({ each: true })
   trainerIds: string[];
+
+  @IsInt()
+  disciplineId: number;
 }
 
 export type CourseQueryResponse = {
@@ -290,3 +293,21 @@ export type TrainingSummaryDto = {
 export type TrainingSummaryListDto = {
   value: TrainingSummaryDto[]
 };
+
+export type DisciplineDto = Discipline;
+
+export class DisciplineCreateRequest {
+  constructor(obj: any) {
+    Object.assign(this, obj);
+  }
+
+  @IsString()
+  name: string;
+
+  @IsNumber()
+  costCenterId: number;
+}
+
+export type DisciplineQueryResponseDto = {
+  value: DisciplineDto[];
+}

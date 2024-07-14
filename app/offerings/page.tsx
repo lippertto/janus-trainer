@@ -12,11 +12,11 @@ import ButtonGroup from '@mui/material/ButtonGroup';
 import Button from '@mui/material/Button';
 import { useConfirm } from 'material-ui-confirm';
 import { showError, showSuccess } from '@/lib/notifications';
-import { sortNamed } from '@/lib/sort-and-filter';
+import { compareByStringField, compareNamed } from '@/lib/sort-and-filter';
 import Grid from '@mui/material/Unstable_Grid2';
 import { CourseCreateRequest, CourseDto, UserDto } from '@/lib/dto';
 import { CourseDialog } from '@/app/offerings/CourseDialog';
-import { resultHasData, trainersQuery } from '@/lib/shared-queries';
+import { disciplinesSuspenseQuery, resultHasData, trainersSuspenseQuery } from '@/lib/shared-queries';
 import { CourseCard } from '@/components/CourseCard';
 
 type CourseCardsProps = {
@@ -46,10 +46,7 @@ function CourseCards(props: CourseCardsProps) {
 function OfferingsPageContents({session}:{session:JanusSession}) {
 
   const [courses, setCourses] = React.useState<CourseDto[]>([]);
-  const [trainers, setTrainers] = React.useState<UserDto[]>([]);
-
   const [activeCourse, setActiveCourse] = React.useState<CourseDto | null>(null);
-
   const [createCourseOpen, setCourseDialogOpen] = React.useState(false);
 
   const courseResult = useSuspenseQuery({
@@ -58,7 +55,11 @@ function OfferingsPageContents({session}:{session:JanusSession}) {
     staleTime: 10 * 60 * 1000,
   });
 
-  const trainerResult = trainersQuery(session?.accessToken);
+  let { data: trainers } = trainersSuspenseQuery(session.accessToken);
+  trainers.sort(compareNamed);
+
+  let {data: disciplines} = disciplinesSuspenseQuery(session.accessToken)
+  disciplines.sort(compareNamed);
 
   const deleteCourseMutation = useMutation({
     mutationFn: (course: CourseDto) => deleteFromApi(API_COURSES, course, session.accessToken),
@@ -76,7 +77,7 @@ function OfferingsPageContents({session}:{session:JanusSession}) {
       return createInApi<CourseDto>(API_COURSES, props, session?.accessToken ?? '');
     },
     onSuccess: (data: CourseDto) => {
-      setCourses([...courses, data].toSorted(sortNamed));
+      setCourses([...courses, data].toSorted(compareNamed));
       showSuccess(`Kurs ${data.name} erstellt`);
     },
     onError: (e) => {
@@ -97,7 +98,7 @@ function OfferingsPageContents({session}:{session:JanusSession}) {
           return d;
         }
       });
-      setCourses(newCourses.toSorted(sortNamed));
+      setCourses(newCourses.toSorted(compareNamed));
       showSuccess(`Kurs ${data.name} aktualisiert`);
     },
     onError: (e) => {
@@ -113,16 +114,10 @@ function OfferingsPageContents({session}:{session:JanusSession}) {
       showError(`Konnte Termine für nicht laden.`);
       return;
     }
-    setCourses(courseResult.data!.toSorted(sortNamed));
+    setCourses(courseResult.data!.toSorted(compareNamed));
   }, [
     courseResult.data,
   ]);
-
-  React.useEffect(() => {
-    if (resultHasData(trainerResult)) {
-        setTrainers(trainerResult.data!.toSorted(sortNamed));
-    }
-  }, [trainerResult.data]);
 
   const confirm = useConfirm();
   const handleDeleteCourseClick = () => {
@@ -191,6 +186,7 @@ function OfferingsPageContents({session}:{session:JanusSession}) {
         }
       }}
       trainers={trainers}
+      disciplines={disciplines}
       courseToEdit={activeCourse}
     />
   </React.Fragment>;
