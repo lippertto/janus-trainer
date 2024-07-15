@@ -1,5 +1,5 @@
 import prisma from '../lib/prisma';
-import { CompensationGroup, DayOfWeek } from '@prisma/client';
+import { CompensationGroup, DayOfWeek, Discipline } from '@prisma/client';
 
 async function resetIdCounter(tableName: string) {
   return prisma.$queryRawUnsafe(`
@@ -16,11 +16,13 @@ async function main() {
       id: '502c79bc-e051-70f5-048c-5619e49e2383',
       name: 'Test-User Admin',
       compensationGroups: [CompensationGroup.NO_QUALIFICATION],
+      termsAcceptedVersion: '2024-07-13'
     },
     {
       id: '80ac598c-e0b1-7040-5e0e-6fd257a53699',
       name: 'Test-User Trainer',
       iban: 'DE53500105175739486428',
+      termsAcceptedVersion: '2024-07-13'
     },
   ];
 
@@ -62,12 +64,17 @@ async function main() {
   }
   await resetIdCounter('CompensationValue');
 
+  const discipline: Discipline = {name: "Sportart 1", id: 1, costCenterId: 42}
+  await prisma.discipline.upsert({ where: {id: 1}, create: discipline, update: discipline });
+  await resetIdCounter('Discipline');
+
   const course = {
     name: 'Test-Kurs',
     weekdays: [DayOfWeek.TUESDAY],
     startHour: 19,
     startMinute: 0,
     durationMinutes: 90,
+    disciplineId: discipline.id,
   };
 
   await prisma.course.upsert({
