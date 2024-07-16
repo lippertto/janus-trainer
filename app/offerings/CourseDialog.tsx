@@ -207,7 +207,7 @@ export function CourseDialog(
     nameError = 'Darf nicht leer sein';
     error = true;
   }
-  error = error && (!discipline);
+  error = error || (discipline === null);
 
   const handleDayChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setDays({
