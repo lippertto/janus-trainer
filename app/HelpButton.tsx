@@ -63,9 +63,9 @@ function ApprovalHelpText() {
     </DialogContentText>
     <DialogContentText>
       Über das Eingabefeld "<b>Übungsleitung</b>" kannst du auswählen, welche Übungsleitung angezeigt wird.
-      Normalerweise werden nur Übungsleitungen angezeigt, die Trainings haben, die in dem Zeitraum noch nicht freigegeben worden sind.
-      Neben dem Namen steht N und F. Das steht für die Anzahl an neuen (N) und freigegebenen (F) Trainings in dem Zeitraum.
-      Über einen Klick auf "<b>Nur ÜL mit neu</b>" kannst du alle Übungsleitungen anzeigen, die in dem Zeitraum Trainings eingegeben haben.
+      Du kannst entweder "Alle ÜL" auswählen, dann siehst du alle ÜL, die in dem Zeitraum ein Training eingegeben haben.
+      Oder du kannst "Nur ÜL mit neuen" auswählen. Dann siehst du nur ÜL, die in dem Zeitraum ein Training haben,
+      das noch nicht freigegeben worden ist.
     </DialogContentText>
     <DialogContentText>
       Wenn ein <b>gelbes Ausrufezeichen</b> <WarningAmberIcon />  erscheint, gibt es eine Warnung zu dem Datum. Du kannst Details sehen, wenn du dem
