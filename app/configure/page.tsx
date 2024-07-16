@@ -84,10 +84,10 @@ function ConfigurationPageContents({ session }: { session: JanusSession }) {
             setHolidayYear={setHolidayYear}
           />
         </Grid>
-        <Grid xs={3}>
+        <Grid xs={4}>
           <CompensationCard session={session} />
         </Grid>
-        <Grid xs={3}>
+        <Grid xs={2}>
           <DisciplineCard session={session} />
         </Grid>
       </Grid>
