@@ -43,7 +43,7 @@ function CourseCards(props: CourseCardsProps) {
   </Grid>;
 }
 
-function OfferingsPageContents({session}:{session:JanusSession}) {
+function OfferingsPageContents({ session }: { session: JanusSession }) {
 
   const [courses, setCourses] = React.useState<CourseDto[]>([]);
   const [activeCourse, setActiveCourse] = React.useState<CourseDto | null>(null);
@@ -58,7 +58,7 @@ function OfferingsPageContents({session}:{session:JanusSession}) {
   let { data: trainers } = trainersSuspenseQuery(session.accessToken);
   trainers.sort(compareNamed);
 
-  let {data: disciplines} = disciplinesSuspenseQuery(session.accessToken)
+  let { data: disciplines } = disciplinesSuspenseQuery(session.accessToken);
   disciplines.sort(compareNamed);
 
   const deleteCourseMutation = useMutation({
@@ -135,42 +135,39 @@ function OfferingsPageContents({session}:{session:JanusSession}) {
   };
 
   return <React.Fragment>
-    <Stack direction="row" spacing={5}>
-      <Stack>
-        <Paper sx={{ padding: 3 }}>
-          <Stack spacing={2}>
-            <Typography variant={'h5'}>Kurse</Typography>
-            <ButtonGroup>
-              <Button color={'error'}
-                      onClick={() => {
-                        handleDeleteCourseClick();
-                      }}
-                      disabled={activeCourse === null}
-              >löschen</Button>
-              <Button
-                disabled={activeCourse === null}
-                onClick={(() => {
-                  setCourseDialogOpen(true);
-                })}
-              >bearbeiten</Button>
-              <Button
-                onClick={() => {
-                  setActiveCourse(null);
-                  setCourseDialogOpen(true);
-                }}
-              >
-                hinzufügen
-              </Button>
-            </ButtonGroup>
-            <CourseCards
-              courses={courses !== undefined ? courses: null}
-              activeCourse={activeCourse}
-              setActiveCourse={setActiveCourse}
-            />
-          </Stack>
-        </Paper>
+
+    <Paper sx={{ padding: 3 }}>
+      <Stack spacing={2}>
+        <Typography variant={'h5'}>Kurse</Typography>
+        <ButtonGroup>
+          <Button color={'error'}
+                  onClick={() => {
+                    handleDeleteCourseClick();
+                  }}
+                  disabled={activeCourse === null}
+          >löschen</Button>
+          <Button
+            disabled={activeCourse === null}
+            onClick={(() => {
+              setCourseDialogOpen(true);
+            })}
+          >bearbeiten</Button>
+          <Button
+            onClick={() => {
+              setActiveCourse(null);
+              setCourseDialogOpen(true);
+            }}
+          >
+            hinzufügen
+          </Button>
+        </ButtonGroup>
+        <CourseCards
+          courses={courses !== undefined ? courses : null}
+          activeCourse={activeCourse}
+          setActiveCourse={setActiveCourse}
+        />
       </Stack>
-    </Stack>
+    </Paper>
 
     <CourseDialog
       open={createCourseOpen}

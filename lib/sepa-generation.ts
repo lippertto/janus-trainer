@@ -3,12 +3,12 @@ import * as sepa from 'sepa';
 import { CompensationDto } from './dto';
 
 // There are two different formats for the sepa xml files.
-// One is the
+// This is the one used for transfers
 const FORMAT_FOR_TRANSFERS = 'pain.001.003.03';
 
 function compensationHash(compensation: CompensationDto): string {
   const hash = md5(
-    `${compensation.user.id}.${compensation.periodStart}.${compensation.periodEnd}.${compensation.totalCompensationCents}`,
+    `${compensation.user.id}.${compensation.courseName}.${compensation.periodStart}.${compensation.periodEnd}.${compensation.totalCompensationCents}`,
   );
   return hash.substring(0, 4);
 }
@@ -38,7 +38,7 @@ export function generateSepaXml(compensations: CompensationDto[]): string {
     tx.creditorName = c.user.name;
     tx.creditorIBAN = c.user.iban;
     tx.amount = c.totalCompensationCents / 100;
-    tx.remittanceInfo = `Aufwandsentschädigung ${c.periodStart}..${c.periodEnd}`;
+    tx.remittanceInfo = `${c.courseName} ${c.periodStart}..${c.periodEnd}`;
     tx.end2endId = compensationHash(c);
     // FIXME: remove line after patch. This is not needed.
     tx.mandateSignatureDate = new Date();

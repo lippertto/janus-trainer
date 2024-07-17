@@ -5,6 +5,8 @@ import { validate, ValidationError } from 'class-validator';
 
 /** Will throw if the token does not have the admin role. */
 export async function allowOnlyAdmins(req: NextRequest) {
+  if (process.env.DISABLE_JWT_CHECKS) return;
+
   const token = await getToken({ req });
   if (!token) throw new ApiErrorUnauthorized('Token is missing');
 
@@ -15,6 +17,11 @@ export async function allowOnlyAdmins(req: NextRequest) {
   if (groups.findIndex((e) => e === 'admins') === -1) {
     throw new ApiErrorForbidden('Must be admin to perform this action');
   }
+}
+
+export async function allowNoOne(_: NextRequest) {
+  if (process.env.DISABLE_JWT_CHECKS) return;
+  throw new ApiErrorForbidden('This operation is allowed only in tests');
 }
 
 /**
@@ -45,10 +52,17 @@ export async function allowAdminOrSelf(
   );
 }
 
+export async function getOwnUserId(req: NextRequest): Promise<string> {
+  const token = await getToken({ req });
+  if (!token) throw new ApiErrorUnauthorized('Token is missing');
+  return token.sub!;
+}
+
 /** Will throw if the token is not valid. */
 export async function allowAnyLoggedIn(
   req: NextRequest,
 ): Promise<void> {
+  if (process.env.DISABLE_JWT_CHECKS) return;
   const token = await getToken({ req });
   if (!token) throw new ApiErrorUnauthorized('Token is missing');
 }
@@ -182,7 +196,6 @@ function validationErrorToMessage(error: ValidationError): string {
 
 export async function validateOrThrow<T extends object>(arg: T): Promise<T> {
   const validationErrors = await validate(arg);
-  console.log(validationErrors);
   if (validationErrors.length !== 0) {
     const validationMessage = validationErrors.map(validationErrorToMessage).join("; ")
     throw new ApiErrorBadRequest(

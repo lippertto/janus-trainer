@@ -40,6 +40,9 @@ model Training {
 
   user   UserInDb @relation(fields: [userId], references: [id])
   userId String
+
+  payment   Payment? @relation(fields: [paymentId], references: [id])
+  paymentId Int?
 }
 
 // The user in the database is only part of the domain object.
@@ -56,6 +59,8 @@ model UserInDb {
 
   termsAcceptedAt      DateTime? @db.Timestamptz()
   termsAcceptedVersion String?
+
+  payments Payment[]
 
   // We want the table to be called User
   @@map("User")
@@ -105,4 +110,15 @@ model Discipline {
   name         String
   costCenterId Int
   Course       Course[]
+}
+
+model Payment {
+  id Int @id @default(autoincrement())
+
+  createdAt DateTime
+
+  createdBy   UserInDb @relation(fields: [createdById], references: [id])
+  createdById String
+
+  trainings Training[]
 }

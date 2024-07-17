@@ -76,7 +76,7 @@ async function doPOST(
       status: TrainingStatus.NEW,
       createdAt: new Date(),
       participantCount: request.participantCount,
-      courseId: request.courseId
+      courseId: request.courseId,
     },
     include: { user: true, course: true },
   });

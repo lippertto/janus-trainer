@@ -10,28 +10,28 @@ yarn start:dev
 To execute the API tests, you have to start the server with the environment variable
 `DISABLE_JWT_CHECKS=1` set.
 
+Then, you have to include the api tests in jest.config.js and run `yarn test`.
+
 # TODO
 
-## Next up 
-* Update help for approve page
+## Next up
+* Add Comment field to trainings
 
 ## Bugs
-* Going back to compensate page leaves the table empty
 
 ## Features
-* Export für Alen
-* Überweisungs-Objekt (references trainings)
-* Add Comment field
 * Vertretungen
 * Flexible compensation groups
 * Make courses disabled. (Also in the UI.)
 * Show statistics on /profile
 * Dashboard for all trainers: Number of trainings + Sum
+* Make disciplines editable
 
 ## Tech update
-* Clean up Training Table
 * Hide password in POSTGRES_CONNECTION_URL of lambda. --> Use Secret
 * Add proper logging
+* Join payments and compensation api routes (and domain objects)
+* Better way to run api tests
 
 ## Refinement
 * Read up on MUI's nextjs integration: https://mui.com/material-ui/guides/nextjs/
