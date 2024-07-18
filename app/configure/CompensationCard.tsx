@@ -220,7 +220,7 @@ export default function CompensationCard(props: {
   return <React.Fragment>
     <Paper sx={{ p: 2 }}>
       <Stack spacing={2}>
-        <Typography variant="h4">Standard-Pauschalen </Typography>
+        <Typography variant="h5">Standard-Pauschalen </Typography>
         <ButtonGroup>
           <Button onClick={() => setShowAddDialog(true)}>
             Hinzufügen

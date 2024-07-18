@@ -13,13 +13,14 @@ import Checkbox from '@mui/material/Checkbox';
 import Stack from '@mui/material/Stack';
 import { TimePicker } from '@mui/x-date-pickers';
 import dayjs, { Dayjs } from 'dayjs';
-import { CourseCreateRequest, CourseDto, TrainerLight, UserDto } from '@/lib/dto';
+import { CourseCreateRequest, CourseDto, DisciplineDto, TrainerLight, UserDto } from '@/lib/dto';
 
 type CourseDialogProps = {
   open: boolean;
   handleClose: () => void;
   handleSave: (data: CourseCreateRequest) => void;
   trainers: UserDto[];
+  disciplines: DisciplineDto[];
   courseToEdit: CourseDto | null;
 };
 
@@ -103,9 +104,9 @@ function TrainerDropdown({ trainers, selectedTrainers, setSelectedTrainers }: Tr
         return tagValue.map((option, _) => (
           <Chip
             label={option.name} key={option.id}
-                onDelete={() => {
-                  setSelectedTrainers(selectedTrainers.filter((t) => (t.id !== option.id)))
-                }}
+            onDelete={() => {
+              setSelectedTrainers(selectedTrainers.filter((t) => (t.id !== option.id)));
+            }}
           />
         ));
       }}
@@ -131,12 +132,42 @@ function TrainerDropdown({ trainers, selectedTrainers, setSelectedTrainers }: Tr
   </React.Fragment>;
 }
 
+function DisciplineDropdown(props: {
+  disciplines: DisciplineDto[],
+  selectedDiscipline: DisciplineDto | null,
+  setSelectedDiscipline: (v: DisciplineDto | null) => void,
+}) {
+  const error = props.selectedDiscipline ? " " : "Muss ausgwählt sein"
+  return <Autocomplete
+    renderInput={
+    (params) => <TextField {...params} label={'Sportart'}
+                           error={error !== ' '}
+                           helperText={error}
+    />
+  }
+    renderOption={(props, option) => {
+      return (
+        <li {...props} key={option.id}>
+          {option.name}
+        </li>
+      );
+    }}
+    options={props.disciplines}
+    getOptionLabel={(d: DisciplineDto) => (d.name)}
+    value={props.selectedDiscipline}
+    onChange={(_, value) => {
+      props.setSelectedDiscipline(value);
+    }}
+  />;
+}
+
 export function CourseDialog(
   {
     open,
     handleClose,
     handleSave,
     trainers,
+    disciplines,
     courseToEdit,
   }: CourseDialogProps) {
   const [courseName, setCourseName] = React.useState('');
@@ -144,6 +175,7 @@ export function CourseDialog(
   const [time, setTime] = React.useState<Dayjs | null>(dayjs(DEFAULT_TIME));
   const [duration, setDuration] = React.useState<string>('60');
   const [selectedTrainers, setSelectedTrainers] = React.useState<{ name: string, id: string }[]>([]);
+  const [discipline, setDiscipline] = React.useState<DisciplineDto | null>(null);
   const [previousCourse, setPreviousCourse] = React.useState<CourseDto | null>(null);
 
   const resetFields = React.useCallback(() => {
@@ -151,8 +183,9 @@ export function CourseDialog(
     setTime(dayjs(DEFAULT_TIME));
     setDuration('60');
     setSelectedTrainers([]);
-    setDays({...EMPTY_DAYS});
-  }, [setCourseName, setTime, setDuration, setSelectedTrainers, setDays])
+    setDays({ ...EMPTY_DAYS });
+    setDiscipline(null);
+  }, [setCourseName, setTime, setDuration, setSelectedTrainers, setDays]);
 
   if (previousCourse !== courseToEdit) {
     setPreviousCourse(courseToEdit);
@@ -162,15 +195,19 @@ export function CourseDialog(
       setDuration(courseToEdit.durationMinutes.toString());
       setSelectedTrainers(courseToEdit.trainers);
       setDays(enumToWeekdaySelection(courseToEdit.weekdays));
+      setDiscipline(disciplines.find((v) => (v.id === courseToEdit.disciplineId)) ?? null);
     } else {
       resetFields();
     }
   }
 
-  let errorMessage = ' ';
+  let error = false;
+  let nameError = ' ';
   if (courseName.length === 0) {
-    errorMessage = 'Darf nicht leer sein';
+    nameError = 'Darf nicht leer sein';
+    error = true;
   }
+  error = error || (discipline === null);
 
   const handleDayChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setDays({
@@ -184,7 +221,7 @@ export function CourseDialog(
       <DialogTitle>{courseToEdit ? 'Kurs bearbeiten' : 'Kurs hinzufügen'}</DialogTitle>
 
       <DialogContent>
-        <Stack direction={'row'} spacing={2}  sx={{pt: 1}}>
+        <Stack direction={'row'} spacing={2} sx={{ pt: 1 }}>
           <Stack spacing={2}>
             <TextField
               label="Name des Kurses"
@@ -197,8 +234,8 @@ export function CourseDialog(
               inputProps={{
                 'data-testid': 'enter-course-textfield',
               }}
-              error={errorMessage !== ' '}
-              helperText={errorMessage}
+              error={nameError !== ' '}
+              helperText={nameError}
             />
 
             <TimePicker
@@ -215,11 +252,16 @@ export function CourseDialog(
               inputProps={{ step: 15, min: 15 }}
             />
 
-
             <TrainerDropdown
               trainers={trainers}
               selectedTrainers={selectedTrainers}
               setSelectedTrainers={setSelectedTrainers}
+            />
+
+            <DisciplineDropdown
+              disciplines={disciplines}
+              selectedDiscipline={discipline}
+              setSelectedDiscipline={setDiscipline}
             />
 
           </Stack>
@@ -247,13 +289,13 @@ export function CourseDialog(
 
       <DialogActions>
         <Button onClick={() => {
-          setTimeout(resetFields, 200);
+          setTimeout(resetFields, 300);
           handleClose();
         }}>Abbrechen</Button>
         <Button
-          disabled={errorMessage !== ' '}
+          disabled={error}
           onClick={() => {
-            setTimeout(resetFields, 200);
+            setTimeout(resetFields, 300);
             handleClose();
             handleSave(
               {
@@ -263,6 +305,7 @@ export function CourseDialog(
                 startMinute: time!.minute(),
                 weekdays: weekdaySelectionToEnum(days),
                 trainerIds: selectedTrainers.map((t) => (t.id)),
+                disciplineId: discipline!.id,
               },
             );
           }}

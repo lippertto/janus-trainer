@@ -92,6 +92,17 @@ model Course {
   startHour       Int
   startMinute     Int
   durationMinutes Int
-  trainers        UserInDb[]
-  trainings       Training[]
+
+  discipline   Discipline? @relation(fields: [disciplineId], references: [id])
+  disciplineId Int?
+
+  trainers  UserInDb[]
+  trainings Training[]
+}
+
+model Discipline {
+  id           Int      @id @default(autoincrement())
+  name         String
+  costCenterId Int
+  Course       Course[]
 }

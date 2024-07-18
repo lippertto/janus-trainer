@@ -1,9 +1,10 @@
 import {
   allowAnyLoggedIn,
   allowOnlyAdmins,
-  ApiErrorBadRequest,
   emptyResponse,
-  handleTopLevelCatch, idAsNumberOrThrow, validateOrThrow,
+  handleTopLevelCatch,
+  idAsNumberOrThrow,
+  validateOrThrow,
 } from '@/lib/helpers-for-api';
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';

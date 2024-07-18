@@ -1,23 +1,6 @@
 import dayjs from 'dayjs';
 import { Holiday, Prisma } from '@prisma/client';
 
-export async function getHolidays(
-  accessToken: string,
-  years: number[],
-): Promise<Holiday[]> {
-  const response = await fetch(`/api/holidays?year=${years.join(',')}`, {
-    headers: { Authorization: `Bearer ${accessToken}` },
-  });
-  if (response.status != 200) {
-    return Promise.reject(new Error(await response.text()));
-  }
-  const value = await response.json();
-  if (value === undefined || !Array.isArray(value.value))
-    return Promise.reject(new Error('Konnte Antwort nicht verstehen.'));
-
-  return value.value as Holiday[];
-}
-
 export async function addHoliday(
   accessToken: string,
   start: dayjs.Dayjs,

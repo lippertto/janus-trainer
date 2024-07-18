@@ -13,14 +13,15 @@ To execute the API tests, you have to start the server with the environment vari
 # TODO
 
 ## Next up 
-* Clean up Training Table
-* Add Comment field
 * Update help for approve page
 
 ## Bugs
 * Going back to compensate page leaves the table empty
 
 ## Features
+* Export für Alen
+* Überweisungs-Objekt (references trainings)
+* Add Comment field
 * Vertretungen
 * Flexible compensation groups
 * Make courses disabled. (Also in the UI.)
@@ -28,6 +29,7 @@ To execute the API tests, you have to start the server with the environment vari
 * Dashboard for all trainers: Number of trainings + Sum
 
 ## Tech update
+* Clean up Training Table
 * Hide password in POSTGRES_CONNECTION_URL of lambda. --> Use Secret
 * Add proper logging
 

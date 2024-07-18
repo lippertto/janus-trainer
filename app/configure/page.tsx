@@ -18,6 +18,7 @@ import { HolidayDto } from '@/lib/dto';
 import { useQueryClient } from '@tanstack/react-query';
 import { holidaysQuery, resultHasData } from '@/lib/shared-queries';
 import { API_HOLIDAYS } from '@/lib/routes';
+import DisciplineCard from '@/app/configure/DisciplineCard';
 
 function ConfigurationPageContents({ session }: { session: JanusSession }) {
   const [holidays, setHolidays] = React.useState<HolidayDto[]>([]);
@@ -83,8 +84,11 @@ function ConfigurationPageContents({ session }: { session: JanusSession }) {
             setHolidayYear={setHolidayYear}
           />
         </Grid>
-        <Grid>
+        <Grid xs={4}>
           <CompensationCard session={session} />
+        </Grid>
+        <Grid xs={2}>
+          <DisciplineCard session={session} />
         </Grid>
       </Grid>
     </>
