@@ -66,12 +66,12 @@ function buildGridColumns(
     {
       field: 'warnings',
       headerName: '',
-      renderCell: ({ row }: {row: TrainingDto}) => {
+      renderCell: ({ row }: { row: TrainingDto }) => {
         const dateMessages = warningsForDate(row.date, holidays, row.course.weekdays);
         if (dateMessages.length !== 0) {
           return (
-            <Tooltip title={dateMessages.join(", ")}>
-              <WarningAmberIcon sx={{ color: 'orange' }} style={{verticalAlign: 'middle'}}/>
+            <Tooltip title={dateMessages.join(', ')}>
+              <WarningAmberIcon sx={{ color: 'orange' }} style={{ verticalAlign: 'middle' }} />
             </Tooltip>
           );
         }
@@ -82,7 +82,7 @@ function buildGridColumns(
     {
       field: 'userName',
       headerName: 'Übungsleitung',
-      flex: 2,
+      flex: 1.5,
       valueGetter: (_value, row: TrainingDto) => {
         return row.user.name;
       },
@@ -92,8 +92,8 @@ function buildGridColumns(
       headerName: 'Kurs',
       flex: 2,
       valueGetter: (_value, row: TrainingDto) => {
-        const hour = row.course.startHour.toString().padStart(2, '0')
-        const minute = row.course.startMinute.toString().padStart(2, '0')
+        const hour = row.course.startHour.toString().padStart(2, '0');
+        const minute = row.course.startMinute.toString().padStart(2, '0');
         return `${row.course.name} ${hour}:${minute}, ${row.course.durationMinutes}min`;
       },
     },
@@ -106,13 +106,13 @@ function buildGridColumns(
     {
       field: 'compensationCents',
       headerName: 'Pauschale',
-      flex: 1,
+      flex: .7,
       valueFormatter: (value: number) => (centsToHumanReadable(value)),
     },
     {
       field: 'status',
       headerName: 'Status',
-      flex: 1,
+      flex: .7,
       valueGetter: (value: TrainingStatus) => (trainingStatusToHumanReadable(value)),
     },
     {
@@ -211,18 +211,70 @@ function compareTrainings(a: TrainingDto, b: TrainingDto) {
   return 0;
 }
 
+function approveMutation(
+  accessToken: string,
+  trainings: TrainingDto[],
+  setTrainings: (v: TrainingDto[]) => void,
+  refresh: () => void,
+) {
+  return useMutation({
+    mutationFn: (id: number) => {
+      return patchInApi<TrainingDto>(
+        API_TRAININGS,
+        id,
+        { status: 'APPROVED' },
+        accessToken,
+      );
+    },
+    onSuccess: (updated) => {
+      setTrainings(replaceElementWithId(trainings, updated));
+      refresh();
+    },
+    onError: (e) => {
+      showError(`Fehler bei der Freigabe des Trainings`, e.message);
+    },
+  });
+}
+
+function revokeMutation(
+  session: JanusSession,
+  setTrainings: (value: TrainingDto[]) => void,
+  trainings: TrainingDto[],
+  refresh: () => void) {
+  return useMutation({
+    mutationFn: (id: number) => {
+      return patchInApi<TrainingDto>(
+        API_TRAININGS,
+        id,
+        { status: 'NEW' },
+        session.accessToken,
+      );
+    },
+    onSuccess: (updated) => {
+      setTrainings(replaceElementWithId(trainings, updated));
+      refresh();
+    },
+    onError: (e) => {
+      showError(`Fehler beim Widerruf der Freigabe`, e.message);
+    },
+  });
+}
 
 type TrainingTableProps = {
   /** List of holidays used to highlight collisions */
   holidays: Holiday[];
   session: JanusSession;
-  trainerId: string|null;
+  trainerId: string | null;
   startDate: dayjs.Dayjs;
   endDate: dayjs.Dayjs;
 };
 
 /**
  * Renders a list of Trainings.
+ *
+ * The component keeps a separate state for the trainings so that we can immediately update the UI.
+ * Every change to the trainings will trigger a refresh of the data from the server.
+ * The refresh function has been throttled to keep the load low.
  */
 export default function TrainingTable(
   {
@@ -242,8 +294,8 @@ export default function TrainingTable(
 
   const { data: trainingData } = props.trainerId ?
     trainingsQuery(session.accessToken,
-    props.startDate, props.endDate, props.trainerId
-  ) : {data: []};
+      props.startDate, props.endDate, props.trainerId,
+    ) : { data: [] };
 
 
   React.useEffect(() => {
@@ -264,42 +316,8 @@ export default function TrainingTable(
     { noLeading: true },
   );
 
-  const approveTrainingMutation = useMutation({
-    mutationFn: (id: number) => {
-      return patchInApi<TrainingDto>(
-        API_TRAININGS,
-        id,
-        { status: 'APPROVED' },
-        session.accessToken,
-      );
-    },
-    onSuccess: (updated) => {
-      setTrainings(replaceElementWithId(trainings, updated));
-      refresh();
-    },
-    onError: (e) => {
-      showError(`Fehler bei der Freigabe des Trainings`, e.message);
-    },
-  });
-
-  const revokeTrainingMutation = useMutation({
-    mutationFn: (id: number) => {
-      return patchInApi<TrainingDto>(
-        API_TRAININGS,
-        id,
-        { status: 'NEW' },
-        session.accessToken,
-      );
-    },
-    onSuccess: (updated) => {
-      setTrainings(replaceElementWithId(trainings, updated));
-      refresh();
-    },
-    onError: (e) => {
-      showError(`Fehler beim Widerruf der Freigabe`, e.message);
-    },
-  });
-
+  const approveTrainingMutation = approveMutation(session.accessToken, trainings, setTrainings, refresh);
+  const revokeTrainingMutation = revokeMutation(session, setTrainings, trainings, refresh);
   const deleteTrainingMutation = trainingDeleteQuery(session.accessToken, trainings, setTrainings);
 
   const confirm = useConfirm();
@@ -314,6 +332,7 @@ export default function TrainingTable(
           refresh();
         },
       ).catch(() => {
+        showError("Fehler beim Löschen des Trainigns");
     });
   };
 
