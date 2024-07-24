@@ -33,6 +33,9 @@ describe('sepa generation works', () => {
       periodEnd: '2023-04-30',
       totalCompensationCents: 50000,
       totalTrainings: 4,
+      costCenterId: 1,
+      costCenterName: "Kostenstelle 1",
+      courseName: 'Kurs 1',
     };
     const c2: CompensationDto = {
       user: {
@@ -45,6 +48,9 @@ describe('sepa generation works', () => {
       periodEnd: '2023-04-30',
       totalCompensationCents: 10000,
       totalTrainings: 2,
+      costCenterId: 2,
+      costCenterName: "Kostenstelle 2",
+      courseName: 'Kurs 2',
     };
     // WHEN
     const sepaXml = generateSepaXml([c1, c2]);
@@ -63,7 +69,7 @@ describe('sepa generation works', () => {
       false,
     ) as any;
     expect(remittanceInfo[0].textContent).toBe(
-      'Aufwandsentschädigung 2023-04-01..2023-04-30',
+      'Kurs 1 2023-04-01..2023-04-30',
     );
     // test the amounts
     const instructedAmounts = select(

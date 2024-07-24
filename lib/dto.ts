@@ -184,6 +184,9 @@ export type CompensationDto = {
   correspondingIds: number[];
   periodStart: string;
   periodEnd: string;
+  costCenterId: number;
+  costCenterName: string;
+  courseName: string;
 };
 
 export type CompensationQueryResponse = {
@@ -310,4 +313,22 @@ export class DisciplineCreateRequest {
 
 export type DisciplineQueryResponseDto = {
   value: DisciplineDto[];
+}
+
+export class PaymentCreateRequest {
+  constructor(obj: any) {
+    Object.assign(this, obj);
+  }
+
+  @IsArray()
+  @IsInt({ each: true })
+  trainingIds: number[]
+}
+
+export type PaymentDto = {
+  id: number;
+  user: {name: string}
+  createdAt: string;
+  trainingIds: number[];
+  totalCents: number;
 }

@@ -1,4 +1,4 @@
-import { TrainingUpdateRequest, TrainingUpdateStatusRequest } from '@/lib/dto';
+import { ErrorDto, TrainingDto, TrainingUpdateRequest, TrainingUpdateStatusRequest } from '@/lib/dto';
 import {
   allowAdminOrSelf,
   allowAnyLoggedIn,
@@ -119,6 +119,39 @@ export async function PATCH(
     await allowOnlyAdmins(request);
 
     return await doPATCH(request, params);
+  } catch (e) {
+    return handleTopLevelCatch(e);
+  }
+}
+
+async function returnOneTraining(request: NextRequest, idAsString: string): Promise<TrainingDto> {
+  const id = idAsNumberOrThrow(idAsString);
+  await checkIfTrainingExistsAndIsOwn(id, request)
+
+  const training = await prisma.training.findFirst({
+    where: { id },
+    include: {
+      user: true,
+      course: true,
+    },
+  });
+  if (!training) {
+    throw new ApiErrorNotFound(
+      'Training not found.',
+    );
+  }
+
+  return training;
+}
+
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { id: string } },
+): Promise<NextResponse<TrainingDto| ErrorDto>> {
+  try {
+    // first test that we are logged in. Further down, we do more checks
+    await allowAnyLoggedIn(request);
+    return NextResponse.json(await returnOneTraining(request, params.id));
   } catch (e) {
     return handleTopLevelCatch(e);
   }

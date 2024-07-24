@@ -4,7 +4,6 @@ import { CourseCreateRequest, CourseQueryResponse, ErrorDto } from '@/lib/dto';
 import {
   allowAnyLoggedIn,
   allowOnlyAdmins,
-  ApiErrorBadRequest,
   handleTopLevelCatch,
   validateOrThrow,
 } from '@/lib/helpers-for-api';
@@ -25,6 +24,7 @@ async function createCourse(nextRequest: NextRequest) {
       trainers: {
         connect: request.trainerIds.map((t) => ({ id: t })),
       },
+      disciplineId: request.disciplineId,
     },
     include: { trainers: true },
   });

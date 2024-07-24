@@ -1,6 +1,6 @@
 import { DataGrid, GridActionsCellItem, GridColDef, GridRowParams, GridToolbar } from '@mui/x-data-grid';
 import React from 'react';
-import { CompensationDto, UserDto } from '@/lib/dto';
+import { CompensationDto, CourseDto, UserDto } from '@/lib/dto';
 import { centsToHumanReadable, ibanToHumanReadable } from '@/lib/formatters';
 import LaunchIcon from '@mui/icons-material/Launch';
 import { useRouter } from 'next/navigation';
@@ -15,10 +15,15 @@ export default function CompensationTable({
 
   const columns: GridColDef[] = [
     {
-      field: 'user',
+      field: 'first',
       headerName: 'Name',
       flex: 2,
-      valueGetter: (value: UserDto) => value.name,
+      valueGetter: (_, row: CompensationDto) => `${row.user.name} / ${row.courseName}`
+    },
+    {
+      field: 'costCenterId',
+      headerName: 'Kostenstelle',
+      flex: 0.5,
     },
     {
       field: 'totalTrainings',
@@ -36,7 +41,7 @@ export default function CompensationTable({
     {
       field: 'iban',
       headerName: 'IBAN',
-      flex: 2,
+      flex: 1.5,
       valueGetter: (_value, row) => ibanToHumanReadable(row.user.iban),
     },
     {
@@ -58,7 +63,7 @@ export default function CompensationTable({
       slotProps={{toolbar: {csvOptions: {fileName: `${dayjs().format('YYYY-MM-DD')} Pauschalen-Export.csv`}}}}
       columns={columns}
       rows={compensations}
-      getRowId={(c: CompensationDto) => c.user.id}
+      getRowId={(c: CompensationDto) => (`${c.user.id}_${c.courseName}`)}
     />
   );
 }
