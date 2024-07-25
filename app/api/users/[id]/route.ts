@@ -14,7 +14,6 @@ import {
   updateCognitoUser,
 } from '../cognito';
 import { UserDto, UserCreateRequest, ErrorDto, UserPatchRequest } from '@/lib/dto';
-import dayjs from 'dayjs';
 
 async function doDELETE(request: NextRequest, id: string) {
   await allowOnlyAdmins(request);
@@ -152,6 +151,18 @@ export async function GET(
   }
 }
 
+export async function patchRequestToUpdateData(request: UserPatchRequest) {
+  let data: any  = {};
+  if (request.iban) {
+    data['iban'] = request.iban.replace(/\s/g, "");
+  }
+  if (request.termsAcceptedVersion) {
+    data['termsAcceptedVersion'] = request.termsAcceptedVersion;
+    data['termsAcceptedAt'] = new Date();
+  }
+  return data;
+}
+
 async function patchOneUser(id: string, payload: any) {
   const dbUser = await prisma.userInDb.findUnique({
     where: {id}
@@ -160,19 +171,11 @@ async function patchOneUser(id: string, payload: any) {
     throw new ApiErrorNotFound(`User with id ${id} not found`);
   }
   const request = await validateOrThrow(new UserPatchRequest(payload));
-
-  let data: any  = {};
-  if (request.iban) {
-    data['iban'] = request.iban;
-  }
-  if (request.termsAcceptedVersion) {
-    data['termsAcceptedVersion'] = request.termsAcceptedVersion;
-    data['termsAcceptedAt'] = new Date();
-  }
+  const updateData = patchRequestToUpdateData(request);
 
   return prisma.userInDb.update({
     where: { id },
-    data
+    data: updateData
   });
 }
 
