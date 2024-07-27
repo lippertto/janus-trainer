@@ -43,6 +43,8 @@ model Training {
 
   payment   Payment? @relation(fields: [paymentId], references: [id])
   paymentId Int?
+
+  comment String @default("")
 }
 
 // The user in the database is only part of the domain object.

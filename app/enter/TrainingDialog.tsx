@@ -135,6 +135,7 @@ export default function TrainingDialog(
   const [selectedCourse, setSelectedCourse] = React.useState<CourseDto | null>((courses && courses.length > 0) ? courses[0] : null);
   const [selectedCompensationValue, setSelectedCompensationValue] = React.useState<CompensationValueDto | null>(selectCompensationValue(selectedCourse, compensationValues));
   const [previousTraining, setPreviousTraining] = React.useState<TrainingDto | null>(null);
+  const [comment, setComment] = React.useState<String>("");
 
   const resetFields = React.useCallback(() => {
     if (courses.length > 0) {
@@ -144,6 +145,7 @@ export default function TrainingDialog(
     }
     setDate(dayjs());
     setParticipantCount("0");
+    setComment("")
   }, [courses, setSelectedCourse, setDate, setParticipantCount]);
 
   if (toEdit !== previousTraining) {
@@ -153,6 +155,7 @@ export default function TrainingDialog(
       setDate(dayjs(toEdit.date));
       setParticipantCount(toEdit.participantCount.toString());
       setSelectedCompensationValue(compensationValues.find((cv) => (cv.cents === toEdit.compensationCents)) ?? null);
+      setComment(toEdit.comment);
     } else {
       resetFields();
     }
@@ -236,6 +239,13 @@ export default function TrainingDialog(
             helperText={participantCountError}
           />
         </Stack>
+
+        <TextField
+          value={comment}
+          label={"Kommentar"}
+          helperText={"Zum Beispiel bei Vertretungen"}
+          onChange={(e) => {setComment(e.target.value)}}
+        />
       </DialogContent>
       <DialogActions>
         <Button
@@ -260,6 +270,7 @@ export default function TrainingDialog(
               courseId: selectedCourse!.id,
               compensationCents: selectedCompensationValue!.cents,
               participantCount: parseInt(participantCount),
+              comment: comment ?? "",
               userId,
             });
             handleClose();

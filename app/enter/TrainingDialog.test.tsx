@@ -4,7 +4,7 @@
 
 import { render, screen } from '@testing-library/react';
 import React from 'react';
-import TrainingDialog, { selectCompensationValue } from '@/components/TrainingDialog';
+import TrainingDialog, { selectCompensationValue } from '@/app/enter/TrainingDialog';
 import { CompensationGroup, DayOfWeek } from '@prisma/client';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers';

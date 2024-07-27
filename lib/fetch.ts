@@ -91,8 +91,9 @@ export async function createInApi<T>(
     body: JSON.stringify(data),
   });
   if (response.status != 201) {
+    const message = await response.json();
     return Promise.reject(
-      new Error(`Failed to create new entity via ${route}`)
+      new Error(`Failed to create new entity via ${route}. Message is: ${JSON.stringify(message.error?.message)}`)
     )
   }
   return await response.json() as T;

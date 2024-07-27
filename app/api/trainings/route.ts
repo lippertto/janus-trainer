@@ -77,6 +77,7 @@ async function doPOST(
       createdAt: new Date(),
       participantCount: request.participantCount,
       courseId: request.courseId,
+      comment: request.comment
     },
     include: { user: true, course: true },
   });
