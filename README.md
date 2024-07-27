@@ -15,17 +15,16 @@ Then, you have to include the api tests in jest.config.js and run `yarn test`.
 # TODO
 
 ## Next up
-* Add Comment field to trainings
+* Dashboard for all trainers: Number of trainings + Sum (per quarter)
 
 ## Bugs
 
 ## Features
-* Vertretungen
+* More comprehensive test: Enter, approve, compensate
 * Flexible compensation groups
 * Make courses disabled. (Also in the UI.)
 * Show statistics on /profile
-* Dashboard for all trainers: Number of trainings + Sum
-* Make disciplines editable
+* Put cost center to offerings
 
 ## Tech update
 * Hide password in POSTGRES_CONNECTION_URL of lambda. --> Use Secret

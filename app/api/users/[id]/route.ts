@@ -14,6 +14,7 @@ import {
   updateCognitoUser,
 } from '../cognito';
 import { UserDto, UserCreateRequest, ErrorDto, UserPatchRequest } from '@/lib/dto';
+import { patchRequestToUpdateData } from '@/app/api/users/[id]/patch';
 
 async function doDELETE(request: NextRequest, id: string) {
   await allowOnlyAdmins(request);
@@ -149,18 +150,6 @@ export async function GET(
   } catch (e) {
     return handleTopLevelCatch(e);
   }
-}
-
-export async function patchRequestToUpdateData(request: UserPatchRequest) {
-  let data: any  = {};
-  if (request.iban) {
-    data['iban'] = request.iban.replace(/\s/g, "");
-  }
-  if (request.termsAcceptedVersion) {
-    data['termsAcceptedVersion'] = request.termsAcceptedVersion;
-    data['termsAcceptedAt'] = new Date();
-  }
-  return data;
 }
 
 async function patchOneUser(id: string, payload: any) {

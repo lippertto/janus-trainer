@@ -1,5 +1,5 @@
 import { UserPatchRequest } from '@/lib/dto';
-import { patchRequestToUpdateData } from '@/app/api/users/[id]/route';
+import { patchRequestToUpdateData } from './patch';
 
 
 describe("user patch", () => {
