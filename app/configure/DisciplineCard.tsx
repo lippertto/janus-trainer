@@ -24,9 +24,12 @@ import { disciplinesSuspenseQuery } from '@/lib/shared-queries';
 
 function DisciplineDialog(props: {
   open: boolean,
+  toEdit: DisciplineDto | null,
   handleClose: () => void,
   handleSave: (data: DisciplineCreateRequest) => void
 }) {
+  const [previousDiscipline, setPreviousDiscipline] = React.useState<DisciplineDto|null>();
+
   type FormData = { name: string, costCenterId: string };
   const {
     register,
@@ -34,6 +37,17 @@ function DisciplineDialog(props: {
     reset,
     formState: { errors, isValid },
   } = useForm<FormData>();
+
+  React.useEffect(()=>{
+    if (props.toEdit !== previousDiscipline) {
+      const defaultValues = {
+        name: props.toEdit?.name ?? "",
+          costCenterId: props.toEdit?.costCenterId?.toString() ?? "",
+      }
+      reset(defaultValues);
+      setPreviousDiscipline(props.toEdit);
+    }
+  }, [props.toEdit])
 
   const onSubmit = (data: FormData) => {
     if (isValid) {
@@ -49,7 +63,7 @@ function DisciplineDialog(props: {
   return <Dialog
     open={props.open}
   >
-    <DialogTitle>Sportart hinzufügen</DialogTitle>
+    <DialogTitle>{props.toEdit ? "Kostenstelle bearbeiten" : "Kostenstelle hinzufügen"}</DialogTitle>
     <form onSubmit={handleSubmit(onSubmit)}>
       <DialogContent>
         <Stack direction={'column'} spacing={2}>
@@ -118,16 +132,25 @@ function DisciplineCardContents(props: { session: JanusSession }) {
       queryClient.invalidateQueries({ queryKey: [API_DISCIPLINES] });
     },
     onError: () => {
-      showError('Konnte Sportart nicht hinzufügen');
+      showError('Konnte Kostenstelle nicht hinzufügen');
     },
   });
 
   return <Stack spacing={2}>
     <ButtonGroup>
       <Button onClick={() => {
+        setSelectedDisciplineId(null);
         setOpen(true);
       }}>
         Hinzufügen
+      </Button>
+      <Button
+        onClick={() => {
+          setOpen(true);
+        }}
+        disabled={!selectedDisciplineId}
+      >
+        Bearbeiten
       </Button>
     </ButtonGroup>
     <DisciplineList disciplines={disciplines} selectedDisciplineId={selectedDisciplineId}
@@ -136,6 +159,7 @@ function DisciplineCardContents(props: { session: JanusSession }) {
       open={open}
       handleClose={() => setOpen(false)}
       handleSave={disciplinesAddMutation.mutate}
+      toEdit={disciplines.find((d) => (d.id === selectedDisciplineId)) ?? null}
     />
   </Stack>;
 }
@@ -143,7 +167,7 @@ function DisciplineCardContents(props: { session: JanusSession }) {
 export default function DisciplineCard(props: { session: JanusSession }) {
   return <Paper sx={{ p: 2 }}>
     <Stack spacing={2}>
-      <Typography variant="h5">Sportarten</Typography>
+      <Typography variant="h5">Kostenstellen</Typography>
       <Suspense fallback={<CircularProgress />}>
         <DisciplineCardContents session={props.session} />
       </Suspense>

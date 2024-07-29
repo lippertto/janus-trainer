@@ -140,7 +140,7 @@ function DisciplineDropdown(props: {
   const error = props.selectedDiscipline ? " " : "Muss ausgwählt sein"
   return <Autocomplete
     renderInput={
-    (params) => <TextField {...params} label={'Sportart'}
+    (params) => <TextField {...params} label={'Kostenstelle'}
                            error={error !== ' '}
                            helperText={error}
     />

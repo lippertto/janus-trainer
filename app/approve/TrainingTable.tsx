@@ -24,7 +24,7 @@ import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import Tooltip from '@mui/material/Tooltip';
 
 import { JanusSession } from '@/lib/auth';
-import TrainingDialog from '../../components/TrainingDialog';
+import TrainingDialog from '../enter/TrainingDialog';
 
 import { showError } from '@/lib/notifications';
 import { Holiday, TrainingStatus } from '@prisma/client';
@@ -114,6 +114,11 @@ function buildGridColumns(
       headerName: 'Status',
       flex: .7,
       valueGetter: (value: TrainingStatus) => (trainingStatusToHumanReadable(value)),
+    },
+    {
+      field: 'comment',
+      headerName: 'Kommentar',
+      flex: 2,
     },
     {
       field: 'approvalActions',

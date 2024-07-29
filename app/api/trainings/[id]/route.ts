@@ -57,6 +57,7 @@ async function updateTraining(nextRequest: NextRequest, idAsString: string) {
       courseId: request.courseId,
       compensationCents: request.compensationCents,
       participantCount: request.participantCount,
+      comment: request.comment,
     },
     include: {course: true, user: true}
   });

@@ -14,7 +14,7 @@ import {
   updateCognitoUser,
 } from '../cognito';
 import { UserDto, UserCreateRequest, ErrorDto, UserPatchRequest } from '@/lib/dto';
-import dayjs from 'dayjs';
+import { patchRequestToUpdateData } from '@/app/api/users/[id]/patch';
 
 async function doDELETE(request: NextRequest, id: string) {
   await allowOnlyAdmins(request);
@@ -160,19 +160,11 @@ async function patchOneUser(id: string, payload: any) {
     throw new ApiErrorNotFound(`User with id ${id} not found`);
   }
   const request = await validateOrThrow(new UserPatchRequest(payload));
-
-  let data: any  = {};
-  if (request.iban) {
-    data['iban'] = request.iban;
-  }
-  if (request.termsAcceptedVersion) {
-    data['termsAcceptedVersion'] = request.termsAcceptedVersion;
-    data['termsAcceptedAt'] = new Date();
-  }
+  const updateData = patchRequestToUpdateData(request);
 
   return prisma.userInDb.update({
     where: { id },
-    data
+    data: updateData
   });
 }
 

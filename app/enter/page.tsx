@@ -22,7 +22,7 @@ import {
 import Typography from '@mui/material/Typography';
 import { CompensationGroup } from '@prisma/client';
 import { TrainingList } from '@/app/enter/TrainingList';
-import TrainingDialog from '@/components/TrainingDialog';
+import TrainingDialog from '@/app/enter/TrainingDialog';
 import { compareByStringField } from '@/lib/sort-and-filter';
 import { Fab } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';

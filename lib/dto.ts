@@ -70,6 +70,9 @@ export class TrainingCreateRequest {
 
   @IsString()
   userId: string;
+
+  @IsString()
+  comment: string;
 }
 
 export class TrainingUpdateRequest {
@@ -88,6 +91,9 @@ export class TrainingUpdateRequest {
 
   @IsNumber()
   participantCount: number;
+
+  @IsString()
+  comment: string;
 }
 
 export class UserCreateRequest {
