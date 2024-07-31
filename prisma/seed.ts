@@ -79,8 +79,8 @@ async function main() {
 
   await prisma.course.upsert({
     where: { id: 1 },
-    create: course,
-    update: course,
+    create: {...course,     trainers: {connect: {id: '502c79bc-e051-70f5-048c-5619e49e2383'}}},
+    update: {...course, trainers: {set: {id: '502c79bc-e051-70f5-048c-5619e49e2383'}}}
   });
 
   await resetIdCounter('Course');

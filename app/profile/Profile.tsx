@@ -1,21 +1,74 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 
 import Grid from '@mui/material/Unstable_Grid2';
-import { Typography } from '@mui/material';
+import { CircularProgress, Typography } from '@mui/material';
 import IconButton from '@mui/material/IconButton';
 import TextField from '@mui/material/TextField';
 import EditIcon from '@mui/icons-material/Edit';
-import { compensationGroupToHumanReadable, groupToHumanReadable, ibanToHumanReadable } from '@/lib/formatters';
+import {
+  centsToHumanReadable,
+  compensationGroupToHumanReadable,
+  groupToHumanReadable,
+  ibanToHumanReadable,
+} from '@/lib/formatters';
 import { CourseCard } from '@/components/CourseCard';
 import Button from '@mui/material/Button';
 import { signOut } from 'next-auth/react';
 import { CourseDto, UserDto } from '@/lib/dto';
 
 import 'core-js/modules/es.array.to-sorted';
+import { yearlyTotalsSuspenseQuery } from '@/lib/shared-queries';
 
+function statisticsString(cents: number, trainingCoung: number) {
+  return `Trainings: ${trainingCoung} Vergütung: ${centsToHumanReadable(cents)}`;
+}
+
+function StatisticsData(props: { accessToken: string, year: number, trainerId: string },
+) {
+  const { year } = { ...props };
+  const { data: totals } = yearlyTotalsSuspenseQuery(props.accessToken, year, props.trainerId);
+  return <React.Fragment>
+    <Grid xs={12} sm={3}>
+      <TextField
+        fullWidth
+        label={`${year}/Q1`}
+        value={statisticsString(totals[0].compensationCentsQ1, totals[0].trainingCountQ1)} />
+    </Grid>
+    <Grid xs={12} sm={3}>
+      <TextField
+      fullWidth
+      label={`${year}/Q2`}
+      value={statisticsString(totals[0].compensationCentsQ2, totals[0].trainingCountQ2)} />
+    </Grid>
+    <Grid xs={12} sm={3}>
+      <TextField
+      fullWidth
+      label={`${year}/Q3`}
+      value={statisticsString(totals[0].compensationCentsQ3, totals[0].trainingCountQ3)} />
+    </Grid>
+    <Grid xs={12} sm={3}>
+      <TextField
+      fullWidth
+      label={`${year}/Q4`}
+      value={statisticsString(totals[0].compensationCentsQ4, totals[0].trainingCountQ4)} />
+    </Grid>
+  </React.Fragment>;
+}
+
+function ProfileStatistics(props: { accessToken: string, year: number, trainerId: string }) {
+  return <React.Fragment><Grid xs={12}>
+    <Typography variant="h5">Statistik</Typography>
+  </Grid>
+    <Suspense fallback={<Grid xs={12}><CircularProgress /></Grid>
+    }>
+      <StatisticsData accessToken={props.accessToken} year={props.year} trainerId={props.trainerId} />
+    </Suspense>
+  </React.Fragment>;
+
+}
 
 export default function Profile(
-  props: { user: UserDto, courses: CourseDto[], handleEditIbanClick: () => void },
+  props: { accessToken: string, user: UserDto, courses: CourseDto[], handleEditIbanClick: () => void },
 ) {
   const { user } = props;
 
@@ -27,7 +80,7 @@ export default function Profile(
       <Typography variant={'h5'}>Stammdaten</Typography>
     </Grid>
 
-    <Grid xs={4}>
+    <Grid xs={12} sm={4}>
       <TextField
         fullWidth
         disabled={true}
@@ -36,7 +89,7 @@ export default function Profile(
       />
     </Grid>
 
-    <Grid xs={4}>
+    <Grid xs={12} sm={4}>
       <TextField
         fullWidth
         disabled={true}
@@ -44,7 +97,7 @@ export default function Profile(
         value={user.email}
       />
     </Grid>
-    <Grid xs={4}>
+    <Grid xs={12} sm={4}>
       <TextField
         fullWidth
         disabled={true}
@@ -55,7 +108,7 @@ export default function Profile(
         }}
       />
     </Grid>
-    <Grid xs={6}>
+    <Grid xs={12} sm={6}>
       <TextField
         fullWidth
         disabled={true}
@@ -68,7 +121,7 @@ export default function Profile(
         }}
       />
     </Grid>
-    <Grid xs={6}>
+    <Grid xs={12} sm={6}>
       <TextField
         fullWidth={true}
         disabled={true}
@@ -80,6 +133,8 @@ export default function Profile(
         }
       />
     </Grid>
+
+    <ProfileStatistics accessToken={props.accessToken} year={new Date().getFullYear()} trainerId={user.id} />
 
     <Grid xs={12}>
       <Typography variant={'h5'}>Kurse</Typography>

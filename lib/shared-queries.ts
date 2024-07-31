@@ -5,7 +5,7 @@ import {
   API_COURSES,
   API_DISCIPLINES,
   API_HOLIDAYS,
-  API_TRAININGS,
+  API_TRAININGS, API_TRAININGS_YEARLY_TOTALS,
   API_USERS,
 } from '@/lib/routes';
 import {
@@ -14,7 +14,7 @@ import {
   TrainingCreateRequest,
   TrainingDto,
   TrainingUpdateRequest,
-  UserDto,
+  UserDto, YearlyTotalDto,
 } from '@/lib/dto';
 import { Holiday } from '@prisma/client';
 import { showError, showSuccess } from '@/lib/notifications';
@@ -211,6 +211,20 @@ export function disciplinesSuspenseQuery(accessToken: string) {
       queryFn: () => fetchListFromApi<DisciplineDto>(
         `${API_DISCIPLINES}`,
         accessToken,
+      ),
+      staleTime: TEN_MINUTES,
+    },
+  );
+}
+
+export function yearlyTotalsSuspenseQuery(accessToken: string, year: number, trainerId: String|null) {
+  const trainerIdQuery = trainerId ? `&trainerId=${trainerId}` : ""
+  return useSuspenseQuery({
+      queryKey: [API_TRAININGS_YEARLY_TOTALS, year, trainerId],
+      queryFn: () => fetchListFromApi<YearlyTotalDto>(
+        `${API_TRAININGS_YEARLY_TOTALS}?year=${year}${trainerIdQuery}`,
+        accessToken,
+        'POST'
       ),
       staleTime: TEN_MINUTES,
     },

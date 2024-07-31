@@ -12,11 +12,11 @@ describe("/compensations:summarize", () => {
     const trainerId2 = '80ac598c-e0b1-7040-5e0e-6fd257a53699';
     const courseId = 1;
     const trainings: TrainingCreateRequest[] = [
-      {date: '2000-12-31', userId: trainerId1, participantCount: 5, compensationCents: 1000, courseId: courseId},
-      {date: '2001-01-15', userId: trainerId1, participantCount: 5, compensationCents: 1000, courseId: courseId},
-      {date: '2001-02-15', userId: trainerId2, participantCount: 5, compensationCents: 1000, courseId: courseId},
-      {date: '2001-03-15', userId: trainerId1, participantCount: 5, compensationCents: 1000, courseId: courseId},
-      {date: '2001-04-01', userId: trainerId2, participantCount: 5, compensationCents: 1000, courseId: courseId},
+      {date: '2000-12-31', userId: trainerId1, participantCount: 5, compensationCents: 1000, courseId: courseId, comment: ""},
+      {date: '2001-01-15', userId: trainerId1, participantCount: 5, compensationCents: 1000, courseId: courseId, comment: ""},
+      {date: '2001-02-15', userId: trainerId2, participantCount: 5, compensationCents: 1000, courseId: courseId, comment: ""},
+      {date: '2001-03-15', userId: trainerId1, participantCount: 5, compensationCents: 1000, courseId: courseId, comment: ""},
+      {date: '2001-04-01', userId: trainerId2, participantCount: 5, compensationCents: 1000, courseId: courseId, comment: ""},
     ];
     const trainingIds = await Promise.all(
       trainings.map(async (t) => {
