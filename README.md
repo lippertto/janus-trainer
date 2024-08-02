@@ -15,7 +15,6 @@ Then, you have to include the api tests in jest.config.js and run `yarn test`.
 # TODO
 
 ## Next up
-* Dashboard for all trainers: Number of trainings + Sum (per quarter)
 
 ## Bugs
 
@@ -23,7 +22,6 @@ Then, you have to include the api tests in jest.config.js and run `yarn test`.
 * More comprehensive test: Enter, approve, compensate
 * Flexible compensation groups
 * Make courses disabled. (Also in the UI.)
-* Show statistics on /profile
 * Put cost center to offerings
 
 ## Tech update
@@ -33,7 +31,6 @@ Then, you have to include the api tests in jest.config.js and run `yarn test`.
 * Better way to run api tests
 
 ## Refinement
-* Read up on MUI's nextjs integration: https://mui.com/material-ui/guides/nextjs/
 * Sort imports with eslint: https://eslint.org/docs/latest/rules/sort-imports
 
 # Common tasks

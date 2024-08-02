@@ -223,9 +223,11 @@ export class CompensationValueCreateRequest {
 
   @IsOptional()
   @IsNumber()
-  durationMinutes: number|null;
+  durationMinutes: number | null;
 }
-export class CompensationValueUpdateRequest extends CompensationValueCreateRequest {}
+
+export class CompensationValueUpdateRequest extends CompensationValueCreateRequest {
+}
 
 export type CompensationValueQueryResponse = {
   value: CompensationValueDto[]
@@ -328,13 +330,32 @@ export class PaymentCreateRequest {
 
   @IsArray()
   @IsInt({ each: true })
-  trainingIds: number[]
+  trainingIds: number[];
 }
 
 export type PaymentDto = {
   id: number;
-  user: {name: string}
+  user: { name: string }
   createdAt: string;
   trainingIds: number[];
   totalCents: number;
+}
+
+export type YearlyTotalDto = {
+  trainerId: string;
+  trainerName: string;
+  trainingCountQ1: number;
+  trainingCountQ2: number;
+  trainingCountQ3: number;
+  trainingCountQ4: number;
+  trainingCountTotal: number;
+  compensationCentsQ1: number;
+  compensationCentsQ2: number;
+  compensationCentsQ3: number;
+  compensationCentsQ4: number;
+  compensationCentsTotal: number;
+};
+
+export type YearlyTotalQueryResponseDto = {
+  value: YearlyTotalDto[];
 }

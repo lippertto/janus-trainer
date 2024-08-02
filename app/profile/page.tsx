@@ -49,6 +49,7 @@ function ProfilePageContents({ session }: { session: JanusSession }) {
       user={user}
       courses={courses}
       handleEditIbanClick={() => setShowIbanDialog(true)}
+      accessToken={session.accessToken}
     />
     <EditIbanDialog
       open={showIbanDialog}
