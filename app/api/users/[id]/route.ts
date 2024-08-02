@@ -13,7 +13,7 @@ import {
   listGroupsForUser,
   updateCognitoUser,
 } from '../cognito';
-import { UserDto, UserCreateRequest, ErrorDto, UserPatchRequest } from '@/lib/dto';
+import { UserDto, UserCreateRequest, ErrorDto, UserPatchRequest, Group } from '@/lib/dto';
 import { patchRequestToUpdateData } from '@/app/api/users/[id]/patch';
 
 async function doDELETE(request: NextRequest, id: string) {
@@ -115,7 +115,7 @@ export async function PUT(
   }
 }
 
-async function selectOneUser(id: string): Promise<UserDto> {
+async function selectOneUser(id: string, includeCognitoProperties: boolean): Promise<UserDto> {
   const dbUser = await prisma.userInDb.findUnique({
     where: {id}
   });
@@ -124,16 +124,22 @@ async function selectOneUser(id: string): Promise<UserDto> {
   }
 
   const client = createCognitoClient();
-  const cognitoUser = await getCognitoUserById(client, id);
 
-  if (!cognitoUser) {
-    throw new ApiErrorNotFound(`User ${id} does not exist in cognito`)
+  let email: string = '';
+  let groups: Group[] = [];
+  if (includeCognitoProperties) {
+    const cognitoUser = await getCognitoUserById(client, id);
+
+    if (!cognitoUser) {
+      throw new ApiErrorNotFound(`User ${id} does not exist in cognito`)
+    }
+
+    email = cognitoUser.email;
+    groups = await listGroupsForUser(client, id);
   }
 
-  const groups = await listGroupsForUser(client, id);
-
   return {...dbUser,
-    email: cognitoUser.email,
+    email: email,
     groups: groups,
     termsAcceptedAt: dbUser.termsAcceptedAt?.toLocaleDateString() ?? null,
   }!;
@@ -145,7 +151,10 @@ export async function GET(
 ): Promise<NextResponse<UserDto|ErrorDto>> {
   try {
     await allowAdminOrSelf(request, params.id);
-    const user = await selectOneUser(params.id);
+    const includeCognitoProperties = request.nextUrl.searchParams.get('includeCognitoProperties') === 'true';
+
+
+    const user = await selectOneUser(params.id, includeCognitoProperties    );
     return NextResponse.json(user);
   } catch (e) {
     return handleTopLevelCatch(e);
@@ -175,7 +184,7 @@ export async function PATCH(
   try {
     await allowAdminOrSelf(request, params.id);
     await patchOneUser(params.id, await request.json());
-    const result = await selectOneUser(params.id);
+    const result = await selectOneUser(params.id, true);
     return NextResponse.json(result);
   } catch (e) {
     return handleTopLevelCatch(e);

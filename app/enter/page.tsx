@@ -47,7 +47,7 @@ function EnterPageContents(props: { session: JanusSession }) {
     session.userId,
     session.accessToken,
   );
-  const { data: user } = userSuspenseQuery(session.userId, session.accessToken);
+  const { data: user } = userSuspenseQuery(session.userId, session.accessToken, false);
   const { data: holidays } = holidaysSuspenseQuery(session.accessToken, [new Date().getFullYear(), new Date().getFullYear() - 1]);
 
   const createTrainingMutation = trainingCreateQuery(session.accessToken, trainings, setTrainings, 'DESC');
