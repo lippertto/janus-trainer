@@ -10,6 +10,7 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
+import AnalyticsIcon from '@mui/icons-material/Analytics';
 import AssignmentTurnedInIcon from '@mui/icons-material/AssignmentTurnedIn';
 import EditCalendarIcon from '@mui/icons-material/EditCalendar';
 import HomeIcon from '@mui/icons-material/Home';
@@ -30,7 +31,7 @@ const ADMIN_LINKS = [
   { text: 'Konten', href: '/users', icon: ManageAccountsIcon },
   { text: 'Angebot', href: '/offerings', icon: SportsIcon },
   { text: 'Verwaltung', href: '/configure', icon: SettingsIcon },
-  { text: 'Auswertung', href: '/analyze', icon: SettingsIcon },
+  { text: 'Auswertung', href: '/analyze', icon: AnalyticsIcon },
   // { text: 'Scannen', href: '/scan', icon: QrCodeScannerIcon },
   { text: 'Profil', href: '/profile', icon: AccountBoxIcon },
 ];
