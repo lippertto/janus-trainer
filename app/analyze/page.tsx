@@ -10,7 +10,6 @@ import YearlyTotalsTable from '@/app/analyze/YearlyTotalsTable';
 function AnalyzePageContents(props: {accessToken: string}) {
   const {data: yearlySummaries} = yearlyTotalsSuspenseQuery(props.accessToken, 2024, null);
 
-
   return <YearlyTotalsTable totals={yearlySummaries} />
 }
 

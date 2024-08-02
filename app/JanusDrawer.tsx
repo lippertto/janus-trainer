@@ -30,6 +30,7 @@ const ADMIN_LINKS = [
   { text: 'Konten', href: '/users', icon: ManageAccountsIcon },
   { text: 'Angebot', href: '/offerings', icon: SportsIcon },
   { text: 'Verwaltung', href: '/configure', icon: SettingsIcon },
+  { text: 'Auswertung', href: '/analyze', icon: SettingsIcon },
   // { text: 'Scannen', href: '/scan', icon: QrCodeScannerIcon },
   { text: 'Profil', href: '/profile', icon: AccountBoxIcon },
 ];
