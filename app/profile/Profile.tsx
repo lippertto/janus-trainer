@@ -20,7 +20,7 @@ import 'core-js/modules/es.array.to-sorted';
 import { yearlyTotalsSuspenseQuery } from '@/lib/shared-queries';
 
 function statisticsString(cents: number, trainingCoung: number) {
-  return `Trainings: ${trainingCoung} Vergütung: ${centsToHumanReadable(cents)}`;
+  return `Trainings: ${trainingCoung} / ${centsToHumanReadable(cents)}`;
 }
 
 function StatisticsData(props: { accessToken: string, year: number, trainerId: string },

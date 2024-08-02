@@ -33,7 +33,7 @@ async function calculateYearlyTotals(year: number, trainerId: string | null): Pr
                      WHEN TO_NUMBER(SPLIT_PART("date", '-', 2), '09') BETWEEN 10 AND 12 THEN 1
                      ELSE 0
                  END)                            AS "trainingCountQ4",
-             COUNT(*)                            AS "countTotal",
+             COUNT(*)                            AS "trainingCountTotal",
              SUM(CASE
                      WHEN TO_NUMBER(SPLIT_PART("date", '-', 2), '09') BETWEEN 1 AND 3 THEN "compensationCents"
                      ELSE 0
