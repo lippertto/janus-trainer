@@ -31,13 +31,32 @@ export async function fetchListFromApi<T>(
   }
 }
 
+export function buildQueryString(queryComponents: string[]) {
+  let result = '';
+
+  let firstComponent = true;
+  for (const component of queryComponents) {
+    if (firstComponent) {
+      result += "?";
+      firstComponent = false;
+    } else {
+      result += "&";
+    }
+    result += component;
+  }
+  return result;
+}
+
 export async function fetchSingleEntity<T>(
   route: string,
   id: string|number,
   accessToken: string,
+  queryComponents: string[] = []
 ): Promise<T> {
+  const queryString = buildQueryString(queryComponents)
+
   try {
-    const response = await fetch(`${route}/${id}`, {
+    const response = await fetch(`${route}/${id}${queryString}`, {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
     if (response.status !== 200) {

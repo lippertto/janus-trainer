@@ -123,7 +123,7 @@ export function compensationValuesSuspenseQuery(accessToken: string) {
 export function userSuspenseQuery(userId: string, accessToken: string, includeCognitoProperties: boolean) {
   return useSuspenseQuery({
     queryKey: [API_USERS, userId, includeCognitoProperties],
-    queryFn: () => fetchSingleEntity<UserDto>(`API_USERS?includeCognitoProperties=${includeCognitoProperties}`, userId, accessToken),
+    queryFn: () => fetchSingleEntity<UserDto>(`API_USERS`, userId, accessToken, [`includeCognitoProperties=${includeCognitoProperties}`]),
   });
 }
 
