@@ -78,7 +78,7 @@ function TermsAcceptanceContents(props: { session: JanusSession }) {
   );
   const termsVersion = tosData.match(/Version\s*:\s*(.*)/im)![1];
 
-  const { data: user } = userSuspenseQuery(session.userId, session.accessToken);
+  const { data: user } = userSuspenseQuery(session.userId, session.accessToken, false);
 
   const acceptTermsMutation = useMutation({
     mutationFn: async () => {

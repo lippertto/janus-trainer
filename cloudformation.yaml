@@ -199,6 +199,25 @@ Resources:
       Principal: "*"
       FunctionUrlAuthType: "NONE"
 
+  JanusTrainerStaticContentsCachePolicy:
+    Type: AWS::CloudFront::CachePolicy
+    Properties:
+      CachePolicyConfig:
+        Name: "JanusTrainerStaticContents"
+        Comment: "Cache optimized policy with a long TTl"
+        DefaultTTL: 604800 # seconds in one week
+        MinTTL: 604800 # seconds in one week
+        MaxTTL: 31536000 # seconds in one year
+        ParametersInCacheKeyAndForwardedToOrigin:
+          CookiesConfig:
+            CookieBehavior: none
+          EnableAcceptEncodingBrotli: true
+          EnableAcceptEncodingGzip: true
+          HeadersConfig:
+            HeaderBehavior: none
+          QueryStringsConfig:
+            QueryStringBehavior: none
+
   JanusTrainerAppCloudFrontDistribution:
     Type: AWS::CloudFront::Distribution
     Properties:
@@ -219,7 +238,7 @@ Resources:
             Compress: true
             ViewerProtocolPolicy: redirect-to-https
             AllowedMethods: [GET, HEAD, OPTIONS]
-            CachePolicyId: !FindInMap [Constants, ManagedPolicyIds, CachingOptimized]
+            CachePolicyId: !Ref JanusTrainerStaticContentsCachePolicy
             OriginRequestPolicyId: !FindInMap [Constants, ManagedPolicyIds, AllViewerExceptHostHeader]
         DefaultCacheBehavior:
           TargetOriginId: janus-trainer-lambda
