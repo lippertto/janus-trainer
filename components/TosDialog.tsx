@@ -16,15 +16,12 @@ import DialogActions from '@mui/material/DialogActions';
 import { CircularProgress } from '@mui/material';
 import Button from '@mui/material/Button';
 
-export function TosDialog(props: { tosData: string, handleAccept: () => void, open: boolean}) {
+export function TosDialog(props: { tosData: string, handleAccept: () => void, open: boolean, needsToAccept: boolean }) {
+  const { needsToAccept } = { ...props };
   const [accepted, setAccepted] = React.useState<boolean>(false);
   const [clicked, setClicked] = React.useState<boolean>(false);
 
-  useEffect(() => {
-    setClicked(false);
-  }, [props.open])
-
-  return <Dialog open={props.open} fullScreen={true}>
+  return <Dialog open={props.open} fullWidth maxWidth={'md'}>
     <DialogTitle>Allgemeine Geschäftsbedingungen</DialogTitle>
     <DialogContent>
       <Box maxHeight={'80%'}>
@@ -58,11 +55,13 @@ export function TosDialog(props: { tosData: string, handleAccept: () => void, op
                           sx={{ pl: 0.25 }}>{children}</ListItemText></ListItem>),
                     }}
           />
-          <FormGroup>
-            <FormControlLabel control={<Checkbox checked={accepted} onChange={(e) => {
-              setAccepted(e.target.checked);
-            }} />} label={'Ich akzeptiere die Nutzungsbedingungen'} />
-          </FormGroup>
+          {needsToAccept ?
+            <FormGroup>
+              <FormControlLabel control={<Checkbox checked={accepted} onChange={(e) => {
+                setAccepted(e.target.checked);
+              }} />} label={'Ich akzeptiere die Nutzungsbedingungen'} />
+            </FormGroup> : null
+          }
         </Stack>
       </Box>
     </DialogContent>
@@ -70,12 +69,14 @@ export function TosDialog(props: { tosData: string, handleAccept: () => void, op
     <DialogActions>
       {clicked ? <CircularProgress /> :
         <Button
-          disabled={!accepted}
+          disabled={needsToAccept && !accepted}
           onClick={() => {
             props.handleAccept();
-            setClicked(true);
+            if (needsToAccept) {
+              setClicked(true);
+            }
           }}
-        >{accepted ? 'Schließen' : 'Erst akzeptieren'}</Button>
+        >{(needsToAccept && !accepted) ? 'Erst akzeptieren' : 'Schließen'}</Button>
       }
     </DialogActions>
   </Dialog>;

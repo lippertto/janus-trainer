@@ -38,7 +38,7 @@ function TermsAcceptanceContents(props: { session: JanusSession }) {
     return <></>;
   }
 
-  return <TosDialog tosData={tosData} handleAccept={acceptTermsMutation.mutate} open={true}/>;
+  return <TosDialog tosData={tosData} handleAccept={acceptTermsMutation.mutate} open={true} needsToAccept={true}/>;
 }
 
 export default function TermsAcceptance(): React.ReactNode {

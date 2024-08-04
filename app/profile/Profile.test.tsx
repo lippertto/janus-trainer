@@ -28,12 +28,12 @@ jest.mock('@/lib/shared-queries', () => {
             compensationCentsTotal: 0,
           },
           ],
-      })
-),
-default:
-  jest.fn(() => 'mocked baz'),
-}
-  ;
+      }),
+    ),
+    default:
+      jest.fn(() => 'mocked baz'),
+  }
+    ;
 });
 
 

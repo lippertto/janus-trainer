@@ -165,6 +165,8 @@ export default function Profile(
       </Stack>
     </Grid>
   </Grid>
-  <TosDialog tosData={tosData} handleAccept={() => setShowTosDialog(false)} open={showTosDialog} />
+  <TosDialog tosData={tosData} handleAccept={() => setShowTosDialog(false)} open={showTosDialog}
+             needsToAccept={false}
+  />
   </>;
 }
