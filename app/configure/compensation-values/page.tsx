@@ -13,13 +13,7 @@ import CompensationCard from '@/app/configure/compensation-values/CompensationCa
 function ConfigurationPageContents({ session }: { session: JanusSession }) {
 
   return (
-    <>
-      <Grid container spacing={2}>
-        <Grid xs={4}>
           <CompensationCard session={session} />
-        </Grid>
-      </Grid>
-    </>
   );
 }
 

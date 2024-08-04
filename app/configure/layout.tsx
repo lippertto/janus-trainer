@@ -36,16 +36,10 @@ export default function ConfigureLayout({ children }: { children: React.ReactNod
   return <React.Fragment>
     <ErrorBoundary fallbackRender={PleaseReload} onError={logError}>
 
-      <Tabs orientation={'horizontal'} value={value}>
-        <Link href={'/configure/holidays'}>
-          <Tab label={'Feiertage'} value={0} />
-        </Link>
-        <Link href={'/configure/compensation-values'}>
-          <Tab label={'Pauschalen'} value={1}/>
-        </Link>
-        <Link href={'/configure/cost-centers'}>
-          <Tab label={'Kostenstellen'} value={2}/>
-        </Link>
+      <Tabs orientation={'horizontal'} value={value} >
+        <Tab label='Feiertage' value={0} component={Link} href={'/configure/holidays'} />
+        <Tab label='Pauschalen' value={1}  component={Link} href={'/configure/compensation-values'}/>
+        <Tab label='Kostenstellen' value={2}  component={Link} href={'/configure/cost-centers'}/>
       </Tabs>
       <Suspense fallback={<LoadingSpinner />}>
         {children}

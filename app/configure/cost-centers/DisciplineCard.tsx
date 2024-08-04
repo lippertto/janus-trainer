@@ -165,7 +165,7 @@ function DisciplineCardContents(props: { session: JanusSession }) {
 }
 
 export default function DisciplineCard(props: { session: JanusSession }) {
-  return <Paper sx={{ p: 2 }}>
+  return <Paper sx={{ p: 2}}>
     <Stack spacing={2}>
       <Typography variant="h5">Kostenstellen</Typography>
       <Suspense fallback={<CircularProgress />}>
