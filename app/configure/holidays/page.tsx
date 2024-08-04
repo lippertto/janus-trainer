@@ -123,10 +123,11 @@ function HolidayPageContents({ session }: { session: JanusSession }) {
       <Stack spacing={2}>
         <Typography variant="h5">Feiertage</Typography>
         <ButtonGroup>
-          <Button onClick={() => {
-
-            setDialogOpen(true);
-          }}>
+          <Button
+            data-testid={'add-holiday-button'}
+            onClick={() => {
+              setDialogOpen(true);
+            }}>
             Hinzufügen
           </Button>
           <Button disabled={!selectedHolidayId} onClick={() => handleDeleteClick(selectedHolidayId)}>

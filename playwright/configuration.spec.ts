@@ -26,7 +26,8 @@ test.describe.serial('Configuration page', () => {
     await expect(page.getByText(holidayName)).toBeVisible();
 
     // delete holiday and check that it is not there
-    await page.getByTestId(`delete-holiday-${holidayName}`).click();
+    await page.getByText(holidayName).click();
+    await page.getByRole('button', { name: 'Löschen' }).click();
     await page.getByRole('button', { name: 'Ok' }).click();
     await expect(page.getByText(holidayName, {exact: true})).toBeHidden();
 
