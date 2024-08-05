@@ -1,5 +1,5 @@
 'use client';
-import React, { useState } from 'react';
+import React, { Suspense, useState } from 'react';
 
 import { useSession } from 'next-auth/react';
 
@@ -11,7 +11,7 @@ import { addHoliday, deleteHoliday } from '@/lib/api-holidays';
 import { showError, showSuccess } from '@/lib/notifications';
 import { HolidayDto } from '@/lib/dto';
 import { useQueryClient } from '@tanstack/react-query';
-import { holidaysQuery, resultHasData } from '@/lib/shared-queries';
+import { holidaysQuery, holidaysSuspenseQuery, resultHasData } from '@/lib/shared-queries';
 import { API_HOLIDAYS } from '@/lib/routes';
 import Stack from '@mui/system/Stack';
 import Typography from '@mui/material/Typography';
@@ -26,14 +26,20 @@ import { EnterHolidayDialog } from '@/app/configure/holidays/EnterHolidayDialog'
 import { useConfirm } from 'material-ui-confirm';
 import { ClickAwayListener } from '@mui/base/ClickAwayListener';
 import Box from '@mui/system/Box';
+import { LoadingSpinner } from '@/components/LoadingSpinner';
+import { DatePicker } from '@mui/x-date-pickers';
 
 function HolidayList(props: {
-  holidays: HolidayDto[],
+  accessToken: string,
+  setHolidays: (v: HolidayDto[]) => void,
+  year: number,
   selectedHolidayId: number | null,
   setSelectedHolidayId: (v: number) => void
 }) {
+  const { data: holidays } = holidaysSuspenseQuery(props.accessToken, [props.year]);
+  props.setHolidays(holidays);
   return <List style={{ maxHeight: 500, overflow: 'auto' }}>
-    {props.holidays.map(
+    {holidays.map(
       (d) =>
         (<ListItemButton
           key={d.id}
@@ -51,6 +57,7 @@ function HolidayList(props: {
 }
 
 function HolidayPageContents({ session }: { session: JanusSession }) {
+  const currentYear =  new Date().getFullYear();
   const confirm = useConfirm();
 
   const [selectedHolidayId, setSelectedHolidayId] = useState<number | null>(null);
@@ -58,11 +65,9 @@ function HolidayPageContents({ session }: { session: JanusSession }) {
 
   const [holidays, setHolidays] = React.useState<HolidayDto[]>([]);
   const [holidayYear, setHolidayYear] = React.useState<number>(
-    new Date().getFullYear(),
+   currentYear
   );
   const queryClient = useQueryClient();
-
-  const holidaysResult = holidaysQuery(session?.accessToken, [holidayYear]);
 
   const handleDeleteClick = (selectedHolidayId: number | null) => {
     const holiday = holidays.find((h) => (h.id === selectedHolidayId));
@@ -111,39 +116,49 @@ function HolidayPageContents({ session }: { session: JanusSession }) {
     [holidays, setHolidays],
   );
 
-  React.useEffect(() => {
-    if (resultHasData(holidaysResult)) {
-      setHolidays(holidaysResult.data!);
-    }
-  }, [holidaysResult.data]);
-
-
   return <>
     <Paper sx={{ p: 2 }}>
       <Stack spacing={2}>
         <Typography variant="h5">Feiertage</Typography>
-        <ButtonGroup>
-          <Button
-            data-testid={'add-holiday-button'}
-            onClick={() => {
-              setDialogOpen(true);
-            }}>
-            Hinzufügen
-          </Button>
-          <Button disabled={!selectedHolidayId} onClick={() => handleDeleteClick(selectedHolidayId)}>
-            Löschen
-          </Button>
-
-        </ButtonGroup>
+        <Stack direction="row" spacing={4}>
+          <ButtonGroup>
+            <Button
+              data-testid={'add-holiday-button'}
+              onClick={() => {
+                setDialogOpen(true);
+              }}>
+              Hinzufügen
+            </Button>
+            <Button disabled={!selectedHolidayId} onClick={() => handleDeleteClick(selectedHolidayId)}>
+              Löschen
+            </Button>
+          </ButtonGroup>
+          <DatePicker
+            views={['year']}
+            label="Jahr"
+            value={dayjs(`${holidayYear}-01-01`)}
+            minDate={dayjs(`2023-01-01`)}
+            maxDate={dayjs(`${currentYear}-01-01`)}
+            onChange={(value) => {
+              if (!value) return;
+              setHolidayYear(value.year());
+            }}
+            sx={{ mb: 3, width: 140 }}
+          />
+        </Stack>
         <ClickAwayListener onClickAway={() => {
           setSelectedHolidayId(null);
         }}>
           <Box>
-            <HolidayList
-              holidays={holidays}
-              selectedHolidayId={selectedHolidayId}
-              setSelectedHolidayId={setSelectedHolidayId}
-            />
+            <Suspense fallback={<LoadingSpinner />}>
+              <HolidayList
+                accessToken={session.accessToken}
+                year={holidayYear}
+                setHolidays={setHolidays}
+                selectedHolidayId={selectedHolidayId}
+                setSelectedHolidayId={setSelectedHolidayId}
+              />
+            </Suspense>
           </Box>
         </ClickAwayListener>
       </Stack>
