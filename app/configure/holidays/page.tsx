@@ -11,7 +11,7 @@ import { addHoliday, deleteHoliday } from '@/lib/api-holidays';
 import { showError, showSuccess } from '@/lib/notifications';
 import { HolidayDto } from '@/lib/dto';
 import { useQueryClient } from '@tanstack/react-query';
-import { holidaysQuery, holidaysSuspenseQuery, resultHasData } from '@/lib/shared-queries';
+import { holidaysSuspenseQuery } from '@/lib/shared-queries';
 import { API_HOLIDAYS } from '@/lib/routes';
 import Stack from '@mui/system/Stack';
 import Typography from '@mui/material/Typography';
@@ -37,7 +37,9 @@ function HolidayList(props: {
   setSelectedHolidayId: (v: number) => void
 }) {
   const { data: holidays } = holidaysSuspenseQuery(props.accessToken, [props.year]);
-  props.setHolidays(holidays);
+  // we set the state only after the first render is complete.
+  setTimeout(() => props.setHolidays(holidays), 300);
+
   return <List style={{ maxHeight: 500, overflow: 'auto' }}>
     {holidays.map(
       (d) =>
