@@ -25,6 +25,7 @@ import { showError, showSuccess } from '@/lib/notifications';
 import ButtonGroup from '@mui/material/ButtonGroup';
 import ListItemButton from '@mui/material/ListItemButton';
 import { replaceElementWithId } from '@/lib/sort-and-filter';
+import { ClickAwayListener } from '@mui/base/ClickAwayListener';
 
 function CompensationValueListItem(
   props: {
@@ -232,6 +233,7 @@ export default function CompensationCard(props: {
             Bearbeiten
           </Button>
         </ButtonGroup>
+        <ClickAwayListener onClickAway={() => setActiveCompensationValue(null)}>
         <List style={{ maxHeight: 500, overflow: 'auto' }}>
           {compensationValues.map(
             (v) =>
@@ -242,6 +244,7 @@ export default function CompensationCard(props: {
                 selected={activeCompensationValue === v}
               />)}
         </List>
+        </ClickAwayListener>
       </Stack>
     </Paper>
     <AddCompensationValueDialog

@@ -21,6 +21,8 @@ import List from '@mui/material/List';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
 import { disciplinesSuspenseQuery } from '@/lib/shared-queries';
+import { ClickAwayListener } from '@mui/base/ClickAwayListener';
+import Box from '@mui/system/Box';
 
 function DisciplineDialog(props: {
   open: boolean,
@@ -28,7 +30,7 @@ function DisciplineDialog(props: {
   handleClose: () => void,
   handleSave: (data: DisciplineCreateRequest) => void
 }) {
-  const [previousDiscipline, setPreviousDiscipline] = React.useState<DisciplineDto|null>();
+  const [previousDiscipline, setPreviousDiscipline] = React.useState<DisciplineDto | null>();
 
   type FormData = { name: string, costCenterId: string };
   const {
@@ -38,16 +40,16 @@ function DisciplineDialog(props: {
     formState: { errors, isValid },
   } = useForm<FormData>();
 
-  React.useEffect(()=>{
+  React.useEffect(() => {
     if (props.toEdit !== previousDiscipline) {
       const defaultValues = {
-        name: props.toEdit?.name ?? "",
-          costCenterId: props.toEdit?.costCenterId?.toString() ?? "",
-      }
+        name: props.toEdit?.name ?? '',
+        costCenterId: props.toEdit?.costCenterId?.toString() ?? '',
+      };
       reset(defaultValues);
       setPreviousDiscipline(props.toEdit);
     }
-  }, [props.toEdit])
+  }, [props.toEdit]);
 
   const onSubmit = (data: FormData) => {
     if (isValid) {
@@ -63,7 +65,7 @@ function DisciplineDialog(props: {
   return <Dialog
     open={props.open}
   >
-    <DialogTitle>{props.toEdit ? "Kostenstelle bearbeiten" : "Kostenstelle hinzufügen"}</DialogTitle>
+    <DialogTitle>{props.toEdit ? 'Kostenstelle bearbeiten' : 'Kostenstelle hinzufügen'}</DialogTitle>
     <form onSubmit={handleSubmit(onSubmit)}>
       <DialogContent>
         <Stack direction={'column'} spacing={2}>
@@ -79,7 +81,7 @@ function DisciplineDialog(props: {
             required={true}
             {...register('costCenterId')} error={!!errors.costCenterId?.message}
             helperText={errors.costCenterId?.message || ''}
-            inputProps={{min: 0}}
+            inputProps={{ min: 0 }}
           />
         </Stack>
 
@@ -107,7 +109,7 @@ function DisciplineList(props: {
         (<ListItemButton
           key={d.id}
           onClick={() => {
-            props.setSelectedDisciplineId(d.id)
+            props.setSelectedDisciplineId(d.id);
           }}
           selected={props.selectedDisciplineId === d.id}
         >
@@ -153,8 +155,12 @@ function DisciplineCardContents(props: { session: JanusSession }) {
         Bearbeiten
       </Button>
     </ButtonGroup>
-    <DisciplineList disciplines={disciplines} selectedDisciplineId={selectedDisciplineId}
-                    setSelectedDisciplineId={setSelectedDisciplineId} />
+    <ClickAwayListener onClickAway={() => setSelectedDisciplineId(null)}>
+      <Box>
+      <DisciplineList disciplines={disciplines} selectedDisciplineId={selectedDisciplineId}
+                      setSelectedDisciplineId={setSelectedDisciplineId} />
+      </Box>
+    </ClickAwayListener>
     <DisciplineDialog
       open={open}
       handleClose={() => setOpen(false)}

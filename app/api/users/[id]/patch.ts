@@ -1,6 +1,8 @@
 import { UserPatchRequest } from '@/lib/dto';
+import prisma from '@/lib/prisma';
+import { ApiErrorNotFound, validateOrThrow } from '@/lib/helpers-for-api';
 
-export async function patchRequestToUpdateData(request: UserPatchRequest) {
+export function patchRequestToUpdateData(request: UserPatchRequest) {
   let data: any  = {};
   if (request.iban) {
     data['iban'] = request.iban.replace(/\s/g, "");
@@ -10,4 +12,20 @@ export async function patchRequestToUpdateData(request: UserPatchRequest) {
     data['termsAcceptedAt'] = new Date();
   }
   return data;
+}
+
+export async function patchOneUser(id: string, payload: any) {
+  const dbUser = await prisma.userInDb.findUnique({
+    where: { id },
+  });
+  if (dbUser === null) {
+    throw new ApiErrorNotFound(`User with id ${id} not found`);
+  }
+  const request = await validateOrThrow(new UserPatchRequest(payload));
+  const updateData = patchRequestToUpdateData(request);
+
+  return prisma.userInDb.update({
+    where: { id },
+    data: updateData,
+  });
 }

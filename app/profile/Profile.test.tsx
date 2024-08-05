@@ -28,14 +28,19 @@ jest.mock('@/lib/shared-queries', () => {
             compensationCentsTotal: 0,
           },
           ],
-      })
-),
-default:
-  jest.fn(() => 'mocked baz'),
-}
-  ;
+      }),
+    ),
+    termsOfServiceSuspenseQuery: jest.fn(() => ("")),
+    default:
+      jest.fn(() => 'mocked baz'),
+  }
+    ;
 });
 
+// https://github.com/remarkjs/react-markdown/issues/635#issuecomment-991137447
+jest.mock("react-markdown", () => (props: {children: React.ReactNode}) => {
+  return <>{props.children}</>
+})
 
 test('happy case: handles groups', async () => {
   const user: UserDto = {

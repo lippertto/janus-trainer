@@ -19,10 +19,11 @@ import QrCodeScannerIcon from '@mui/icons-material/QrCodeScanner';
 import SettingsIcon from '@mui/icons-material/Settings';
 import SportsIcon from '@mui/icons-material/Sports';
 
-import { JanusSession } from '@/lib/auth';
+import { auth, JanusSession } from '@/lib/auth';
 import { useSession } from 'next-auth/react';
 import { Group } from '@/lib/dto';
 import AccountBoxIcon from '@mui/icons-material/AccountBox';
+
 const ADMIN_LINKS = [
   { text: 'Home', href: '/', icon: HomeIcon },
   { text: 'Eingeben', href: '/enter', icon: EditCalendarIcon },
@@ -43,37 +44,19 @@ const TRAINER_LINKS = [
   { text: 'Profil', href: '/profile', icon: AccountBoxIcon },
 ];
 
-export default function JanusDrawer({
-  state,
-  setState,
-}: {
-  state: boolean;
-  setState: (state: boolean) => void;
-}) {
-  const toggleDrawer =
-    (newState: boolean) =>
-    (event: React.KeyboardEvent | React.MouseEvent): void => {
-      if (
-        event.type === 'keydown' &&
-        ((event as React.KeyboardEvent).key === 'Tab' ||
-          (event as React.KeyboardEvent).key === 'Shift')
-      ) {
-        return;
-      }
+function JanusDrawerContents(
+  {
+    state, ...props
+  }: {
+    state: boolean;
+    session: JanusSession;
+    toggleDrawer: (value: boolean) => (event: React.KeyboardEvent | React.MouseEvent) => void;
+  }) {
 
-      setState(newState);
-    };
-
-  const { data, status: authenticationStatus } = useSession();
-  const session = data as JanusSession;
-  let links = [TRAINER_LINKS[0]]; // only home button
-  if (authenticationStatus === 'authenticated') {
-    links =
-      session.groups.indexOf(Group.ADMINS) >= 0 ? ADMIN_LINKS : TRAINER_LINKS;
-  }
+  const links = props.session.groups.indexOf(Group.ADMINS) >= 0 ? ADMIN_LINKS : TRAINER_LINKS;
 
   return (
-    <Drawer anchor={'left'} open={state} onClose={toggleDrawer(false)}>
+    <Drawer anchor={'left'} open={state} onClose={props.toggleDrawer(false)}>
       <List>
         {links.map((oneLink) => (
           <ListItem key={oneLink.text} disablePadding>
@@ -88,4 +71,32 @@ export default function JanusDrawer({
       </List>
     </Drawer>
   );
+}
+
+export default function JanusDrawer(props: {
+  state: boolean;
+  setState: (state: boolean) => void;
+}) {
+  const toggleDrawer =
+    (newState: boolean) =>
+      (event: React.KeyboardEvent | React.MouseEvent): void => {
+        if (
+          event.type === 'keydown' &&
+          ((event as React.KeyboardEvent).key === 'Tab' ||
+            (event as React.KeyboardEvent).key === 'Shift')
+        ) {
+          return;
+        }
+
+        props.setState(newState);
+      };
+
+  const { data, status: authenticationStatus } = useSession();
+  const session = data as JanusSession;
+
+  if (authenticationStatus !== 'authenticated') {
+    return <Drawer anchor="left" open={props.state} onClose={toggleDrawer(false)} />;
+  }
+
+  return <JanusDrawerContents toggleDrawer={toggleDrawer} session={session} {...props} />;
 }

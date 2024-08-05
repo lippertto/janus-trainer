@@ -5,16 +5,19 @@ import {
   API_COURSES,
   API_DISCIPLINES,
   API_HOLIDAYS,
-  API_TRAININGS, API_TRAININGS_YEARLY_TOTALS,
+  API_TRAININGS,
+  API_TRAININGS_YEARLY_TOTALS,
   API_USERS,
 } from '@/lib/routes';
 import {
   CompensationValueDto,
-  CourseDto, DisciplineDto,
+  CourseDto,
+  DisciplineDto,
   TrainingCreateRequest,
   TrainingDto,
   TrainingUpdateRequest,
-  UserDto, YearlyTotalDto,
+  UserDto,
+  YearlyTotalDto,
 } from '@/lib/dto';
 import { Holiday } from '@prisma/client';
 import { showError, showSuccess } from '@/lib/notifications';
@@ -227,6 +230,17 @@ export function yearlyTotalsSuspenseQuery(accessToken: string, year: number, tra
         'POST'
       ),
       staleTime: TEN_MINUTES,
+    },
+  );
+}
+
+export function termsOfServiceSuspenseQuery() {
+  return useSuspenseQuery({
+      queryKey: ['terms-and-conditions'],
+      queryFn: async () => {
+        const response = await fetch('/terms-and-conditions.md');
+        return await response.text();
+      },
     },
   );
 }

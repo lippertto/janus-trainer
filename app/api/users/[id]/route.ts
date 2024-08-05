@@ -1,7 +1,9 @@
 import {
-  ApiErrorNotFound,
+  allowAdminOrSelf,
   allowOnlyAdmins,
-  handleTopLevelCatch, validateOrThrow, allowAdminOrSelf,
+  ApiErrorNotFound,
+  handleTopLevelCatch,
+  validateOrThrow,
 } from '@/lib/helpers-for-api';
 import prisma from '@/lib/prisma';
 import { CognitoIdentityProviderClient } from '@aws-sdk/client-cognito-identity-provider';
@@ -13,8 +15,8 @@ import {
   listGroupsForUser,
   updateCognitoUser,
 } from '../cognito';
-import { UserDto, UserCreateRequest, ErrorDto, UserPatchRequest, Group } from '@/lib/dto';
-import { patchRequestToUpdateData } from '@/app/api/users/[id]/patch';
+import { ErrorDto, Group, UserCreateRequest, UserDto } from '@/lib/dto';
+import { patchOneUser } from '@/app/api/users/[id]/patch';
 
 async function doDELETE(request: NextRequest, id: string) {
   await allowOnlyAdmins(request);
@@ -159,22 +161,6 @@ export async function GET(
   } catch (e) {
     return handleTopLevelCatch(e);
   }
-}
-
-async function patchOneUser(id: string, payload: any) {
-  const dbUser = await prisma.userInDb.findUnique({
-    where: {id}
-  });
-  if (dbUser === null) {
-    throw new ApiErrorNotFound(`User with id ${id} not found`);
-  }
-  const request = await validateOrThrow(new UserPatchRequest(payload));
-  const updateData = patchRequestToUpdateData(request);
-
-  return prisma.userInDb.update({
-    where: { id },
-    data: updateData
-  });
 }
 
 export async function PATCH(

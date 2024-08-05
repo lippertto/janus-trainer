@@ -1,4 +1,4 @@
-import React, { Suspense } from 'react';
+import React, { Suspense, useState } from 'react';
 
 import Grid from '@mui/material/Unstable_Grid2';
 import { CircularProgress, Typography } from '@mui/material';
@@ -17,7 +17,9 @@ import { signOut } from 'next-auth/react';
 import { CourseDto, UserDto } from '@/lib/dto';
 
 import 'core-js/modules/es.array.to-sorted';
-import { yearlyTotalsSuspenseQuery } from '@/lib/shared-queries';
+import { termsOfServiceSuspenseQuery, yearlyTotalsSuspenseQuery } from '@/lib/shared-queries';
+import { TosDialog } from '@/components/TosDialog';
+import Stack from '@mui/material/Stack';
 
 function statisticsString(cents: number, trainingCoung: number) {
   return `Trainings: ${trainingCoung} / ${centsToHumanReadable(cents)}`;
@@ -71,11 +73,14 @@ export default function Profile(
   props: { accessToken: string, user: UserDto, courses: CourseDto[], handleEditIbanClick: () => void },
 ) {
   const { user } = props;
+  const [showTosDialog, setShowTosDialog] = useState<boolean>(false);
+
+  const { data: tosData } = termsOfServiceSuspenseQuery();
 
   // Beate Kubny reported an empty groups array.
   const groupsDisplayString = user.groups ? user.groups.map(groupToHumanReadable).toSorted().join(', ') : 'Keine Gruppen';
 
-  return <Grid container display={'flex'} spacing={2} sx={{ pl: 2, pr: 2 }}>
+  return <><Grid container display={'flex'} spacing={2} sx={{ pl: 2, pr: 2 }}>
     <Grid xs={12}>
       <Typography variant={'h5'}>Stammdaten</Typography>
     </Grid>
@@ -143,7 +148,12 @@ export default function Profile(
       props.courses.length === 0 ? <Grid xs={12}><Typography>Keine Kurse hinterlegt.</Typography></Grid> :
         props.courses.map((c) => (<Grid key={c.id}><CourseCard course={c} /></Grid>))
     }
+
     <Grid xs={12}>
+      <Stack direction={'row'}>
+        <Button onClick={() => setShowTosDialog(true)}>
+          AGBs anzeigen
+        </Button>
       <Button
         onClick={() => {
           signOut()
@@ -152,6 +162,11 @@ export default function Profile(
             });
         }}
       >Ausloggen</Button>
+      </Stack>
     </Grid>
-  </Grid>;
+  </Grid>
+  <TosDialog tosData={tosData} handleAccept={() => setShowTosDialog(false)} open={showTosDialog}
+             needsToAccept={false}
+  />
+  </>;
 }
