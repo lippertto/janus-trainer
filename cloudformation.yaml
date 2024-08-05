@@ -122,7 +122,7 @@ Resources:
   JanusTrainerAppRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Join [ "-", [ "JanusTrainerAppRole", !Ref JanusEnvironment ] ]
+      RoleName: !Sub "JanusTrainerAppRole-${JanusEnvironment}"
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -203,7 +203,7 @@ Resources:
     Type: AWS::CloudFront::CachePolicy
     Properties:
       CachePolicyConfig:
-        Name: "JanusTrainerStaticContents"
+        Name: !Sub "JanusTrainerStaticContents-${JanusEnvironment}"
         Comment: "Cache optimized policy with a long TTl"
         DefaultTTL: 604800 # seconds in one week
         MinTTL: 604800 # seconds in one week
