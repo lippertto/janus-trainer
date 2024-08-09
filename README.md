@@ -19,16 +19,17 @@ Then, you have to include the api tests in jest.config.js and run `yarn test`.
 ## Bugs
 
 ## Features
-* More comprehensive test: Enter, approve, compensate
+* Split analysis: Euros (per trainer)/ #trainings (per course/trainer)
 * Flexible compensation groups
 * Make courses disabled. (Also in the UI.)
-* Put cost center to offerings
+* More comprehensive test: Enter, approve, compensate
+
 
 ## Tech update
 * Hide password in POSTGRES_CONNECTION_URL of lambda. --> Use Secret
 * Add proper logging
 * Join payments and compensation api routes (and domain objects)
-* Better way to run api tests
+* Better way to run api tests (separate jest config)
 
 ## Refinement
 * Sort imports with eslint: https://eslint.org/docs/latest/rules/sort-imports
