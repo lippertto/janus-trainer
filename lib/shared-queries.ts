@@ -1,6 +1,7 @@
 import { useMutation, useQuery, UseQueryResult, useSuspenseQuery } from '@tanstack/react-query';
 import { createInApi, deleteFromApi, fetchListFromApi, fetchSingleEntity, updateInApi } from '@/lib/fetch';
 import {
+  API_COMPENSATION_CLASSES,
   API_COMPENSATION_VALUES,
   API_COURSES,
   API_DISCIPLINES,
@@ -10,6 +11,7 @@ import {
   API_USERS,
 } from '@/lib/routes';
 import {
+  CompensationClassDto,
   CompensationValueDto,
   CourseDto,
   DisciplineDto,
@@ -23,26 +25,15 @@ import { Holiday } from '@prisma/client';
 import { showError, showSuccess } from '@/lib/notifications';
 import { compareByStringField } from '@/lib/sort-and-filter';
 import { dateToHumanReadable } from '@/lib/formatters';
+import { execFile } from 'node:child_process';
 
 const TEN_MINUTES = 10 * 60 * 1000;
-
-export function compensationValuesQuery(accessToken: string | null) {
-  return useQuery({
-    queryKey: ['compensationValues'],
-    queryFn: () => fetchListFromApi<CompensationValueDto>(
-      API_COMPENSATION_VALUES,
-      accessToken!),
-    throwOnError: true,
-    enabled: Boolean(accessToken),
-    staleTime: TEN_MINUTES,
-  });
-}
 
 function holidaysQueryFunction(accessToken: string, years: number[]) {
   return fetchListFromApi<Holiday>(
     `${API_HOLIDAYS}?year=${years.map((y) => (y.toString())).join(',')}`,
     accessToken,
-  )
+  );
 }
 
 /**
@@ -123,10 +114,24 @@ export function compensationValuesSuspenseQuery(accessToken: string) {
   });
 }
 
-export function userSuspenseQuery(userId: string, accessToken: string, includeCognitoProperties: boolean) {
+export function userSuspenseQuery(
+  userId: string, accessToken: string,
+  includeCognitoProperties: boolean = false,
+  expandCompensationClasses: boolean = false,
+  expandCompensationValues: boolean = false) {
+  let expand = [];
+  if (includeCognitoProperties) {
+    expand.push('cognito');
+  }
+  if (expandCompensationClasses) {
+    expand.push('compensationClasses');
+  }
+  if (expandCompensationValues) {
+    expand.push('compensationValues');
+  }
   return useSuspenseQuery({
-    queryKey: [API_USERS, userId, includeCognitoProperties],
-    queryFn: () => fetchSingleEntity<UserDto>(API_USERS, userId, accessToken, [`includeCognitoProperties=${includeCognitoProperties}`]),
+    queryKey: [API_USERS, userId, includeCognitoProperties, expandCompensationClasses, expandCompensationValues],
+    queryFn: () => fetchSingleEntity<UserDto>(API_USERS, userId, accessToken, [`expand=${expand.join(',')}`]),
   });
 }
 
@@ -220,14 +225,14 @@ export function disciplinesSuspenseQuery(accessToken: string) {
   );
 }
 
-export function yearlyTotalsSuspenseQuery(accessToken: string, year: number, trainerId: String|null) {
-  const trainerIdQuery = trainerId ? `&trainerId=${trainerId}` : ""
+export function yearlyTotalsSuspenseQuery(accessToken: string, year: number, trainerId: String | null) {
+  const trainerIdQuery = trainerId ? `&trainerId=${trainerId}` : '';
   return useSuspenseQuery({
       queryKey: [API_TRAININGS_YEARLY_TOTALS, year, trainerId],
       queryFn: () => fetchListFromApi<YearlyTotalDto>(
         `${API_TRAININGS_YEARLY_TOTALS}?year=${year}${trainerIdQuery}`,
         accessToken,
-        'POST'
+        'POST',
       ),
       staleTime: TEN_MINUTES,
     },
@@ -243,4 +248,34 @@ export function termsOfServiceSuspenseQuery() {
       },
     },
   );
+}
+
+export function compensationClassesSuspenseQuery(accessToken: string, expandCompensationValues: boolean = false) {
+  let query = '';
+  if (expandCompensationValues) {
+    query = '?expand=compensationValues';
+  }
+  return useSuspenseQuery({
+      queryKey: [API_COMPENSATION_CLASSES, expandCompensationValues],
+      queryFn: () => fetchListFromApi<CompensationClassDto>(
+        `${API_COMPENSATION_CLASSES}${query}`,
+        accessToken,
+      ),
+      staleTime: TEN_MINUTES,
+    },
+  );
+}
+
+export function compensationClassesQuery(accessToken: string) {
+  const key = [API_COMPENSATION_CLASSES, true];
+  return useQuery({
+    queryKey: key,
+    queryFn: () => fetchListFromApi<CompensationClassDto>(
+      `${API_COMPENSATION_CLASSES}?expand=compensationValues`,
+      accessToken,
+    ),
+    throwOnError: true,
+    enabled: Boolean(accessToken),
+    staleTime: TEN_MINUTES,
+  });
 }

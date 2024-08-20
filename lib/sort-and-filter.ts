@@ -10,7 +10,7 @@ export function compareNamed(a: { name: string }, b: { name: string }): number {
 
 type ElementWithId = { id: number | string }
 
-export function replaceElementWithId<T extends ElementWithId>(array: T[], value: T) {
+export function replaceElementWithId<T extends ElementWithId>(array: T[], value: T): T[] {
   let found = false;
   const result = array.map((d) => {
     if (d.id === value.id) {

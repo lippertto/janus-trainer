@@ -23,6 +23,8 @@ Then, you have to include the api tests in jest.config.js and run `yarn test`.
 * Flexible compensation groups
 * Make courses disabled. (Also in the UI.)
 * More comprehensive test: Enter, approve, compensate
+* Warning if training limits have been reached
+* Show when training was approved/compensated
 
 
 ## Tech update
@@ -38,6 +40,8 @@ Then, you have to include the api tests in jest.config.js and run `yarn test`.
 
 ## Evolving the database schema
 All commands should be prefixed with `yarn run dotenv -e .env.development -- ` to load the database connection values
+
+Update the generated code: `prisma generate`
 
 Make changes to the schema. Push the changes to the local database with `prisma db push`.
 

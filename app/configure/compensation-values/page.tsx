@@ -1,23 +1,53 @@
 'use client';
-import React from 'react';
+import React, { useEffect } from 'react';
 
 import { useSession } from 'next-auth/react';
 
-import Grid from '@mui/material/Unstable_Grid2';
 
 import { JanusSession } from '@/lib/auth';
 import LoginRequired from '@/components/LoginRequired';
+import Stack from '@mui/system/Stack';
+import { CompensationClassDto } from '@/lib/dto';
+import { compensationClassesQuery, resultHasData } from '@/lib/shared-queries';
+import { compareByStringField } from '@/lib/sort-and-filter';
+import { CompensationValueCard } from '@/app/configure/compensation-values/CompensationValueCard';
+import CompensationClassCard from '@/app/configure/compensation-values/CompensationClassCard';
 
-import CompensationCard from '@/app/configure/compensation-values/CompensationCard';
+function CompensationvalueConfigurationPageContents({ session }: { session: JanusSession }) {
+  const [activeCompensationClass, setActiveCompensationClass] = React.useState<CompensationClassDto | null>(null);
+  const [compensationClasses, setCompensationClasses] = React.useState<CompensationClassDto[]>([]);
 
-function ConfigurationPageContents({ session }: { session: JanusSession }) {
+  const compensationClassesResult = compensationClassesQuery(session.accessToken);
+  useEffect(() => {
+    if (resultHasData(compensationClassesResult)) {
+      setCompensationClasses(compensationClassesResult.data!.toSorted((a, b) => compareByStringField(a, b, 'description')).toReversed());
+    }
+  }, [compensationClassesResult.data]);
 
-  return (
-          <CompensationCard session={session} />
+  return (<>
+      <Stack direction={'row'} spacing={5}>
+        <CompensationClassCard
+          compensationClasses={compensationClasses}
+          setCompensationClasses={setCompensationClasses}
+          activeCompensationClass={activeCompensationClass}
+          setActiveCompensationClass={setActiveCompensationClass}
+          accessToken={session.accessToken}
+
+        />
+
+        <CompensationValueCard
+          activeCompensationClass={activeCompensationClass}
+          setActiveCompensationClass={setActiveCompensationClass}
+          setCompensationClasses={setCompensationClasses}
+          compensationClasses={compensationClasses}
+          accessToken={session.accessToken}
+        />
+      </Stack>
+    </>
   );
 }
 
-export default function ConfigurationPage() {
+export default function ComepnsationValuesConfigurationPage() {
   const { data, status: authenticationStatus } = useSession();
   const session = data as JanusSession;
 
@@ -25,5 +55,5 @@ export default function ConfigurationPage() {
     return <LoginRequired authenticationStatus={authenticationStatus} />;
   }
 
-  return <ConfigurationPageContents session={session} />;
+  return <CompensationvalueConfigurationPageContents session={session} />;
 }

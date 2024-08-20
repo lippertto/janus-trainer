@@ -26,7 +26,7 @@ import Profile from '@/app/profile/Profile';
 function ProfilePageContents({ session }: { session: JanusSession }) {
   const queryClient = useQueryClient();
   const [showIbanDialog, setShowIbanDialog] = React.useState(false);
-  const { data: user } = userSuspenseQuery(session.userId, session.accessToken, true);
+  const { data: user } = userSuspenseQuery(session.userId, session.accessToken, true, true, false);
 
   const { data: courses } = coursesForTrainerSuspenseQuery(
     session.userId,

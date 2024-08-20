@@ -11,7 +11,7 @@ test.describe.serial('Configuration page', () => {
     const browser = await newBrowser();
     const page = await browser.newPage();
 
-    await page.goto('/configure');
+    await page.goto('/configure/holidays');
     await expect(page.getByText(holidayName)).toBeHidden();
 
     // add a new holiday

@@ -79,6 +79,11 @@ export function emptyResponse(): Response {
   return new Response(null, { status: 204 });
 }
 
+export function notFoundResponse(): NextResponse<ErrorDto> {
+  const error: ErrorDto = {error: {message: "not found", code: "NotFound"}}
+  return NextResponse.json(error, { status: 404 });
+}
+
 export function errorResponse(
   message: string,
   status: number,
@@ -220,10 +225,11 @@ export async function validateOrThrow<T extends object>(type: {new(args: any): T
 }
 
 
-export function idAsNumberOrThrow(id: string) {
+export function idAsNumberOrThrow(id: string|number) {
+  if (typeof id === 'number') return id;
   const result = parseInt(id);
   if (!result) {
-    throw new ApiErrorBadRequest("Provided id does not seem to be a number");
+    throw new ApiErrorBadRequest(`Provided id '${id}' does not seem to be a number`);
   }
   return result;
 }

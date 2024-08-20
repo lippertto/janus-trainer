@@ -59,6 +59,8 @@ model UserInDb {
   courses            Course[]
   compensationGroups CompensationGroup[] @default([])
 
+  compensationClasses CompensationClass[]
+
   termsAcceptedAt      DateTime? @db.Timestamptz()
   termsAcceptedVersion String?
 
@@ -75,11 +77,20 @@ enum CompensationGroup {
 }
 
 model CompensationValue {
-  id                Int               @id @default(autoincrement())
-  cents             Int
-  description       String
-  durationMinutes   Int?
-  compensationGroup CompensationGroup
+  id                  Int                @id @default(autoincrement())
+  cents               Int
+  description         String
+  durationMinutes     Int?
+  compensationGroup   CompensationGroup?
+  compensationClassId Int?
+  compensationClass   CompensationClass? @relation(fields: [compensationClassId], references: [id], onDelete: Cascade)
+}
+
+model CompensationClass {
+  id                 Int                 @id @default(autoincrement())
+  name               String
+  compensationValues CompensationValue[]
+  users              UserInDb[]
 }
 
 enum DayOfWeek {

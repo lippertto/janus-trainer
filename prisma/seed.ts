@@ -11,47 +11,36 @@ async function resetIdCounter(tableName: string) {
 }
 
 async function main() {
-  const users = [
-    {
-      id: '502c79bc-e051-70f5-048c-5619e49e2383',
-      name: 'Test-User Admin',
-      compensationGroups: [CompensationGroup.NO_QUALIFICATION],
-      termsAcceptedVersion: '2024-07-13'
-    },
-    {
-      id: '80ac598c-e0b1-7040-5e0e-6fd257a53699',
-      name: 'Test-User Trainer',
-      iban: 'DE53500105175739486428',
-      termsAcceptedVersion: '2024-07-13'
-    },
-  ];
 
-  await Promise.all(users.map((u) => (
-    prisma.userInDb.upsert({
-      where: { id: u.id },
-      create: u,
-      update: u,
-    })
-  )));
+  const compensationClass = {
+    name: "Keine Quali",
+    id: 1,
+  }
+  await prisma.compensationClass.upsert({
+    where: {id: compensationClass.id},
+    create: compensationClass,
+    update: compensationClass
+  })
+  await resetIdCounter('CompensationClass');
 
   const compensationValues = [
     {
       cents: 1000,
       description: 'Zehner (NQ)',
       durationMinutes: 60,
-      compensationGroup: CompensationGroup.NO_QUALIFICATION,
+      compensationClass: {connect: {id: 1}}
     },
     {
       cents: 2000,
       description: 'Zwanni (NQ)',
       durationMinutes: 120,
-      compensationGroup: CompensationGroup.NO_QUALIFICATION,
+      compensationClass: {connect: {id: 1}}
     },
     {
       cents: 3100,
-      description: 'Einunddreißig(MQ)',
+      description: 'Einunddreißig(NQ)',
       durationMinutes: 60,
-      compensationGroup: CompensationGroup.WITH_QUALIFICATION,
+      compensationClass: {connect: {id: 1}}
     },
   ];
 
@@ -64,8 +53,34 @@ async function main() {
   }
   await resetIdCounter('CompensationValue');
 
-  const discipline: Discipline = {name: "Sportart 1", id: 1, costCenterId: 42}
-  await prisma.discipline.upsert({ where: {id: 1}, create: discipline, update: discipline });
+  const users = [
+    {
+      id: '502c79bc-e051-70f5-048c-5619e49e2383',
+      name: 'Test-User Admin',
+      compensationGroups: [CompensationGroup.NO_QUALIFICATION],
+      termsAcceptedVersion: '2024-08-03',
+      compensationClasses: {connect: {id: 1}}
+    },
+    {
+      id: '80ac598c-e0b1-7040-5e0e-6fd257a53699',
+      name: 'Test-User Trainer',
+      iban: 'DE53500105175739486428',
+      termsAcceptedVersion: '2024-08-03',
+      compensationClasses: {connect: {id: 1}}
+    },
+  ];
+
+  await Promise.all(users.map((u) => (
+    prisma.userInDb.upsert({
+      where: { id: u.id },
+      create: u,
+      update: u,
+    })
+  )));
+
+
+  const discipline: Discipline = { name: 'Sportart 1', id: 1, costCenterId: 42 };
+  await prisma.discipline.upsert({ where: { id: 1 }, create: discipline, update: discipline });
   await resetIdCounter('Discipline');
 
   const course = {
@@ -79,8 +94,8 @@ async function main() {
 
   await prisma.course.upsert({
     where: { id: 1 },
-    create: {...course,     trainers: {connect: {id: '502c79bc-e051-70f5-048c-5619e49e2383'}}},
-    update: {...course, trainers: {set: {id: '502c79bc-e051-70f5-048c-5619e49e2383'}}}
+    create: { ...course, trainers: { connect: { id: '80ac598c-e0b1-7040-5e0e-6fd257a53699' } } },
+    update: { ...course, trainers: { set: { id: '80ac598c-e0b1-7040-5e0e-6fd257a53699' } } },
   });
 
   await resetIdCounter('Course');

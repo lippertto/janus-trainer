@@ -2,9 +2,7 @@ import superagent from 'superagent';
 import { PaymentDto, TrainingCreateRequest, TrainingDto } from '@/lib/dto';
 import { TrainingStatus } from '@prisma/client';
 
-
 const SERVER = 'http://localhost:3000';
-
 
 async function createAndValidatePayment(trainerId: string, trainingIds: number[], expectedCents: number) {
   // WHEN

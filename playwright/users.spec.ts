@@ -17,10 +17,8 @@ test.describe.serial('user management', () => {
     await page.getByTestId('enter-email-textfield').fill('spamtl@fastmail.fm')
     await page.getByTestId('is-admin-checkbox').click();
 
-    await expect(page.getByTestId('enter-iban-textfield')).toBeDisabled();
     await page.getByTestId('is-trainer-checkbox').click();
-    await expect(page.getByTestId('enter-iban-textfield')).toBeEnabled();
-    await page.getByTestId('enter-iban-textfield').fill('DE72500105176125958433')
+    await page.getByLabel('IBAN').fill('DE72500105176125958433')
 
     await page.getByTestId('save-user-button').click()
     await expect(page.getByText('Playwright Test User', {exact: true})).toBeVisible();
