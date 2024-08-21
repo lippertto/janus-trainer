@@ -21,8 +21,7 @@ Die Übungsleitung hat das Recht, die Online-Anwendung dafür zu nutzen, die Anz
 anzugeben und eine digitale Abrechnung zu erstellen. 
 Die eingetragenen Einheiten sowie der Status der Bezahlung werden der Übungsleitung im System angezeigt.
 
-Sie hat die Pflicht, sorgsam mit der Online-Anwendung umzugehen. Die Übungsleitung verpflichtet sich, sorgsam mit der 
-Online-Anwendung umzugehen und die Log-in Daten nicht mit Dritten zu teilen.
+Die Übungsleitung verpflichtet sich, sorgsam mit der Online-Anwendung umzugehen und die Log-in Daten nicht mit Dritten zu teilen.
 
 ##### 5 Pflichten des Anbieters
 Der Anbieter hat die Pflicht, für einen möglichst reibungslosen Ablauf zu sorgen und sorgsam mit den Daten der Übungsleitungen umzugehen.
