@@ -150,27 +150,6 @@ export class TrainingUpdateStatusRequest {
   status: TrainingStatus;
 }
 
-class TrainingBatchOperation {
-  @IsNumber()
-  id: number;
-  @IsString()
-  operation: 'SET_COMPENSATED';
-}
-
-export class TrainingBatchUpdateRequest {
-  constructor(obj: any) {
-    Object.assign(this, obj);
-  }
-
-  @IsArray()
-  @ValidateNested()
-  operations: TrainingBatchOperation[];
-}
-
-export type TrainingBatchUpdateReponse = {
-  value: ('OK' | ErrorDto)[];
-};
-
 type ErrorDetail = {
   message: string;
   code: string;
