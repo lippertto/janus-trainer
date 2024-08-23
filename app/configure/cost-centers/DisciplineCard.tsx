@@ -23,6 +23,7 @@ import ListItemText from '@mui/material/ListItemText';
 import { disciplinesSuspenseQuery } from '@/lib/shared-queries';
 import { ClickAwayListener } from '@mui/base/ClickAwayListener';
 import Box from '@mui/system/Box';
+import { compareByStringField } from '@/lib/sort-and-filter';
 
 function DisciplineDialog(props: {
   open: boolean,
@@ -123,6 +124,7 @@ function DisciplineCardContents(props: { session: JanusSession }) {
   const [open, setOpen] = React.useState<boolean>(false);
   const [selectedDisciplineId, setSelectedDisciplineId] = React.useState<number | null>(null);
   const { data: disciplines } = disciplinesSuspenseQuery(props.session.accessToken);
+  disciplines.sort((a,b) => (compareByStringField(a, b, "name")));
 
   const disciplinesAddMutation = useMutation({
     mutationFn: (
