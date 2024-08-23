@@ -35,6 +35,9 @@ model Training {
 
   status TrainingStatus
 
+  approvedAt    DateTime?
+  compensatedAt DateTime?
+
   course   Course @relation(fields: [courseId], references: [id])
   courseId Int
 

@@ -1,62 +1,48 @@
-import {
-  ErrorDto,
-  TrainingBatchUpdateReponse,
-  TrainingBatchUpdateRequest,
-  TrainingCreateRequest,
-  TrainingQueryResponse,
-} from '@/lib/dto';
-import {
-  allowAdminOrSelf,
-  allowOnlyAdmins,
-  ApiError,
-  handleTopLevelCatch,
-  validateOrThrowOld,
-} from '@/lib/helpers-for-api';
+import { ErrorDto, TrainingCreateRequest, TrainingDto, TrainingQueryResponse } from '@/lib/dto';
+import { allowAdminOrSelf, allowOnlyAdmins, handleTopLevelCatch, validateOrThrowOld } from '@/lib/helpers-for-api';
 import prisma from '@/lib/prisma';
 import { Prisma, Training, TrainingStatus } from '@prisma/client';
 import { NextRequest, NextResponse } from 'next/server';
+import { trainingToDto } from '@/app/api/trainings/trainingUtils';
 
-async function selectTrainings(trainerId: string|null,
-                               startDate: string|null,
-                               endDate: string|null) {
-  let filter: Prisma.TrainingWhereInput = {}
+async function selectTrainings(trainerId: string | null,
+                               startDate: string | null,
+                               endDate: string | null): Promise<TrainingDto[]> {
+  let filter: Prisma.TrainingWhereInput = {};
   if (trainerId) {
-    filter['userId'] = trainerId
+    filter['userId'] = trainerId;
   }
   if (startDate && endDate) {
     filter['date'] = {
       gte: startDate,
-      lte: endDate
-    }
+      lte: endDate,
+    };
   }
 
-  return prisma.training.findMany({
+  const trainings = await prisma.training.findMany({
     where: filter,
     include: {
       user: true,
       course: true,
     },
   });
+  return trainings.map((t) => (trainingToDto(t, t.user, t.course)));
 }
 
-async function doGET(request: NextRequest) {
-  const trainerId = request.nextUrl.searchParams.get('trainerId');
-  const startDate = request.nextUrl.searchParams.get('start');
-  const endDate = request.nextUrl.searchParams.get('end');
-
-  if (trainerId) {
-    await allowAdminOrSelf(request, trainerId);
-  } else {
-    await allowOnlyAdmins(request);
-  }
-
-  const value = await selectTrainings(trainerId, startDate, endDate);
-  return NextResponse.json({value})
-}
-
-export async function GET(request: NextRequest): Promise<NextResponse<TrainingQueryResponse|ErrorDto>> {
+export async function GET(request: NextRequest): Promise<NextResponse<TrainingQueryResponse | ErrorDto>> {
   try {
-    return await doGET(request);
+    const trainerId = request.nextUrl.searchParams.get('trainerId');
+    const startDate = request.nextUrl.searchParams.get('start');
+    const endDate = request.nextUrl.searchParams.get('end');
+
+    if (trainerId) {
+      await allowAdminOrSelf(request, trainerId);
+    } else {
+      await allowOnlyAdmins(request);
+    }
+
+    const value = await selectTrainings(trainerId, startDate, endDate);
+    return NextResponse.json({ value });
   } catch (e) {
     return handleTopLevelCatch(e);
   }
@@ -65,7 +51,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<TrainingQu
 async function doPOST(
   nextRequest: NextRequest,
 ): Promise<NextResponse<Training>> {
-  const request = await validateOrThrowOld(new TrainingCreateRequest(await nextRequest.json()))
+  const request = await validateOrThrowOld(new TrainingCreateRequest(await nextRequest.json()));
   await allowAdminOrSelf(nextRequest, request.userId);
 
   const result = await prisma.training.create({
@@ -77,7 +63,7 @@ async function doPOST(
       createdAt: new Date(),
       participantCount: request.participantCount,
       courseId: request.courseId,
-      comment: request.comment
+      comment: request.comment,
     },
     include: { user: true, course: true },
   });

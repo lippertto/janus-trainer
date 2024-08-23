@@ -4,8 +4,8 @@ import {
   allowOnlyAdmins,
   ApiErrorBadRequest,
   getOwnUserId,
-  handleTopLevelCatch, validateOrThrow,
-  validateOrThrowOld,
+  handleTopLevelCatch,
+  validateOrThrow,
 } from '@/lib/helpers-for-api';
 import prisma from '@/lib/prisma';
 import dayjs from 'dayjs';
@@ -32,6 +32,7 @@ async function createPayment(userId: string, request: PaymentCreateRequest): Pro
           where: { id: tid },
           data: {
             status: 'COMPENSATED',
+            compensatedAt: new Date(),
             paymentId: payment.id,
           },
         }))),
@@ -59,9 +60,9 @@ export async function POST(nextRequest: NextRequest): Promise<NextResponse<Payme
   try {
     await allowOnlyAdmins(nextRequest);
 
-    const userId = await getOwnUserId(nextRequest)
+    const userId = await getOwnUserId(nextRequest);
 
-    const request = await validateOrThrow(PaymentCreateRequest, await nextRequest.json())
+    const request = await validateOrThrow(PaymentCreateRequest, await nextRequest.json());
 
     const result = await createPayment(userId, request);
     return NextResponse.json(result);
