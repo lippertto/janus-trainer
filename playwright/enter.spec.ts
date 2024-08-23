@@ -25,7 +25,7 @@ test.describe.serial('Enter page', () => {
     await expect(page.getByText("Training hinzufügen")).toBeHidden();
 
     // Check that training has been created
-    await expect(page.getByText(`${participantCount} Mitglieder`)).toBeVisible();
+    await expect(page.getByText(`${participantCount} Personen`)).toBeVisible();
 
     // update (a) training
     const newCount = participantCount-1
@@ -37,7 +37,7 @@ test.describe.serial('Enter page', () => {
     await expect(page.getByText("Training bearbeiten")).toBeHidden();
 
     // Check that the training has been updated
-    await expect(page.getByText(`${newCount} Mitglieder`)).toBeVisible();
+    await expect(page.getByText(`${newCount} Personen`)).toBeVisible();
 
     // Delete the training
     const trainingCountBefore= await page.locator("li").count()

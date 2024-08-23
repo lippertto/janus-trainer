@@ -9,6 +9,17 @@ import IconButton from '@mui/material/IconButton';
 import EditIcon from '@mui/icons-material/Edit';
 import { warningsForDate } from '@/lib/warnings-for-date';
 
+function statusString(training: TrainingDto): string {
+  let result = trainingStatusToHumanReadable(training.status);
+
+  if (training.compensatedAt) {
+    result += " am " + dateToHumanReadable(training.compensatedAt);
+  } else if (training.approvedAt) {
+    result += " am " + dateToHumanReadable(training.approvedAt);
+  }
+  return result;
+}
+
 function TrainingListElement(props: {
   training: TrainingDto,
   holidays: HolidayDto[],
@@ -17,8 +28,8 @@ function TrainingListElement(props: {
   const { training } = props;
 
   const primary = `${dateToHumanReadable(training.date)} - ${training.course.name}`;
-  const secondary = `${centsToHumanReadable(training.compensationCents)}, ${training.participantCount} Mitglieder, ${trainingStatusToHumanReadable(training.status)}`;
-  const warnings = warningsForDate(training.date, props.holidays, training.course.weekdays)
+  const secondary = `${training.participantCount} Personen. ${centsToHumanReadable(training.compensationCents)} `;
+  const warnings = warningsForDate(training.date, props.holidays, training.course.weekdays);
 
   return <ListItem
     secondaryAction={<IconButton onClick={() => props.handleEdit(training)}><EditIcon /></IconButton>}
@@ -27,8 +38,9 @@ function TrainingListElement(props: {
       primary={primary}
       secondary={
         <>
-          {secondary}
-          { warnings.length > 0 ? <span style={{color: "darkorange"}}> {warnings.join(", ")}</span> : null }
+          <span>{secondary}</span>
+          <span>{statusString(training)}</span>
+          {warnings.length > 0 ? <span style={{ color: 'darkorange' }}> {warnings.join(', ')}</span> : null}
         </>}
     />
   </ListItem>;
@@ -41,9 +53,9 @@ export function TrainingList(props: {
 }) {
   const { trainings } = props;
   return <React.Fragment>
-    <List style={{maxHeight: '85vh', overflow: 'auto'}}>
+    <List style={{ maxHeight: '85vh', overflow: 'auto' }}>
       {trainings.map((t) => <TrainingListElement
-        key={t.id} training={t} holidays={props.holidays} handleEdit={props.handleEdit}/>)}
+        key={t.id} training={t} holidays={props.holidays} handleEdit={props.handleEdit} />)}
     </List>
   </React.Fragment>;
 }

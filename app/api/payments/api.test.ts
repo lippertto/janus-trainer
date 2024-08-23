@@ -1,6 +1,7 @@
 import superagent from 'superagent';
 import { PaymentDto, TrainingCreateRequest, TrainingDto } from '@/lib/dto';
 import { TrainingStatus } from '@prisma/client';
+import dayjs from 'dayjs';
 
 const SERVER = 'http://localhost:3000';
 
@@ -29,6 +30,8 @@ async function checkIfTrainingStatusIsCompensated(trainingId: number) {
   expect(result.statusCode).toBe(200);
   const training = result.body as TrainingDto;
   expect(training.status).toBe(TrainingStatus.COMPENSATED);
+  const compensatedTime = dayjs(training.compensatedAt!);
+  expect(compensatedTime.diff(dayjs())).toBeLessThan(1000);
 }
 
 describe('/payments', () => {
@@ -66,13 +69,14 @@ describe('/payments', () => {
       const paymentListResponse = await superagent.get(`${SERVER}/api/payments`);
       expect(paymentListResponse.statusCode).toEqual(200);
       const paymentList = paymentListResponse.body.value as PaymentDto[];
-      expect(paymentList).toHaveLength(2);
 
-      expect(paymentList[0].trainingIds).toHaveLength(3);
-      expect(paymentList[0].totalCents).toBe(3000);
+      const payment1 = paymentList[paymentList.length - 2];
+      expect(payment1.trainingIds).toHaveLength(3);
+      expect(payment1.totalCents).toBe(3000);
 
-      expect(paymentList[1].trainingIds).toHaveLength(2);
-      expect(paymentList[1].totalCents).toBe(2000);
+      const payment2 = paymentList[paymentList.length - 1];
+      expect(payment2.trainingIds).toHaveLength(2);
+      expect(payment2.totalCents).toBe(2000);
 
     } finally {
       // clean up

@@ -3,16 +3,16 @@ import {
   allowAdminOrSelf,
   allowAnyLoggedIn,
   allowOnlyAdmins,
-  ApiErrorConflict,
   ApiErrorNotFound,
   emptyResponse,
   handleTopLevelCatch,
   idAsNumberOrThrow,
-  validateOrThrowOld,
+  validateOrThrow,
 } from '@/lib/helpers-for-api';
 import prisma from '@/lib/prisma';
-import { TrainingStatus } from '@prisma/client';
 import { NextRequest, NextResponse } from 'next/server';
+import { transitionStatus } from '@/app/api/trainings/[trainingId]/transitionStatus';
+import { trainingToDto } from '@/app/api/trainings/trainingUtils';
 
 async function checkIfTrainingExistsAndIsOwn(id: number, nextRequest: NextRequest) {
   const training = await prisma.training.findUnique({where:{id}, include: {user: true}})
@@ -22,21 +22,19 @@ async function checkIfTrainingExistsAndIsOwn(id: number, nextRequest: NextReques
   await allowAdminOrSelf(nextRequest, training.user.id);
 }
 
-async function deleteTraining(nextRequest: NextRequest, idAsString: string) {
-  const id = idAsNumberOrThrow(idAsString);
-  await checkIfTrainingExistsAndIsOwn(id, nextRequest)
-  await prisma.training.delete({ where: { id } });
-  return emptyResponse();
+async function deleteTraining(nextRequest: NextRequest, id: number) {
 }
 
 export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } },
+  nextRequest: NextRequest,
+  { params }: { params: { trainingId: string } },
 ) {
   try {
-    // first test that we are logged in. Further down, we do more checks
-    await allowAnyLoggedIn(request);
-    return await deleteTraining(request, params.id);
+    await allowAnyLoggedIn(nextRequest);
+    const id = idAsNumberOrThrow(params.trainingId);
+    await checkIfTrainingExistsAndIsOwn(id, nextRequest)
+    await prisma.training.delete({ where: { id } });
+    return emptyResponse();
   } catch (e) {
     return handleTopLevelCatch(e);
   }
@@ -46,9 +44,7 @@ async function updateTraining(nextRequest: NextRequest, idAsString: string) {
   const id = idAsNumberOrThrow(idAsString);
   await checkIfTrainingExistsAndIsOwn(id, nextRequest)
 
-  const request = await validateOrThrowOld(
-    new TrainingUpdateRequest(await nextRequest.json()),
-  );
+  const request = await validateOrThrow(TrainingUpdateRequest, await nextRequest.json());
 
   const result = await prisma.training.update({
     where: { id: id },
@@ -67,59 +63,26 @@ async function updateTraining(nextRequest: NextRequest, idAsString: string) {
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: { trainingId: string } },
 ) {
   try {
     // first test that we are logged in. Further down, we do more checks
     await allowAnyLoggedIn(request);
-    return await updateTraining(request, params.id);
+    return await updateTraining(request, params.trainingId);
   } catch (e) {
     return handleTopLevelCatch(e);
   }
 }
 
-async function doPATCH(nextRequest: NextRequest, params: { id: string }) {
-  const idAsNumber = idAsNumberOrThrow(params.id)
-
-  const request = await validateOrThrowOld(
-    new TrainingUpdateStatusRequest(await nextRequest.json()),
-  );
-
-  const currentTraining = await prisma.training.findFirst({
-    where: { id: idAsNumber },
-  });
-  if (!currentTraining) {
-    throw new ApiErrorNotFound(
-      'Training not found. Cannot update training status.',
-    );
-  }
-
-  if (currentTraining.status === TrainingStatus.COMPENSATED) {
-    throw new ApiErrorConflict(
-      'Compensated trainings cannot be changed',
-      'CompensatedTrainingIsImmutable',
-    );
-  }
-
-  const result = await prisma.training.update({
-    where: { id: idAsNumber },
-    data: {
-      status: request.status,
-    },
-    include: {course: true, user: true}
-  });
-
-  return NextResponse.json(result);
-}
-
 export async function PATCH(
-  request: NextRequest,
-  { params }: { params: { id: string } },
+  nextRequest: NextRequest,
+  { params }: { params: { trainingId: string } },
 ): Promise<Response> {
   try {
-    await allowOnlyAdmins(request);
-
-    return await doPATCH(request, params);
+    await allowOnlyAdmins(nextRequest);
+    const id = idAsNumberOrThrow(params.trainingId)
+    const request = await validateOrThrow(TrainingUpdateStatusRequest, await nextRequest.json());
+    return await transitionStatus(id, request.status);
   } catch (e) {
     return handleTopLevelCatch(e);
   }
@@ -142,17 +105,17 @@ async function returnOneTraining(request: NextRequest, idAsString: string): Prom
     );
   }
 
-  return training;
+  return trainingToDto(training, training.user, training.course);
 }
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: { trainingId: string } },
 ): Promise<NextResponse<TrainingDto| ErrorDto>> {
   try {
     // first test that we are logged in. Further down, we do more checks
     await allowAnyLoggedIn(request);
-    return NextResponse.json(await returnOneTraining(request, params.id));
+    return NextResponse.json(await returnOneTraining(request, params.trainingId));
   } catch (e) {
     return handleTopLevelCatch(e);
   }

@@ -43,9 +43,11 @@ export type UserDto = {
 export type TrainerLight = Pick<UserDto, 'name' | 'id'>
 export type CourseLight = Pick<CourseDto, 'name' | 'id' | 'weekdays' | 'startHour' | 'startMinute' | 'durationMinutes'>
 
-export type TrainingDto = Training & {
+export type TrainingDto = Omit<Training, "approvedAt" | "compensatedAt"> & {
   user: TrainerLight,
   course: CourseLight,
+  approvedAt?: string,
+  compensatedAt?: string,
 }
 
 export type TrainingQueryResponse = {
@@ -149,27 +151,6 @@ export class TrainingUpdateStatusRequest {
   @IsEnum(TrainingStatus)
   status: TrainingStatus;
 }
-
-class TrainingBatchOperation {
-  @IsNumber()
-  id: number;
-  @IsString()
-  operation: 'SET_COMPENSATED';
-}
-
-export class TrainingBatchUpdateRequest {
-  constructor(obj: any) {
-    Object.assign(this, obj);
-  }
-
-  @IsArray()
-  @ValidateNested()
-  operations: TrainingBatchOperation[];
-}
-
-export type TrainingBatchUpdateReponse = {
-  value: ('OK' | ErrorDto)[];
-};
 
 type ErrorDetail = {
   message: string;
