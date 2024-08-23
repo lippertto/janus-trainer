@@ -11,7 +11,7 @@ import Box from '@mui/material/Box';
 function ConfigurationPageContents({ session }: { session: JanusSession }) {
 
   return (
-    <Box>
+    <Box maxWidth={400}>
       <DisciplineCard session={session} />
     </Box>
   );
