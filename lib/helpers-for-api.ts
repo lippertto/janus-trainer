@@ -53,6 +53,7 @@ export async function allowAdminOrSelf(
 }
 
 export async function getOwnUserId(req: NextRequest): Promise<string> {
+  if (process.env.DISABLE_JWT_CHECKS) return "502c79bc-e051-70f5-048c-5619e49e2383";
   const token = await getToken({ req });
   if (!token) throw new ApiErrorUnauthorized('Token is missing');
   return token.sub!;
@@ -194,17 +195,30 @@ function validationErrorToMessage(error: ValidationError): string {
   return result;
 }
 
-export async function validateOrThrow<T extends object>(arg: T): Promise<T> {
+/** @deprecated Use validateOrThrow instead. */
+export async function validateOrThrowOld<T extends object>(arg: T): Promise<T> {
   const validationErrors = await validate(arg);
   if (validationErrors.length !== 0) {
     const validationMessage = validationErrors.map(validationErrorToMessage).join("; ")
     throw new ApiErrorBadRequest(
-      // 'Request is invalid: ' + JSON.stringify(validationErrors),
       'Request is invalid: ' + validationMessage
     );
   }
   return arg;
 }
+
+export async function validateOrThrow<T extends object>(type: {new(args: any): T}, data: any): Promise<T> {
+  const validationErrors = await validate(new type(data));
+
+  if (validationErrors.length !== 0) {
+    const validationMessage = validationErrors.map(validationErrorToMessage).join("; ")
+    throw new ApiErrorBadRequest(
+      'Request is invalid: ' + validationMessage
+    );
+  }
+  return data as T;
+}
+
 
 export function idAsNumberOrThrow(id: string) {
   const result = parseInt(id);

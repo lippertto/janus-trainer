@@ -10,7 +10,7 @@ import {
   allowOnlyAdmins,
   ApiError,
   handleTopLevelCatch,
-  validateOrThrow,
+  validateOrThrowOld,
 } from '@/lib/helpers-for-api';
 import prisma from '@/lib/prisma';
 import { Prisma, Training, TrainingStatus } from '@prisma/client';
@@ -65,7 +65,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<TrainingQu
 async function doPOST(
   nextRequest: NextRequest,
 ): Promise<NextResponse<Training>> {
-  const request = await validateOrThrow(new TrainingCreateRequest(await nextRequest.json()))
+  const request = await validateOrThrowOld(new TrainingCreateRequest(await nextRequest.json()))
   await allowAdminOrSelf(nextRequest, request.userId);
 
   const result = await prisma.training.create({
@@ -113,7 +113,7 @@ async function doPATCH(
 ): Promise<NextResponse<TrainingBatchUpdateReponse>> {
   await allowOnlyAdmins(nextRequest);
 
-  const request = await validateOrThrow(
+  const request = await validateOrThrowOld(
     new TrainingBatchUpdateRequest(await nextRequest.json()),
   );
 

@@ -4,22 +4,20 @@ import {
   allowOnlyAdmins,
   ApiErrorBadRequest,
   getOwnUserId,
-  handleTopLevelCatch,
-  validateOrThrow,
+  handleTopLevelCatch, validateOrThrow,
+  validateOrThrowOld,
 } from '@/lib/helpers-for-api';
 import prisma from '@/lib/prisma';
 import dayjs from 'dayjs';
 import { Payment, UserInDb } from '@prisma/client';
 
 
-async function createPayment(userId: string, payload: any): Promise<PaymentDto> {
-  const request = await validateOrThrow(new PaymentCreateRequest(payload));
+async function createPayment(userId: string, request: PaymentCreateRequest): Promise<PaymentDto> {
 
   const user = await prisma.userInDb.findUnique({ where: { id: userId } });
   if (!user) {
     throw new ApiErrorBadRequest(`User ${userId} does not exist`);
   }
-
   const now = new Date();
   const paymentData = {
     createdById: userId,
@@ -57,11 +55,15 @@ async function totalCentsForPayment(paymentId: number): Promise<number> {
 }
 
 
-export async function POST(request: NextRequest): Promise<NextResponse<PaymentDto | ErrorDto>> {
+export async function POST(nextRequest: NextRequest): Promise<NextResponse<PaymentDto | ErrorDto>> {
   try {
-    await allowOnlyAdmins(request);
-    const userId = await getOwnUserId(request)
-    const result = await createPayment(userId, await request.json());
+    await allowOnlyAdmins(nextRequest);
+
+    const userId = await getOwnUserId(nextRequest)
+
+    const request = await validateOrThrow(PaymentCreateRequest, await nextRequest.json())
+
+    const result = await createPayment(userId, request);
     return NextResponse.json(result);
   } catch (e) {
     return handleTopLevelCatch(e);

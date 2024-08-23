@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { DisciplineCreateRequest, DisciplineDto, DisciplineQueryResponseDto, ErrorDto } from '@/lib/dto';
-import { allowAnyLoggedIn, allowOnlyAdmins, handleTopLevelCatch, validateOrThrow } from '@/lib/helpers-for-api';
+import { allowAnyLoggedIn, allowOnlyAdmins, handleTopLevelCatch, validateOrThrowOld } from '@/lib/helpers-for-api';
 
 async function getAllDisciplines() {
   const result =  await prisma.discipline.findMany({where:{}})
@@ -20,7 +20,7 @@ export async function GET(
 }
 
 async function createDiscipline(body: any) {
-  const request =  await validateOrThrow<DisciplineCreateRequest>(new DisciplineCreateRequest(body));
+  const request =  await validateOrThrowOld<DisciplineCreateRequest>(new DisciplineCreateRequest(body));
 
   const result = await prisma.discipline.create({ data: request });
 
