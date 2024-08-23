@@ -49,7 +49,7 @@ test('happy case: handles groups', async () => {
     iban: 'any-iban',
     email: 'any-email',
     groups: [Group.ADMINS],
-    compensationGroups: [],
+    compensationClasses: [],
     termsAcceptedAt: null,
     termsAcceptedVersion: null,
   };
@@ -73,7 +73,7 @@ test('handles missing groups', async () => {
     iban: 'any-iban',
     email: 'any-email',
     groups: undefined,
-    compensationGroups: [],
+    compensationClasses: [],
   } as any as UserDto;
   render(<Profile
     user={user}

@@ -1,229 +1,207 @@
 import React from 'react';
-import { Group, UserCreateRequest, UserDto } from '@/lib/dto';
+import { CompensationClassDto, Group, UserCreateRequest, UserDto } from '@/lib/dto';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import Button from '@mui/material/Button';
-import Grid from '@mui/material/Unstable_Grid2'; // Grid version 2
 import TextField from '@mui/material/TextField';
 import FormGroup from '@mui/material/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
 import FormLabel from '@mui/material/FormLabel';
 import { CompensationGroup } from '@prisma/client';
-import FormControl from '@mui/material/FormControl';
+import { Controller, useForm } from 'react-hook-form';
+import Stack from '@mui/material/Stack';
+import Autocomplete from '@mui/material/Autocomplete';
+import { validateIBAN } from 'sepa';
 
-type CompensationGroupState = {
-  withQualification: boolean;
-  noQualification: boolean;
-  league: boolean;
-}
-
-const NO_COMPENSATION_GROUPS = {
-  withQualification: false,
-  noQualification: false,
-  league: false,
+type FormData = {
+  name: string,
+  iban: string,
+  email: string,
+  isTrainer: boolean,
+  isAdmin: boolean,
+  compensationClasses: CompensationClassDto[]
 };
 
-function compensationGroupStateToCompensationGroups(state: CompensationGroupState): CompensationGroup[] {
-  let result: CompensationGroup[] = [];
-  if (state.league) {
-    result.push(CompensationGroup.LEAGUE);
-  }
-  if (state.withQualification) {
-    result.push(CompensationGroup.WITH_QUALIFICATION);
-  }
-  if (state.noQualification) {
-    result.push(CompensationGroup.NO_QUALIFICATION);
-  }
-  return result;
-}
-
-export function UserDialog({
-                             userToEdit,
-                             open,
-                             handleClose,
-                             handleSave,
-                           }: {
-  userToEdit: UserDto | null;
-  open: boolean;
-  handleClose: () => void;
-  handleSave: (
-    data: UserCreateRequest,
-  ) => void;
-}) {
-  const [previousUser, setPreviousUser] = React.useState<UserDto | null>(null);
-  const [name, setName] = React.useState<string>('');
-  const [email, setEmail] = React.useState<string>('');
-  const [iban, setIban] = React.useState<string>('');
-  const [isTrainer, setIsTrainer] = React.useState<boolean>(false);
-  const [isAdmin, setIsAdmin] = React.useState<boolean>(false);
-  const [compensationGroups, setCompensationGroups] = React.useState<CompensationGroupState>({ ...NO_COMPENSATION_GROUPS });
-
-  const resetFields = React.useCallback(() => {
-    setName('');
-    setEmail('');
-    setIban('');
-    setIsTrainer(false);
-    setIsAdmin(false);
-    setCompensationGroups({ ...NO_COMPENSATION_GROUPS });
-    }, [setName, setEmail, setIban, setIsTrainer, setIsAdmin, setCompensationGroups]
-  )
-
-  if (previousUser !== userToEdit) {
-    setPreviousUser(userToEdit);
-    if (userToEdit) {
-      setName(userToEdit.name);
-      setEmail(userToEdit.email);
-      setIban(userToEdit.iban ?? '');
-      setIsTrainer(userToEdit.groups.indexOf(Group.TRAINERS) !== -1);
-      setIsAdmin(userToEdit.groups.indexOf(Group.ADMINS) !== -1);
-      setCompensationGroups({
-        noQualification: userToEdit.compensationGroups.indexOf(CompensationGroup.NO_QUALIFICATION) !== -1,
-        withQualification: userToEdit.compensationGroups.indexOf(CompensationGroup.WITH_QUALIFICATION) !== -1,
-        league: userToEdit.compensationGroups.indexOf(CompensationGroup.LEAGUE) !== -1,
-      });
-    } else {
-      resetFields();
+function determineDefaultValues(toEdit: UserDto | null): FormData {
+  let isTrainer = false;
+  let isAdmin = false;
+  if (toEdit) {
+    if (toEdit.groups.indexOf(Group.TRAINERS) !== -1) {
+      isTrainer = true;
+    }
+    if (toEdit.groups.indexOf(Group.ADMINS) !== -1) {
+      isAdmin = true;
     }
   }
+  return {
+    name: toEdit?.name ?? '',
+    email: toEdit?.email ?? '',
+    isTrainer: isTrainer,
+    isAdmin: isAdmin,
+    compensationClasses: toEdit?.compensationClasses ?? [],
+    iban: toEdit?.iban ?? '',
+  };
+}
 
-  const { noQualification, withQualification, league } = compensationGroups;
+export function UserDialog(props: {
+  toEdit: UserDto | null;
+  compensationClasses: CompensationClassDto[],
+  open: boolean;
+  handleClose: () => void;
+  handleSave: (data: UserCreateRequest) => void;
+}) {
+  const [previous, setPrevious] = React.useState<UserDto | null>(null);
 
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setCompensationGroups({
-      ...compensationGroups,
-      [event.target.name]: event.target.checked,
-    });
+  const {
+    register,
+    handleSubmit,
+    reset,
+    control,
+    formState: { errors, isValid },
+  } = useForm<FormData>();
+
+  React.useEffect(() => {
+    if (props.toEdit !== previous) {
+      reset(determineDefaultValues(props.toEdit));
+      setPrevious(props.toEdit);
+    }
+  }, [props.toEdit]);
+
+
+  const onSubmit = (data: FormData) => {
+    if (isValid) {
+      let groups = [];
+      if (data.isTrainer) groups.push(Group.TRAINERS);
+      if (data.isAdmin) groups.push(Group.ADMINS);
+      let iban;
+      if (data.iban && data.iban.length > 0) {
+        iban = data.iban;
+      }
+
+      props.handleSave({
+        name: data.name,
+        email: data.email,
+        iban: iban,
+        groups: groups,
+        compensationClassIds: data.compensationClasses?.map((cc) => (cc.id)) ?? [],
+      });
+      props.handleClose();
+      reset();
+    }
   };
 
-
-  const nameIsSet = name && name?.length > 0;
-  const emailIsSet = email && email?.length > 0;
-  const ibanIsSet = iban?.length > 0;
-  const dataIsValid = nameIsSet && emailIsSet && (!isTrainer || ibanIsSet);
-
   return (
-    <Dialog open={open} onClose={handleClose}>
+    <Dialog open={props.open} onClose={props.handleClose}>
       <DialogTitle>Konto bearbeiten</DialogTitle>
-      <DialogContent>
-        {/* We need a bit of space or the top will be cut off*/}
-        <Grid container sx={{ pt: 2 }} spacing={2}>
-          <Grid>
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <DialogContent>
+          <Stack direction={'column'} spacing={2}>
             <TextField
               label="Name"
-              value={name ?? ''}
-              onChange={(e) => setName(e.target.value)}
-              error={!nameIsSet}
-              helperText={nameIsSet ? null : 'Darf nicht leer sein'}
+              required={true}
+              {...register('name')}
+              error={!!errors.name?.message}
+              helperText={errors.name?.message || ''}
               inputProps={{
                 'data-testid': 'enter-name-textfield',
               }}
             />
-          </Grid>
-          <Grid>
             <TextField
               label="E-Mail"
-              value={email ?? ''}
-              onChange={(e) => setEmail(e.target.value)}
-              error={!emailIsSet}
-              helperText={emailIsSet ? null : 'Darf nicht leer sein'}
+              type="email"
+              required={true}
+              {...register('email', {
+                setValueAs: (value: string) => value.trim(),
+              })}
+              error={!!errors.email?.message}
+              helperText={errors.email?.message || ''}
               inputProps={{
                 'data-testid': 'enter-email-textfield',
               }}
             />
-          </Grid>
-          <Grid>
+            <TextField
+              label="IBAN"
+              {...register('iban', {
+                setValueAs: (value: string) => value.trim(),
+                validate: (v: string) => {
+                  if (!v) return true;
+                  return validateIBAN(v);
+                },
+              })}
+              error={!!errors.iban}
+              helperText={errors.iban ? 'Das sieht nicht aus wie eine IBAN' : ''}
+            />
             <FormGroup>
               <FormLabel id="compensation-label">Rollen</FormLabel>
               <FormControlLabel
                 control={
-                  <Checkbox
-                    checked={isTrainer}
-                    onChange={(e) => setIsTrainer(e.target.checked)}
-                    inputProps={{ 'data-testid': 'is-trainer-checkbox' } as React.InputHTMLAttributes<HTMLInputElement>}
+                  <Controller
+                    control={control}
+                    name={'isTrainer'}
+                    render={({ field: props }) => (
+                      <Checkbox
+                        {...props}
+                        checked={props.value}
+                        inputProps={{ 'data-testid': 'is-trainer-checkbox' } as React.InputHTMLAttributes<HTMLInputElement>}
+                      />)
+                    }
                   />
                 }
                 label="Übungsleitung"
               />
               <FormControlLabel
                 control={
-                  <Checkbox
-                    checked={isAdmin}
-                    onChange={(e) => setIsAdmin(e.target.checked)}
-                    inputProps={{ 'data-testid': 'is-admin-checkbox' } as React.InputHTMLAttributes<HTMLInputElement>}
+                  <Controller
+                    control={control}
+                    name={'isAdmin'}
+                    render={({ field: props }) => (
+                      <Checkbox
+                        {...props}
+                        checked={props.value}
+                        inputProps={{ 'data-testid': 'is-admin-checkbox' } as React.InputHTMLAttributes<HTMLInputElement>}
+                      />)
+                    }
                   />
                 }
                 label="Admin"
               />
             </FormGroup>
-          </Grid>
-          <Grid>
-            <TextField
-              label="IBAN"
-              value={iban}
-              onChange={(e) => setIban(e.target.value)}
-              disabled={!isTrainer}
-              error={isTrainer && !ibanIsSet}
-              helperText={
-                isTrainer && !ibanIsSet ? 'Notwendig für Übungsleitungen' : null
-              }
-              inputProps={{
-                'data-testid': 'enter-iban-textfield',
-              }}
+            <Controller
+              name="compensationClasses"
+              control={control}
+              render={({ field: { onChange, onBlur, value, ref } }) => (
+                <Autocomplete
+                  renderInput={(params) => {
+                    return <TextField
+                      {...params}
+                      label={'Pauschalen-Gruppen'}
+                    />;
+                  }}
+                  options={props.compensationClasses}
+                  getOptionLabel={(t) => (t.name)}
+                  multiple={true}
+                  onChange={(e, data) => onChange(data)}
+                  onBlur={onBlur}
+                  value={value}
+                />
+              )}
             />
-          </Grid>
-          <Grid>
-            <FormControl disabled={!isTrainer}>
-              <FormLabel>Pauschalen-Gruppen</FormLabel>
-              <FormGroup>
-                <FormControlLabel
-                  control={<Checkbox onChange={handleChange} checked={noQualification} name="noQualification" />}
-                  label="Keine Quali" />
-                <FormControlLabel
-                  control={<Checkbox onChange={handleChange} checked={withQualification} name="withQualification" />}
-                  label="Mit Quali" />
-                <FormControlLabel control={<Checkbox onChange={handleChange} checked={league} />} label="Liga-Spiel"
-                                  name="league" />
-              </FormGroup>
-            </FormControl>
-          </Grid>
-        </Grid>
-      </DialogContent>
-      <DialogActions>
-        <Button
-          onClick={() => {
-            setTimeout(resetFields, 300);
-            handleClose();
-          }}
-        >
-          Abbrechen
-        </Button>
-        <Button
-          disabled={!dataIsValid}
-          onClick={() => {
-            let groups = [];
-            if (isTrainer) groups.push(Group.TRAINERS);
-            if (isAdmin) groups.push(Group.ADMINS);
-            handleSave(
-              {
-                name,
-                email,
-                iban: ibanIsSet ? iban : undefined,
-                groups,
-                compensationGroups: compensationGroupStateToCompensationGroups(compensationGroups),
-              },
-            );
-            setTimeout(resetFields, 300);
-            handleClose();
-          }}
-          autoFocus
-          data-testid={'save-user-button'}
-        >
-          Speichern
-        </Button>
-      </DialogActions>
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => {
+            props.handleClose();
+            reset();
+          }}>Abbrechen</Button>
+          <Button
+            type="submit"
+            data-testid="save-user-button"
+          >Speichern</Button>
+        </DialogActions>
+      </form>
     </Dialog>
   );
 }

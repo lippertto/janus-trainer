@@ -4,7 +4,7 @@ import {
   emptyResponse,
   handleTopLevelCatch,
   idAsNumberOrThrow,
-  validateOrThrow,
+  validateOrThrowOld,
 } from '@/lib/helpers-for-api';
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
@@ -50,7 +50,7 @@ export async function DELETE(
 
 async function updateOneCourse(idString: string, data: any) {
   const id = idAsNumberOrThrow(idString);
-  const request = await validateOrThrow(new CourseUpdateRequest(data));
+  const request = await validateOrThrowOld(new CourseUpdateRequest(data));
   return prisma.course.update({
     where: { id },
     data: {

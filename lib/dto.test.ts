@@ -5,16 +5,16 @@ describe('dto', () => {
   test('rejects empty PaymentCreateRequest', async () => {
     const data = {};
     await expect(async () => {
-      await validateOrThrow(new PaymentCreateRequest(data));
+      await validateOrThrow(PaymentCreateRequest, data);
     }).rejects.toThrow(Error);
   });
 
   test('accepts PaymentCreateRequest', async () => {
     const data = {
-      userId: "abc",
-      trainingIds: [1,2,3]
+      userId: 'abc',
+      trainingIds: [1, 2, 3],
     };
-    const request =      await validateOrThrow(new PaymentCreateRequest(data));
-    expect(request.trainingIds).toHaveLength(3)
+    const request = await validateOrThrow(PaymentCreateRequest, data);
+    expect(request.trainingIds).toHaveLength(3);
   });
 });

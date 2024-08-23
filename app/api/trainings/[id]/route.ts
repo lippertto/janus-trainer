@@ -8,7 +8,7 @@ import {
   emptyResponse,
   handleTopLevelCatch,
   idAsNumberOrThrow,
-  validateOrThrow,
+  validateOrThrowOld,
 } from '@/lib/helpers-for-api';
 import prisma from '@/lib/prisma';
 import { TrainingStatus } from '@prisma/client';
@@ -46,7 +46,7 @@ async function updateTraining(nextRequest: NextRequest, idAsString: string) {
   const id = idAsNumberOrThrow(idAsString);
   await checkIfTrainingExistsAndIsOwn(id, nextRequest)
 
-  const request = await validateOrThrow(
+  const request = await validateOrThrowOld(
     new TrainingUpdateRequest(await nextRequest.json()),
   );
 
@@ -81,7 +81,7 @@ export async function PUT(
 async function doPATCH(nextRequest: NextRequest, params: { id: string }) {
   const idAsNumber = idAsNumberOrThrow(params.id)
 
-  const request = await validateOrThrow(
+  const request = await validateOrThrowOld(
     new TrainingUpdateStatusRequest(await nextRequest.json()),
   );
 

@@ -1,5 +1,5 @@
 import {
-  CompensationGroup,
+  CompensationClass,
   CompensationValue,
   Course,
   DayOfWeek, Discipline,
@@ -33,7 +33,8 @@ export type UserDto = {
   email: string;
   name: string;
   groups: Group[];
-  compensationGroups: CompensationGroup[];
+  /** The compensation classes for this user. This will only be returned if explicitly requested. */
+  compensationClasses?: CompensationClassDto[];
 
   termsAcceptedAt: string | null;
   termsAcceptedVersion: string | null;
@@ -115,8 +116,8 @@ export class UserCreateRequest {
   @IsEnum(Group, { each: true })
   groups: Group[];
 
-  @IsEnum(CompensationGroup, { each: true })
-  compensationGroups: CompensationGroup[];
+  @IsInt({each: true})
+  compensationClassIds: number[];
 }
 
 export class UserUpdateRequest extends UserCreateRequest {
@@ -217,9 +218,6 @@ export class CompensationValueCreateRequest {
 
   @IsString()
   description: string;
-
-  @IsEnum(CompensationGroup)
-  compensationGroup: CompensationGroup;
 
   @IsOptional()
   @IsNumber()
@@ -359,3 +357,20 @@ export type YearlyTotalDto = {
 export type YearlyTotalQueryResponseDto = {
   value: YearlyTotalDto[];
 }
+
+export type CompensationClassDto = CompensationClass & {compensationValues?: CompensationValueDto[]};
+
+export type CompensationClassQueryResponse = {
+  value: CompensationClassDto[]
+}
+
+export class CompensationClassCreateRequest {
+  @IsString()
+  name: string;
+
+  constructor(obj: any) {
+    Object.assign(this, obj);
+  }
+}
+
+export class CompensationClassUpdateRequest extends CompensationClassCreateRequest {}

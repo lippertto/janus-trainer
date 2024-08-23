@@ -10,6 +10,7 @@ import { useQuery } from '@tanstack/react-query';
 import { fetchListFromApi } from '@/lib/fetch';
 import { API_TRAININGS } from '@/lib/routes';
 import {
+  compensationClassesSuspenseQuery,
   compensationValuesSuspenseQuery,
   coursesForTrainerSuspenseQuery,
   holidaysSuspenseQuery,
@@ -32,22 +33,17 @@ import 'core-js/modules/es.array.to-sorted';
 import 'core-js/modules/es.array.to-reversed';
 
 
-function allowedCompensationValues(values: CompensationValueDto[], groups: CompensationGroup[]) {
-  return values.filter((v) => (groups.indexOf(v.compensationGroup) !== -1));
-}
-
 function EnterPageContents(props: { session: JanusSession }) {
   const { session } = props;
   const [trainings, setTrainings] = React.useState<TrainingDto[]>([]);
   const [trainingToEdit, setTrainingToEdit] = React.useState<TrainingDto | null>(null);
   const [showTrainingDialog, setShowTrainingDialog] = React.useState<boolean>(false);
 
-  const { data: compensationValues } = compensationValuesSuspenseQuery(session.accessToken);
   const { data: courses } = coursesForTrainerSuspenseQuery(
     session.userId,
     session.accessToken,
   );
-  const { data: user } = userSuspenseQuery(session.userId, session.accessToken, false);
+  const { data: user } = userSuspenseQuery(session.userId, session.accessToken, false, true, true);
   const { data: holidays } = holidaysSuspenseQuery(session.accessToken, [new Date().getFullYear(), new Date().getFullYear() - 1]);
 
   const createTrainingMutation = trainingCreateQuery(session.accessToken, trainings, setTrainings, 'DESC');
@@ -103,7 +99,7 @@ function EnterPageContents(props: { session: JanusSession }) {
     </Fab>
 
     <TrainingDialog
-      compensationValues={allowedCompensationValues(compensationValues, user.compensationGroups)}
+      compensationValues={user.compensationClasses!.flatMap((cc) => (cc.compensationValues!))}
       courses={courses}
       userId={session.userId}
       open={showTrainingDialog}

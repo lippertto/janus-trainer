@@ -28,6 +28,7 @@ import { ClickAwayListener } from '@mui/base/ClickAwayListener';
 import Box from '@mui/system/Box';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { DatePicker } from '@mui/x-date-pickers';
+import { compareByStringField } from '@/lib/sort-and-filter';
 
 function HolidayList(props: {
   accessToken: string,
@@ -41,7 +42,9 @@ function HolidayList(props: {
   setTimeout(() => props.setHolidays(holidays), 300);
 
   return <List style={{ maxHeight: 500, overflow: 'auto' }}>
-    {holidays.map(
+    {holidays
+      .sort((a, b) => (compareByStringField(a, b, "start")))
+      .map(
       (d) =>
         (<ListItemButton
           key={d.id}
@@ -54,8 +57,6 @@ function HolidayList(props: {
                         secondary={`${dateToHumanReadable(d.start)} - ${dateToHumanReadable(d.end)}`} />
         </ListItemButton>))}
   </List>;
-
-
 }
 
 function HolidayPageContents({ session }: { session: JanusSession }) {

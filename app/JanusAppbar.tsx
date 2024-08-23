@@ -29,7 +29,7 @@ export default function JanusAppbar() {
             <MenuIcon />
           </IconButton>
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            Janus Sportstunden App
+            Janus Abrechnungs-App
           </Typography>
          <HelpButton/>
         </Toolbar>

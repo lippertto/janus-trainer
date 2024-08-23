@@ -5,13 +5,13 @@ import {
   allowAnyLoggedIn,
   allowOnlyAdmins,
   handleTopLevelCatch,
-  validateOrThrow,
+  validateOrThrowOld,
 } from '@/lib/helpers-for-api';
 import prisma from '@/lib/prisma';
 
 async function createCourse(nextRequest: NextRequest) {
   const rawRequest = new CourseCreateRequest(await nextRequest.json());
-  const request: CourseCreateRequest = await validateOrThrow<CourseCreateRequest>(
+  const request: CourseCreateRequest = await validateOrThrowOld<CourseCreateRequest>(
     rawRequest);
 
   const course = await prisma.course.create({

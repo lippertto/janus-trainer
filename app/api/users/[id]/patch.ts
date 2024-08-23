@@ -14,14 +14,13 @@ export function patchRequestToUpdateData(request: UserPatchRequest) {
   return data;
 }
 
-export async function patchOneUser(id: string, payload: any) {
+export async function patchOneUser(id: string, request: UserPatchRequest) {
   const dbUser = await prisma.userInDb.findUnique({
     where: { id },
   });
   if (dbUser === null) {
     throw new ApiErrorNotFound(`User with id ${id} not found`);
   }
-  const request = await validateOrThrow(new UserPatchRequest(payload));
   const updateData = patchRequestToUpdateData(request);
 
   return prisma.userInDb.update({

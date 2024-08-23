@@ -132,8 +132,8 @@ export default function Profile(
         disabled={true}
         label="Pauschalen-Gruppen"
         value={
-          user.compensationGroups.length > 0 ?
-            user.compensationGroups.map(compensationGroupToHumanReadable).join(', ') :
+          user.compensationClasses!.length > 0 ?
+            user.compensationClasses!.map((cc) => cc.name).join(', ') :
             'keine'
         }
       />

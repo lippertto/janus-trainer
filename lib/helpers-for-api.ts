@@ -53,6 +53,7 @@ export async function allowAdminOrSelf(
 }
 
 export async function getOwnUserId(req: NextRequest): Promise<string> {
+  if (process.env.DISABLE_JWT_CHECKS) return "502c79bc-e051-70f5-048c-5619e49e2383";
   const token = await getToken({ req });
   if (!token) throw new ApiErrorUnauthorized('Token is missing');
   return token.sub!;
@@ -76,6 +77,11 @@ export function badRequestResponse(
 /** A response for DELETE functions. */
 export function emptyResponse(): Response {
   return new Response(null, { status: 204 });
+}
+
+export function notFoundResponse(): NextResponse<ErrorDto> {
+  const error: ErrorDto = {error: {message: "not found", code: "NotFound"}}
+  return NextResponse.json(error, { status: 404 });
 }
 
 export function errorResponse(
@@ -194,22 +200,36 @@ function validationErrorToMessage(error: ValidationError): string {
   return result;
 }
 
-export async function validateOrThrow<T extends object>(arg: T): Promise<T> {
+/** @deprecated Use validateOrThrow instead. */
+export async function validateOrThrowOld<T extends object>(arg: T): Promise<T> {
   const validationErrors = await validate(arg);
   if (validationErrors.length !== 0) {
     const validationMessage = validationErrors.map(validationErrorToMessage).join("; ")
     throw new ApiErrorBadRequest(
-      // 'Request is invalid: ' + JSON.stringify(validationErrors),
       'Request is invalid: ' + validationMessage
     );
   }
   return arg;
 }
 
-export function idAsNumberOrThrow(id: string) {
+export async function validateOrThrow<T extends object>(type: {new(args: any): T}, data: any): Promise<T> {
+  const validationErrors = await validate(new type(data));
+
+  if (validationErrors.length !== 0) {
+    const validationMessage = validationErrors.map(validationErrorToMessage).join("; ")
+    throw new ApiErrorBadRequest(
+      'Request is invalid: ' + validationMessage
+    );
+  }
+  return data as T;
+}
+
+
+export function idAsNumberOrThrow(id: string|number) {
+  if (typeof id === 'number') return id;
   const result = parseInt(id);
   if (!result) {
-    throw new ApiErrorBadRequest("Provided id does not seem to be a number");
+    throw new ApiErrorBadRequest(`Provided id '${id}' does not seem to be a number`);
   }
   return result;
 }

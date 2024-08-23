@@ -6,8 +6,8 @@ import JanusProviders from './JanusProviders';
 import TermsAcceptance from '@/app/TermsAcceptance';
 
 export const metadata = {
-  title: 'Janus Sportstunden',
-  description: 'Verwaltung von Sportstunden für den SC Janus',
+  title: 'Janus Abrechnungs-App',
+  description: 'Verwaltung von Abrechnungen für den SC Janus',
 };
 
 export default function RootLayout({

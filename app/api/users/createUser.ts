@@ -1,7 +1,5 @@
-import { NextResponse } from 'next/server';
-import { validateOrThrow } from '@/lib/helpers-for-api';
 import prisma from '@/lib/prisma';
-import { UserCreateRequest } from '@/lib/dto';
+import { UserCreateRequest, UserDto } from '@/lib/dto';
 import {
   createCognitoClient,
   createCognitoUser,
@@ -11,8 +9,7 @@ import {
 } from '@/app/api/users/cognito';
 
 /** Creates a users in cognito and in the database. */
-export async function createUser(payload: any) {
-  const request = await validateOrThrow<UserCreateRequest>(payload);
+export async function createUser(request: UserCreateRequest): Promise<UserDto> {
 
   const client = createCognitoClient();
 
@@ -39,18 +36,21 @@ export async function createUser(payload: any) {
         id: cognitoUser.username,
         name: request.name,
         iban: request.iban,
-        compensationGroups: request.compensationGroups,
+        compensationClasses: {
+          connect: request.compensationClassIds.map((ccId) => ({id: ccId}))
+        }
       },
-    });
+      include: {compensationClasses: true}
+    }
+    );
   }
 
-  return NextResponse.json(
-    {
-      ...dbUser,
+  return {
+    ...dbUser,
       groups: cognitoUser.groups,
       email: cognitoUser.email,
       termsAcceptedAt: dbUser.termsAcceptedAt?.toLocaleDateString() ?? null,
-    },
-    { status: 201 },
-  );
+      // @ts-expect-error
+      compensationClasses: dbUser.compensationClasses ?? []
+    }
 }

@@ -20,6 +20,7 @@ import { UserDialog } from './UserDialog';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import { groupToHumanReadable } from '@/lib/formatters';
+import { compensationClassesSuspenseQuery } from '@/lib/shared-queries';
 
 declare module '@mui/x-data-grid' {
   // required for typechecking
@@ -72,6 +73,8 @@ export default function UserTable({
     ),
     staleTime: 10 * 60 * 1000,
   });
+
+  const {data: compensationClasses} = compensationClassesSuspenseQuery(session.accessToken);
 
   const createUserMutation = useMutation({
     mutationFn: (data: UserCreateRequest) => {
@@ -182,7 +185,8 @@ export default function UserTable({
         }
       />
       <UserDialog
-        userToEdit={activeUser}
+        toEdit={activeUser}
+        compensationClasses={compensationClasses}
         open={showUserDialog}
         handleClose={() => {
           setActiveUser(null);
