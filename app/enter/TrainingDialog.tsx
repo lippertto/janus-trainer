@@ -112,9 +112,9 @@ export function selectCompensationValue(course: Pick<CompensationValueDto, 'dura
   if (compensationValues.length === 0) {
     return null;
   }
-  const cvWithMatchinTime = compensationValues.find((cv) => (cv.durationMinutes === course.durationMinutes));
-  if (cvWithMatchinTime) {
-    return cvWithMatchinTime;
+  const cvWithMatchingTime = compensationValues.find((cv) => (cv.durationMinutes === course.durationMinutes));
+  if (cvWithMatchingTime) {
+    return cvWithMatchingTime;
   }
   return compensationValues[0];
 }
