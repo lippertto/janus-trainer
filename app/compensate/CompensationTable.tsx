@@ -18,7 +18,7 @@ export default function CompensationTable({
       field: 'first',
       headerName: 'Name',
       flex: 2,
-      valueGetter: (_, row: CompensationDto) => `${row.user.name} / ${row.courseName}`
+      valueGetter: (_, row: CompensationDto) => `${row.user.name} / ${row.courseName}`,
     },
     {
       field: 'costCenterId',
@@ -42,7 +42,10 @@ export default function CompensationTable({
       field: 'iban',
       headerName: 'IBAN',
       flex: 1.5,
-      valueGetter: (_value, row) => ibanToHumanReadable(row.user.iban),
+      valueGetter: (_value, row) =>
+        row.user.iban ?
+          ibanToHumanReadable(row.user.iban) : 'Keine IBAN',
+
     },
     {
       field: 'actions',
@@ -51,7 +54,7 @@ export default function CompensationTable({
       type: 'actions',
       getActions: (params: GridRowParams<CompensationDto>) => ([
         <GridActionsCellItem icon={<LaunchIcon />} onClick={() => {
-          push(`approve?startDate=${params.row.periodStart}&endDate=${params.row.periodEnd}&trainerId=${params.row.user.id}`)
+          push(`approve?startDate=${params.row.periodStart}&endDate=${params.row.periodEnd}&trainerId=${params.row.user.id}`);
         }} label="Ansehen" />,
       ]),
     },
@@ -59,8 +62,8 @@ export default function CompensationTable({
 
   return (
     <DataGrid
-      slots={{toolbar: GridToolbar }}
-      slotProps={{toolbar: {csvOptions: {fileName: `${dayjs().format('YYYY-MM-DD')} Pauschalen-Export.csv`}}}}
+      slots={{ toolbar: GridToolbar }}
+      slotProps={{ toolbar: { csvOptions: { fileName: `${dayjs().format('YYYY-MM-DD')} Pauschalen-Export.csv` } } }}
       columns={columns}
       rows={compensations}
       getRowId={(c: CompensationDto) => (`${c.user.id}_${c.courseName}`)}

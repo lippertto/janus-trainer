@@ -41,6 +41,7 @@ async function compensationForApprovedTrainings(): Promise<CompensationQueryResp
                INNER JOIN "Discipline" as "d" ON "course"."disciplineId" = "d".id
       WHERE t.status = 'APPROVED'
         AND "u"."deletedAt" IS NULL
+      AND "u"."iban" IS NOT NULL
       GROUP BY ("u"."id", "u"."name", "u"."iban", "d"."costCenterId", "d"."name", "course"."name");
   `;
   return sqlResultToQueryResponse(sqlResult)
