@@ -10,12 +10,6 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { createInApi } from '@/lib/fetch';
 import { DisciplineCreateRequest, DisciplineDto } from '@/lib/dto';
 import { API_DISCIPLINES } from '@/lib/routes';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
-import TextField from '@mui/material/TextField';
-import { useForm } from 'react-hook-form';
 import { showError } from '@/lib/notifications';
 import List from '@mui/material/List';
 import ListItemButton from '@mui/material/ListItemButton';
@@ -24,79 +18,7 @@ import { disciplinesSuspenseQuery } from '@/lib/shared-queries';
 import { ClickAwayListener } from '@mui/base/ClickAwayListener';
 import Box from '@mui/system/Box';
 import { compareByStringField } from '@/lib/sort-and-filter';
-
-function DisciplineDialog(props: {
-  open: boolean,
-  toEdit: DisciplineDto | null,
-  handleClose: () => void,
-  handleSave: (data: DisciplineCreateRequest) => void
-}) {
-  const [previousDiscipline, setPreviousDiscipline] = React.useState<DisciplineDto | null>();
-
-  type FormData = { name: string, costCenterId: string };
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors, isValid },
-  } = useForm<FormData>();
-
-  React.useEffect(() => {
-    if (props.toEdit !== previousDiscipline) {
-      const defaultValues = {
-        name: props.toEdit?.name ?? '',
-        costCenterId: props.toEdit?.costCenterId?.toString() ?? '',
-      };
-      reset(defaultValues);
-      setPreviousDiscipline(props.toEdit);
-    }
-  }, [props.toEdit]);
-
-  const onSubmit = (data: FormData) => {
-    if (isValid) {
-      props.handleSave({
-        name: data.name,
-        costCenterId: parseInt(data.costCenterId),
-      });
-      props.handleClose();
-      reset();
-    }
-  };
-
-  return <Dialog
-    open={props.open}
-  >
-    <DialogTitle>{props.toEdit ? 'Kostenstelle bearbeiten' : 'Kostenstelle hinzufügen'}</DialogTitle>
-    <form onSubmit={handleSubmit(onSubmit)}>
-      <DialogContent>
-        <Stack direction={'column'} spacing={2}>
-          <TextField
-            label="Name"
-            required={true}
-            {...register('name')}
-            error={!!errors.name?.message}
-            helperText={errors.name?.message || ''}
-          />
-          <TextField
-            label="Kostenstelle" type="number"
-            required={true}
-            {...register('costCenterId')} error={!!errors.costCenterId?.message}
-            helperText={errors.costCenterId?.message || ''}
-            inputProps={{ min: 0 }}
-          />
-        </Stack>
-
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={() => {
-          props.handleClose();
-          reset();
-        }}>Abbrechen</Button>
-        <Button type="submit">Speichern</Button>
-      </DialogActions>
-    </form>
-  </Dialog>;
-}
+import { DisciplineDialog } from '@/app/configure/cost-centers/DisciplineDialog';
 
 
 function DisciplineList(props: {
@@ -124,7 +46,7 @@ function DisciplineCardContents(props: { session: JanusSession }) {
   const [open, setOpen] = React.useState<boolean>(false);
   const [selectedDisciplineId, setSelectedDisciplineId] = React.useState<number | null>(null);
   const { data: disciplines } = disciplinesSuspenseQuery(props.session.accessToken);
-  disciplines.sort((a,b) => (compareByStringField(a, b, "name")));
+  disciplines.sort((a, b) => (compareByStringField(a, b, 'name')));
 
   const disciplinesAddMutation = useMutation({
     mutationFn: (
@@ -157,12 +79,10 @@ function DisciplineCardContents(props: { session: JanusSession }) {
         Bearbeiten
       </Button>
     </ButtonGroup>
-    <ClickAwayListener onClickAway={() => setSelectedDisciplineId(null)}>
-      <Box>
+    <Box>
       <DisciplineList disciplines={disciplines} selectedDisciplineId={selectedDisciplineId}
                       setSelectedDisciplineId={setSelectedDisciplineId} />
-      </Box>
-    </ClickAwayListener>
+    </Box>
     <DisciplineDialog
       open={open}
       handleClose={() => setOpen(false)}
