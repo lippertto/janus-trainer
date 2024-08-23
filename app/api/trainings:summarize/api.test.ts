@@ -5,7 +5,7 @@ import { TrainingCreateRequest } from '@/lib/dto';
 const SERVER = 'http://localhost:3000'
 
 
-describe("/compensations:summarize", () => {
+describe("/trainings:summarize", () => {
   test("happy case", async () => {
     // GIVEN
     const trainerId1 = '502c79bc-e051-70f5-048c-5619e49e2383';
