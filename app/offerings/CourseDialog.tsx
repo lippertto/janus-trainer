@@ -137,14 +137,14 @@ function DisciplineDropdown(props: {
   selectedDiscipline: DisciplineDto | null,
   setSelectedDiscipline: (v: DisciplineDto | null) => void,
 }) {
-  const error = props.selectedDiscipline ? " " : "Muss ausgwählt sein"
+  const error = props.selectedDiscipline ? ' ' : 'Muss ausgwählt sein';
   return <Autocomplete
     renderInput={
-    (params) => <TextField {...params} label={'Kostenstelle'}
-                           error={error !== ' '}
-                           helperText={error}
-    />
-  }
+      (params) => <TextField {...params} label={'Kostenstelle'}
+                             error={error !== ' '}
+                             helperText={error}
+      />
+    }
     renderOption={(props, option) => {
       return (
         <li {...props} key={option.id}>
@@ -173,7 +173,7 @@ export function CourseDialog(
   const [courseName, setCourseName] = React.useState('');
   const [days, setDays] = React.useState<WeekdaySelection>(EMPTY_DAYS);
   const [time, setTime] = React.useState<Dayjs | null>(dayjs(DEFAULT_TIME));
-  const [duration, setDuration] = React.useState<string>('60');
+  const [duration, setDuration] = React.useState<string>('90');
   const [selectedTrainers, setSelectedTrainers] = React.useState<{ name: string, id: string }[]>([]);
   const [discipline, setDiscipline] = React.useState<DisciplineDto | null>(null);
   const [previousCourse, setPreviousCourse] = React.useState<CourseDto | null>(null);
