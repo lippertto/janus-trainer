@@ -41,8 +41,8 @@ import {
 } from '@/lib/formatters';
 import { replaceElementWithId } from '@/lib/sort-and-filter';
 import { warningsForDate } from '@/lib/warnings-for-date';
-import { trainingCreateQuery, trainingDeleteQuery, trainingUpdateQuery } from '@/lib/shared-queries';
 import { throttle } from 'throttle-debounce';
+import { trainingDeleteQuery } from '@/lib/queries-training';
 
 require('dayjs/locale/de');
 dayjs.locale('de');
@@ -323,7 +323,11 @@ export default function TrainingTable(
 
   const approveTrainingMutation = approveMutation(session.accessToken, trainings, setTrainings, refresh);
   const revokeTrainingMutation = revokeMutation(session, setTrainings, trainings, refresh);
-  const deleteTrainingMutation = trainingDeleteQuery(session.accessToken, trainings, setTrainings);
+  const deleteTrainingMutation = trainingDeleteQuery(session.accessToken, trainings,
+    (trainings) => {
+      setTrainings(trainings);
+      refresh();
+    });
 
   const confirm = useConfirm();
   const handleDeleteClick = (training: TrainingDto) => {
@@ -337,7 +341,7 @@ export default function TrainingTable(
           refresh();
         },
       ).catch(() => {
-        showError("Fehler beim Löschen des Trainigns");
+      showError('Fehler beim Löschen des Trainings');
     });
   };
 

@@ -1,41 +1,34 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React from 'react';
 
 import { useSession } from 'next-auth/react';
 import type { JanusSession } from '@/lib/auth';
 import LoginRequired from '@/components/LoginRequired';
-import { CompensationValueDto, TrainingDto } from '@/lib/dto';
-import { useQuery } from '@tanstack/react-query';
-import { fetchListFromApi } from '@/lib/fetch';
+import { TrainingDto } from '@/lib/dto';
+import { useQueryClient } from '@tanstack/react-query';
 import { API_TRAININGS } from '@/lib/routes';
-import {
-  compensationClassesSuspenseQuery,
-  compensationValuesSuspenseQuery,
-  coursesForTrainerSuspenseQuery,
-  holidaysSuspenseQuery,
-  resultHasData,
-  trainingCreateQuery,
-  trainingDeleteQuery,
-  trainingUpdateQuery,
-  userSuspenseQuery,
-} from '@/lib/shared-queries';
+import { coursesForTrainerSuspenseQuery, holidaysSuspenseQuery, userSuspenseQuery } from '@/lib/shared-queries';
 import Typography from '@mui/material/Typography';
-import { CompensationGroup } from '@prisma/client';
 import { TrainingList } from '@/app/enter/TrainingList';
 import TrainingDialog from '@/app/enter/TrainingDialog';
-import { compareByStringField } from '@/lib/sort-and-filter';
 import { Fab } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
-import { LoadingSpinner } from '@/components/LoadingSpinner';
 
 import 'core-js/modules/es.array.to-sorted';
 import 'core-js/modules/es.array.to-reversed';
+import {
+  trainingCreateQuery, trainingDeleteQuery,
+  trainingsSuspenseQuery,
+  trainingUpdateQuery,
+} from '@/lib/queries-training';
+import { compareByStringField } from '@/lib/sort-and-filter';
 
 
 function EnterPageContents(props: { session: JanusSession }) {
   const { session } = props;
-  const [trainings, setTrainings] = React.useState<TrainingDto[]>([]);
+  const queryClient = useQueryClient();
+  const queryKey = [API_TRAININGS, `trainerId=${session.userId}`];
   const [trainingToEdit, setTrainingToEdit] = React.useState<TrainingDto | null>(null);
   const [showTrainingDialog, setShowTrainingDialog] = React.useState<boolean>(false);
 
@@ -45,42 +38,29 @@ function EnterPageContents(props: { session: JanusSession }) {
   );
   const { data: user } = userSuspenseQuery(session.userId, session.accessToken, false, true, true);
   const { data: holidays } = holidaysSuspenseQuery(session.accessToken, [new Date().getFullYear(), new Date().getFullYear() - 1]);
+  const { data: trainings } = trainingsSuspenseQuery(session.accessToken, session.userId);
 
-  const createTrainingMutation = trainingCreateQuery(session.accessToken, trainings, setTrainings, 'DESC');
-  const updateTrainingMutation = trainingUpdateQuery(session.accessToken, trainings, setTrainings, 'DESC');
-  const deleteTrainingMutation = trainingDeleteQuery(session.accessToken, trainings, setTrainings);
+  const updateQueryData = (trainings: TrainingDto[]) => {
+    trainings.sort((a, b) => (compareByStringField(b, a, 'date')));
+    queryClient.setQueryData(queryKey, trainings);
+  };
 
-  const trainingResult = useQuery({
-    queryKey: [API_TRAININGS, `trainerId=${session.userId}`],
-    queryFn: () => fetchListFromApi<TrainingDto>(
-      `${API_TRAININGS}?trainerId=${session.userId}`,
-      session.accessToken,
-    ),
-    throwOnError: true,
-  });
-
-  useEffect(() => {
-    if (resultHasData(trainingResult)) {
-      setTrainings(trainingResult.data!.toSorted((a, b) => compareByStringField(a, b, 'date')).toReversed());
-    }
-  }, [trainingResult.data]);
-
-  if (trainingResult.data === undefined) {
-    return <LoadingSpinner />;
-  }
+  const createTrainingMutation = trainingCreateQuery(session.accessToken, trainings, updateQueryData);
+  const updateTrainingMutation = trainingUpdateQuery(session.accessToken, trainings, updateQueryData);
+  const deleteTrainingMutation = trainingDeleteQuery(session.accessToken, trainings, updateQueryData);
 
   return <React.Fragment>
-      {trainings.length > 0 ?
-        <TrainingList
-          trainings={trainings}
-          holidays={holidays}
-          handleEdit={(v: TrainingDto) => {
-            setTrainingToEdit(v);
-            setShowTrainingDialog(true);
-          }}
-        />
-        : <Typography>Noch keine Trainings eingetragen.</Typography>
-      }
+    {trainings.length > 0 ?
+      <TrainingList
+        trainings={trainings}
+        holidays={holidays}
+        handleEdit={(v: TrainingDto) => {
+          setTrainingToEdit(v);
+          setShowTrainingDialog(true);
+        }}
+      />
+      : <Typography>Noch keine Trainings eingetragen.</Typography>
+    }
 
     <Fab
       color="primary"
