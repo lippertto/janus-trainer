@@ -11,24 +11,20 @@ import {
   GridRowSelectionModel,
   GridToolbarContainer,
 } from '@mui/x-data-grid';
-
-import AddIcon from '@mui/icons-material/Add';
 import FastRewindIcon from '@mui/icons-material/FastRewind';
 import FastForwardIcon from '@mui/icons-material/FastForward';
 
 import Button from '@mui/material/Button';
-import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 
 import Tooltip from '@mui/material/Tooltip';
 
 import { JanusSession } from '@/lib/auth';
-import TrainingDialog from '../enter/TrainingDialog';
 
 import { showError } from '@/lib/notifications';
 import { Holiday, TrainingStatus } from '@prisma/client';
-import { CompensationValueDto, CourseDto, TrainingCreateRequest, TrainingDto } from '@/lib/dto';
+import { TrainingDto } from '@/lib/dto';
 import { useMutation, useQueryClient, useSuspenseQuery } from '@tanstack/react-query';
 import { fetchListFromApi, patchInApi } from '@/lib/fetch';
 import { API_TRAININGS, API_TRAININGS_SUMMARIZE } from '@/lib/routes';
@@ -67,7 +63,7 @@ function buildGridColumns(
       field: 'warnings',
       headerName: '',
       renderCell: ({ row }: { row: TrainingDto }) => {
-        const dateMessages = warningsForDate(row.date, holidays, row.course.weekdays);
+        const dateMessages = warningsForDate(row.date, holidays, row.course!.weekdays);
         if (dateMessages.length !== 0) {
           return (
             <Tooltip title={dateMessages.join(', ')}>
@@ -84,7 +80,7 @@ function buildGridColumns(
       headerName: 'Übungsleitung',
       flex: 1.5,
       valueGetter: (_value, row: TrainingDto) => {
-        return row.user.name;
+        return row.user!.name;
       },
     },
     {
@@ -92,9 +88,9 @@ function buildGridColumns(
       headerName: 'Kurs',
       flex: 2,
       valueGetter: (_value, row: TrainingDto) => {
-        const hour = row.course.startHour.toString().padStart(2, '0');
-        const minute = row.course.startMinute.toString().padStart(2, '0');
-        return `${row.course.name} ${hour}:${minute}, ${row.course.durationMinutes}min`;
+        const hour = row.course!.startHour.toString().padStart(2, '0');
+        const minute = row.course!.startMinute.toString().padStart(2, '0');
+        return `${row.course!.name} ${hour}:${minute}, ${row.course!.durationMinutes}min`;
       },
     },
     {
@@ -195,13 +191,20 @@ function trainingsQuery(
   filterEnd: dayjs.Dayjs,
   trainerId?: string,
 ) {
+  let queryComponents = ["expand=user"]
   const startString = filterStart.format('YYYY-MM-DD');
+  queryComponents.push(`start=${startString}`);
   const endString = filterEnd.format('YYYY-MM-DD');
-  const trainerFilter = trainerId ? `&trainerId=${trainerId}` : '';
+  queryComponents.push(`end=${endString}`);
+  if (trainerId) {
+    queryComponents.push(`trainerId=${trainerId}`)
+  }
+  const queryString = queryComponents.join("&");
+
   return useSuspenseQuery({
     queryKey: queryKeyForTrainings(filterStart, filterEnd, trainerId),
     queryFn: () => fetchListFromApi<TrainingDto>(
-      `${API_TRAININGS}?start=${startString}&end=${endString}${trainerFilter}`,
+      `${API_TRAININGS}?${queryString}`,
       accessToken!,
     ),
     staleTime: 10 * 60 * 1000,
@@ -333,7 +336,7 @@ export default function TrainingTable(
   const handleDeleteClick = (training: TrainingDto) => {
     confirm({
       title: 'Training löschen?',
-      description: `Soll das Training "${training.course.name}" vom ${dateToHumanReadable(training.date)} gelöscht werden?`,
+      description: `Soll das Training "${training.course!.name}" vom ${dateToHumanReadable(training.date)} gelöscht werden?`,
     })
       .then(
         () => {

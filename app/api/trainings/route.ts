@@ -5,9 +5,11 @@ import { Prisma, Training, TrainingStatus } from '@prisma/client';
 import { NextRequest, NextResponse } from 'next/server';
 import { trainingToDto } from '@/app/api/trainings/trainingUtils';
 
-async function selectTrainings(trainerId: string | null,
-                               startDate: string | null,
-                               endDate: string | null): Promise<TrainingDto[]> {
+async function selectTrainings(
+  trainerId: string | null,
+  startDate: string | null,
+  endDate: string | null,
+  expandUser: boolean): Promise<TrainingDto[]> {
   let filter: Prisma.TrainingWhereInput = {};
   if (trainerId) {
     filter['userId'] = trainerId;
@@ -22,7 +24,7 @@ async function selectTrainings(trainerId: string | null,
   const trainings = await prisma.training.findMany({
     where: filter,
     include: {
-      user: true,
+      user: expandUser,
       course: true,
     },
   });
@@ -35,13 +37,16 @@ export async function GET(request: NextRequest): Promise<NextResponse<TrainingQu
     const startDate = request.nextUrl.searchParams.get('start');
     const endDate = request.nextUrl.searchParams.get('end');
 
+    const expandParameters = (request.nextUrl.searchParams.get('expand') ?? '').split(',');
+    const expandUser = expandParameters.indexOf('user') !== -1;
+
     if (trainerId) {
       await allowAdminOrSelf(request, trainerId);
     } else {
       await allowOnlyAdmins(request);
     }
 
-    const value = await selectTrainings(trainerId, startDate, endDate);
+    const value = await selectTrainings(trainerId, startDate, endDate, expandUser);
     return NextResponse.json({ value });
   } catch (e) {
     return handleTopLevelCatch(e);

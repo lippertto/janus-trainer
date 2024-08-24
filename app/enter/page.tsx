@@ -6,7 +6,7 @@ import { useSession } from 'next-auth/react';
 import type { JanusSession } from '@/lib/auth';
 import LoginRequired from '@/components/LoginRequired';
 import { TrainingDto } from '@/lib/dto';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQueryClient, useSuspenseQuery } from '@tanstack/react-query';
 import { API_TRAININGS } from '@/lib/routes';
 import { coursesForTrainerSuspenseQuery, holidaysSuspenseQuery, userSuspenseQuery } from '@/lib/shared-queries';
 import Typography from '@mui/material/Typography';
@@ -17,12 +17,9 @@ import AddIcon from '@mui/icons-material/Add';
 
 import 'core-js/modules/es.array.to-sorted';
 import 'core-js/modules/es.array.to-reversed';
-import {
-  trainingCreateQuery, trainingDeleteQuery,
-  trainingsSuspenseQuery,
-  trainingUpdateQuery,
-} from '@/lib/queries-training';
+import { trainingCreateQuery, trainingDeleteQuery, trainingUpdateQuery } from '@/lib/queries-training';
 import { compareByStringField } from '@/lib/sort-and-filter';
+import { fetchListFromApi } from '@/lib/fetch';
 
 
 function EnterPageContents(props: { session: JanusSession }) {
@@ -32,13 +29,17 @@ function EnterPageContents(props: { session: JanusSession }) {
   const [trainingToEdit, setTrainingToEdit] = React.useState<TrainingDto | null>(null);
   const [showTrainingDialog, setShowTrainingDialog] = React.useState<boolean>(false);
 
-  const { data: courses } = coursesForTrainerSuspenseQuery(
-    session.userId,
-    session.accessToken,
-  );
+  const { data: courses } = coursesForTrainerSuspenseQuery(session.userId, session.accessToken);
   const { data: user } = userSuspenseQuery(session.userId, session.accessToken, false, true, true);
   const { data: holidays } = holidaysSuspenseQuery(session.accessToken, [new Date().getFullYear(), new Date().getFullYear() - 1]);
-  const { data: trainings } = trainingsSuspenseQuery(session.accessToken, session.userId);
+
+  const { data: trainings } = useSuspenseQuery({
+    queryKey,
+    queryFn: () => fetchListFromApi<TrainingDto>(
+      `${API_TRAININGS}?trainerId=${(session.userId)}`,
+      session.accessToken,
+    ),
+  });
 
   const updateQueryData = (trainings: TrainingDto[]) => {
     trainings.sort((a, b) => (compareByStringField(b, a, 'date')));

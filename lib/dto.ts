@@ -44,8 +44,8 @@ export type TrainerLight = Pick<UserDto, 'name' | 'id'>
 export type CourseLight = Pick<CourseDto, 'name' | 'id' | 'weekdays' | 'startHour' | 'startMinute' | 'durationMinutes'>
 
 export type TrainingDto = Omit<Training, "approvedAt" | "compensatedAt"> & {
-  user: TrainerLight,
-  course: CourseLight,
+  user?: TrainerLight,
+  course?: CourseLight,
   approvedAt?: string,
   compensatedAt?: string,
 }

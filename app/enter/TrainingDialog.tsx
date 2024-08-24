@@ -151,10 +151,10 @@ export default function TrainingDialog(
   if (toEdit !== previousTraining) {
     setPreviousTraining(toEdit);
     if (toEdit) {
-      setSelectedCourse(courses.find((c) => (c.id === toEdit.course.id)) ?? null);
+      setSelectedCourse(courses.find((c) => (c.id === toEdit.course?.id)) ?? null);
       setDate(dayjs(toEdit.date));
       setParticipantCount(toEdit.participantCount.toString());
-      setSelectedCompensationValue(compensationValues.find((cv) => (cv.cents === toEdit.compensationCents)) ?? null);
+      setSelectedCompensationValue(compensationValues.find((cv) => (cv.cents === toEdit?.compensationCents)) ?? null);
       setComment(toEdit.comment);
     } else {
       resetFields();
@@ -179,7 +179,7 @@ export default function TrainingDialog(
   const handleDeleteClick = (training: TrainingDto) => {
     confirm({
       title: 'Training löschen?',
-      description: `Soll das Training "${training.course.name}" vom ${dateToHumanReadable(training.date)} gelöscht werden?`,
+      description: `Soll das Training "${training.course?.name}" vom ${dateToHumanReadable(training.date)} gelöscht werden?`,
     })
       .then(
         () => {

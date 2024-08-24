@@ -1,23 +1,10 @@
 import { TrainingCreateRequest, TrainingDto, TrainingUpdateRequest } from '@/lib/dto';
-import { QueryClient, useMutation, useSuspenseQuery } from '@tanstack/react-query';
-import { createInApi, deleteFromApi, fetchListFromApi, updateInApi } from '@/lib/fetch';
+import { useMutation } from '@tanstack/react-query';
+import { createInApi, deleteFromApi, updateInApi } from '@/lib/fetch';
 import { API_TRAININGS } from '@/lib/routes';
 import { showError, showSuccess } from '@/lib/notifications';
-import { compareByStringField, replaceElementWithId } from '@/lib/sort-and-filter';
+import { replaceElementWithId } from '@/lib/sort-and-filter';
 import { dateToHumanReadable } from '@/lib/formatters';
-
-export function trainingsSuspenseQuery(
-  accessToken: string,
-  trainerId: string,
-) {
-  return useSuspenseQuery({
-    queryKey: [API_TRAININGS, `trainerId=${trainerId}`],
-    queryFn: () => fetchListFromApi<TrainingDto>(
-      `${API_TRAININGS}?trainerId=${trainerId}`,
-      accessToken,
-    ),
-  });
-}
 
 export function trainingDeleteQuery(
   accessToken: string,
@@ -31,7 +18,7 @@ export function trainingDeleteQuery(
     onSuccess: (deleted: TrainingDto) => {
       const newTrainings = trainings.filter((t) => (t.id !== deleted.id));
       setTrainings(newTrainings);
-      showSuccess(`Training für ${deleted.course.name} gelöscht`);
+      showSuccess(`Training für ${deleted.course!.name} gelöscht`);
     },
     onError: (e) => {
       showError(`Fehler beim Löschen des Trainings`, e.message);
@@ -51,7 +38,7 @@ export function trainingUpdateQuery(
       onSuccess: (data: TrainingDto) => {
         const newTrainings = replaceElementWithId(trainings, data);
         setTrainings(newTrainings);
-        showSuccess(`Training ${data.course.name} vom ${dateToHumanReadable(data.date)} aktualisiert`);
+        showSuccess(`Training ${data.course!.name} vom ${dateToHumanReadable(data.date)} aktualisiert`);
       },
       onError: (e) => {
         showError(`Fehler beim Aktualisieren des Trainings`, e.message);
@@ -71,7 +58,7 @@ export function trainingCreateQuery(
     onSuccess: (createdTraining: TrainingDto) => {
       const newTrainings = [...trainings, createdTraining];
       setTrainings(newTrainings);
-      showSuccess(`Training für ${createdTraining.course.name} erstellt`);
+      showSuccess(`Training für ${createdTraining.course!.name} erstellt`);
     },
     onError: (e) => {
       showError(`Fehler beim Erstellen des Trainings`, e.message);
