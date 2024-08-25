@@ -28,7 +28,8 @@ declare module '@mui/x-data-grid' {
     handleAddUser: () => void;
     handleDeleteUser: () => void;
     handleEditUser: () => void;
-    rowIsSelected: boolean  }
+    rowIsSelected: boolean;
+  }
 }
 
 function UserTableToolbar(
@@ -45,7 +46,7 @@ function UserTableToolbar(
       </Button>
       <Button startIcon={<DeleteIcon />} onClick={handleDeleteUser}
               disabled={!Boolean(rowIsSelected)}
-              data-testid='delete-user-button'
+              data-testid="delete-user-button"
       >
         löschen
       </Button>
@@ -74,7 +75,7 @@ export default function UserTable({
     staleTime: 10 * 60 * 1000,
   });
 
-  const {data: compensationClasses} = compensationClassesSuspenseQuery(session.accessToken);
+  const { data: compensationClasses } = compensationClassesSuspenseQuery(session.accessToken);
 
   const createUserMutation = useMutation({
     mutationFn: (data: UserCreateRequest) => {
@@ -166,6 +167,11 @@ export default function UserTable({
             },
             handleDeleteUser: () => handleDeleteUser(activeUser),
             rowIsSelected: activeUser !== null,
+          },
+        }}
+        initialState={{
+          sorting: {
+            sortModel: [{ field: 'name', sort: 'asc' }],
           },
         }}
         rowSelectionModel={rowSelectionModel}
