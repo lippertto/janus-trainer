@@ -12,7 +12,13 @@ import TextField from '@mui/material/TextField';
 import { DatePicker } from '@mui/x-date-pickers';
 
 import dayjs from 'dayjs';
-import { CompensationValueDto, CourseDto, TrainingCreateRequest, TrainingDto } from '@/lib/dto';
+import {
+  CompensationValueDto,
+  CourseDto,
+  dayOfWeekToHumanReadable,
+  TrainingCreateRequest,
+  TrainingDto,
+} from '@/lib/dto';
 import Autocomplete from '@mui/material/Autocomplete';
 import { centsToHumanReadable, dateToHumanReadable } from '@/lib/formatters';
 import { useConfirm } from 'material-ui-confirm';
@@ -22,6 +28,11 @@ type CoursesDropdown = {
   selectedCourse: CourseDto | null,
   setSelectedCourse: (c: CourseDto | null) => void,
   error: string,
+}
+
+function courseDisplayname(c: CourseDto): string {
+  const prefix = c.weekdays.map((wd) => dayOfWeekToHumanReadable(wd, true)).join(',');
+  return `(${prefix}): ${c.name}`;
 }
 
 function CoursesDropdown(
@@ -37,7 +48,7 @@ function CoursesDropdown(
   return <Autocomplete
     disabled={onlyOneCourse || coursesAreEmpty}
     options={courses}
-    getOptionLabel={(c) => (c.name)}
+    getOptionLabel={courseDisplayname}
     renderInput={(params) => (
       <TextField
         {...params}
@@ -131,11 +142,11 @@ export default function TrainingDialog(
     compensationValues,
   }: TrainingDialogProps) {
   const [date, setDate] = React.useState<dayjs.Dayjs | null>(dayjs());
-  const [participantCount, setParticipantCount] = React.useState<string>("0");
+  const [participantCount, setParticipantCount] = React.useState<string>('0');
   const [selectedCourse, setSelectedCourse] = React.useState<CourseDto | null>((courses && courses.length > 0) ? courses[0] : null);
   const [selectedCompensationValue, setSelectedCompensationValue] = React.useState<CompensationValueDto | null>(selectCompensationValue(selectedCourse, compensationValues));
   const [previousTraining, setPreviousTraining] = React.useState<TrainingDto | null>(null);
-  const [comment, setComment] = React.useState<string>("");
+  const [comment, setComment] = React.useState<string>('');
 
   const resetFields = React.useCallback(() => {
     if (courses.length > 0) {
@@ -144,17 +155,17 @@ export default function TrainingDialog(
       setSelectedCourse(null);
     }
     setDate(dayjs());
-    setParticipantCount("0");
-    setComment("")
+    setParticipantCount('0');
+    setComment('');
   }, [courses, setSelectedCourse, setDate, setParticipantCount]);
 
   if (toEdit !== previousTraining) {
     setPreviousTraining(toEdit);
     if (toEdit) {
-      setSelectedCourse(courses.find((c) => (c.id === toEdit.course.id)) ?? null);
+      setSelectedCourse(courses.find((c) => (c.id === toEdit.course?.id)) ?? null);
       setDate(dayjs(toEdit.date));
       setParticipantCount(toEdit.participantCount.toString());
-      setSelectedCompensationValue(compensationValues.find((cv) => (cv.cents === toEdit.compensationCents)) ?? null);
+      setSelectedCompensationValue(compensationValues.find((cv) => (cv.cents === toEdit?.compensationCents)) ?? null);
       setComment(toEdit.comment);
     } else {
       resetFields();
@@ -179,7 +190,7 @@ export default function TrainingDialog(
   const handleDeleteClick = (training: TrainingDto) => {
     confirm({
       title: 'Training löschen?',
-      description: `Soll das Training "${training.course.name}" vom ${dateToHumanReadable(training.date)} gelöscht werden?`,
+      description: `Soll das Training "${training.course?.name}" vom ${dateToHumanReadable(training.date)} gelöscht werden?`,
     })
       .then(
         () => {
@@ -229,9 +240,9 @@ export default function TrainingDialog(
             label="Anzahl Personen"
             value={participantCount}
             onChange={(e) => setParticipantCount(
-              e.target.value
+              e.target.value,
             )
-          }
+            }
             inputProps={{
               min: 1, 'data-testid': 'add-training-participant-count-field',
             }}
@@ -242,9 +253,11 @@ export default function TrainingDialog(
 
         <TextField
           value={comment}
-          label={"Kommentar"}
-          helperText={"Zum Beispiel bei Vertretungen"}
-          onChange={(e) => {setComment(e.target.value)}}
+          label={'Kommentar'}
+          helperText={'Zum Beispiel bei Vertretungen'}
+          onChange={(e) => {
+            setComment(e.target.value);
+          }}
         />
       </DialogContent>
       <DialogActions>
@@ -270,7 +283,7 @@ export default function TrainingDialog(
               courseId: selectedCourse!.id,
               compensationCents: selectedCompensationValue!.cents,
               participantCount: parseInt(participantCount),
-              comment: comment ?? "",
+              comment: comment ?? '',
               userId,
             });
             handleClose();

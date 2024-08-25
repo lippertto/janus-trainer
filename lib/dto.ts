@@ -44,8 +44,8 @@ export type TrainerLight = Pick<UserDto, 'name' | 'id'>
 export type CourseLight = Pick<CourseDto, 'name' | 'id' | 'weekdays' | 'startHour' | 'startMinute' | 'durationMinutes'>
 
 export type TrainingDto = Omit<Training, "approvedAt" | "compensatedAt"> & {
-  user: TrainerLight,
-  course: CourseLight,
+  user?: TrainerLight,
+  course?: CourseLight,
   approvedAt?: string,
   compensatedAt?: string,
 }
@@ -252,22 +252,22 @@ export type CourseDto = Course & {
 export class CourseUpdateRequest extends CourseCreateRequest {
 }
 
-export function dayOfWeekToHumanReadable(w: DayOfWeek) {
+export function dayOfWeekToHumanReadable(w: DayOfWeek, short: boolean = false) {
   switch (w) {
     case 'MONDAY':
-      return 'Montag';
+      return short ? "Mo": 'Montag';
     case 'TUESDAY':
-      return 'Dienstag';
+      return short ? "Di": 'Dienstag';
     case 'WEDNESDAY':
-      return 'Mittwoch';
+      return short ? "Mi": 'Mittwoch';
     case 'THURSDAY':
-      return 'Donnerstag';
+      return short ? "Do": 'Donnerstag';
     case 'FRIDAY':
-      return 'Freitag';
+      return short? "Fr": 'Freitag';
     case 'SATURDAY':
-      return 'Samstag';
+      return short? "Sa" : 'Samstag';
     case 'SUNDAY':
-      return 'Sunday';
+      return short? "So": 'Sunday';
   }
 }
 

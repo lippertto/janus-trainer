@@ -20,14 +20,13 @@ Then, you have to include the api tests in jest.config.js and run `yarn test`.
 
 ## Features
 * Split analysis: Euros (per trainer)/ #trainings (per course/trainer)
-* Flexible compensation groups
 * Make courses disabled. (Also in the UI.)
 * More comprehensive test: Enter, approve, compensate
 * Warning if training limits have been reached
-* Show when training was approved/compensated
-
+* offerings: make weekday a radio group. Training can have only 1 weekday 
 
 ## Tech update
+* Remove CompensationGroup
 * Hide password in POSTGRES_CONNECTION_URL of lambda. --> Use Secret
 * Add proper logging
 * Join payments and compensation api routes (and domain objects)

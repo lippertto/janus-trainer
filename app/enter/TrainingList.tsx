@@ -27,9 +27,9 @@ function TrainingListElement(props: {
 }) {
   const { training } = props;
 
-  const primary = `${dateToHumanReadable(training.date)} - ${training.course.name}`;
+  const primary = `${dateToHumanReadable(training.date)} - ${training.course!.name}`;
   const secondary = `${training.participantCount} Personen. ${centsToHumanReadable(training.compensationCents)} `;
-  const warnings = warningsForDate(training.date, props.holidays, training.course.weekdays);
+  const warnings = warningsForDate(training.date, props.holidays, training.course!.weekdays);
 
   return <ListItem
     secondaryAction={<IconButton onClick={() => props.handleEdit(training)}><EditIcon /></IconButton>}

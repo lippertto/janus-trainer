@@ -18,6 +18,7 @@ test('Fallback for non-matching compensation values', async () => {
       'cents': 1900,
       'description': 'Ohne Quali / 90min',
       'durationMinutes': 90,
+      'compensationClassId': 1,
       'compensationGroup': CompensationGroup.NO_QUALIFICATION,
     },
     {
@@ -25,6 +26,7 @@ test('Fallback for non-matching compensation values', async () => {
       'cents': 1900,
       'description': 'Ohne Quali / 75min',
       'durationMinutes': 75,
+      'compensationClassId': 1,
       'compensationGroup': CompensationGroup.NO_QUALIFICATION,
     },
   ];
@@ -32,6 +34,7 @@ test('Fallback for non-matching compensation values', async () => {
   const courses = [
     {
       'id': 2,
+      'disciplineId': 1,
       'name': 'Kurs für automatische Tests',
       'weekdays': [
         DayOfWeek.WEDNESDAY,
@@ -71,7 +74,7 @@ test('Fallback for non-matching compensation values', async () => {
 
   // First course is automatically selected
   let coursesDropdown = screen.queryByTestId('courses-dropdown-input')! as HTMLInputElement;
-  expect(coursesDropdown!.value).toBe('Kurs für automatische Tests');
+  expect(coursesDropdown!.value).toBe('(Mi): Kurs für automatische Tests');
   // First compensation value is selected when none fit the duration
   let compensationValueDropdown = screen.queryByTestId('compensation-value-dropdown-input')! as HTMLInputElement;
   expect(
