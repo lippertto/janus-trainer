@@ -24,6 +24,7 @@ Then, you have to include the api tests in jest.config.js and run `yarn test`.
 * More comprehensive test: Enter, approve, compensate
 * Warning if training limits have been reached
 * offerings: make weekday a radio group. Training can have only 1 weekday 
+* reports: list per Trainer which payments they have received
 
 ## Tech update
 * Remove CompensationGroup

@@ -40,9 +40,9 @@ function EnterPageContents(props: { session: JanusSession }) {
       session.accessToken,
     ),
   });
+  trainings.sort((a, b) => (compareByStringField(b, a, 'date')));
 
   const updateQueryData = (trainings: TrainingDto[]) => {
-    trainings.sort((a, b) => (compareByStringField(b, a, 'date')));
     queryClient.setQueryData(queryKey, trainings);
   };
 
