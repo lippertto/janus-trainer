@@ -18,7 +18,7 @@ import AddIcon from '@mui/icons-material/Add';
 import 'core-js/modules/es.array.to-sorted';
 import 'core-js/modules/es.array.to-reversed';
 import { trainingCreateQuery, trainingDeleteQuery, trainingUpdateQuery } from '@/lib/queries-training';
-import { compareByStringField } from '@/lib/sort-and-filter';
+import { compareByField } from '@/lib/sort-and-filter';
 import { fetchListFromApi } from '@/lib/fetch';
 
 
@@ -40,7 +40,7 @@ function EnterPageContents(props: { session: JanusSession }) {
       session.accessToken,
     ),
   });
-  trainings.sort((a, b) => (compareByStringField(b, a, 'date')));
+  trainings.sort((a, b) => (compareByField(b, a, 'date')));
 
   const updateQueryData = (trainings: TrainingDto[]) => {
     queryClient.setQueryData(queryKey, trainings);

@@ -12,7 +12,7 @@ import { PaymentDto } from '@/lib/dto';
 import { API_PAYMENTS } from '@/lib/routes';
 import { JanusSession } from '@/lib/auth';
 import { centsToHumanReadable, dateToHumanReadable } from '@/lib/formatters';
-import { compareByStringField } from '@/lib/sort-and-filter';
+import { compareByField } from '@/lib/sort-and-filter';
 
 export const CURRENT_PAYMENT_ID = -1;
 
@@ -37,7 +37,7 @@ function PaymentListContents(props: {
 
   const { data: payments } = paymentsSuspenseQuery(props.session.accessToken);
   payments
-    .sort((a, b) => (compareByStringField(a, b, "createdAt")))
+    .sort((a, b) => (compareByField(a, b, "createdAt")))
     .reverse();
 
   return <List>

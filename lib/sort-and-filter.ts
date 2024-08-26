@@ -29,7 +29,7 @@ export function replaceElementWithId<T extends ElementWithId>(array: T[], value:
   return result;
 }
 
-export function compareByStringField(a: any, b: any, field: string) {
+export function compareByField(a: any, b: any, field: string) {
   if (a[field] < b[field]) {
     return -1;
   }
