@@ -9,7 +9,7 @@ import LoginRequired from '@/components/LoginRequired';
 import Stack from '@mui/system/Stack';
 import { CompensationClassDto } from '@/lib/dto';
 import { compensationClassesQuery, resultHasData } from '@/lib/shared-queries';
-import { compareByStringField } from '@/lib/sort-and-filter';
+import { compareByField } from '@/lib/sort-and-filter';
 import { CompensationValueCard } from '@/app/configure/compensation-values/CompensationValueCard';
 import CompensationClassCard from '@/app/configure/compensation-values/CompensationClassCard';
 
@@ -20,7 +20,7 @@ function CompensationvalueConfigurationPageContents({ session }: { session: Janu
   const compensationClassesResult = compensationClassesQuery(session.accessToken);
   useEffect(() => {
     if (resultHasData(compensationClassesResult)) {
-      setCompensationClasses(compensationClassesResult.data!.toSorted((a, b) => compareByStringField(a, b, 'description')).toReversed());
+      setCompensationClasses(compensationClassesResult.data!.toSorted((a, b) => compareByField(a, b, 'description')).toReversed());
     }
   }, [compensationClassesResult.data]);
 

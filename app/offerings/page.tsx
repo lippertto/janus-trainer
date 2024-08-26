@@ -12,7 +12,7 @@ import ButtonGroup from '@mui/material/ButtonGroup';
 import Button from '@mui/material/Button';
 import { useConfirm } from 'material-ui-confirm';
 import { showError, showSuccess } from '@/lib/notifications';
-import { compareByStringField, compareNamed } from '@/lib/sort-and-filter';
+import { compareByField, compareNamed } from '@/lib/sort-and-filter';
 import Grid from '@mui/material/Unstable_Grid2';
 import { CourseCreateRequest, CourseDto, UserDto } from '@/lib/dto';
 import { CourseDialog } from '@/app/offerings/CourseDialog';

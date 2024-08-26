@@ -18,7 +18,7 @@ import CompensationValueDialog from '@/app/configure/compensation-values/Compens
 import { useMutation } from '@tanstack/react-query';
 import { createInApi, deleteFromApi, updateInApi } from '@/lib/fetch';
 import { API_COMPENSATION_CLASSES } from '@/lib/routes';
-import { replaceElementWithId } from '@/lib/sort-and-filter';
+import { compareByField, replaceElementWithId } from '@/lib/sort-and-filter';
 import { showError, showSuccess } from '@/lib/notifications';
 import { useConfirm } from 'material-ui-confirm';
 
@@ -31,7 +31,9 @@ function CompensationValueList(
   },
 ) {
   return <List>
-    {props.compensationValues.map((cv) => {
+    {props.compensationValues
+      .toSorted((a, b) => compareByField(a, b, 'cents'))
+      .map((cv) => {
       let secondary = centsToHumanReadable(cv.cents);
       if (cv.durationMinutes) {
         secondary += `, ${cv.durationMinutes}min`;

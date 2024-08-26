@@ -50,9 +50,10 @@ export default function CompensationValueDialog(props: {
 
   const onSubmit = (data: FormData) => {
     if (isValid) {
+      console.log(data.cents);
       props.handleSave({
         description: data.description,
-        cents: parseInt(data.cents) * 100,
+        cents: parseFloat(data.cents.replace(',', '.')) * 100,
         durationMinutes: parseInt(data.durationMinutes),
       });
       props.handleClose();
@@ -68,9 +69,13 @@ export default function CompensationValueDialog(props: {
         <Stack spacing={2} sx={{ mt: 2 }}>
           <TextField
             label="Betrag"
-            type={'number'}
             required={true}
-            {...register('cents')}
+            {...register('cents', {
+              pattern: {
+                value: /^\d+(,\d{0,2})$/,
+                message: 'Muss ein valider Betrag sein)',
+              },
+            })}
             error={!!errors.cents?.message}
             helperText={errors.cents?.message || ''}
             InputProps={{
@@ -86,10 +91,10 @@ export default function CompensationValueDialog(props: {
           />
 
           <TextField
-            label='Dauer (optional)'
-            type='number'
+            label="Dauer (optional)"
+            type="number"
             {...register('durationMinutes')}
-            inputProps={{ min: 0}}
+            inputProps={{ min: 0 }}
             error={!!errors.durationMinutes?.message}
             helperText={errors.durationMinutes?.message || ''}
           />

@@ -11,7 +11,7 @@ import ListItemText from '@mui/material/ListItemText';
 import { useMutation } from '@tanstack/react-query';
 import { createInApi, deleteFromApi, updateInApi } from '@/lib/fetch';
 import { API_COMPENSATION_CLASSES } from '@/lib/routes';
-import { replaceElementWithId } from '@/lib/sort-and-filter';
+import { compareByField, replaceElementWithId } from '@/lib/sort-and-filter';
 import { showError } from '@/lib/notifications';
 import { useConfirm } from 'material-ui-confirm';
 import CompensationClassDialog from '@/app/configure/compensation-values/CompensationClassDialog';
@@ -24,7 +24,7 @@ function CompensationClassList(
   },
 ) {
   return <List>
-    {props.compensationClasses.map((cc) => (
+    {props.compensationClasses.toSorted((a, b) => compareByField(a, b, "name")).map((cc) => (
       <ListItemButton
         onClick={() => props.setActiveCompensationClass(cc)}
         selected={(props.activeCompensationClass?.id === cc.id)}
