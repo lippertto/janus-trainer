@@ -50,7 +50,6 @@ export default function CompensationValueDialog(props: {
 
   const onSubmit = (data: FormData) => {
     if (isValid) {
-      console.log(data.cents);
       props.handleSave({
         description: data.description,
         cents: parseFloat(data.cents.replace(',', '.')) * 100,
@@ -72,7 +71,7 @@ export default function CompensationValueDialog(props: {
             required={true}
             {...register('cents', {
               pattern: {
-                value: /^\d+(,\d{0,2})$/,
+                value: /^\d+(,\d{0,2})?$/,
                 message: 'Muss ein valider Betrag sein)',
               },
             })}
@@ -80,7 +79,9 @@ export default function CompensationValueDialog(props: {
             helperText={errors.cents?.message || ''}
             InputProps={{
               startAdornment: <InputAdornment position="start">€</InputAdornment>,
+              name: "cents"
             }}
+            data-testid="cents-input"
           />
           <TextField
             label="Bezeichnung"
@@ -88,6 +89,7 @@ export default function CompensationValueDialog(props: {
             {...register('description')}
             error={!!errors.description?.message}
             helperText={errors.description?.message || ''}
+            data-testid="description-input"
           />
 
           <TextField
@@ -97,6 +99,7 @@ export default function CompensationValueDialog(props: {
             inputProps={{ min: 0 }}
             error={!!errors.durationMinutes?.message}
             helperText={errors.durationMinutes?.message || ''}
+            data-testid="durationMinutes-input"
           />
         </Stack>
 
@@ -105,8 +108,12 @@ export default function CompensationValueDialog(props: {
         <Button onClick={() => {
           props.handleClose();
           reset();
-        }}>Abbrechen</Button>
-        <Button type="submit">Speichern</Button>
+        }}
+        data-testid="cancel-button"
+        >Abbrechen</Button>
+        <Button type="submit"
+                data-testid="submit-button"
+        >Speichern</Button>
       </DialogActions>
     </form>
   </Dialog>;
