@@ -60,7 +60,7 @@ function EnterPageContents(props: { session: JanusSession }) {
           setShowTrainingDialog(true);
         }}
       />
-      : <Typography>Noch keine Trainings eingetragen.</Typography>
+      : <Typography>Klicke auf das Plus rechts unten um ein Training hinzuzufügen.</Typography>
     }
 
     <Fab
