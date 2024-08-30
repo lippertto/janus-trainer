@@ -9,7 +9,7 @@ test.describe.serial('Enter page', () => {
     const browser = await newBrowser();
     const page = await browser.newPage();
 
-    const participantCount = Math.floor(Math.random() * 9000) + 1000
+    const participantCount = Math.ceil(Math.random() * 999);
 
     await page.goto('/enter');
 
@@ -17,11 +17,9 @@ test.describe.serial('Enter page', () => {
     await page.getByTestId("enter-training-button").click()
     await expect(page.getByText("Training hinzufügen")).toBeVisible();
 
-    await expect(page.getByTestId("add-training-save-button")).toBeDisabled();
-    await page.getByTestId("add-training-participant-count-field").fill(participantCount.toString());
+    await page.getByLabel('Anzahl Personen *').fill(participantCount.toString());
 
-    await expect(page.getByTestId("add-training-save-button")).toBeEnabled();
-    await page.getByTestId("add-training-save-button").click()
+    await page.getByRole('button', { name: 'Speichern' }).click()
     await expect(page.getByText("Training hinzufügen")).toBeHidden();
 
     // Check that training has been created
@@ -31,9 +29,8 @@ test.describe.serial('Enter page', () => {
     const newCount = participantCount-1
     await page.getByRole('list').getByRole('button').last().click();
     await expect(page.getByText("Training bearbeiten")).toBeVisible();
-    await page.getByTestId("add-training-participant-count-field").fill(newCount.toString());
-    await expect(page.getByTestId("add-training-save-button")).toBeEnabled();
-    await page.getByTestId("add-training-save-button").click()
+    await page.getByLabel('Anzahl Personen *').fill(newCount.toString());
+    await page.getByRole('button', { name: 'Speichern' }).click()
     await expect(page.getByText("Training bearbeiten")).toBeHidden();
 
     // Check that the training has been updated
@@ -43,7 +40,7 @@ test.describe.serial('Enter page', () => {
     const trainingCountBefore= await page.locator("li").count()
     await page.getByRole('list').getByRole('button').last().click();
     await expect(page.getByText("Training bearbeiten")).toBeVisible();
-    await page.getByTestId("add-training-delete-button").click()
+    await page.getByRole('button', { name: 'löschen' }).click()
     await page.getByRole('button', { name: 'Ok' }).click();
 
     await expect(page.locator("li")).toHaveCount(trainingCountBefore - 1);

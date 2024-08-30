@@ -172,7 +172,7 @@ export function UserDialog(props: {
             <Controller
               name="compensationClasses"
               control={control}
-              render={({ field: { onChange, onBlur, value, ref } }) => (
+              render={({ field: { onChange, onBlur, value } }) => (
                 <Autocomplete
                   renderInput={(params) => {
                     return <TextField
