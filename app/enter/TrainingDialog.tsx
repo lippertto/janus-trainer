@@ -105,7 +105,6 @@ function prepareCompensationValues(compensationValues: CompensationValueDto[], t
         description: centsToHumanReadable(toEdit.compensationCents),
         compensationClassId: -1,
         durationMinutes: toEdit.course!.durationMinutes,
-        compensationGroup: 'LEAGUE',
       });
     }
   }

@@ -28,7 +28,6 @@ const COMPENSATION_VALUES: CompensationValueDto[] = [
     durationMinutes: 60,
     description: '',
     cents: 300,
-    compensationGroup: 'WITH_QUALIFICATION',
     compensationClassId: 1,
   },
   {
@@ -36,7 +35,6 @@ const COMPENSATION_VALUES: CompensationValueDto[] = [
     durationMinutes: 90,
     description: '',
     cents: 400,
-    compensationGroup: 'WITH_QUALIFICATION',
     compensationClassId: 1,
   },
   {
@@ -44,7 +42,6 @@ const COMPENSATION_VALUES: CompensationValueDto[] = [
     durationMinutes: 120,
     description: '',
     cents: 500,
-    compensationGroup: 'WITH_QUALIFICATION',
     compensationClassId: 1,
   },
 ];
@@ -216,7 +213,6 @@ test('add new compensation value when no corresponding exists', async () => {
   const close = jest.fn();
 
   const compensationValues: CompensationValueDto[] = [{
-    compensationGroup: 'WITH_QUALIFICATION',
     compensationClassId: 1,
     cents: 300,
     description: 'desc',

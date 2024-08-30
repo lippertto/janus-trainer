@@ -7,7 +7,6 @@ import TextField from '@mui/material/TextField';
 import EditIcon from '@mui/icons-material/Edit';
 import {
   centsToHumanReadable,
-  compensationGroupToHumanReadable,
   groupToHumanReadable,
   ibanToHumanReadable,
 } from '@/lib/formatters';
