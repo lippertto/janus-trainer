@@ -54,13 +54,12 @@ model Training {
 // The groups and the email are stored in cognito.
 model UserInDb {
   // This is an external id, in our case cognito
-  id                 String              @id
-  iban               String?
-  name               String
-  deletedAt          DateTime?
-  trainings          Training[]
-  courses            Course[]
-  compensationGroups CompensationGroup[] @default([])
+  id        String     @id
+  iban      String?
+  name      String
+  deletedAt DateTime?
+  trainings Training[]
+  courses   Course[]
 
   compensationClasses CompensationClass[]
 
@@ -73,18 +72,11 @@ model UserInDb {
   @@map("User")
 }
 
-enum CompensationGroup {
-  WITH_QUALIFICATION
-  NO_QUALIFICATION
-  LEAGUE
-}
-
 model CompensationValue {
   id                  Int                @id @default(autoincrement())
   cents               Int
   description         String
   durationMinutes     Int?
-  compensationGroup   CompensationGroup?
   compensationClassId Int?
   compensationClass   CompensationClass? @relation(fields: [compensationClassId], references: [id], onDelete: Cascade)
 }

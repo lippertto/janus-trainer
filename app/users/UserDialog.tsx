@@ -10,7 +10,6 @@ import FormGroup from '@mui/material/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
 import FormLabel from '@mui/material/FormLabel';
-import { CompensationGroup } from '@prisma/client';
 import { Controller, useForm } from 'react-hook-form';
 import Stack from '@mui/material/Stack';
 import Autocomplete from '@mui/material/Autocomplete';
@@ -172,7 +171,7 @@ export function UserDialog(props: {
             <Controller
               name="compensationClasses"
               control={control}
-              render={({ field: { onChange, onBlur, value, ref } }) => (
+              render={({ field: { onChange, onBlur, value } }) => (
                 <Autocomplete
                   renderInput={(params) => {
                     return <TextField

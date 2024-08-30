@@ -1,5 +1,11 @@
 import { ErrorDto, TrainingCreateRequest, TrainingDto, TrainingQueryResponse } from '@/lib/dto';
-import { allowAdminOrSelf, allowOnlyAdmins, handleTopLevelCatch, validateOrThrowOld } from '@/lib/helpers-for-api';
+import {
+  allowAdminOrSelf,
+  allowOnlyAdmins,
+  badRequestResponse,
+  handleTopLevelCatch,
+  validateOrThrow,
+} from '@/lib/helpers-for-api';
 import prisma from '@/lib/prisma';
 import { Prisma, Training, TrainingStatus } from '@prisma/client';
 import { NextRequest, NextResponse } from 'next/server';
@@ -54,10 +60,8 @@ export async function GET(request: NextRequest): Promise<NextResponse<TrainingQu
 }
 
 async function doPOST(
-  nextRequest: NextRequest,
+  request: TrainingCreateRequest,
 ): Promise<NextResponse<Training>> {
-  const request = await validateOrThrowOld(new TrainingCreateRequest(await nextRequest.json()));
-  await allowAdminOrSelf(nextRequest, request.userId);
 
   const result = await prisma.training.create({
     data: {
@@ -76,8 +80,15 @@ async function doPOST(
   return NextResponse.json(result, { status: 201 });
 }
 
-export async function POST(request: NextRequest) {
+export async function POST(nextRequest: NextRequest) {
   try {
+    const request = await validateOrThrow(TrainingCreateRequest, await nextRequest.json());
+    await allowAdminOrSelf(nextRequest, request.userId);
+
+    if (request.participantCount <= 0) {
+      return badRequestResponse('participantCount must be greater than 0');
+    }
+
     return await doPOST(request);
   } catch (e) {
     return handleTopLevelCatch(e);

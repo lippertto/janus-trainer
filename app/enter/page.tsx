@@ -11,7 +11,6 @@ import { API_TRAININGS } from '@/lib/routes';
 import { coursesForTrainerSuspenseQuery, holidaysSuspenseQuery, userSuspenseQuery } from '@/lib/shared-queries';
 import Typography from '@mui/material/Typography';
 import { TrainingList } from '@/app/enter/TrainingList';
-import TrainingDialog from '@/app/enter/TrainingDialog';
 import { Fab } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 
@@ -20,6 +19,8 @@ import 'core-js/modules/es.array.to-reversed';
 import { trainingCreateQuery, trainingDeleteQuery, trainingUpdateQuery } from '@/lib/queries-training';
 import { compareByField } from '@/lib/sort-and-filter';
 import { fetchListFromApi } from '@/lib/fetch';
+import TrainingDialog from '@/app/enter/TrainingDialog';
+import { intToDayOfWeek } from '@/lib/warnings-for-date';
 
 
 function EnterPageContents(props: { session: JanusSession }) {
@@ -60,7 +61,7 @@ function EnterPageContents(props: { session: JanusSession }) {
           setShowTrainingDialog(true);
         }}
       />
-      : <Typography>Noch keine Trainings eingetragen.</Typography>
+      : <Typography>Klicke auf das Plus rechts unten um ein Training hinzuzufügen.</Typography>
     }
 
     <Fab
@@ -80,17 +81,13 @@ function EnterPageContents(props: { session: JanusSession }) {
     </Fab>
 
     <TrainingDialog
-      compensationValues={user.compensationClasses!.flatMap((cc) => (cc.compensationValues!))}
-      courses={courses}
-      userId={session.userId}
       open={showTrainingDialog}
       toEdit={trainingToEdit}
-      handleClose={() => {
-        setShowTrainingDialog(false);
-        setTimeout(() => {
-          setTrainingToEdit(null);
-        }, 300);
-      }}
+      courses={courses}
+      compensationValues={user.compensationClasses!.flatMap((cc) => (cc.compensationValues!))}
+      today={intToDayOfWeek(new Date().getDay())}
+      userId={session.userId}
+      handleClose={() => setShowTrainingDialog(false)}
       handleSave={
         trainingToEdit ? (data) => {
             updateTrainingMutation.mutate({ data, trainingId: trainingToEdit.id });
@@ -98,9 +95,9 @@ function EnterPageContents(props: { session: JanusSession }) {
           createTrainingMutation.mutate
       }
       handleDelete={
-        trainingToEdit ? (v: TrainingDto) => {
+        (v: TrainingDto) => {
           deleteTrainingMutation.mutate(v);
-        } : undefined
+        }
       }
     />
   </React.Fragment>

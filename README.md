@@ -28,7 +28,6 @@ Then, you have to include the api tests in jest.config.js and run `yarn test`.
 * Re-send verification mail
 
 ## Tech update
-* Remove CompensationGroup
 * Hide password in POSTGRES_CONNECTION_URL of lambda. --> Use Secret
 * Add proper logging
 * Join payments and compensation api routes (and domain objects)

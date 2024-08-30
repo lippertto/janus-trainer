@@ -1,20 +1,11 @@
 'use client';
 
-import { signOut, useSession } from 'next-auth/react';
+import { useSession } from 'next-auth/react';
 import type { JanusSession } from '@/lib/auth';
 import LoginRequired from '@/components/LoginRequired';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import React from 'react';
-import TextField from '@mui/material/TextField';
-import Button from '@mui/material/Button';
-import { Typography } from '@mui/material';
 import { coursesForTrainerSuspenseQuery, userSuspenseQuery } from '@/lib/shared-queries';
-import { CourseCard } from '@/components/CourseCard';
-import IconButton from '@mui/material/IconButton';
-import HelpIcon from '@mui/icons-material/Help';
-import Grid from '@mui/material/Unstable_Grid2';
-import { compensationGroupToHumanReadable, groupToHumanReadable } from '@/lib/formatters';
-import EditIcon from '@mui/icons-material/Edit';
 import { EditIbanDialog } from '@/app/profile/EditIbanDialog';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { UserDto } from '@/lib/dto';

@@ -1,5 +1,5 @@
 import prisma from '../lib/prisma';
-import { CompensationGroup, DayOfWeek, Discipline } from '@prisma/client';
+import { DayOfWeek, Discipline } from '@prisma/client';
 
 async function resetIdCounter(tableName: string) {
   return prisma.$queryRawUnsafe(`
@@ -57,7 +57,6 @@ async function main() {
     {
       id: '502c79bc-e051-70f5-048c-5619e49e2383',
       name: 'Test-User Admin',
-      compensationGroups: [CompensationGroup.NO_QUALIFICATION],
       termsAcceptedVersion: '2024-08-03',
       compensationClasses: {connect: {id: 1}}
     },
