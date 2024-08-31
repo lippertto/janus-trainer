@@ -32,7 +32,14 @@ function TrainingListElement(props: {
   const warnings = warningsForDate(training.date, props.holidays, training.course!.weekdays);
 
   return <ListItem
-    secondaryAction={<IconButton onClick={() => props.handleEdit(training)}><EditIcon /></IconButton>}
+    secondaryAction={
+    <IconButton
+      onClick={() => props.handleEdit(training)}
+      disabled={training.status !== "NEW"}
+    >
+      <EditIcon />
+    </IconButton>
+  }
   >
     <ListItemText
       primary={primary}

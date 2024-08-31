@@ -17,15 +17,22 @@ Then, you have to include the api tests in jest.config.js and run `yarn test`.
 ## Next up
 
 ## Bugs
+* Trainings should not be editable after approval
 
 ## Features
+* Offerings should be list
+* Cost centers should go to offerings
+* Reports: list per Trainer which payments they have received (Alen)
 * Split analysis: Euros (per trainer)/ #trainings (per course/trainer)
+  * List of trainers. For each trainer: how many Euros have been received
+  * List of courses. For each course: How many have courses have been given
 * Make courses disabled. (Also in the UI.)
-* More comprehensive test: Enter, approve, compensate
+* Playwright test: enter -> approve -> compensate.
 * Warning if training limits have been reached
-* offerings: make weekday a radio group. Training can have only 1 weekday 
-* reports: list per Trainer which payments they have received
+* offerings: make weekday a radio group. Training can have only 1 weekday
 * Re-send verification mail
+* Report: Same Courses on same day
+* Filter dates on enter page.
 
 ## Tech update
 * Hide password in POSTGRES_CONNECTION_URL of lambda. --> Use Secret
