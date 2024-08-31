@@ -34,7 +34,7 @@ async function selectTrainings(
       course: true,
     },
   });
-  return trainings.map((t) => (trainingToDto(t, t.user, t.course)));
+  return trainings.map((t) => (trainingToDto(t)));
 }
 
 export async function GET(request: NextRequest): Promise<NextResponse<TrainingQueryResponse | ErrorDto>> {

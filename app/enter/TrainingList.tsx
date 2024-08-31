@@ -10,7 +10,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import { warningsForDate } from '@/lib/warnings-for-date';
 import { TrainingStatus } from '@prisma/client';
 
-function statusString(training: Pick<TrainingDto, 'status'| 'compensatedAt'| 'approvedAt'>): string {
+function statusString(training: Pick<TrainingDto, 'status' | 'compensatedAt' | 'approvedAt'>): string {
   let result = trainingStatusToHumanReadable(training.status);
 
   if (training.compensatedAt) {
@@ -64,8 +64,8 @@ export function TrainingList(props: {
   const { trainings } = props;
   return <React.Fragment>
     <List style={{ maxHeight: '85vh', overflow: 'auto' }}>
-      {trainings.map((t) => <TrainingListElement
-        key={t.id} training={t} holidays={props.holidays} handleEdit={() => props.handleEdit(t)} />)}
+      {trainings.map((t) => (<TrainingListElement
+        key={t.id} training={t} holidays={props.holidays} handleEdit={() => props.handleEdit(t)} />))}
     </List>
   </React.Fragment>;
 }
