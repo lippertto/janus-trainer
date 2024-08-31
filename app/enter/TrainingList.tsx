@@ -8,14 +8,15 @@ import { centsToHumanReadable, dateToHumanReadable, trainingStatusToHumanReadabl
 import IconButton from '@mui/material/IconButton';
 import EditIcon from '@mui/icons-material/Edit';
 import { warningsForDate } from '@/lib/warnings-for-date';
+import { TrainingStatus } from '@prisma/client';
 
-function statusString(training: TrainingDto): string {
+function statusString(training: Pick<TrainingDto, 'status'| 'compensatedAt'| 'approvedAt'>): string {
   let result = trainingStatusToHumanReadable(training.status);
 
   if (training.compensatedAt) {
-    result += " am " + dateToHumanReadable(training.compensatedAt);
+    result += ' am ' + dateToHumanReadable(training.compensatedAt);
   } else if (training.approvedAt) {
-    result += " am " + dateToHumanReadable(training.approvedAt);
+    result += ' am ' + dateToHumanReadable(training.approvedAt);
   }
   return result;
 }
@@ -23,7 +24,7 @@ function statusString(training: TrainingDto): string {
 function TrainingListElement(props: {
   training: TrainingDto,
   holidays: HolidayDto[],
-  handleEdit: (t: TrainingDto) => void
+  handleEdit: () => void
 }) {
   const { training } = props;
 
@@ -32,7 +33,16 @@ function TrainingListElement(props: {
   const warnings = warningsForDate(training.date, props.holidays, training.course!.weekdays);
 
   return <ListItem
-    secondaryAction={<IconButton onClick={() => props.handleEdit(training)}><EditIcon /></IconButton>}
+    secondaryAction={
+      training.status === TrainingStatus.NEW ?
+        (<IconButton
+          onClick={() => props.handleEdit()}
+          aria-label="Bearbeiten"
+        >
+          <EditIcon />
+        </IconButton>)
+        : undefined
+    }
   >
     <ListItemText
       primary={primary}
@@ -55,7 +65,7 @@ export function TrainingList(props: {
   return <React.Fragment>
     <List style={{ maxHeight: '85vh', overflow: 'auto' }}>
       {trainings.map((t) => <TrainingListElement
-        key={t.id} training={t} holidays={props.holidays} handleEdit={props.handleEdit} />)}
+        key={t.id} training={t} holidays={props.holidays} handleEdit={() => props.handleEdit(t)} />)}
     </List>
   </React.Fragment>;
 }
