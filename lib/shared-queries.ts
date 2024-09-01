@@ -3,22 +3,28 @@ import { fetchListFromApi, fetchSingleEntity } from '@/lib/fetch';
 import {
   API_COMPENSATION_CLASSES,
   API_COMPENSATION_VALUES,
+  API_COMPENSATIONS,
   API_COURSES,
   API_DISCIPLINES,
   API_HOLIDAYS,
+  API_PAYMENTS,
   API_TRAININGS_YEARLY_TOTALS,
   API_USERS,
 } from '@/lib/routes';
 import {
   CompensationClassDto,
+  CompensationDto,
   CompensationValueDto,
   CourseDto,
   DisciplineDto,
+  PaymentDto,
   UserDto,
   YearlyTotalDto,
 } from '@/lib/dto';
 import { Holiday } from '@prisma/client';
+import { CURRENT_PAYMENT_ID } from '@/app/compensate/PaymentSelection';
 
+const ONE_MINUTE = 60 * 1000;
 const TEN_MINUTES = 10 * 60 * 1000;
 
 function holidaysQueryFunction(accessToken: string, years: number[]) {
@@ -144,6 +150,7 @@ export function termsOfServiceSuspenseQuery() {
         const response = await fetch('/terms-and-conditions.md');
         return await response.text();
       },
+      staleTime: TEN_MINUTES,
     },
   );
 }
@@ -176,4 +183,36 @@ export function compensationClassesQuery(accessToken: string) {
     enabled: Boolean(accessToken),
     staleTime: TEN_MINUTES,
   });
+}
+
+export function paymentsSuspenseQuery(accessToken: string, trainerId?: string) {
+  const params = new URLSearchParams();
+  if (trainerId) {
+    params.append('trainerId', trainerId);
+  }
+  return useSuspenseQuery({
+    queryKey: [API_PAYMENTS, trainerId],
+    queryFn: () => fetchListFromApi<PaymentDto>(
+      `${API_PAYMENTS}?${params}`,
+      accessToken,
+    ),
+    staleTime: TEN_MINUTES,
+  });
+}
+
+export function queryCompensations(accessToken: string, paymentId: number) {
+  const params = new URLSearchParams();
+
+  if (paymentId !== CURRENT_PAYMENT_ID) {
+    params.set("paymentId", paymentId.toString());
+  }
+
+  return useSuspenseQuery({
+    queryKey: [API_COMPENSATIONS, paymentId],
+    queryFn: () => fetchListFromApi<CompensationDto>(
+      `${API_COMPENSATIONS}?${params.toString()}`,
+      accessToken,
+    ),
+    staleTime: 10 * 60 * 1000,
+  }).data;
 }

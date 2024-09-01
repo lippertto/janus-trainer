@@ -1,8 +1,7 @@
 import React from 'react';
 import { JanusSession } from '@/lib/auth';
-import { useMutation, useQuery, useQueryClient, useSuspenseQuery } from '@tanstack/react-query';
-import { fetchListFromApi } from '@/lib/fetch';
-import { CompensationDto } from '@/lib/dto';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { CompensationDto, UserDto } from '@/lib/dto';
 import { API_COMPENSATIONS, API_PAYMENTS } from '@/lib/routes';
 import { CURRENT_PAYMENT_ID } from '@/app/compensate/PaymentSelection';
 import CompensationTable from '@/app/compensate/CompensationTable';
@@ -10,22 +9,7 @@ import { generateSepaXml } from '@/lib/sepa-generation';
 import Stack from '@mui/system/Stack';
 import Button from '@mui/material/Button';
 import { showError } from '@/lib/notifications';
-
-function queryCompensations(paymentId: number, accessToken: string) {
-  let route = API_COMPENSATIONS;
-  if (paymentId !== CURRENT_PAYMENT_ID) {
-    route += `?paymentId=${paymentId}`;
-  }
-
-  return useSuspenseQuery({
-    queryKey: [API_COMPENSATIONS, paymentId],
-    queryFn: () => fetchListFromApi<CompensationDto>(
-      route,
-      accessToken,
-    ),
-    staleTime: 10 * 60 * 1000,
-  }).data;
-}
+import { queryCompensations } from '@/lib/shared-queries';
 
 function handleSepaGeneration(compensations: CompensationDto[]) {
   const sepaXml = generateSepaXml(compensations);
@@ -42,9 +26,13 @@ function handleSepaGeneration(compensations: CompensationDto[]) {
 export default function CompensationCard(props: {
   session: JanusSession,
   selectedPaymentId: number,
+  trainer: UserDto | null
 }) {
   const queryClient = useQueryClient();
-  const compensations = queryCompensations(props.selectedPaymentId, props.session.accessToken);
+  let compensations = queryCompensations(props.session.accessToken, props.selectedPaymentId);
+  if (props.trainer?.id) {
+    compensations = compensations.filter((c) => (c.user.id === props.trainer!.id));
+  }
 
   const markAsCompensated = useMutation({
     mutationFn: () => {
@@ -69,11 +57,15 @@ export default function CompensationCard(props: {
     <Stack direction={'row'}>
       <Button
         onClick={() => handleSepaGeneration(compensations)}
+        disabled={Boolean(props.trainer)}
       >
         SEPA XML generieren
       </Button>
       <Button
-        disabled={props.selectedPaymentId !== CURRENT_PAYMENT_ID}
+        disabled={
+          (props.selectedPaymentId !== CURRENT_PAYMENT_ID) ||
+          (Boolean(props.trainer))
+        }
         onClick={() => {
           markAsCompensated.mutate();
         }}>

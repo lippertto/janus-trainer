@@ -80,7 +80,7 @@ function buildGridColumns(
       headerName: 'Übungsleitung',
       flex: 1.5,
       valueGetter: (_value, row: TrainingDto) => {
-        return row.user!.name;
+        return row.user?.name ?? "";
       },
     },
     {
@@ -88,9 +88,9 @@ function buildGridColumns(
       headerName: 'Kurs',
       flex: 2,
       valueGetter: (_value, row: TrainingDto) => {
-        const hour = row.course!.startHour.toString().padStart(2, '0');
-        const minute = row.course!.startMinute.toString().padStart(2, '0');
-        return `${row.course!.name} ${hour}:${minute}, ${row.course!.durationMinutes}min`;
+        const hour = row.course?.startHour.toString().padStart(2, '0') ?? '';
+        const minute = row.course?.startMinute.toString().padStart(2, '0') ?? '';
+        return `${row.course?.name} ${hour}:${minute}, ${row.course?.durationMinutes}min`;
       },
     },
     {

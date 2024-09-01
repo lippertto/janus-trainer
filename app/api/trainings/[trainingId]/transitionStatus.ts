@@ -1,13 +1,11 @@
 import prisma from '@/lib/prisma';
 import { ApiErrorConflict, ApiErrorNotFound } from '@/lib/helpers-for-api';
-import { Training, TrainingStatus } from '@prisma/client';
-import { NextResponse } from 'next/server';
+import { Course, Training, TrainingStatus, UserInDb } from '@prisma/client';
 
-export async function transitionStatus(id: number, status: TrainingStatus) {
+export async function transitionStatus(id: number, status: TrainingStatus): Promise<Training & {course: Course, user: UserInDb}> {
   const currentTraining = await prisma.training.findFirst({
     where: { id },
   });
-  console.log(">>>>", status);
   if (!currentTraining) {
     throw new ApiErrorNotFound(
       'Training not found. Cannot update training status.',
@@ -34,11 +32,9 @@ export async function transitionStatus(id: number, status: TrainingStatus) {
     data.compensatedAt = new Date();
   }
 
-  const result = await prisma.training.update({
+  return prisma.training.update({
     where: { id },
     data,
     include: { course: true, user: true },
   });
-
-  return NextResponse.json(result);
 }

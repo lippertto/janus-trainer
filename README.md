@@ -15,14 +15,13 @@ Then, you have to include the api tests in jest.config.js and run `yarn test`.
 # TODO
 
 ## Next up
+* Reports: list per Trainer which payments they have received (Alen)
 
 ## Bugs
-* Trainings should not be editable after approval
 
 ## Features
 * Offerings should be list
 * Cost centers should go to offerings
-* Reports: list per Trainer which payments they have received (Alen)
 * Split analysis: Euros (per trainer)/ #trainings (per course/trainer)
   * List of trainers. For each trainer: how many Euros have been received
   * List of courses. For each course: How many have courses have been given
@@ -36,7 +35,6 @@ Then, you have to include the api tests in jest.config.js and run `yarn test`.
 
 ## Tech update
 * Hide password in POSTGRES_CONNECTION_URL of lambda. --> Use Secret
-* Add proper logging
 * Join payments and compensation api routes (and domain objects)
 * Better way to run api tests (separate jest config)
 

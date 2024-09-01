@@ -1,8 +1,10 @@
 import { ErrorDto, TrainingCreateRequest, TrainingDto, TrainingQueryResponse } from '@/lib/dto';
 import {
   allowAdminOrSelf,
+  allowNoOne,
   allowOnlyAdmins,
   badRequestResponse,
+  emptyResponse,
   handleTopLevelCatch,
   validateOrThrow,
 } from '@/lib/helpers-for-api';
@@ -34,7 +36,7 @@ async function selectTrainings(
       course: true,
     },
   });
-  return trainings.map((t) => (trainingToDto(t, t.user, t.course)));
+  return trainings.map((t) => (trainingToDto(t)));
 }
 
 export async function GET(request: NextRequest): Promise<NextResponse<TrainingQueryResponse | ErrorDto>> {
@@ -93,4 +95,10 @@ export async function POST(nextRequest: NextRequest) {
   } catch (e) {
     return handleTopLevelCatch(e);
   }
+}
+
+export async function DELETE(nextRequest: NextRequest) {
+  await allowNoOne(nextRequest);
+  await prisma.training.deleteMany();
+  return emptyResponse();
 }

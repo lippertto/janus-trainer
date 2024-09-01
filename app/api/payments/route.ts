@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ErrorDto, PaymentCreateRequest, PaymentDto } from '@/lib/dto';
 import {
+  allowNoOne,
   allowOnlyAdmins,
-  ApiErrorBadRequest,
+  ApiErrorBadRequest, emptyResponse,
   getOwnUserId,
   handleTopLevelCatch,
   validateOrThrow,
@@ -10,6 +11,7 @@ import {
 import prisma from '@/lib/prisma';
 import dayjs from 'dayjs';
 import { Payment, UserInDb } from '@prisma/client';
+import { logger } from '@/lib/logging';
 
 
 async function createPayment(userId: string, request: PaymentCreateRequest): Promise<PaymentDto> {
@@ -40,7 +42,9 @@ async function createPayment(userId: string, request: PaymentCreateRequest): Pro
 
   return {
     id: payment.id,
-    user: user, createdAt: dayjs(now).toISOString(), trainingIds: request.trainingIds,
+    user: user,
+    createdAt: dayjs(now).toISOString(),
+    trainingIds: request.trainingIds,
     totalCents: await totalCentsForPayment(payment.id),
   };
 }
@@ -55,16 +59,15 @@ async function totalCentsForPayment(paymentId: number): Promise<number> {
   return Number(totalCentsResult[0].totalCents);
 }
 
-
 export async function POST(nextRequest: NextRequest): Promise<NextResponse<PaymentDto | ErrorDto>> {
   try {
     await allowOnlyAdmins(nextRequest);
 
     const userId = await getOwnUserId(nextRequest);
-
     const request = await validateOrThrow(PaymentCreateRequest, await nextRequest.json());
 
     const result = await createPayment(userId, request);
+    logger.info({ userId }, `Created payment for trainingIds: ${request.trainingIds}`);
     return NextResponse.json(result);
   } catch (e) {
     return handleTopLevelCatch(e);
@@ -75,29 +78,58 @@ type PaymentsQueryResponse = {
   value: PaymentDto[]
 }
 
-async function onePaymentToDto(payment: Payment & { createdBy: UserInDb }): Promise<PaymentDto> {
-  const totalCents = await totalCentsForPayment(payment.id);
-  const trainingIds = await prisma.training.findMany({ where: { paymentId: payment.id }, select: { id: true } });
+async function onePaymentToDto(payment: Payment & { createdBy: UserInDb }, trainerId?: string): Promise<PaymentDto> {
+  const trainings = await prisma.training.findMany({
+    where: { paymentId: payment.id, userId: trainerId },
+    select: { id: true, compensationCents: true },
+  });
+  const totalCents = trainings.map((t) => (t.compensationCents)).reduce(
+    (accumulator, currentValue) => accumulator + currentValue, 0,
+  );
   return {
     id: payment.id,
     createdAt: dayjs(payment.createdAt).toISOString(),
     user: { name: payment.createdBy.name },
     totalCents,
-    trainingIds: trainingIds.map((t) => (t.id)),
+    trainingIds: trainings.map((t) => (t.id)),
   };
 }
 
-async function listAllPayments(): Promise<PaymentDto[]> {
-  const allPayments = await prisma.payment.findMany({ where: {}, include: { createdBy: true } });
-  return Promise.all(allPayments.map((p) => onePaymentToDto(p)));
+async function listPayments(trainerId?: string): Promise<PaymentDto[]> {
+  const allPayments = await prisma.payment.findMany(
+    {
+      where: {
+        trainings: {
+          some: {
+            user: {
+              id: trainerId,
+            },
+          },
+        },
+      }, include: { createdBy: true },
+    });
+  return Promise.all(allPayments.map((p) => onePaymentToDto(p, trainerId)));
 }
 
 
 export async function GET(request: NextRequest): Promise<NextResponse<PaymentsQueryResponse | ErrorDto>> {
   try {
     await allowOnlyAdmins(request);
-    const result = await listAllPayments();
-    return NextResponse.json({ value: result });
+
+    const trainerId = request.nextUrl.searchParams.get('trainerId');
+
+    const value = await listPayments(trainerId ?? undefined);
+    return NextResponse.json({ value });
+  } catch (e) {
+    return handleTopLevelCatch(e);
+  }
+}
+
+export async function DELETE(request: NextRequest): Promise<Response> {
+  try {
+    await allowNoOne(request);
+    await prisma.payment.deleteMany();
+    return emptyResponse();
   } catch (e) {
     return handleTopLevelCatch(e);
   }
