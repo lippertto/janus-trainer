@@ -144,6 +144,7 @@ export function termsOfServiceSuspenseQuery() {
         const response = await fetch('/terms-and-conditions.md');
         return await response.text();
       },
+      staleTime: TEN_MINUTES,
     },
   );
 }
