@@ -1,8 +1,10 @@
 import { ErrorDto, TrainingCreateRequest, TrainingDto, TrainingQueryResponse } from '@/lib/dto';
 import {
   allowAdminOrSelf,
+  allowNoOne,
   allowOnlyAdmins,
   badRequestResponse,
+  emptyResponse,
   handleTopLevelCatch,
   validateOrThrow,
 } from '@/lib/helpers-for-api';
@@ -93,4 +95,10 @@ export async function POST(nextRequest: NextRequest) {
   } catch (e) {
     return handleTopLevelCatch(e);
   }
+}
+
+export async function DELETE(nextRequest: NextRequest) {
+  await allowNoOne(nextRequest);
+  await prisma.training.deleteMany();
+  return emptyResponse();
 }

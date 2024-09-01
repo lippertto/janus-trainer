@@ -6,38 +6,22 @@ import Paper from '@mui/material/Paper';
 import List from '@mui/material/List';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
-import { useSuspenseQuery } from '@tanstack/react-query';
-import { fetchListFromApi } from '@/lib/fetch';
 import { PaymentDto } from '@/lib/dto';
-import { API_PAYMENTS } from '@/lib/routes';
 import { JanusSession } from '@/lib/auth';
 import { centsToHumanReadable, dateToHumanReadable } from '@/lib/formatters';
 import { compareByField } from '@/lib/sort-and-filter';
 
 export const CURRENT_PAYMENT_ID = -1;
 
-
-function paymentsSuspenseQuery(accessToken: string) {
-  return useSuspenseQuery({
-    queryKey: [API_PAYMENTS],
-    queryFn: () => fetchListFromApi<PaymentDto>(
-      `${API_PAYMENTS}`,
-      accessToken,
-    ),
-    staleTime: 10 * 60 * 1000,
-  });
-}
-
 function PaymentListContents(props: {
-  session: JanusSession,
+  payments: PaymentDto[],
   selectedPaymentId: number,
   setSelectedPaymentId: (v: number) => void,
 }) {
-  const {selectedPaymentId, setSelectedPaymentId} = {...props};
+  const { selectedPaymentId, setSelectedPaymentId } = { ...props };
 
-  const { data: payments } = paymentsSuspenseQuery(props.session.accessToken);
-  payments
-    .sort((a, b) => (compareByField(a, b, "createdAt")))
+  const sortedPayments = props.payments
+    .toSorted((a, b) => (compareByField(a, b, 'createdAt')))
     .reverse();
 
   return <List>
@@ -49,7 +33,7 @@ function PaymentListContents(props: {
       <ListItemText>Offen</ListItemText>
     </ListItemButton>
 
-    {payments.map((p) => (
+    {sortedPayments.map((p) => (
       <ListItemButton
         key={p.id}
         onClick={() => setSelectedPaymentId(p.id)}
@@ -67,6 +51,7 @@ function PaymentListContents(props: {
 
 export default function PaymentSelection(props: {
   session: JanusSession,
+  payments: PaymentDto[],
   selectedPaymentId: number,
   setSelectedPaymentId: (v: number) => void,
 }) {
@@ -76,9 +61,7 @@ export default function PaymentSelection(props: {
 
       <Suspense fallback={<CircularProgress />}>
         <PaymentListContents
-          session={props.session}
-          selectedPaymentId={props.selectedPaymentId}
-          setSelectedPaymentId={props.setSelectedPaymentId}
+          {...props}
         />
       </Suspense>
 

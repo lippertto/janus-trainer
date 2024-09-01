@@ -2,22 +2,17 @@ import superagent from 'superagent';
 import { PaymentDto, TrainingCreateRequest, TrainingDto } from '@/lib/dto';
 import { TrainingStatus } from '@prisma/client';
 import dayjs from 'dayjs';
+import { LocalApi, USER_ID_ADMIN, USER_ID_TRAINER } from '@/app/api/apiTestUtils';
+
 
 const SERVER = 'http://localhost:3000';
+const api = new LocalApi(SERVER);
 
 async function createAndValidatePayment(trainerId: string, trainingIds: number[], expectedCents: number) {
   // WHEN
-  const result = await superagent
-    .post(`${SERVER}/api/payments`)
-    .send({
-      userId: trainerId,
-      trainingIds: trainingIds,
-    })
-  ;
+  const payment = await api.createPayment({ userId: trainerId, trainingIds });
 
   // THEN
-  const payment = result.body as PaymentDto;
-
   expect(payment.user.name).toBe('Test-User Admin');
   expect(payment.trainingIds).toEqual(expect.arrayContaining(trainingIds));
   expect(payment.totalCents).toEqual(expectedCents);
@@ -36,30 +31,60 @@ async function checkIfTrainingStatusIsCompensated(trainingId: number) {
 
 describe('/payments', () => {
   test('happy case', async () => {
+    await api.clearTrainings();
     // GIVEN
-    const trainerId1 = '502c79bc-e051-70f5-048c-5619e49e2383';
-    const trainerId2 = '80ac598c-e0b1-7040-5e0e-6fd257a53699';
     const courseId = 1;
     const trainings: TrainingCreateRequest[] = [
-      { date: '2000-12-31', userId: trainerId1, participantCount: 5, compensationCents: 1000, courseId: courseId, comment: "" },
-      { date: '2001-01-15', userId: trainerId1, participantCount: 5, compensationCents: 1000, courseId: courseId, comment: "" },
-      { date: '2001-02-15', userId: trainerId2, participantCount: 5, compensationCents: 1000, courseId: courseId, comment: "" },
-      { date: '2001-03-15', userId: trainerId1, participantCount: 5, compensationCents: 1000, courseId: courseId, comment: "" },
-      { date: '2001-04-01', userId: trainerId2, participantCount: 5, compensationCents: 1000, courseId: courseId, comment: "" },
+      {
+        date: '2000-12-31',
+        userId: USER_ID_ADMIN,
+        participantCount: 5,
+        compensationCents: 1000,
+        courseId: courseId,
+        comment: '',
+      },
+      {
+        date: '2001-01-15',
+        userId: USER_ID_ADMIN,
+        participantCount: 5,
+        compensationCents: 1000,
+        courseId: courseId,
+        comment: '',
+      },
+      {
+        date: '2001-02-15',
+        userId: USER_ID_TRAINER,
+        participantCount: 5,
+        compensationCents: 1000,
+        courseId: courseId,
+        comment: '',
+      },
+      {
+        date: '2001-03-15',
+        userId: USER_ID_ADMIN,
+        participantCount: 5,
+        compensationCents: 1000,
+        courseId: courseId,
+        comment: '',
+      },
+      {
+        date: '2001-04-01',
+        userId: USER_ID_TRAINER,
+        participantCount: 5,
+        compensationCents: 1000,
+        courseId: courseId,
+        comment: '',
+      },
     ];
     const trainingIds = await Promise.all(
-      trainings.map(async (t) => {
-        const result = await superagent
-          .post(`${SERVER}/api/trainings`)
-          .send(t);
-        return result.body.id as number;
-      }));
+      trainings.map(async (t) => ((await api.createTraining(t)).id)))
+    ;
 
     let paymentId1 = 0;
     let paymentId2 = 0;
     try {
-      paymentId1 = await createAndValidatePayment(trainerId1, trainingIds.slice(0, 3), 3000);
-      paymentId2 = await createAndValidatePayment(trainerId1, trainingIds.slice(3, 5), 2000);
+      paymentId1 = await createAndValidatePayment(USER_ID_ADMIN, trainingIds.slice(0, 3), 3000);
+      paymentId2 = await createAndValidatePayment(USER_ID_ADMIN, trainingIds.slice(3, 5), 2000);
 
       for (let tid of trainingIds) {
         await checkIfTrainingStatusIsCompensated(tid);
@@ -94,5 +119,53 @@ describe('/payments', () => {
       }
     }
   });
+});
 
+describe('/payments?trainerid', () => {
+  test('happy case', async () => {
+    await api.clearTrainings();
+
+    const training1ToBeIncludedInPayment1 = await api.createTraining({
+      userId: USER_ID_TRAINER,
+      compensationCents: 200,
+    });
+    const training2ToBeIncludedInPayment1 = await api.createTraining({
+      userId: USER_ID_TRAINER,
+      compensationCents: 300,
+    });
+    const trainingByDifferentTrainerToBeIncludedInPayment1 = await api.createTraining({
+      userId: USER_ID_ADMIN,
+      compensationCents: 400,
+    });
+    const trainingByDifferentTrainerToBeIncludedInPayment2 = await api.createTraining({
+      userId: USER_ID_ADMIN,
+      compensationCents: 500,
+    });
+
+    // put all trainings to APPROVED
+    await Promise.all([training1ToBeIncludedInPayment1, training2ToBeIncludedInPayment1, trainingByDifferentTrainerToBeIncludedInPayment1, trainingByDifferentTrainerToBeIncludedInPayment2].map(async (t) => {
+        await api.transitionTraining(t.id, TrainingStatus.APPROVED);
+      },
+    ));
+
+    // create payments
+    await api.createPayment({
+      trainingIds: [
+        training1ToBeIncludedInPayment1.id, training2ToBeIncludedInPayment1.id, trainingByDifferentTrainerToBeIncludedInPayment1.id,
+      ],
+    });
+    // create another payment
+    await api.createPayment({
+      trainingIds: [
+        trainingByDifferentTrainerToBeIncludedInPayment2.id,
+      ],
+    });
+
+    // WHEN we get the payments for one user
+    const result = await api.getPaymentsForTrainer({ trainerId: USER_ID_TRAINER });
+    // THEN
+    expect(result).toHaveLength(1); // only one payment for this user
+    const payment = result.find((p) => (p.trainingIds.indexOf(training1ToBeIncludedInPayment1.id) !== -1));
+    expect(payment).not.toBeNull();
+  });
 });
