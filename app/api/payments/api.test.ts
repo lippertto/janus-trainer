@@ -2,7 +2,7 @@ import superagent from 'superagent';
 import { PaymentDto, TrainingCreateRequest, TrainingDto } from '@/lib/dto';
 import { TrainingStatus } from '@prisma/client';
 import dayjs from 'dayjs';
-import { LocalApi, USER_ID_ADMIN, USER_ID_TRAINER } from '@/app/api/apiTestUtils';
+import { LocalApi, USER_ID_ADMIN, USER_ID_TRAINER } from '@/api-tests/apiTestUtils';
 
 
 const SERVER = 'http://localhost:3000';

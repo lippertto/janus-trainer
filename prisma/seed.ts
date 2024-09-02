@@ -82,8 +82,8 @@ async function main() {
   await prisma.discipline.upsert({ where: { id: 1 }, create: discipline, update: discipline });
   await resetIdCounter('Discipline');
 
-  const course = {
-    name: 'Test-Kurs',
+  const course1 = {
+    name: 'Test-Kurs 1',
     weekdays: [DayOfWeek.TUESDAY],
     startHour: 19,
     startMinute: 0,
@@ -91,10 +91,25 @@ async function main() {
     disciplineId: discipline.id,
   };
 
+  const course2 = {
+    name: 'Test-Kurs 2',
+    weekdays: [DayOfWeek.WEDNESDAY],
+    startHour: 19,
+    startMinute: 0,
+    durationMinutes: 120,
+    disciplineId: discipline.id,
+  };
+
   await prisma.course.upsert({
     where: { id: 1 },
-    create: { ...course, trainers: { connect: { id: '80ac598c-e0b1-7040-5e0e-6fd257a53699' } } },
-    update: { ...course, trainers: { set: { id: '80ac598c-e0b1-7040-5e0e-6fd257a53699' } } },
+    create: { ...course1, trainers: { connect: { id: '80ac598c-e0b1-7040-5e0e-6fd257a53699' } } },
+    update: { ...course1, trainers: { set: { id: '80ac598c-e0b1-7040-5e0e-6fd257a53699' } } },
+  });
+
+  await prisma.course.upsert({
+    where: { id: 2 },
+    create: { ...course2, trainers: { connect: { id: '80ac598c-e0b1-7040-5e0e-6fd257a53699' } } },
+    update: { ...course2, trainers: { set: { id: '80ac598c-e0b1-7040-5e0e-6fd257a53699' } } },
   });
 
   await resetIdCounter('Course');

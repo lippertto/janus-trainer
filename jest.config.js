@@ -9,5 +9,8 @@ module.exports = {
   transform: {
     "^.+\\.[jt]sx$": ["babel-jest", {configFile: './babel.config.testing.js'}],
   },
-  testMatch: ["**/*.test.tsx", "**/*.test.ts", "!**/api.test.ts"],
+  testMatch: ["**/*.test.tsx", "**/*.test.ts",
+    "!**/api.test.ts",
+  ],
+  testPathIgnorePatterns: ['api-tests/.*']
 };

@@ -15,28 +15,28 @@ Then, you have to include the api tests in jest.config.js and run `yarn test`.
 # TODO
 
 ## Next up
-* Reports: list per Trainer which payments they have received (Alen)
+* Cost centers should go to offerings
 
 ## Bugs
 
 ## Features
 * Offerings should be list
-* Cost centers should go to offerings
 * Split analysis: Euros (per trainer)/ #trainings (per course/trainer)
   * List of trainers. For each trainer: how many Euros have been received
-  * List of courses. For each course: How many have courses have been given
 * Make courses disabled. (Also in the UI.)
 * Playwright test: enter -> approve -> compensate.
 * Warning if training limits have been reached
 * offerings: make weekday a radio group. Training can have only 1 weekday
 * Re-send verification mail
+* Reset password
 * Report: Same Courses on same day
-* Filter dates on enter page.
+* Filter dates on enter page
 
 ## Tech update
+* Add training index for user, date, and user+date
 * Hide password in POSTGRES_CONNECTION_URL of lambda. --> Use Secret
-* Join payments and compensation api routes (and domain objects)
-* Better way to run api tests (separate jest config)
+* Join payments and compensation api routes (and domain objects) into /payments/{id}/compensations
+* Put API tests into separate folder with their own jest config
 
 ## Refinement
 * Sort imports with eslint: https://eslint.org/docs/latest/rules/sort-imports

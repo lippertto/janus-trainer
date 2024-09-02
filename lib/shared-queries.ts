@@ -8,6 +8,7 @@ import {
   API_DISCIPLINES,
   API_HOLIDAYS,
   API_PAYMENTS,
+  API_TRAININGS_COUNT_PER_COURSE,
   API_TRAININGS_YEARLY_TOTALS,
   API_USERS,
 } from '@/lib/routes';
@@ -18,6 +19,7 @@ import {
   CourseDto,
   DisciplineDto,
   PaymentDto,
+  TrainingCountPerCourse,
   UserDto,
   YearlyTotalDto,
 } from '@/lib/dto';
@@ -143,6 +145,19 @@ export function yearlyTotalsSuspenseQuery(accessToken: string, year: number, tra
   );
 }
 
+export function countPerCourseSuspenseQuery(accessToken: string, year: number) {
+  return useSuspenseQuery({
+      queryKey: [API_TRAININGS_COUNT_PER_COURSE, year],
+      queryFn: () => fetchListFromApi<TrainingCountPerCourse>(
+        `${API_TRAININGS_COUNT_PER_COURSE}?year=${year}`,
+        accessToken,
+        'POST',
+      ),
+      staleTime: TEN_MINUTES,
+    },
+  );
+}
+
 export function termsOfServiceSuspenseQuery() {
   return useSuspenseQuery({
       queryKey: ['terms-and-conditions'],
@@ -204,7 +219,7 @@ export function queryCompensations(accessToken: string, paymentId: number) {
   const params = new URLSearchParams();
 
   if (paymentId !== CURRENT_PAYMENT_ID) {
-    params.set("paymentId", paymentId.toString());
+    params.set('paymentId', paymentId.toString());
   }
 
   return useSuspenseQuery({
