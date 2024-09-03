@@ -355,3 +355,8 @@ export class CompensationClassCreateRequest {
 }
 
 export class CompensationClassUpdateRequest extends CompensationClassCreateRequest {}
+
+export type TrainingCountPerCourse = {
+  course: Pick<Course, "name" |"id">;
+  count: number;
+}

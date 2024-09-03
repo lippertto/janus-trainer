@@ -1,47 +1,5 @@
-'use client';
+import React from 'react';
 
-import { useSession } from 'next-auth/react';
-import type { JanusSession } from '@/lib/auth';
-import LoginRequired from '@/components/LoginRequired';
-import React, { useState } from 'react';
-import { yearlyTotalsSuspenseQuery } from '@/lib/shared-queries';
-import YearlyTotalsTable from '@/app/analyze/YearlyTotalsTable';
-import Stack from '@mui/material/Stack';
-import { DatePicker } from '@mui/x-date-pickers';
-import dayjs from 'dayjs';
-
-function AnalyzePageContents(props: { accessToken: string }) {
-  let currentYear = new Date().getFullYear();
-  const [year, setYear] = useState<number>(currentYear);
-
-  const { data: yearlySummaries } = yearlyTotalsSuspenseQuery(props.accessToken, year, null);
-
-  return <Stack>
-    <DatePicker
-      views={['year']}
-      label="Jahr"
-      value={dayjs(`${year}-01-01`)}
-      minDate={dayjs(`2023-01-01`)}
-      maxDate={dayjs(`${currentYear}-01-01`)}
-      onChange={(value) => {
-        if (!value) return;
-        setYear(value.year());
-      }}
-      sx={{ mb: 3, width: 140 }}
-    />
-    <YearlyTotalsTable totals={yearlySummaries} />
-  </Stack>;
-}
-
-export default function AnalyzePage() {
-  const { data, status: authenticationStatus } = useSession();
-  const session = data as JanusSession;
-
-  if (authenticationStatus !== 'authenticated') {
-    return <LoginRequired authenticationStatus={authenticationStatus} />;
-  }
-
-  return <AnalyzePageContents
-    accessToken={session.accessToken}
-  />;
+export default function Nothing() {
+  return <></>
 }
