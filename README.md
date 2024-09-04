@@ -18,6 +18,8 @@ Then, you have to include the api tests in jest.config.js and run `yarn test`.
 * Cost centers should go to offerings
 
 ## Bugs
+* Current IBAN is used in payments, not the one that was used for the actual
+  payment. This should be fixed.
 
 ## Features
 * Offerings should be list

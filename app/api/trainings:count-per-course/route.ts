@@ -13,6 +13,7 @@ async function countTrainings(startDate: dayjs.Dayjs, endDate: dayjs.Dayjs): Pro
                INNER JOIN "Course" AS C ON T."courseId" = C."id"
       WHERE T."date" >= ${startDate.format('YYYY-MM-DD')}
         AND T."date" <= ${endDate.format('YYYY-MM-DD')}
+        AND T."status" = 'COMPENSATED'
       GROUP BY C."name", C."id";
 `
 
