@@ -37,7 +37,7 @@ export function intToDayOfWeek(day: number): DayOfWeek {
     case 6:
       return DayOfWeek.SATURDAY;
     default:
-      throw Error("Bad day. Must be between 0-6");
+      throw Error('Bad day. Must be between 0-6');
   }
 }
 
@@ -58,7 +58,7 @@ export function warningsForDate(dateString: string, holidays: HolidayDto[], week
   }
   for (const h of holidays) {
     if (dateString >= h.start && dateString <= h.end) {
-      result.push(`Kollidiert mit "${h.name}"`);
+      result.push(h.name);
     }
   }
   let isOnValidWeekday = false;
