@@ -1,11 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import dayjs from 'dayjs';
-import { allowOnlyAdmins, badRequestResponse, handleTopLevelCatch } from '@/lib/helpers-for-api';
+import {
+  allowOnlyAdmins,
+  badRequestResponse,
+  handleTopLevelCatch,
+} from '@/lib/helpers-for-api';
 import { ErrorDto, TrainingCountPerCourse } from '@/lib/dto';
 import prisma from '@/lib/prisma';
 
-async function countTrainings(startDate: dayjs.Dayjs, endDate: dayjs.Dayjs): Promise<TrainingCountPerCourse[]> {
-  const sqlResult: { courseId: BigInt, courseName: string, count: BigInt }[] = await prisma.$queryRaw`
+async function countTrainings(
+  startDate: dayjs.Dayjs,
+  endDate: dayjs.Dayjs,
+): Promise<TrainingCountPerCourse[]> {
+  const sqlResult: { courseId: BigInt; courseName: string; count: BigInt }[] =
+    await prisma.$queryRaw`
       SELECT C."name" AS "courseName",
              C."id" AS "courseId",
              COUNT(*) AS "count"
@@ -15,7 +23,7 @@ async function countTrainings(startDate: dayjs.Dayjs, endDate: dayjs.Dayjs): Pro
         AND T."date" <= ${endDate.format('YYYY-MM-DD')}
         AND T."status" = 'COMPENSATED'
       GROUP BY C."name", C."id";
-`
+`;
 
   return sqlResult.map((sr) => ({
     count: Number(sr.count),
@@ -23,10 +31,14 @@ async function countTrainings(startDate: dayjs.Dayjs, endDate: dayjs.Dayjs): Pro
   }));
 }
 
-
-export async function POST(request: NextRequest): Promise<NextResponse<{
-  value: TrainingCountPerCourse[]
-} | ErrorDto>> {
+export async function POST(request: NextRequest): Promise<
+  NextResponse<
+    | {
+        value: TrainingCountPerCourse[];
+      }
+    | ErrorDto
+  >
+> {
   try {
     await allowOnlyAdmins(request);
     const yearString = request.nextUrl.searchParams.get('year');
@@ -40,5 +52,4 @@ export async function POST(request: NextRequest): Promise<NextResponse<{
   } catch (e) {
     return handleTopLevelCatch(e);
   }
-
 }

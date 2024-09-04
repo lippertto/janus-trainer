@@ -32,8 +32,8 @@ const StyledSnackbarContent = styled(MaterialDesignContent)(() => ({
 const queryClient = new QueryClient({});
 
 export default function JanusProviders({
-                                         children,
-                                       }: {
+  children,
+}: {
   children: React.ReactElement;
 }) {
   return (
@@ -56,7 +56,8 @@ export default function JanusProviders({
             >
               <QueryClientProvider client={queryClient}>
                 <SessionProvider>{children}</SessionProvider>
-              </QueryClientProvider> </ConfirmProvider>
+              </QueryClientProvider>{' '}
+            </ConfirmProvider>
           </SnackbarProvider>
         </LocalizationProvider>
       </ThemeProvider>

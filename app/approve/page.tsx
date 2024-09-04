@@ -28,9 +28,11 @@ type ApprovePageContentsProps = {
   startDate: dayjs.Dayjs;
   endDate: dayjs.Dayjs;
   trainerId: string | null;
-}
+};
 
-function ApprovePageContents(props: ApprovePageContentsProps): React.ReactElement {
+function ApprovePageContents(
+  props: ApprovePageContentsProps,
+): React.ReactElement {
   const { session } = props;
   const pathname = usePathname();
   const { replace } = useRouter();
@@ -42,11 +44,14 @@ function ApprovePageContents(props: ApprovePageContentsProps): React.ReactElemen
     props.endDate,
   );
 
-  const [selectedTrainerId, setSelectedTrainerId] = React.useState<string | null>(props.trainerId);
+  const [selectedTrainerId, setSelectedTrainerId] = React.useState<
+    string | null
+  >(props.trainerId);
 
-  const {data: holidays} = holidaysSuspenseQuery(session.accessToken,
-    [new Date().getFullYear(), new Date().getFullYear() - 1],
-  );
+  const { data: holidays } = holidaysSuspenseQuery(session.accessToken, [
+    new Date().getFullYear(),
+    new Date().getFullYear() - 1,
+  ]);
 
   // update the search params when the filters have changed.
   useEffect(() => {
@@ -80,7 +85,9 @@ function ApprovePageContents(props: ApprovePageContentsProps): React.ReactElemen
           </Button>
           <Button
             onClick={() => {
-              setDatePickerStart(dayjs().subtract(1, 'quarter').startOf('quarter'));
+              setDatePickerStart(
+                dayjs().subtract(1, 'quarter').startOf('quarter'),
+              );
               setDatePickerEnd(dayjs().subtract(1, 'quarter').endOf('quarter'));
             }}
           >
@@ -112,23 +119,28 @@ function ApprovePageContents(props: ApprovePageContentsProps): React.ReactElemen
       </Grid>
       <Grid xs={2}></Grid>
       <Grid xs={3}>
-        <TrainerList session={session} filterEnd={datePickerEnd} filterStart={datePickerStart}
-                     selectedTrainerId={selectedTrainerId}
-                     setSelectedTrainerId={setSelectedTrainerId}
+        <TrainerList
+          session={session}
+          filterEnd={datePickerEnd}
+          filterStart={datePickerStart}
+          selectedTrainerId={selectedTrainerId}
+          setSelectedTrainerId={setSelectedTrainerId}
         />
       </Grid>
       <Grid xs={9}>
-        {selectedTrainerId ?
-          <Suspense fallback={<LoadingSpinner/>} >
-          <TrainingTable
-            holidays={holidays}
-            session={session}
-            trainerId={selectedTrainerId}
-            startDate={datePickerStart}
-            endDate={datePickerEnd}
-          />
+        {selectedTrainerId ? (
+          <Suspense fallback={<LoadingSpinner />}>
+            <TrainingTable
+              holidays={holidays}
+              session={session}
+              trainerId={selectedTrainerId}
+              startDate={datePickerStart}
+              endDate={datePickerEnd}
+            />
           </Suspense>
-          : <Typography>Übungsleitung auswählen</Typography>}
+        ) : (
+          <Typography>Übungsleitung auswählen</Typography>
+        )}
       </Grid>
     </Grid>
   );
@@ -136,8 +148,12 @@ function ApprovePageContents(props: ApprovePageContentsProps): React.ReactElemen
 
 export default function ApprovePage() {
   const searchParams = useSearchParams();
-  const queryParamStart = searchParams.get(QUERY_PARAM_START) ? dayjs(searchParams.get(QUERY_PARAM_START)) : dayjs().startOf('quarter');
-  const queryParamEnd = searchParams.get(QUERY_PARAM_END) ? dayjs(searchParams.get(QUERY_PARAM_END)) : dayjs().endOf('quarter');
+  const queryParamStart = searchParams.get(QUERY_PARAM_START)
+    ? dayjs(searchParams.get(QUERY_PARAM_START))
+    : dayjs().startOf('quarter');
+  const queryParamEnd = searchParams.get(QUERY_PARAM_END)
+    ? dayjs(searchParams.get(QUERY_PARAM_END))
+    : dayjs().endOf('quarter');
   const queryParamTrainerId = searchParams.get(QUERY_PARAM_TRAINER_ID);
 
   const { data, status: authenticationStatus } = useSession();
@@ -147,10 +163,12 @@ export default function ApprovePage() {
     return <LoginRequired authenticationStatus={authenticationStatus} />;
   }
 
-  return <ApprovePageContents
-    session={session}
-    startDate={queryParamStart}
-    endDate={queryParamEnd}
-    trainerId={queryParamTrainerId}
-  />;
+  return (
+    <ApprovePageContents
+      session={session}
+      startDate={queryParamStart}
+      endDate={queryParamEnd}
+      trainerId={queryParamTrainerId}
+    />
+  );
 }

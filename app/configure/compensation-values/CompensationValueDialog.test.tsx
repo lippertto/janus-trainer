@@ -18,27 +18,35 @@ describe('compensation value dialog', () => {
         handleClose={close}
         handleSave={save}
         toEdit={null}
-      />);
+      />,
+    );
 
     const centsTextBox = await screen.findByRole('textbox', { name: 'Betrag' });
     await userEvent.type(centsTextBox!, '24');
     expect(centsTextBox).toHaveValue('24');
 
-
-    const nameTextBox = await screen.findByRole('textbox', { name: 'Bezeichnung' });
+    const nameTextBox = await screen.findByRole('textbox', {
+      name: 'Bezeichnung',
+    });
     await userEvent.type(nameTextBox!, 'name');
 
-    const durationTextBox = await screen.findByRole('spinbutton', { name: /dauer.*/i });
+    const durationTextBox = await screen.findByRole('spinbutton', {
+      name: /dauer.*/i,
+    });
     await userEvent.type(durationTextBox!, '120');
 
-    const saveButton = await screen.findByRole('button', { name: /Speichern/i });
+    const saveButton = await screen.findByRole('button', {
+      name: /Speichern/i,
+    });
     expect(saveButton).toBeEnabled();
     fireEvent.submit(saveButton);
 
-    await waitFor(() => expect(save).toHaveBeenCalledWith({
-      cents: 2400,
-      description: 'name',
-      durationMinutes: 120,
-    }));
+    await waitFor(() =>
+      expect(save).toHaveBeenCalledWith({
+        cents: 2400,
+        description: 'name',
+        durationMinutes: 120,
+      }),
+    );
   });
 });

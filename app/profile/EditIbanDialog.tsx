@@ -9,42 +9,56 @@ import { validateIBAN } from 'sepa';
 import { ibanToHumanReadable } from '@/lib/formatters';
 
 export function EditIbanDialog(props: {
-  open: boolean, handleClose: () => void,
-  initialValue: string | null,
-  handleConfirm: (v: string) => void,
+  open: boolean;
+  handleClose: () => void;
+  initialValue: string | null;
+  handleConfirm: (v: string) => void;
 }) {
-  const [iban, setIban] = React.useState<string>(props.initialValue?.toUpperCase() ?? '');
+  const [iban, setIban] = React.useState<string>(
+    props.initialValue?.toUpperCase() ?? '',
+  );
   const ibanIsValid = validateIBAN(iban);
-  return <Dialog open={props.open}>
-    <DialogTitle>
-      IBAN bearbeiten
-    </DialogTitle>
-    <DialogContent>
-      <TextField
-        autoFocus
-        sx={{width: 300}}
-        margin="dense"
-        label="IBAN"
-        type="text"
-        fullWidth
-        value={ibanToHumanReadable(iban)}
-        onChange={(e) => setIban(e.target.value.replaceAll(" ", "").toUpperCase())}
-        error={!ibanIsValid}
-        helperText={ibanIsValid ? ' ' : 'Keine valide IBAN'}
-      />
-    </DialogContent>
-    <DialogActions>
-      <Button
-        onClick={() => {
-          setTimeout(() => setIban(props.initialValue?.toUpperCase() ?? ''), 200);
-          props.handleClose();
-        }}>Abbrechen</Button>
-      <Button
-        disabled={!ibanIsValid}
-        onClick={() => {
-          props.handleClose();
-          props.handleConfirm(iban);
-        }}>Ok</Button>
-    </DialogActions>
-  </Dialog>;
+  return (
+    <Dialog open={props.open}>
+      <DialogTitle>IBAN bearbeiten</DialogTitle>
+      <DialogContent>
+        <TextField
+          autoFocus
+          sx={{ width: 300 }}
+          margin="dense"
+          label="IBAN"
+          type="text"
+          fullWidth
+          value={ibanToHumanReadable(iban)}
+          onChange={(e) =>
+            setIban(e.target.value.replaceAll(' ', '').toUpperCase())
+          }
+          error={!ibanIsValid}
+          helperText={ibanIsValid ? ' ' : 'Keine valide IBAN'}
+        />
+      </DialogContent>
+      <DialogActions>
+        <Button
+          onClick={() => {
+            setTimeout(
+              () => setIban(props.initialValue?.toUpperCase() ?? ''),
+              200,
+            );
+            props.handleClose();
+          }}
+        >
+          Abbrechen
+        </Button>
+        <Button
+          disabled={!ibanIsValid}
+          onClick={() => {
+            props.handleClose();
+            props.handleConfirm(iban);
+          }}
+        >
+          Ok
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
 }

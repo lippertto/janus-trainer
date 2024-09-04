@@ -1,4 +1,5 @@
 # Local execution
+
 You can run the app locally (excluding the cognito login) by using the following commands:
 
 ```shell
@@ -7,6 +8,7 @@ yarn start:dev
 ```
 
 ## Execute API tests
+
 To execute the API tests, you have to start the server with the environment variable
 `DISABLE_JWT_CHECKS=1` set.
 
@@ -15,36 +17,39 @@ Then, you have to include the api tests in jest.config.js and run `yarn test`.
 # TODO
 
 ## Next up
-* prettier + eslint do not run
 
 ## Bugs
-* Current IBAN is used in payments, not the one that was used for the actual
+
+- Current IBAN is used in payments, not the one that was used for the actual
   payment. This should be fixed.
 
 ## Features
-* Re-send verification mail
-* Reset password
-* Offerings should be list
-* Make courses disabled. (Also in the UI.)
-* Playwright test: enter -> approve -> compensate.
-* Warning if training limits have been reached
-* offerings: make weekday a radio group. Training can have only 1 weekday
-* Report: Same Courses on same day
-* Filter dates on enter page
-* Pdf download for taxes. Trainer x received y euros for z units. Lock year! 
+
+- Re-send verification mail
+- Reset password
+- Make courses disabled. (Also in the UI.)
+- Playwright test: enter -> approve -> compensate.
+- Warning if training limits have been reached
+- offerings: make weekday a radio group. Training can have only 1 weekday
+- Report: Same Courses on same day
+- Filter dates on enter page
+- Pdf download for taxes. Trainer x received y euros for z units. Lock year!
 
 ## Tech update
-* Add training index for user, date, and user+date
-* Hide password in POSTGRES_CONNECTION_URL of lambda. --> Use Secret
-* Join payments and compensation api routes (and domain objects) into /payments/{id}/compensations
-* Put API tests into separate folder with their own jest config
+
+- Add training index for user, date, and user+date
+- Hide password in POSTGRES_CONNECTION_URL of lambda. --> Use Secret
+- Join payments and compensation api routes (and domain objects) into /payments/{id}/compensations
+- Put API tests into separate folder with their own jest config
 
 ## Refinement
-* Sort imports with eslint: https://eslint.org/docs/latest/rules/sort-imports
+
+- Sort imports with eslint: https://eslint.org/docs/latest/rules/sort-imports
 
 # Common tasks
 
 ## Evolving the database schema
+
 All commands should be prefixed with `yarn run dotenv -e .env.development -- ` to load the database connection values
 
 Update the generated code: `prisma generate`
@@ -53,11 +58,12 @@ Make changes to the schema. Push the changes to the local database with `prisma 
 
 After you are done, you can create a migration like so: `prisma migrate dev`
 
-More information can be found in the [Prisma docs](https://www.prisma.io/docs/orm/prisma-migrate/workflows/prototyping-your-schema) 
+More information can be found in the [Prisma docs](https://www.prisma.io/docs/orm/prisma-migrate/workflows/prototyping-your-schema)
 
 # Architecture & Decisions
 
 ## Users
+
 I used cognito to learn it, and to keep the user credentials in a secure spot, i.e., not me.
 
 Every environment has its own user pool. The one in prod and test are managed by cloudformation, the one for dev
@@ -67,27 +73,33 @@ Only users who exist in cognito and in the database may log in. When a user is d
 database and disabled in cognito.
 
 ## Environments
+
 We have two environments in the cloud, test and prod. Because we do not use Github Environments, we cannot use manual
 approval/deployment rules, and a further differentiation with a dev-environment would not make too much sense.
 
 There is a dev-cognito which is used for local development. This instance is managed manually.
 
 ## Database
+
 I chose RDS because of the (time-limited) free tier that aws offers.
 
 The database is publicly accessible via 5432 because I did not want to integrate CI with RDS authentication and
 the required VPC connectivity setup.
 
 ## Special view for trainers
+
 I use a different views for the enter-route, because I assume that trainers are much more likely to be on mobile.
 The office will always use a PC, so a table view is better suited for them.
 
 # Deployment
+
 The deployment is handled via cloudformation. This will take care of the infrastructure setup and the deployment
 of the lambda function. (Make sure to update the Parameter JanusTrainerAppImage)
 
 ## Database
+
 The database is shared by both instances and is created manually. To create it, execute:
+
 ```shell
 aws cloudformation update-stack \
   --region eu-north-1 \
@@ -112,5 +124,6 @@ aws cloudformation update-stack \
 ```
 
 You need to take care of the following things:
-* Provide a domain for each environment
-* Create a certificate in ACM for that domain
+
+- Provide a domain for each environment
+- Create a certificate in ACM for that domain

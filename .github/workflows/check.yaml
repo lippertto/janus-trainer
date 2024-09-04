@@ -1,5 +1,5 @@
 on:
-  workflow_call: { }
+  workflow_call: {}
 
 jobs:
   lint-format-test:
@@ -15,7 +15,7 @@ jobs:
           cache: yarn
       - name: yarn install
         run: yarn install
-      - name: yarn format
-        run: yarn format
+      - name: yarn format:check
+        run: yarn format:check
       - name: yarn test
         run: yarn test

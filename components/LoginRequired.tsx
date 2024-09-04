@@ -20,11 +20,17 @@ function PleaseLogIn() {
 }
 
 export default function LoginRequired({
-                                        authenticationStatus,
-                                      }: {
+  authenticationStatus,
+}: {
   authenticationStatus: 'authenticated' | 'loading' | 'unauthenticated';
 }) {
   return (
-    <>{authenticationStatus === 'loading' ? <LoadingSpinner /> : <PleaseLogIn />}</>
+    <>
+      {authenticationStatus === 'loading' ? (
+        <LoadingSpinner />
+      ) : (
+        <PleaseLogIn />
+      )}
+    </>
   );
 }

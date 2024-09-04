@@ -1,5 +1,9 @@
 import superagent from 'superagent';
-import { TrainingCreateRequest, TrainingDto, TrainingUpdateStatusRequest } from '@/lib/dto';
+import {
+  TrainingCreateRequest,
+  TrainingDto,
+  TrainingUpdateStatusRequest,
+} from '@/lib/dto';
 import dayjs from 'dayjs';
 
 const SERVER = 'http://localhost:3000';
@@ -16,7 +20,6 @@ const VALID_TRAINING_CREATE_REQUEST: TrainingCreateRequest = {
 };
 
 describe('/trainings', () => {
-
   test('created training is returned by GET', async () => {
     let trainingId;
     try {
@@ -37,19 +40,26 @@ describe('/trainings', () => {
       expect(createdTraining.date).toBe(training.date);
       expect(createdTraining.userId).toBe(training.userId);
       expect(createdTraining.participantCount).toBe(training.participantCount);
-      expect(createdTraining.compensationCents).toBe(training.compensationCents);
+      expect(createdTraining.compensationCents).toBe(
+        training.compensationCents,
+      );
       expect(createdTraining.courseId).toBe(training.courseId);
       expect(createdTraining.comment).toBe(training.comment);
 
-      const resultGet = await superagent.get(`${SERVER}/api/trainings/${trainingId}`);
+      const resultGet = await superagent.get(
+        `${SERVER}/api/trainings/${trainingId}`,
+      );
       const retrievedTraining = resultGet.body as TrainingDto;
       expect(retrievedTraining.date).toBe(training.date);
       expect(retrievedTraining.userId).toBe(training.userId);
-      expect(retrievedTraining.participantCount).toBe(training.participantCount);
-      expect(retrievedTraining.compensationCents).toBe(training.compensationCents);
+      expect(retrievedTraining.participantCount).toBe(
+        training.participantCount,
+      );
+      expect(retrievedTraining.compensationCents).toBe(
+        training.compensationCents,
+      );
       expect(retrievedTraining.courseId).toBe(training.courseId);
       expect(retrievedTraining.comment).toBe(training.comment);
-
     } finally {
       if (trainingId) {
         await superagent.delete(`${SERVER}/api/trainings/${trainingId}`);
@@ -90,7 +100,6 @@ describe('/trainings', () => {
       expect(compensatedTraining.status).toBe('COMPENSATED');
       const compensationTime = dayjs(compensatedTraining.compensatedAt!);
       expect(compensationTime.diff(dayjs())).toBeLessThan(1000);
-
     } finally {
       if (trainingId) {
         await superagent.delete(`${SERVER}/api/trainings/${trainingId}`);

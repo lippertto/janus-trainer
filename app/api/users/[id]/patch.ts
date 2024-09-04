@@ -3,9 +3,9 @@ import prisma from '@/lib/prisma';
 import { ApiErrorNotFound, validateOrThrow } from '@/lib/helpers-for-api';
 
 export function patchRequestToUpdateData(request: UserPatchRequest) {
-  let data: any  = {};
+  let data: any = {};
   if (request.iban) {
-    data['iban'] = request.iban.replace(/\s/g, "");
+    data['iban'] = request.iban.replace(/\s/g, '');
   }
   if (request.termsAcceptedVersion) {
     data['termsAcceptedVersion'] = request.termsAcceptedVersion;

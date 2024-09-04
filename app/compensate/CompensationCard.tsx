@@ -24,53 +24,65 @@ function handleSepaGeneration(compensations: CompensationDto[]) {
 }
 
 export default function CompensationCard(props: {
-  session: JanusSession,
-  selectedPaymentId: number,
-  trainer: UserDto | null
+  session: JanusSession;
+  selectedPaymentId: number;
+  trainer: UserDto | null;
 }) {
   const queryClient = useQueryClient();
-  let compensations = queryCompensations(props.session.accessToken, props.selectedPaymentId);
+  let compensations = queryCompensations(
+    props.session.accessToken,
+    props.selectedPaymentId,
+  );
   if (props.trainer?.id) {
-    compensations = compensations.filter((c) => (c.user.id === props.trainer!.id));
+    compensations = compensations.filter(
+      (c) => c.user.id === props.trainer!.id,
+    );
   }
 
   const markAsCompensated = useMutation({
     mutationFn: () => {
-      const allIds = compensations
-        .flatMap((c) => c.correspondingIds);
+      const allIds = compensations.flatMap((c) => c.correspondingIds);
       let body = JSON.stringify({
         trainingIds: allIds,
       });
       return fetch('/api/payments', { method: 'POST', body: body });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [API_COMPENSATIONS, props.selectedPaymentId] });
+      queryClient.invalidateQueries({
+        queryKey: [API_COMPENSATIONS, props.selectedPaymentId],
+      });
       queryClient.invalidateQueries({ queryKey: [API_PAYMENTS] });
     },
     onError: (error) => {
-      showError('Konnte Zahlungen nicht als überwiesen markieren', error.message);
+      showError(
+        'Konnte Zahlungen nicht als überwiesen markieren',
+        error.message,
+      );
     },
   });
 
-  return <Stack>
-    <CompensationTable compensations={compensations} />
-    <Stack direction={'row'}>
-      <Button
-        onClick={() => handleSepaGeneration(compensations)}
-        disabled={Boolean(props.trainer)}
-      >
-        SEPA XML generieren
-      </Button>
-      <Button
-        disabled={
-          (props.selectedPaymentId !== CURRENT_PAYMENT_ID) ||
-          (Boolean(props.trainer))
-        }
-        onClick={() => {
-          markAsCompensated.mutate();
-        }}>
-        Alle als überwiesen markieren
-      </Button>
+  return (
+    <Stack>
+      <CompensationTable compensations={compensations} />
+      <Stack direction={'row'}>
+        <Button
+          onClick={() => handleSepaGeneration(compensations)}
+          disabled={Boolean(props.trainer)}
+        >
+          SEPA XML generieren
+        </Button>
+        <Button
+          disabled={
+            props.selectedPaymentId !== CURRENT_PAYMENT_ID ||
+            Boolean(props.trainer)
+          }
+          onClick={() => {
+            markAsCompensated.mutate();
+          }}
+        >
+          Alle als überwiesen markieren
+        </Button>
+      </Stack>
     </Stack>
-  </Stack>;
+  );
 }

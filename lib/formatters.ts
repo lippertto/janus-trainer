@@ -15,7 +15,10 @@ export function dateToHumanReadable(value: string) {
 
 /** Takes a number of cents and displays them formatted in Euros */
 export function centsToHumanReadable(cents: number) {
-  return new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(cents / 100);
+  return new Intl.NumberFormat('de-DE', {
+    style: 'currency',
+    currency: 'EUR',
+  }).format(cents / 100);
 }
 
 /** The API returns 8601 strings. This method converts the string to a date object to be used by the data grid. */
@@ -27,11 +30,11 @@ export function getDateFromIso8601(value: string): dayjs.Dayjs {
 export function groupToHumanReadable(group: Group) {
   switch (group) {
     case Group.ADMINS:
-      return "Administration";
+      return 'Administration';
     case Group.TRAINERS:
-      return "Übungsleitung";
+      return 'Übungsleitung';
     default:
-      return "???";
+      return '???';
   }
 }
 
@@ -50,5 +53,5 @@ export function trainingStatusToHumanReadable(value: TrainingStatus) {
 
 /** Returns a nice version of an IBAN. */
 export function ibanToHumanReadable(value: string) {
-  return value.replace(/(.{4})/g, '$1 ').trim()
+  return value.replace(/(.{4})/g, '$1 ').trim();
 }

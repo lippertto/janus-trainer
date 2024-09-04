@@ -4,7 +4,13 @@
 
 import '@testing-library/jest-dom';
 
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from '@testing-library/react';
 import React from 'react';
 import TrainingDialog from '@/app/enter/TrainingDialog';
 import userEvent from '@testing-library/user-event';
@@ -15,11 +21,31 @@ import 'dayjs/locale/de';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import dayjs from 'dayjs';
 
-
 const COURSES: CourseLight[] = [
-  { id: 19, name: 'course-1', weekdays: [DayOfWeek.THURSDAY], startMinute: 0, startHour: 19, durationMinutes: 60 },
-  { id: 20, name: 'course-2', weekdays: [DayOfWeek.FRIDAY], startMinute: 0, startHour: 19, durationMinutes: 90 },
-  { id: 21, name: 'course-3', weekdays: [DayOfWeek.MONDAY], startMinute: 0, startHour: 19, durationMinutes: 120 },
+  {
+    id: 19,
+    name: 'course-1',
+    weekdays: [DayOfWeek.THURSDAY],
+    startMinute: 0,
+    startHour: 19,
+    durationMinutes: 60,
+  },
+  {
+    id: 20,
+    name: 'course-2',
+    weekdays: [DayOfWeek.FRIDAY],
+    startMinute: 0,
+    startHour: 19,
+    durationMinutes: 90,
+  },
+  {
+    id: 21,
+    name: 'course-3',
+    weekdays: [DayOfWeek.MONDAY],
+    startMinute: 0,
+    startHour: 19,
+    durationMinutes: 120,
+  },
 ];
 
 const COMPENSATION_VALUES: CompensationValueDto[] = [
@@ -48,7 +74,9 @@ const COMPENSATION_VALUES: CompensationValueDto[] = [
 
 // set date to a value in 'DD.MM.YYYY' format. If not set, will use today
 async function setDate(value: string | null = null) {
-  const datepickerTextBox = await screen.findByRole('textbox', { name: 'Datum' });
+  const datepickerTextBox = await screen.findByRole('textbox', {
+    name: 'Datum',
+  });
   const valueOrToday = value ? dayjs(value, 'DD.MM.YYYY') : dayjs();
   let valueToEnter = valueOrToday.format('DD.MM.YYYY');
   await userEvent.type(datepickerTextBox!, valueToEnter);
@@ -57,7 +85,9 @@ async function setDate(value: string | null = null) {
 
 async function setParticipantCount(value: number | null = null) {
   const valueToType = value !== null ? value : 100;
-  const participantCountTextBox = await screen.findByRole('spinbutton', { name: /Anzahl.*/i });
+  const participantCountTextBox = await screen.findByRole('spinbutton', {
+    name: /Anzahl.*/i,
+  });
   await userEvent.type(participantCountTextBox!, valueToType.toString());
   expect(participantCountTextBox).toHaveValue(valueToType);
 }
@@ -91,7 +121,9 @@ test('happy case', async () => {
   );
 
   const comment = 'any-comment';
-  const commentTextBox = await screen.findByRole('textbox', { name: 'Kommentar' });
+  const commentTextBox = await screen.findByRole('textbox', {
+    name: 'Kommentar',
+  });
   await userEvent.type(commentTextBox!, comment);
   expect(commentTextBox).toHaveValue(comment);
 
@@ -101,14 +133,16 @@ test('happy case', async () => {
 
   await pressSave();
 
-  await waitFor(() => expect(save).toHaveBeenCalledWith({
-    comment: comment,
-    courseId: 21, // we want this to be auto-selected based on the day
-    compensationCents: 500,  // we want this to be auto-selected based on the duration
-    date: '2024-10-03',
-    participantCount: participantCount,
-    userId: userId,
-  }));
+  await waitFor(() =>
+    expect(save).toHaveBeenCalledWith({
+      comment: comment,
+      courseId: 21, // we want this to be auto-selected based on the day
+      compensationCents: 500, // we want this to be auto-selected based on the duration
+      date: '2024-10-03',
+      participantCount: participantCount,
+      userId: userId,
+    }),
+  );
 });
 
 test('selects matching compensation value when course changes', async () => {
@@ -145,16 +179,23 @@ test('selects matching compensation value when course changes', async () => {
 
   await pressSave();
 
-  await waitFor(() => expect(save).toHaveBeenCalledWith(expect.objectContaining({
-    userId: 'userId123',
-  })));
+  await waitFor(() =>
+    expect(save).toHaveBeenCalledWith(
+      expect.objectContaining({
+        userId: 'userId123',
+      }),
+    ),
+  );
 });
 
 test('Sets values from toEdit as defaults', async () => {
   const cents = COMPENSATION_VALUES[1].cents;
   const toEdit = {
-    comment: 'comment', date: '2024-01-02', participantCount: 7, compensationCents:
-    cents, course: COURSES[0],
+    comment: 'comment',
+    date: '2024-01-02',
+    participantCount: 7,
+    compensationCents: cents,
+    course: COURSES[0],
   } as TrainingDto;
   const save = jest.fn();
   const close = jest.fn();
@@ -193,35 +234,46 @@ test('Sets values from toEdit as defaults', async () => {
     </LocalizationProvider>,
   );
 
-  const participantCountTextBox = await screen.findByRole('spinbutton', { name: /Anzahl.*/i });
+  const participantCountTextBox = await screen.findByRole('spinbutton', {
+    name: /Anzahl.*/i,
+  });
   expect(participantCountTextBox).toHaveValue(toEdit.participantCount);
 
   await pressSave();
 
-  await waitFor(() => expect(save).toHaveBeenCalledWith(expect.objectContaining({
-    userId: 'userId123',
-    date: '2024-01-02',
-    compensationCents: cents,
-    comment: 'comment',
-    courseId: toEdit.course!.id,
-    participantCount: toEdit.participantCount,
-  })));
+  await waitFor(() =>
+    expect(save).toHaveBeenCalledWith(
+      expect.objectContaining({
+        userId: 'userId123',
+        date: '2024-01-02',
+        compensationCents: cents,
+        comment: 'comment',
+        courseId: toEdit.course!.id,
+        participantCount: toEdit.participantCount,
+      }),
+    ),
+  );
 });
 
 test('add new compensation value when no corresponding exists', async () => {
   const save = jest.fn();
   const close = jest.fn();
 
-  const compensationValues: CompensationValueDto[] = [{
-    compensationClassId: 1,
-    cents: 300,
-    description: 'desc',
-    id: 1,
-    durationMinutes: 120,
-  }];
+  const compensationValues: CompensationValueDto[] = [
+    {
+      compensationClassId: 1,
+      cents: 300,
+      description: 'desc',
+      id: 1,
+      durationMinutes: 120,
+    },
+  ];
   const toEdit = {
-    comment: 'comment', date: '2024-01-02', participantCount: 7, compensationCents:
-      399, course: COURSES[0],
+    comment: 'comment',
+    date: '2024-01-02',
+    participantCount: 7,
+    compensationCents: 399,
+    course: COURSES[0],
   } as TrainingDto;
 
   // first render with null
@@ -258,12 +310,18 @@ test('add new compensation value when no corresponding exists', async () => {
   );
 
   // for some reason, isValid is only checked after we check this field
-  const participantCountTextBox = await screen.findByRole('spinbutton', { name: /Anzahl.*/i });
+  const participantCountTextBox = await screen.findByRole('spinbutton', {
+    name: /Anzahl.*/i,
+  });
   expect(participantCountTextBox).toHaveValue(toEdit.participantCount);
 
   await pressSave();
 
-  await waitFor(() => expect(save).toHaveBeenCalledWith(expect.objectContaining({
-    compensationCents: 399,
-  })));
+  await waitFor(() =>
+    expect(save).toHaveBeenCalledWith(
+      expect.objectContaining({
+        compensationCents: 399,
+      }),
+    ),
+  );
 });

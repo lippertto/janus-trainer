@@ -13,7 +13,13 @@ import Checkbox from '@mui/material/Checkbox';
 import Stack from '@mui/material/Stack';
 import { TimePicker } from '@mui/x-date-pickers';
 import dayjs, { Dayjs } from 'dayjs';
-import { CourseCreateRequest, CourseDto, DisciplineDto, TrainerLight, UserDto } from '@/lib/dto';
+import {
+  CourseCreateRequest,
+  CourseDto,
+  DisciplineDto,
+  TrainerLight,
+  UserDto,
+} from '@/lib/dto';
 
 type CourseDialogProps = {
   open: boolean;
@@ -25,14 +31,14 @@ type CourseDialogProps = {
 };
 
 type WeekdaySelection = {
-  mon: boolean,
-  tue: boolean,
-  wed: boolean,
-  thu: boolean,
-  fri: boolean,
-  sat: boolean,
-  sun: boolean,
-}
+  mon: boolean;
+  tue: boolean;
+  wed: boolean;
+  thu: boolean;
+  fri: boolean;
+  sat: boolean;
+  sun: boolean;
+};
 
 function weekdaySelectionToEnum(v: WeekdaySelection): DayOfWeek[] {
   let result: DayOfWeek[] = [];
@@ -90,26 +96,74 @@ const EMPTY_DAYS: WeekdaySelection = {
 const DEFAULT_TIME = '2024-06-03 00:00';
 
 type TrainerDropdownProps = {
-  trainers: UserDto[],
-  selectedTrainers: TrainerLight[],
-  setSelectedTrainers: (v: TrainerLight[]) => void,
+  trainers: UserDto[];
+  selectedTrainers: TrainerLight[];
+  setSelectedTrainers: (v: TrainerLight[]) => void;
+};
+
+function TrainerDropdown({
+  trainers,
+  selectedTrainers,
+  setSelectedTrainers,
+}: TrainerDropdownProps) {
+  return (
+    <React.Fragment>
+      <Autocomplete
+        options={trainers}
+        multiple={true}
+        renderTags={(tagValue, _) => {
+          return tagValue.map((option, _) => (
+            <Chip
+              label={option.name}
+              key={option.id}
+              onDelete={() => {
+                setSelectedTrainers(
+                  selectedTrainers.filter((t) => t.id !== option.id),
+                );
+              }}
+            />
+          ));
+        }}
+        renderOption={(props, option) => {
+          return (
+            <li {...props} key={option.id}>
+              {option.name}
+            </li>
+          );
+        }}
+        getOptionLabel={(t) => t.name}
+        renderInput={(params) => (
+          <TextField {...params} label="Übungsleitung" />
+        )}
+        value={selectedTrainers}
+        onChange={(_, value) => {
+          setSelectedTrainers(value);
+        }}
+        // this method needs to be set to sync the value with the list
+        isOptionEqualToValue={(option: TrainerLight, value: TrainerLight) => {
+          return option.id === value.id;
+        }}
+      />
+    </React.Fragment>
+  );
 }
 
-function TrainerDropdown({ trainers, selectedTrainers, setSelectedTrainers }: TrainerDropdownProps) {
-  return <React.Fragment>
+function DisciplineDropdown(props: {
+  disciplines: DisciplineDto[];
+  selectedDiscipline: DisciplineDto | null;
+  setSelectedDiscipline: (v: DisciplineDto | null) => void;
+}) {
+  const error = props.selectedDiscipline ? ' ' : 'Muss ausgwählt sein';
+  return (
     <Autocomplete
-      options={trainers}
-      multiple={true}
-      renderTags={(tagValue, _) => {
-        return tagValue.map((option, _) => (
-          <Chip
-            label={option.name} key={option.id}
-            onDelete={() => {
-              setSelectedTrainers(selectedTrainers.filter((t) => (t.id !== option.id)));
-            }}
-          />
-        ));
-      }}
+      renderInput={(params) => (
+        <TextField
+          {...params}
+          label={'Kostenstelle'}
+          error={error !== ' '}
+          helperText={error}
+        />
+      )}
       renderOption={(props, option) => {
         return (
           <li {...props} key={option.id}>
@@ -117,66 +171,37 @@ function TrainerDropdown({ trainers, selectedTrainers, setSelectedTrainers }: Tr
           </li>
         );
       }}
-      getOptionLabel={(t) => (t.name)}
-      renderInput={(params) => <TextField {...params} label="Übungsleitung" />}
-      value={selectedTrainers}
+      options={props.disciplines}
+      getOptionLabel={(d: DisciplineDto) => d.name}
+      value={props.selectedDiscipline}
       onChange={(_, value) => {
-        setSelectedTrainers(value);
-      }}
-      // this method needs to be set to sync the value with the list
-      isOptionEqualToValue={(option: TrainerLight, value: TrainerLight) => {
-        return option.id === value.id;
+        props.setSelectedDiscipline(value);
       }}
     />
-
-  </React.Fragment>;
+  );
 }
 
-function DisciplineDropdown(props: {
-  disciplines: DisciplineDto[],
-  selectedDiscipline: DisciplineDto | null,
-  setSelectedDiscipline: (v: DisciplineDto | null) => void,
-}) {
-  const error = props.selectedDiscipline ? ' ' : 'Muss ausgwählt sein';
-  return <Autocomplete
-    renderInput={
-      (params) => <TextField {...params} label={'Kostenstelle'}
-                             error={error !== ' '}
-                             helperText={error}
-      />
-    }
-    renderOption={(props, option) => {
-      return (
-        <li {...props} key={option.id}>
-          {option.name}
-        </li>
-      );
-    }}
-    options={props.disciplines}
-    getOptionLabel={(d: DisciplineDto) => (d.name)}
-    value={props.selectedDiscipline}
-    onChange={(_, value) => {
-      props.setSelectedDiscipline(value);
-    }}
-  />;
-}
-
-export function CourseDialog(
-  {
-    open,
-    handleClose,
-    handleSave,
-    trainers,
-    disciplines,
-    courseToEdit,
-  }: CourseDialogProps) {
+export function CourseDialog({
+  open,
+  handleClose,
+  handleSave,
+  trainers,
+  disciplines,
+  courseToEdit,
+}: CourseDialogProps) {
   const [courseName, setCourseName] = React.useState('');
   const [days, setDays] = React.useState<WeekdaySelection>(EMPTY_DAYS);
   const [time, setTime] = React.useState<Dayjs | null>(dayjs(DEFAULT_TIME));
   const [duration, setDuration] = React.useState<string>('90');
-  const [selectedTrainers, setSelectedTrainers] = React.useState<{ name: string, id: string }[]>([]);
-  const [discipline, setDiscipline] = React.useState<DisciplineDto | null>(null);
-  const [previousCourse, setPreviousCourse] = React.useState<CourseDto | null>(null);
+  const [selectedTrainers, setSelectedTrainers] = React.useState<
+    { name: string; id: string }[]
+  >([]);
+  const [discipline, setDiscipline] = React.useState<DisciplineDto | null>(
+    null,
+  );
+  const [previousCourse, setPreviousCourse] = React.useState<CourseDto | null>(
+    null,
+  );
 
   const resetFields = React.useCallback(() => {
     setCourseName('');
@@ -191,11 +216,17 @@ export function CourseDialog(
     setPreviousCourse(courseToEdit);
     if (courseToEdit) {
       setCourseName(courseToEdit.name);
-      setTime(dayjs(`2024-06-03 ${courseToEdit.startHour}:${courseToEdit.startMinute}`));
+      setTime(
+        dayjs(
+          `2024-06-03 ${courseToEdit.startHour}:${courseToEdit.startMinute}`,
+        ),
+      );
       setDuration(courseToEdit.durationMinutes.toString());
       setSelectedTrainers(courseToEdit.trainers);
       setDays(enumToWeekdaySelection(courseToEdit.weekdays));
-      setDiscipline(disciplines.find((v) => (v.id === courseToEdit.disciplineId)) ?? null);
+      setDiscipline(
+        disciplines.find((v) => v.id === courseToEdit.disciplineId) ?? null,
+      );
     } else {
       resetFields();
     }
@@ -207,7 +238,7 @@ export function CourseDialog(
     nameError = 'Darf nicht leer sein';
     error = true;
   }
-  error = error || (discipline === null);
+  error = error || discipline === null;
 
   const handleDayChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setDays({
@@ -218,7 +249,9 @@ export function CourseDialog(
 
   return (
     <Dialog open={open} onClose={handleClose}>
-      <DialogTitle>{courseToEdit ? 'Kurs bearbeiten' : 'Kurs hinzufügen'}</DialogTitle>
+      <DialogTitle>
+        {courseToEdit ? 'Kurs bearbeiten' : 'Kurs hinzufügen'}
+      </DialogTitle>
 
       <DialogContent>
         <Stack direction={'row'} spacing={2} sx={{ pt: 1 }}>
@@ -246,7 +279,7 @@ export function CourseDialog(
 
             <TextField
               value={duration}
-              onChange={((v) => setDuration(v.target.value))}
+              onChange={(v) => setDuration(v.target.value)}
               label={'Dauer'}
               type={'number'}
               inputProps={{ step: 15, min: 15 }}
@@ -263,51 +296,108 @@ export function CourseDialog(
               selectedDiscipline={discipline}
               setSelectedDiscipline={setDiscipline}
             />
-
           </Stack>
           <Stack>
             <FormControl component={'fieldset'}>
               <FormLabel>Wochentage</FormLabel>
-              <FormControlLabel control={<Checkbox checked={days.mon} onChange={handleDayChange} name={'mon'} />}
-                                label={'Montag'} />
-              <FormControlLabel control={<Checkbox checked={days.tue} onChange={handleDayChange} name={'tue'} />}
-                                label={'Dienstag'} />
-              <FormControlLabel control={<Checkbox checked={days.wed} onChange={handleDayChange} name={'wed'} />}
-                                label={'Mittwoch'} />
-              <FormControlLabel control={<Checkbox checked={days.thu} onChange={handleDayChange} name={'thu'} />}
-                                label={'Donnerstag'} />
-              <FormControlLabel control={<Checkbox checked={days.fri} onChange={handleDayChange} name={'fri'} />}
-                                label={'Freitag'} />
-              <FormControlLabel control={<Checkbox checked={days.sat} onChange={handleDayChange} name={'sat'} />}
-                                label={'Samstag'} />
-              <FormControlLabel control={<Checkbox checked={days.sun} onChange={handleDayChange} name={'sun'} />}
-                                label={'Sonntag'} />
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={days.mon}
+                    onChange={handleDayChange}
+                    name={'mon'}
+                  />
+                }
+                label={'Montag'}
+              />
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={days.tue}
+                    onChange={handleDayChange}
+                    name={'tue'}
+                  />
+                }
+                label={'Dienstag'}
+              />
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={days.wed}
+                    onChange={handleDayChange}
+                    name={'wed'}
+                  />
+                }
+                label={'Mittwoch'}
+              />
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={days.thu}
+                    onChange={handleDayChange}
+                    name={'thu'}
+                  />
+                }
+                label={'Donnerstag'}
+              />
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={days.fri}
+                    onChange={handleDayChange}
+                    name={'fri'}
+                  />
+                }
+                label={'Freitag'}
+              />
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={days.sat}
+                    onChange={handleDayChange}
+                    name={'sat'}
+                  />
+                }
+                label={'Samstag'}
+              />
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={days.sun}
+                    onChange={handleDayChange}
+                    name={'sun'}
+                  />
+                }
+                label={'Sonntag'}
+              />
             </FormControl>
           </Stack>
         </Stack>
       </DialogContent>
 
       <DialogActions>
-        <Button onClick={() => {
-          setTimeout(resetFields, 300);
-          handleClose();
-        }}>Abbrechen</Button>
+        <Button
+          onClick={() => {
+            setTimeout(resetFields, 300);
+            handleClose();
+          }}
+        >
+          Abbrechen
+        </Button>
         <Button
           disabled={error}
           onClick={() => {
             setTimeout(resetFields, 300);
             handleClose();
-            handleSave(
-              {
-                name: courseName,
-                durationMinutes: parseInt(duration),
-                startHour: time!.hour(),
-                startMinute: time!.minute(),
-                weekdays: weekdaySelectionToEnum(days),
-                trainerIds: selectedTrainers.map((t) => (t.id)),
-                disciplineId: discipline!.id,
-              },
-            );
+            handleSave({
+              name: courseName,
+              durationMinutes: parseInt(duration),
+              startHour: time!.hour(),
+              startMinute: time!.minute(),
+              weekdays: weekdaySelectionToEnum(days),
+              trainerIds: selectedTrainers.map((t) => t.id),
+              disciplineId: discipline!.id,
+            });
           }}
         >
           Speichern

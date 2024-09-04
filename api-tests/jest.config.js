@@ -5,9 +5,12 @@ module.exports = {
   moduleNameMapper: {
     '@/(.*)$': ['<rootDir>/../$1'],
   },
-  modulePathIgnorePatterns: ["playwright"],
+  modulePathIgnorePatterns: ['playwright'],
   transform: {
-    "^.+\\.[jt]sx$": ["babel-jest", {configFile: './babel.config.testing.js'}],
+    '^.+\\.[jt]sx$': [
+      'babel-jest',
+      { configFile: './babel.config.testing.js' },
+    ],
   },
-  testMatch: ["**.test.ts"]
+  testMatch: ['**.test.ts'],
 };

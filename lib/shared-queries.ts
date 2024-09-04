@@ -1,4 +1,8 @@
-import { useQuery, UseQueryResult, useSuspenseQuery } from '@tanstack/react-query';
+import {
+  useQuery,
+  UseQueryResult,
+  useSuspenseQuery,
+} from '@tanstack/react-query';
 import { fetchListFromApi, fetchSingleEntity } from '@/lib/fetch';
 import {
   API_COMPENSATION_CLASSES,
@@ -31,7 +35,7 @@ const TEN_MINUTES = 10 * 60 * 1000;
 
 function holidaysQueryFunction(accessToken: string, years: number[]) {
   return fetchListFromApi<Holiday>(
-    `${API_HOLIDAYS}?year=${years.map((y) => (y.toString())).join(',')}`,
+    `${API_HOLIDAYS}?year=${years.map((y) => y.toString()).join(',')}`,
     accessToken,
   );
 }
@@ -42,9 +46,7 @@ function holidaysQueryFunction(accessToken: string, years: number[]) {
  * @param accessToken
  * @param years Which years to include. Must not be empty
  */
-export function holidaysSuspenseQuery(
-  accessToken: string,
-  years: number[]) {
+export function holidaysSuspenseQuery(accessToken: string, years: number[]) {
   if (years.length === 0) throw new Error('years must not be empty');
 
   const key = [API_HOLIDAYS, ...years];
@@ -57,10 +59,8 @@ export function holidaysSuspenseQuery(
 export function trainersSuspenseQuery(accessToken: string | null) {
   return useSuspenseQuery({
     queryKey: [API_USERS, 'group=trainers'],
-    queryFn: () => fetchListFromApi<UserDto>(
-      `${API_USERS}?group=trainers`,
-      accessToken!,
-    ),
+    queryFn: () =>
+      fetchListFromApi<UserDto>(`${API_USERS}?group=trainers`, accessToken!),
     staleTime: TEN_MINUTES,
   });
 }
@@ -75,34 +75,40 @@ export function resultHasData(result: UseQueryResult) {
   return true;
 }
 
-export function coursesForTrainerSuspenseQuery(userId: string, accessToken: string) {
+export function coursesForTrainerSuspenseQuery(
+  userId: string,
+  accessToken: string,
+) {
   return useSuspenseQuery({
-      queryKey: ['courses', userId],
-      queryFn: () => fetchListFromApi<CourseDto>(
+    queryKey: ['courses', userId],
+    queryFn: () =>
+      fetchListFromApi<CourseDto>(
         `${API_COURSES}?trainerId=${userId}`,
         accessToken,
       ),
-      staleTime: TEN_MINUTES,
-    },
-  );
+    staleTime: TEN_MINUTES,
+  });
 }
 
 export function compensationValuesSuspenseQuery(accessToken: string) {
   return useSuspenseQuery({
     queryKey: [API_COMPENSATION_VALUES],
-    queryFn: () => fetchListFromApi<CompensationValueDto>(
-      `${API_COMPENSATION_VALUES}`,
-      accessToken,
-    ),
+    queryFn: () =>
+      fetchListFromApi<CompensationValueDto>(
+        `${API_COMPENSATION_VALUES}`,
+        accessToken,
+      ),
     staleTime: 60 * 1000,
   });
 }
 
 export function userSuspenseQuery(
-  userId: string, accessToken: string,
+  userId: string,
+  accessToken: string,
   includeCognitoProperties: boolean = false,
   expandCompensationClasses: boolean = false,
-  expandCompensationValues: boolean = false) {
+  expandCompensationValues: boolean = false,
+) {
   let expand = [];
   if (includeCognitoProperties) {
     expand.push('cognito');
@@ -114,86 +120,99 @@ export function userSuspenseQuery(
     expand.push('compensationValues');
   }
   return useSuspenseQuery({
-    queryKey: [API_USERS, userId, includeCognitoProperties, expandCompensationClasses, expandCompensationValues],
-    queryFn: () => fetchSingleEntity<UserDto>(API_USERS, userId, accessToken, [`expand=${expand.join(',')}`]),
+    queryKey: [
+      API_USERS,
+      userId,
+      includeCognitoProperties,
+      expandCompensationClasses,
+      expandCompensationValues,
+    ],
+    queryFn: () =>
+      fetchSingleEntity<UserDto>(API_USERS, userId, accessToken, [
+        `expand=${expand.join(',')}`,
+      ]),
   });
 }
 
 export function disciplinesSuspenseQuery(accessToken: string) {
   return useSuspenseQuery({
-      queryKey: [API_DISCIPLINES],
-      queryFn: () => fetchListFromApi<DisciplineDto>(
-        `${API_DISCIPLINES}`,
-        accessToken,
-      ),
-      staleTime: TEN_MINUTES,
-    },
-  );
+    queryKey: [API_DISCIPLINES],
+    queryFn: () =>
+      fetchListFromApi<DisciplineDto>(`${API_DISCIPLINES}`, accessToken),
+    staleTime: TEN_MINUTES,
+  });
 }
 
-export function yearlyTotalsSuspenseQuery(accessToken: string, year: number, trainerId: String | null) {
+export function yearlyTotalsSuspenseQuery(
+  accessToken: string,
+  year: number,
+  trainerId: String | null,
+) {
   const trainerIdQuery = trainerId ? `&trainerId=${trainerId}` : '';
   return useSuspenseQuery({
-      queryKey: [API_TRAININGS_YEARLY_TOTALS, year, trainerId],
-      queryFn: () => fetchListFromApi<YearlyTotalDto>(
+    queryKey: [API_TRAININGS_YEARLY_TOTALS, year, trainerId],
+    queryFn: () =>
+      fetchListFromApi<YearlyTotalDto>(
         `${API_TRAININGS_YEARLY_TOTALS}?year=${year}${trainerIdQuery}`,
         accessToken,
         'POST',
       ),
-      staleTime: TEN_MINUTES,
-    },
-  );
+    staleTime: TEN_MINUTES,
+  });
 }
 
 export function countPerCourseSuspenseQuery(accessToken: string, year: number) {
   return useSuspenseQuery({
-      queryKey: [API_TRAININGS_COUNT_PER_COURSE, year],
-      queryFn: () => fetchListFromApi<TrainingCountPerCourse>(
+    queryKey: [API_TRAININGS_COUNT_PER_COURSE, year],
+    queryFn: () =>
+      fetchListFromApi<TrainingCountPerCourse>(
         `${API_TRAININGS_COUNT_PER_COURSE}?year=${year}`,
         accessToken,
         'POST',
       ),
-      staleTime: TEN_MINUTES,
-    },
-  );
+    staleTime: TEN_MINUTES,
+  });
 }
 
 export function termsOfServiceSuspenseQuery() {
   return useSuspenseQuery({
-      queryKey: ['terms-and-conditions'],
-      queryFn: async () => {
-        const response = await fetch('/terms-and-conditions.md');
-        return await response.text();
-      },
-      staleTime: TEN_MINUTES,
+    queryKey: ['terms-and-conditions'],
+    queryFn: async () => {
+      const response = await fetch('/terms-and-conditions.md');
+      return await response.text();
     },
-  );
+    staleTime: TEN_MINUTES,
+  });
 }
 
-export function compensationClassesSuspenseQuery(accessToken: string, expandCompensationValues: boolean = false) {
+export function compensationClassesSuspenseQuery(
+  accessToken: string,
+  expandCompensationValues: boolean = false,
+) {
   let query = '';
   if (expandCompensationValues) {
     query = '?expand=compensationValues';
   }
   return useSuspenseQuery({
-      queryKey: [API_COMPENSATION_CLASSES, expandCompensationValues],
-      queryFn: () => fetchListFromApi<CompensationClassDto>(
+    queryKey: [API_COMPENSATION_CLASSES, expandCompensationValues],
+    queryFn: () =>
+      fetchListFromApi<CompensationClassDto>(
         `${API_COMPENSATION_CLASSES}${query}`,
         accessToken,
       ),
-      staleTime: TEN_MINUTES,
-    },
-  );
+    staleTime: TEN_MINUTES,
+  });
 }
 
 export function compensationClassesQuery(accessToken: string) {
   const key = [API_COMPENSATION_CLASSES, true];
   return useQuery({
     queryKey: key,
-    queryFn: () => fetchListFromApi<CompensationClassDto>(
-      `${API_COMPENSATION_CLASSES}?expand=compensationValues`,
-      accessToken,
-    ),
+    queryFn: () =>
+      fetchListFromApi<CompensationClassDto>(
+        `${API_COMPENSATION_CLASSES}?expand=compensationValues`,
+        accessToken,
+      ),
     throwOnError: true,
     enabled: Boolean(accessToken),
     staleTime: TEN_MINUTES,
@@ -207,10 +226,8 @@ export function paymentsSuspenseQuery(accessToken: string, trainerId?: string) {
   }
   return useSuspenseQuery({
     queryKey: [API_PAYMENTS, trainerId],
-    queryFn: () => fetchListFromApi<PaymentDto>(
-      `${API_PAYMENTS}?${params}`,
-      accessToken,
-    ),
+    queryFn: () =>
+      fetchListFromApi<PaymentDto>(`${API_PAYMENTS}?${params}`, accessToken),
     staleTime: TEN_MINUTES,
   });
 }
@@ -224,10 +241,11 @@ export function queryCompensations(accessToken: string, paymentId: number) {
 
   return useSuspenseQuery({
     queryKey: [API_COMPENSATIONS, paymentId],
-    queryFn: () => fetchListFromApi<CompensationDto>(
-      `${API_COMPENSATIONS}?${params.toString()}`,
-      accessToken,
-    ),
+    queryFn: () =>
+      fetchListFromApi<CompensationDto>(
+        `${API_COMPENSATIONS}?${params.toString()}`,
+        accessToken,
+      ),
     staleTime: 10 * 60 * 1000,
   }).data;
 }

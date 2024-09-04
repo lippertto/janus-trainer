@@ -29,7 +29,7 @@ type FormData = {
   date: dayjs.Dayjs;
   participantCount: string;
   compensationValue: CompensationValueDto | null;
-}
+};
 
 function determineDefaultCourse(courses: CourseLight[], today: DayOfWeek) {
   if (courses.length === 1) {
@@ -40,12 +40,17 @@ function determineDefaultCourse(courses: CourseLight[], today: DayOfWeek) {
 
 function determineDefaultCompensationValueForCourse(
   compensationValues: CompensationValueDto[],
-  course: CourseLight | null): CompensationValueDto | null {
+  course: CourseLight | null,
+): CompensationValueDto | null {
   if (!compensationValues || compensationValues.length === 0) {
     return null;
   }
   if (!course) return null;
-  return compensationValues.find((cv) => (cv.durationMinutes === course.durationMinutes)) ?? compensationValues[0];
+  return (
+    compensationValues.find(
+      (cv) => cv.durationMinutes === course.durationMinutes,
+    ) ?? compensationValues[0]
+  );
 }
 
 function determineDefaultCompensationValue(
@@ -61,9 +66,14 @@ function determineDefaultCompensationValue(
   }
   if (toEdit) {
     // we have ensured that a cv with the compensation cents exists, so we can assert that a value exists.
-    return compensationValues.find((cv) => (cv.cents === toEdit.compensationCents))!;
+    return compensationValues.find(
+      (cv) => cv.cents === toEdit.compensationCents,
+    )!;
   } else if (course) {
-    return determineDefaultCompensationValueForCourse(compensationValues, course);
+    return determineDefaultCompensationValueForCourse(
+      compensationValues,
+      course,
+    );
   } else {
     return compensationValues[0];
   }
@@ -73,32 +83,45 @@ function determineDefaultValues(
   toEdit: TrainingDto | null,
   courses: CourseLight[],
   compensationValues: CompensationValueDto[],
-  today: DayOfWeek): FormData {
-
+  today: DayOfWeek,
+): FormData {
   let course = toEdit?.course ?? determineDefaultCourse(courses, today);
   return {
     comment: toEdit?.comment ?? '',
     course: course,
     date: toEdit?.date ? dayjs(toEdit.date) : dayjs(),
     participantCount: toEdit?.participantCount?.toString() ?? '',
-    compensationValue: determineDefaultCompensationValue(compensationValues, course, toEdit),
+    compensationValue: determineDefaultCompensationValue(
+      compensationValues,
+      course,
+      toEdit,
+    ),
   };
 }
 
 function courseDisplayname(c: CourseLight): string {
-  const prefix = c.weekdays.map((wd) => dayOfWeekToHumanReadable(wd, true)).join(',');
+  const prefix = c.weekdays
+    .map((wd) => dayOfWeekToHumanReadable(wd, true))
+    .join(',');
   return `(${prefix}): ${c.name}`;
 }
 
 function compensationValueToText(cv: CompensationValueDto) {
-  return `${cv.description} (${(centsToHumanReadable(cv.cents))})`;
+  return `${cv.description} (${centsToHumanReadable(cv.cents)})`;
 }
 
-function prepareCompensationValues(compensationValues: CompensationValueDto[], toEdit: TrainingDto | null) {
+function prepareCompensationValues(
+  compensationValues: CompensationValueDto[],
+  toEdit: TrainingDto | null,
+) {
   let result = [...compensationValues];
   // add new compensation value in case the one from toEdit has no corresponding value.
   if (toEdit) {
-    if (compensationValues.findIndex((cv) => (cv.cents === toEdit.compensationCents)) === -1) {
+    if (
+      compensationValues.findIndex(
+        (cv) => cv.cents === toEdit.compensationCents,
+      ) === -1
+    ) {
       result.push({
         id: -1,
         cents: toEdit.compensationCents,
@@ -112,19 +135,17 @@ function prepareCompensationValues(compensationValues: CompensationValueDto[], t
   return result;
 }
 
-export default function TrainingDialog(
-  props: {
-    open: boolean,
-    toEdit: TrainingDto | null,
-    userId: string,
-    courses: CourseLight[],
-    compensationValues: CompensationValueDto[],
-    today: DayOfWeek,
-    handleClose: () => void,
-    handleSave: (v: TrainingCreateRequest) => void,
-    handleDelete: (v: TrainingDto) => void,
-  },
-) {
+export default function TrainingDialog(props: {
+  open: boolean;
+  toEdit: TrainingDto | null;
+  userId: string;
+  courses: CourseLight[];
+  compensationValues: CompensationValueDto[];
+  today: DayOfWeek;
+  handleClose: () => void;
+  handleSave: (v: TrainingCreateRequest) => void;
+  handleDelete: (v: TrainingDto) => void;
+}) {
   const {
     register,
     handleSubmit,
@@ -136,7 +157,10 @@ export default function TrainingDialog(
     formState: { errors, isValid },
   } = useForm<FormData>();
 
-  const enrichedCompensationValues = prepareCompensationValues(props.compensationValues, props.toEdit);
+  const enrichedCompensationValues = prepareCompensationValues(
+    props.compensationValues,
+    props.toEdit,
+  );
 
   const [previous, setPrevious] = React.useState<TrainingDto | null>(null);
 
@@ -151,7 +175,14 @@ export default function TrainingDialog(
         userId: props.userId,
       });
       props.handleClose();
-      reset(determineDefaultValues(null, props.courses, enrichedCompensationValues, props.today));
+      reset(
+        determineDefaultValues(
+          null,
+          props.courses,
+          enrichedCompensationValues,
+          props.today,
+        ),
+      );
     }
   };
 
@@ -165,19 +196,37 @@ export default function TrainingDialog(
     // compensationValue from 'toEdit'.
     if (props.toEdit && courseValue) {
       if (courseValue.id === props.toEdit.course!.id) {
-        setValue('compensationValue', enrichedCompensationValues.find((cv) => (cv.cents === props.toEdit!.compensationCents))!);
+        setValue(
+          'compensationValue',
+          enrichedCompensationValues.find(
+            (cv) => cv.cents === props.toEdit!.compensationCents,
+          )!,
+        );
         return;
       }
     }
 
-    setValue('compensationValue', determineDefaultCompensationValueForCourse(enrichedCompensationValues, courseValue));
+    setValue(
+      'compensationValue',
+      determineDefaultCompensationValueForCourse(
+        enrichedCompensationValues,
+        courseValue,
+      ),
+    );
   }, [watchCourse]);
 
   React.useEffect(() => {
     if (props.toEdit !== previous) {
       setPrevious(props.toEdit);
     }
-    reset(determineDefaultValues(props.toEdit, props.courses, enrichedCompensationValues, props.today));
+    reset(
+      determineDefaultValues(
+        props.toEdit,
+        props.courses,
+        enrichedCompensationValues,
+        props.today,
+      ),
+    );
   }, [props.toEdit]);
 
   const confirm = useConfirm();
@@ -186,13 +235,11 @@ export default function TrainingDialog(
       title: 'Training löschen?',
       description: `Soll das Training "${training.course?.name}" vom ${dateToHumanReadable(training.date)} gelöscht werden?`,
     })
-      .then(
-        () => {
-          props.handleDelete!(training);
-          props.handleClose();
-        },
-      ).catch(() => {
-    });
+      .then(() => {
+        props.handleDelete!(training);
+        props.handleClose();
+      })
+      .catch(() => {});
   };
 
   return (
@@ -200,8 +247,11 @@ export default function TrainingDialog(
       open={props.open}
       onClose={() => {
         props.handleClose();
-      }}>
-      <DialogTitle>{props.toEdit ? 'Training bearbeiten' : 'Training hinzufügen'}</DialogTitle>
+      }}
+    >
+      <DialogTitle>
+        {props.toEdit ? 'Training bearbeiten' : 'Training hinzufügen'}
+      </DialogTitle>
       <form onSubmit={handleSubmit(onSubmit)}>
         <DialogContent>
           <Stack direction={'column'} spacing={2}>
@@ -236,34 +286,39 @@ export default function TrainingDialog(
                     <TextField
                       {...params}
                       label="Kurs"
-                      placeholder={props.courses.length === 0 ? 'Keine Kurse hinterlegt' : undefined}
+                      placeholder={
+                        props.courses.length === 0
+                          ? 'Keine Kurse hinterlegt'
+                          : undefined
+                      }
                       required={true}
                     />
                   )}
-                  isOptionEqualToValue={(a, b) => (a.id === b.id)}
-                />)
-              }
+                  isOptionEqualToValue={(a, b) => a.id === b.id}
+                />
+              )}
             />
 
             <Controller
               control={control}
               name="compensationValue"
-
               render={({ field: fieldProps }) => {
-                return <Autocomplete
-                  {...fieldProps}
-                  options={enrichedCompensationValues}
-                  getOptionLabel={compensationValueToText}
-                  onChange={(e, data) => fieldProps.onChange(data)}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label="Vergütung"
-                      required={true}
-                    />
-                  )}
-                  isOptionEqualToValue={(a, b) => (a.id === b.id)}
-                />;
+                return (
+                  <Autocomplete
+                    {...fieldProps}
+                    options={enrichedCompensationValues}
+                    getOptionLabel={compensationValueToText}
+                    onChange={(e, data) => fieldProps.onChange(data)}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label="Vergütung"
+                        required={true}
+                      />
+                    )}
+                    isOptionEqualToValue={(a, b) => a.id === b.id}
+                  />
+                );
               }}
             />
 
@@ -272,29 +327,26 @@ export default function TrainingDialog(
               required={true}
               type="number"
               {...register('participantCount')}
-              inputProps={{min: 0, max: 999}}
+              inputProps={{ min: 0, max: 999 }}
             />
 
-            <TextField
-              label="Kommentar"
-              {...register('comment')}
-            />
+            <TextField label="Kommentar" {...register('comment')} />
           </Stack>
         </DialogContent>
         <DialogActions>
           <Button onClick={props.handleClose}>Abbrechen</Button>
-          {
-            (props.toEdit) ?
-              <Button
-                data-testid="add-training-delete-button"
-                onClick={() => handleDeleteClick(props.toEdit!)} color={'error'}>löschen</Button>
-              : null
-          } <Button
-          type="submit"
-        >Speichern</Button>
+          {props.toEdit ? (
+            <Button
+              data-testid="add-training-delete-button"
+              onClick={() => handleDeleteClick(props.toEdit!)}
+              color={'error'}
+            >
+              löschen
+            </Button>
+          ) : null}{' '}
+          <Button type="submit">Speichern</Button>
         </DialogActions>
       </form>
     </Dialog>
   );
-
 }

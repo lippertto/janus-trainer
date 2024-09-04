@@ -11,36 +11,32 @@ import '@testing-library/jest-dom';
 jest.mock('@/lib/shared-queries', () => {
   return {
     __esModule: true,
-    yearlyTotalsSuspenseQuery: jest.fn(() =>
-      ({
-        data:
-          [{
-            trainerId: 'miau',
-            trainingCountQ1: 0,
-            trainingCountQ2: 0,
-            trainingCountQ3: 0,
-            trainingCountQ4: 0,
-            trainingCountTotal: 0,
-            compensationCentsQ1: 0,
-            compensationCentsQ2: 0,
-            compensationCentsQ3: 0,
-            compensationCentsQ4: 0,
-            compensationCentsTotal: 0,
-          },
-          ],
-      }),
-    ),
-    termsOfServiceSuspenseQuery: jest.fn(() => ("")),
-    default:
-      jest.fn(() => 'mocked baz'),
-  }
-    ;
+    yearlyTotalsSuspenseQuery: jest.fn(() => ({
+      data: [
+        {
+          trainerId: 'miau',
+          trainingCountQ1: 0,
+          trainingCountQ2: 0,
+          trainingCountQ3: 0,
+          trainingCountQ4: 0,
+          trainingCountTotal: 0,
+          compensationCentsQ1: 0,
+          compensationCentsQ2: 0,
+          compensationCentsQ3: 0,
+          compensationCentsQ4: 0,
+          compensationCentsTotal: 0,
+        },
+      ],
+    })),
+    termsOfServiceSuspenseQuery: jest.fn(() => ''),
+    default: jest.fn(() => 'mocked baz'),
+  };
 });
 
 // https://github.com/remarkjs/react-markdown/issues/635#issuecomment-991137447
-jest.mock("react-markdown", () => (props: {children: React.ReactNode}) => {
-  return <>{props.children}</>
-})
+jest.mock('react-markdown', () => (props: { children: React.ReactNode }) => {
+  return <>{props.children}</>;
+});
 
 test('happy case: handles groups', async () => {
   const user: UserDto = {
@@ -53,13 +49,14 @@ test('happy case: handles groups', async () => {
     termsAcceptedAt: null,
     termsAcceptedVersion: null,
   };
-  render(<Profile
-    user={user}
-    courses={[]}
-    handleEditIbanClick={() => {
-    }}
-    accessToken="123"
-  />);
+  render(
+    <Profile
+      user={user}
+      courses={[]}
+      handleEditIbanClick={() => {}}
+      accessToken="123"
+    />,
+  );
 
   const groupField = screen.getByTestId('profile-groups-textfield');
   // @ts-ignore IntelliJ thinks that value does not exist
@@ -75,13 +72,14 @@ test('handles missing groups', async () => {
     groups: undefined,
     compensationClasses: [],
   } as any as UserDto;
-  render(<Profile
-    user={user}
-    courses={[]}
-    handleEditIbanClick={() => {
-    }}
-    accessToken={'123'}
-  />);
+  render(
+    <Profile
+      user={user}
+      courses={[]}
+      handleEditIbanClick={() => {}}
+      accessToken={'123'}
+    />,
+  );
 
   const groupField = screen.getByTestId('profile-groups-textfield');
   // @ts-ignore IntelliJ thinks that value does not exist

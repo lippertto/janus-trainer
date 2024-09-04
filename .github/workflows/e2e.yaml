@@ -25,7 +25,7 @@ jobs:
       - name: Run Playwright tests
         run: yarn playwright:test
         env:
-          PLAYWRIGHT_BASE_URL: "https://janus-test.lippert.dev"
+          PLAYWRIGHT_BASE_URL: 'https://janus-test.lippert.dev'
           COGNITO_ADMIN_USERNAME: janus.test.admin@fastmail.com
           COGNITO_ADMIN_PASSWORD: ${{ secrets.cognito-admin-password }}
           COGNITO_TRAINER_USERNAME: janus.test.trainer.1@fastmail.com

@@ -25,7 +25,11 @@ import { JanusSession } from '@/lib/auth';
 import { showError } from '@/lib/notifications';
 import { Holiday, TrainingStatus } from '@prisma/client';
 import { TrainingDto } from '@/lib/dto';
-import { useMutation, useQueryClient, useSuspenseQuery } from '@tanstack/react-query';
+import {
+  useMutation,
+  useQueryClient,
+  useSuspenseQuery,
+} from '@tanstack/react-query';
 import { fetchListFromApi, patchInApi } from '@/lib/fetch';
 import { API_TRAININGS, API_TRAININGS_SUMMARIZE } from '@/lib/routes';
 import { useConfirm } from 'material-ui-confirm';
@@ -63,11 +67,18 @@ function buildGridColumns(
       field: 'warnings',
       headerName: '',
       renderCell: ({ row }: { row: TrainingDto }) => {
-        const dateMessages = warningsForDate(row.date, holidays, row.course!.weekdays);
+        const dateMessages = warningsForDate(
+          row.date,
+          holidays,
+          row.course!.weekdays,
+        );
         if (dateMessages.length !== 0) {
           return (
             <Tooltip title={dateMessages.join(', ')}>
-              <WarningAmberIcon sx={{ color: 'orange' }} style={{ verticalAlign: 'middle' }} />
+              <WarningAmberIcon
+                sx={{ color: 'orange' }}
+                style={{ verticalAlign: 'middle' }}
+              />
             </Tooltip>
           );
         }
@@ -80,7 +91,7 @@ function buildGridColumns(
       headerName: 'Übungsleitung',
       flex: 1.5,
       valueGetter: (_value, row: TrainingDto) => {
-        return row.user?.name ?? "";
+        return row.user?.name ?? '';
       },
     },
     {
@@ -89,7 +100,8 @@ function buildGridColumns(
       flex: 2,
       valueGetter: (_value, row: TrainingDto) => {
         const hour = row.course?.startHour.toString().padStart(2, '0') ?? '';
-        const minute = row.course?.startMinute.toString().padStart(2, '0') ?? '';
+        const minute =
+          row.course?.startMinute.toString().padStart(2, '0') ?? '';
         return `${row.course?.name} ${hour}:${minute}, ${row.course?.durationMinutes}min`;
       },
     },
@@ -97,19 +109,20 @@ function buildGridColumns(
       field: 'participantCount',
       headerName: 'Mitglieder',
       type: 'number',
-      flex: .7,
+      flex: 0.7,
     },
     {
       field: 'compensationCents',
       headerName: 'Pauschale',
-      flex: .7,
-      valueFormatter: (value: number) => (centsToHumanReadable(value)),
+      flex: 0.7,
+      valueFormatter: (value: number) => centsToHumanReadable(value),
     },
     {
       field: 'status',
       headerName: 'Status',
-      flex: .7,
-      valueGetter: (value: TrainingStatus) => (trainingStatusToHumanReadable(value)),
+      flex: 0.7,
+      valueGetter: (value: TrainingStatus) =>
+        trainingStatusToHumanReadable(value),
     },
     {
       field: 'comment',
@@ -165,24 +178,31 @@ declare module '@mui/x-data-grid' {
   }
 }
 
-function TrainingTableToolbar(
-  {
-    handleDelete,
-  }: TrainingTableToolbarProps) {
+function TrainingTableToolbar({ handleDelete }: TrainingTableToolbarProps) {
   return (
     <GridToolbarContainer>
       <Button
         startIcon={<DeleteIcon />}
         disabled={!Boolean(handleDelete)}
-        onClick={handleDelete}>
+        onClick={handleDelete}
+      >
         löschen
       </Button>
     </GridToolbarContainer>
   );
 }
 
-function queryKeyForTrainings(start: dayjs.Dayjs, end: dayjs.Dayjs, trainerId?: string) {
-  return [API_TRAININGS, start.format('YYYY-MM-DD'), end.format('YYYY-MM-DD'), trainerId];
+function queryKeyForTrainings(
+  start: dayjs.Dayjs,
+  end: dayjs.Dayjs,
+  trainerId?: string,
+) {
+  return [
+    API_TRAININGS,
+    start.format('YYYY-MM-DD'),
+    end.format('YYYY-MM-DD'),
+    trainerId,
+  ];
 }
 
 function trainingsQuery(
@@ -191,22 +211,23 @@ function trainingsQuery(
   filterEnd: dayjs.Dayjs,
   trainerId?: string,
 ) {
-  let queryComponents = ["expand=user"]
+  let queryComponents = ['expand=user'];
   const startString = filterStart.format('YYYY-MM-DD');
   queryComponents.push(`start=${startString}`);
   const endString = filterEnd.format('YYYY-MM-DD');
   queryComponents.push(`end=${endString}`);
   if (trainerId) {
-    queryComponents.push(`trainerId=${trainerId}`)
+    queryComponents.push(`trainerId=${trainerId}`);
   }
-  const queryString = queryComponents.join("&");
+  const queryString = queryComponents.join('&');
 
   return useSuspenseQuery({
     queryKey: queryKeyForTrainings(filterStart, filterEnd, trainerId),
-    queryFn: () => fetchListFromApi<TrainingDto>(
-      `${API_TRAININGS}?${queryString}`,
-      accessToken!,
-    ),
+    queryFn: () =>
+      fetchListFromApi<TrainingDto>(
+        `${API_TRAININGS}?${queryString}`,
+        accessToken!,
+      ),
     staleTime: 10 * 60 * 1000,
   });
 }
@@ -248,7 +269,8 @@ function revokeMutation(
   session: JanusSession,
   setTrainings: (value: TrainingDto[]) => void,
   trainings: TrainingDto[],
-  refresh: () => void) {
+  refresh: () => void,
+) {
   return useMutation({
     mutationFn: (id: number) => {
       return patchInApi<TrainingDto>(
@@ -284,53 +306,70 @@ type TrainingTableProps = {
  * Every change to the trainings will trigger a refresh of the data from the server.
  * The refresh function has been throttled to keep the load low.
  */
-export default function TrainingTable(
-  {
-    holidays,
-    session,
-    ...props
-  }: TrainingTableProps) {
+export default function TrainingTable({
+  holidays,
+  session,
+  ...props
+}: TrainingTableProps) {
   const queryClient = useQueryClient();
 
-  const [rowSelectionModel, setRowSelectionModel] = React.useState<GridRowSelectionModel>(
-    [],
-  );
+  const [rowSelectionModel, setRowSelectionModel] =
+    React.useState<GridRowSelectionModel>([]);
   const [activeTraining, setActiveTraining] =
     React.useState<TrainingDto | null>(null);
 
   const [trainings, setTrainings] = React.useState<TrainingDto[]>([]);
 
-  const { data: trainingData } = props.trainerId ?
-    trainingsQuery(session.accessToken,
-      props.startDate, props.endDate, props.trainerId,
-    ) : { data: [] };
-
+  const { data: trainingData } = props.trainerId
+    ? trainingsQuery(
+        session.accessToken,
+        props.startDate,
+        props.endDate,
+        props.trainerId,
+      )
+    : { data: [] };
 
   React.useEffect(() => {
     setTrainings(trainingData.toSorted(compareTrainings));
   }, [trainingData]);
-
 
   const refresh = throttle(
     3000,
     () => {
       queryClient.invalidateQueries({
         queryKey: queryKeyForTrainings(
-          props.startDate, props.endDate, props.trainerId ?? undefined,
+          props.startDate,
+          props.endDate,
+          props.trainerId ?? undefined,
         ),
       });
-      queryClient.invalidateQueries({ queryKey: [API_TRAININGS_SUMMARIZE, props.startDate, props.endDate] });
+      queryClient.invalidateQueries({
+        queryKey: [API_TRAININGS_SUMMARIZE, props.startDate, props.endDate],
+      });
     },
     { noLeading: true },
   );
 
-  const approveTrainingMutation = approveMutation(session.accessToken, trainings, setTrainings, refresh);
-  const revokeTrainingMutation = revokeMutation(session, setTrainings, trainings, refresh);
-  const deleteTrainingMutation = trainingDeleteQuery(session.accessToken, trainings,
+  const approveTrainingMutation = approveMutation(
+    session.accessToken,
+    trainings,
+    setTrainings,
+    refresh,
+  );
+  const revokeTrainingMutation = revokeMutation(
+    session,
+    setTrainings,
+    trainings,
+    refresh,
+  );
+  const deleteTrainingMutation = trainingDeleteQuery(
+    session.accessToken,
+    trainings,
     (trainings) => {
       setTrainings(trainings);
       refresh();
-    });
+    },
+  );
 
   const confirm = useConfirm();
   const handleDeleteClick = (training: TrainingDto) => {
@@ -338,23 +377,19 @@ export default function TrainingTable(
       title: 'Training löschen?',
       description: `Soll das Training "${training.course!.name}" vom ${dateToHumanReadable(training.date)} gelöscht werden?`,
     })
-      .then(
-        () => {
-          deleteTrainingMutation.mutate(training);
-          refresh();
-        },
-      ).catch(() => {
-      showError('Fehler beim Löschen des Trainings');
-    });
+      .then(() => {
+        deleteTrainingMutation.mutate(training);
+        refresh();
+      })
+      .catch(() => {
+        showError('Fehler beim Löschen des Trainings');
+      });
   };
 
-  const columns = buildGridColumns(holidays,
-    (id: GridRowId) => (
-      () => approveTrainingMutation.mutate(id as number)
-    ),
-    (id: GridRowId) => (
-      () => revokeTrainingMutation.mutate(id as number)
-    ),
+  const columns = buildGridColumns(
+    holidays,
+    (id: GridRowId) => () => approveTrainingMutation.mutate(id as number),
+    (id: GridRowId) => () => revokeTrainingMutation.mutate(id as number),
   );
 
   return (
@@ -369,26 +404,25 @@ export default function TrainingTable(
         // rows should be sorted before we pass them on. Else, the rows might jump when their status is changed.
         rows={trainings}
         rowSelectionModel={rowSelectionModel}
-        onRowSelectionModelChange={
-          (newValue) => {
-            if (newValue.length === 0) {
-              setActiveTraining(null);
-            } else {
-              setActiveTraining(
-                trainings.find((t) => (t?.id === newValue[0] as number)) ??
-                null,
-              )
-              ;
-            }
-            setRowSelectionModel(newValue);
+        onRowSelectionModelChange={(newValue) => {
+          if (newValue.length === 0) {
+            setActiveTraining(null);
+          } else {
+            setActiveTraining(
+              trainings.find((t) => t?.id === (newValue[0] as number)) ?? null,
+            );
           }
-        }
+          setRowSelectionModel(newValue);
+        }}
         slots={{
           toolbar: TrainingTableToolbar,
         }}
         slotProps={{
           toolbar: {
-            handleDelete: activeTraining && activeTraining.status === TrainingStatus.NEW ? () => (handleDeleteClick(activeTraining)) : undefined,
+            handleDelete:
+              activeTraining && activeTraining.status === TrainingStatus.NEW
+                ? () => handleDeleteClick(activeTraining)
+                : undefined,
           },
         }}
         {...props}

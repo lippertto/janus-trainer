@@ -1,6 +1,14 @@
-import { ErrorDto, UserCreateRequest, UserDto, UserQueryResponseDto } from '@/lib/dto';
-import { allowOnlyAdmins, handleTopLevelCatch, validateOrThrow } from '@/lib/helpers-for-api';
-
+import {
+  ErrorDto,
+  UserCreateRequest,
+  UserDto,
+  UserQueryResponseDto,
+} from '@/lib/dto';
+import {
+  allowOnlyAdmins,
+  handleTopLevelCatch,
+  validateOrThrow,
+} from '@/lib/helpers-for-api';
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createUser } from '@/app/api/users/createUser';
@@ -20,14 +28,16 @@ export async function GET(
   }
 }
 
-
 export async function POST(
   nextRequest: NextRequest,
 ): Promise<NextResponse<UserDto | ErrorDto>> {
   try {
     await allowOnlyAdmins(nextRequest);
-    const request = await validateOrThrow(UserCreateRequest, await nextRequest.json());
-    return NextResponse.json(await createUser(request), {status: 201});
+    const request = await validateOrThrow(
+      UserCreateRequest,
+      await nextRequest.json(),
+    );
+    return NextResponse.json(await createUser(request), { status: 201 });
   } catch (e) {
     return handleTopLevelCatch(e);
   }

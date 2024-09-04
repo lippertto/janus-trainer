@@ -7,20 +7,23 @@ import React from 'react';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import { useForm } from 'react-hook-form';
-import { CompensationClassDto, CompensationClassUpdateRequest } from '@/lib/dto';
-
+import {
+  CompensationClassDto,
+  CompensationClassUpdateRequest,
+} from '@/lib/dto';
 
 export default function CompensationClassDialog(props: {
-  open: boolean,
-  toEdit: CompensationClassDto | null,
-  handleClose: () => void,
-  handleSave: (data: CompensationClassUpdateRequest) => void,
+  open: boolean;
+  toEdit: CompensationClassDto | null;
+  handleClose: () => void;
+  handleSave: (data: CompensationClassUpdateRequest) => void;
 }) {
-  const [previousValue, setPreviousValue] = React.useState<CompensationClassDto | null>();
+  const [previousValue, setPreviousValue] =
+    React.useState<CompensationClassDto | null>();
 
   type FormData = {
     name: string;
-  }
+  };
   const {
     register,
     handleSubmit,
@@ -38,7 +41,6 @@ export default function CompensationClassDialog(props: {
     }
   }, [props.toEdit]);
 
-
   const onSubmit = (data: FormData) => {
     if (isValid) {
       props.handleSave({
@@ -49,29 +51,37 @@ export default function CompensationClassDialog(props: {
     }
   };
 
-
-  return <Dialog open={props.open}>
-    <DialogTitle>{props.toEdit ? 'Pauschalen-Gruppe bearbeiten' : 'Pauschalen-Gruppe hinzufügen'}</DialogTitle>
-    <form onSubmit={handleSubmit(onSubmit)}>
-      <DialogContent>
-        <Stack spacing={2} sx={{ mt: 2 }}>
-          <TextField
-            label="Name"
-            required={true}
-            {...register('name')}
-            error={!!errors.name?.message}
-            helperText={errors.name?.message || ''}
-          />
-        </Stack>
-
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={() => {
-          props.handleClose();
-          reset();
-        }}>Abbrechen</Button>
-        <Button type="submit">Speichern</Button>
-      </DialogActions>
-    </form>
-  </Dialog>;
+  return (
+    <Dialog open={props.open}>
+      <DialogTitle>
+        {props.toEdit
+          ? 'Pauschalen-Gruppe bearbeiten'
+          : 'Pauschalen-Gruppe hinzufügen'}
+      </DialogTitle>
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <DialogContent>
+          <Stack spacing={2} sx={{ mt: 2 }}>
+            <TextField
+              label="Name"
+              required={true}
+              {...register('name')}
+              error={!!errors.name?.message}
+              helperText={errors.name?.message || ''}
+            />
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => {
+              props.handleClose();
+              reset();
+            }}
+          >
+            Abbrechen
+          </Button>
+          <Button type="submit">Speichern</Button>
+        </DialogActions>
+      </form>
+    </Dialog>
+  );
 }

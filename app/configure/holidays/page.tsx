@@ -31,49 +31,55 @@ import { DatePicker } from '@mui/x-date-pickers';
 import { compareByField } from '@/lib/sort-and-filter';
 
 function HolidayList(props: {
-  accessToken: string,
-  setHolidays: (v: HolidayDto[]) => void,
-  year: number,
-  selectedHolidayId: number | null,
-  setSelectedHolidayId: (v: number) => void
+  accessToken: string;
+  setHolidays: (v: HolidayDto[]) => void;
+  year: number;
+  selectedHolidayId: number | null;
+  setSelectedHolidayId: (v: number) => void;
 }) {
-  const { data: holidays } = holidaysSuspenseQuery(props.accessToken, [props.year]);
+  const { data: holidays } = holidaysSuspenseQuery(props.accessToken, [
+    props.year,
+  ]);
   // we set the state only after the first render is complete.
   setTimeout(() => props.setHolidays(holidays), 300);
 
-  return <List style={{ maxHeight: 500, overflow: 'auto' }}>
-    {holidays
-      .sort((a, b) => (compareByField(a, b, "start")))
-      .map(
-      (d) =>
-        (<ListItemButton
-          key={d.id}
-          onClick={() => {
-            props.setSelectedHolidayId(d.id);
-          }}
-          selected={props.selectedHolidayId === d.id}
-        >
-          <ListItemText primary={d.name}
-                        secondary={`${dateToHumanReadable(d.start)} - ${dateToHumanReadable(d.end)}`} />
-        </ListItemButton>))}
-  </List>;
+  return (
+    <List style={{ maxHeight: 500, overflow: 'auto' }}>
+      {holidays
+        .sort((a, b) => compareByField(a, b, 'start'))
+        .map((d) => (
+          <ListItemButton
+            key={d.id}
+            onClick={() => {
+              props.setSelectedHolidayId(d.id);
+            }}
+            selected={props.selectedHolidayId === d.id}
+          >
+            <ListItemText
+              primary={d.name}
+              secondary={`${dateToHumanReadable(d.start)} - ${dateToHumanReadable(d.end)}`}
+            />
+          </ListItemButton>
+        ))}
+    </List>
+  );
 }
 
 function HolidayPageContents({ session }: { session: JanusSession }) {
-  const currentYear =  new Date().getFullYear();
+  const currentYear = new Date().getFullYear();
   const confirm = useConfirm();
 
-  const [selectedHolidayId, setSelectedHolidayId] = useState<number | null>(null);
+  const [selectedHolidayId, setSelectedHolidayId] = useState<number | null>(
+    null,
+  );
   const [dialogOpen, setDialogOpen] = React.useState<boolean>(false);
 
   const [holidays, setHolidays] = React.useState<HolidayDto[]>([]);
-  const [holidayYear, setHolidayYear] = React.useState<number>(
-   currentYear
-  );
+  const [holidayYear, setHolidayYear] = React.useState<number>(currentYear);
   const queryClient = useQueryClient();
 
   const handleDeleteClick = (selectedHolidayId: number | null) => {
-    const holiday = holidays.find((h) => (h.id === selectedHolidayId));
+    const holiday = holidays.find((h) => h.id === selectedHolidayId);
     if (!holiday) return;
     confirm({
       title: 'Feiertag löschen?',
@@ -88,7 +94,9 @@ function HolidayPageContents({ session }: { session: JanusSession }) {
       addHoliday(session.accessToken, start, end, name)
         .then((h) => {
           if (h.start.substring(0, 4) === holidayYear.toString()) {
-            queryClient.invalidateQueries({ queryKey: [API_HOLIDAYS, holidayYear] });
+            queryClient.invalidateQueries({
+              queryKey: [API_HOLIDAYS, holidayYear],
+            });
             setHolidays([...holidays, h]);
           }
         })
@@ -106,76 +114,88 @@ function HolidayPageContents({ session }: { session: JanusSession }) {
     (holiday: HolidayDto) => {
       deleteHoliday(session.accessToken, holiday.id.toString())
         .then(() => {
-          queryClient.invalidateQueries({ queryKey: [API_HOLIDAYS, holidayYear] });
+          queryClient.invalidateQueries({
+            queryKey: [API_HOLIDAYS, holidayYear],
+          });
           setHolidays(holidays.filter((h) => h.id !== holiday.id));
         })
         .then(() => {
           showSuccess(`Feiertag ${holiday?.name ?? ''} gelöscht`);
         })
         .catch((e) => {
-          showError(`Konnte den Feiertag ${holiday?.name ?? ''} nicht löschen`, e.message);
+          showError(
+            `Konnte den Feiertag ${holiday?.name ?? ''} nicht löschen`,
+            e.message,
+          );
         });
     },
     [holidays, setHolidays],
   );
 
-  return <>
-    <Paper sx={{ p: 2 }}>
-      <Stack spacing={2}>
-        <Typography variant="h5">Feiertage</Typography>
-        <Stack direction="row" spacing={4}>
-          <ButtonGroup>
-            <Button
-              data-testid={'add-holiday-button'}
-              onClick={() => {
-                setDialogOpen(true);
-              }}>
-              Hinzufügen
-            </Button>
-            <Button disabled={!selectedHolidayId} onClick={() => handleDeleteClick(selectedHolidayId)}>
-              Löschen
-            </Button>
-          </ButtonGroup>
-          <DatePicker
-            views={['year']}
-            label="Jahr"
-            value={dayjs(`${holidayYear}-01-01`)}
-            minDate={dayjs(`2023-01-01`)}
-            maxDate={dayjs(`${currentYear}-01-01`)}
-            onChange={(value) => {
-              if (!value) return;
-              setHolidayYear(value.year());
+  return (
+    <>
+      <Paper sx={{ p: 2 }}>
+        <Stack spacing={2}>
+          <Typography variant="h5">Feiertage</Typography>
+          <Stack direction="row" spacing={4}>
+            <ButtonGroup>
+              <Button
+                data-testid={'add-holiday-button'}
+                onClick={() => {
+                  setDialogOpen(true);
+                }}
+              >
+                Hinzufügen
+              </Button>
+              <Button
+                disabled={!selectedHolidayId}
+                onClick={() => handleDeleteClick(selectedHolidayId)}
+              >
+                Löschen
+              </Button>
+            </ButtonGroup>
+            <DatePicker
+              views={['year']}
+              label="Jahr"
+              value={dayjs(`${holidayYear}-01-01`)}
+              minDate={dayjs(`2023-01-01`)}
+              maxDate={dayjs(`${currentYear}-01-01`)}
+              onChange={(value) => {
+                if (!value) return;
+                setHolidayYear(value.year());
+              }}
+              sx={{ mb: 3, width: 140 }}
+            />
+          </Stack>
+          <ClickAwayListener
+            onClickAway={() => {
+              setSelectedHolidayId(null);
             }}
-            sx={{ mb: 3, width: 140 }}
-          />
+          >
+            <Box>
+              <Suspense fallback={<LoadingSpinner />}>
+                <HolidayList
+                  accessToken={session.accessToken}
+                  year={holidayYear}
+                  setHolidays={setHolidays}
+                  selectedHolidayId={selectedHolidayId}
+                  setSelectedHolidayId={setSelectedHolidayId}
+                />
+              </Suspense>
+            </Box>
+          </ClickAwayListener>
         </Stack>
-        <ClickAwayListener onClickAway={() => {
-          setSelectedHolidayId(null);
-        }}>
-          <Box>
-            <Suspense fallback={<LoadingSpinner />}>
-              <HolidayList
-                accessToken={session.accessToken}
-                year={holidayYear}
-                setHolidays={setHolidays}
-                selectedHolidayId={selectedHolidayId}
-                setSelectedHolidayId={setSelectedHolidayId}
-              />
-            </Suspense>
-          </Box>
-        </ClickAwayListener>
-      </Stack>
-    </Paper>
-    <EnterHolidayDialog
-      open={dialogOpen}
-      handleClose={() => setDialogOpen(false)} handleSave={
-      handleAddHoliday
-    } />
-  </>;
+      </Paper>
+      <EnterHolidayDialog
+        open={dialogOpen}
+        handleClose={() => setDialogOpen(false)}
+        handleSave={handleAddHoliday}
+      />
+    </>
+  );
 }
 
 export default function HolidayPage() {
-
   const { data, status: authenticationStatus } = useSession();
   const session = data as JanusSession;
 

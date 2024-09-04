@@ -9,7 +9,6 @@ import DisciplineCard from '@/app/offerings/cost-centers/DisciplineCard';
 import Box from '@mui/material/Box';
 
 function ConfigurationPageContents({ session }: { session: JanusSession }) {
-
   return (
     <Box maxWidth={400}>
       <DisciplineCard session={session} />

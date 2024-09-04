@@ -1,9 +1,9 @@
-AWSTemplateFormatVersion: "2010-09-09"
+AWSTemplateFormatVersion: '2010-09-09'
 
 Parameters:
   JanusEnvironment:
     Type: String
-    AllowedValues: [ 'dev', 'test', 'prod' ]
+    AllowedValues: ['dev', 'test', 'prod']
     Description: >-
       For which environment you want to create the infrastructure.
       The value will be used as suffix to the resources.
@@ -38,7 +38,7 @@ Resources:
   JanusUserPool:
     Type: AWS::Cognito::UserPool
     Properties:
-      UserPoolName: !Join [ "-", [ "janus-trainer-pool", !Ref JanusEnvironment ] ]
+      UserPoolName: !Join ['-', ['janus-trainer-pool', !Ref JanusEnvironment]]
       AdminCreateUserConfig:
         AllowAdminCreateUserOnly: True
         InviteMessageTemplate:
@@ -59,7 +59,7 @@ Resources:
   JanusUserPoolDomain:
     Type: AWS::Cognito::UserPoolDomain
     Properties:
-      Domain: !Join [ "-", [ "janus-trainer-app", !Ref JanusEnvironment ] ]
+      Domain: !Join ['-', ['janus-trainer-app', !Ref JanusEnvironment]]
       UserPoolId: !Ref JanusUserPool
   JanusUserPoolGroupAdmins:
     Type: AWS::Cognito::UserPoolGroup
@@ -95,9 +95,9 @@ Resources:
     Type: AWS::Cognito::UserPoolClient
     Properties:
       UserPoolId: !Ref JanusUserPool
-      ClientName: !Join [ "-", [ "janus-trainer-app", !Ref JanusEnvironment ] ]
+      ClientName: !Join ['-', ['janus-trainer-app', !Ref JanusEnvironment]]
       CallbackURLs:
-        - !Sub "https://${JanusDomain}/api/auth/callback/cognito"
+        - !Sub 'https://${JanusDomain}/api/auth/callback/cognito'
         - http://localhost:3000/api/auth/callback/cognito
       SupportedIdentityProviders:
         - COGNITO
@@ -122,9 +122,9 @@ Resources:
   JanusTrainerAppRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub "JanusTrainerAppRole-${JanusEnvironment}"
+      RoleName: !Sub 'JanusTrainerAppRole-${JanusEnvironment}'
       AssumeRolePolicyDocument:
-        Version: "2012-10-17"
+        Version: '2012-10-17'
         Statement:
           - Effect: Allow
             Principal:
@@ -139,7 +139,7 @@ Resources:
     Type: AWS::IAM::RolePolicy
     Properties:
       RoleName: !Ref JanusTrainerAppRole
-      PolicyName: !Sub "JanusTrainerAppPolicy-${JanusEnvironment}"
+      PolicyName: !Sub 'JanusTrainerAppPolicy-${JanusEnvironment}'
       PolicyDocument:
         Version: '2012-10-17'
         Statement:
@@ -177,12 +177,28 @@ Resources:
       Timeout: 30
       Environment:
         Variables:
-          NEXTAUTH_URL: !Sub "https://${JanusDomain}"
+          NEXTAUTH_URL: !Sub 'https://${JanusDomain}'
           NEXTAUTH_SECRET: tobias-secret-value
           COGNITO_CLIENT_ID: !Ref JanusUserPoolClient
           COGNITO_REGION: eu-north-1
           COGNITO_USER_POOL_ID: !Ref JanusUserPool
-          POSTGRES_CONNECTION_URL: !Join [ '', ['postgres://', !Ref PostgresUsername, ':', !Ref PostgresPassword, '@', !ImportValue JanusDbEndpoint, ':', !ImportValue JanusDbPort, '/', !Ref PostgresDatabase, '?connection_limit=1' ]]
+          POSTGRES_CONNECTION_URL:
+            !Join [
+              '',
+              [
+                'postgres://',
+                !Ref PostgresUsername,
+                ':',
+                !Ref PostgresPassword,
+                '@',
+                !ImportValue JanusDbEndpoint,
+                ':',
+                !ImportValue JanusDbPort,
+                '/',
+                !Ref PostgresDatabase,
+                '?connection_limit=1',
+              ],
+            ]
 
   JanusTrainerAppLambdaUrl:
     Type: AWS::Lambda::Url
@@ -196,15 +212,15 @@ Resources:
     Properties:
       FunctionName: !Ref JanusTrainerAppLambda
       Action: lambda:InvokeFunctionUrl
-      Principal: "*"
-      FunctionUrlAuthType: "NONE"
+      Principal: '*'
+      FunctionUrlAuthType: 'NONE'
 
   JanusTrainerStaticContentsCachePolicy:
     Type: AWS::CloudFront::CachePolicy
     Properties:
       CachePolicyConfig:
-        Name: !Sub "JanusTrainerStaticContents-${JanusEnvironment}"
-        Comment: "Cache optimized policy with a long TTl"
+        Name: !Sub 'JanusTrainerStaticContents-${JanusEnvironment}'
+        Comment: 'Cache optimized policy with a long TTl'
         DefaultTTL: 604800 # seconds in one week
         MinTTL: 604800 # seconds in one week
         MaxTTL: 31536000 # seconds in one year
@@ -223,11 +239,15 @@ Resources:
     Properties:
       DistributionConfig:
         Enabled: true
-        PriceClass: PriceClass_100  # US+Europe
-        Comment: !Sub "Janus Trainer App - ${JanusEnvironment}"
+        PriceClass: PriceClass_100 # US+Europe
+        Comment: !Sub 'Janus Trainer App - ${JanusEnvironment}'
         Origins:
           - Id: janus-trainer-lambda
-            DomainName: !Select [2, !Split ["/", !GetAtt JanusTrainerAppLambdaUrl.FunctionUrl]]
+            DomainName:
+              !Select [
+                2,
+                !Split ['/', !GetAtt JanusTrainerAppLambdaUrl.FunctionUrl],
+              ]
             CustomOriginConfig:
               OriginProtocolPolicy: https-only
               OriginSSLProtocols:
@@ -239,14 +259,21 @@ Resources:
             ViewerProtocolPolicy: redirect-to-https
             AllowedMethods: [GET, HEAD, OPTIONS]
             CachePolicyId: !Ref JanusTrainerStaticContentsCachePolicy
-            OriginRequestPolicyId: !FindInMap [Constants, ManagedPolicyIds, AllViewerExceptHostHeader]
+            OriginRequestPolicyId:
+              !FindInMap [
+                Constants,
+                ManagedPolicyIds,
+                AllViewerExceptHostHeader,
+              ]
         DefaultCacheBehavior:
           TargetOriginId: janus-trainer-lambda
           Compress: true
           ViewerProtocolPolicy: redirect-to-https
           AllowedMethods: [GET, HEAD, OPTIONS, PUT, POST, PATCH, DELETE]
-          CachePolicyId: !FindInMap [Constants, ManagedPolicyIds, CachingDisabled]
-          OriginRequestPolicyId: !FindInMap [Constants, ManagedPolicyIds, AllViewerExceptHostHeader]
+          CachePolicyId:
+            !FindInMap [Constants, ManagedPolicyIds, CachingDisabled]
+          OriginRequestPolicyId:
+            !FindInMap [Constants, ManagedPolicyIds, AllViewerExceptHostHeader]
         Aliases:
           - !Ref JanusDomain
         ViewerCertificate:
