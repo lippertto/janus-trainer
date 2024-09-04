@@ -1,8 +1,8 @@
 'use client';
 import Stack from '@mui/material/Stack';
-import { CircularProgress, Paper, Typography } from '@mui/material';
+import { Paper, Typography } from '@mui/material';
 import React from 'react';
-import { useMutation, useSuspenseQuery } from '@tanstack/react-query';
+import { useMutation, useQueryClient, useSuspenseQuery } from '@tanstack/react-query';
 import { createInApi, deleteFromApi, fetchListFromApi, updateInApi } from '@/lib/fetch';
 import { API_COURSES } from '@/lib/routes';
 import { useSession } from 'next-auth/react';
@@ -12,44 +12,18 @@ import ButtonGroup from '@mui/material/ButtonGroup';
 import Button from '@mui/material/Button';
 import { useConfirm } from 'material-ui-confirm';
 import { showError, showSuccess } from '@/lib/notifications';
-import { compareByField, compareNamed } from '@/lib/sort-and-filter';
-import Grid from '@mui/material/Unstable_Grid2';
-import { CourseCreateRequest, CourseDto, UserDto } from '@/lib/dto';
+import { compareNamed, replaceElementWithId } from '@/lib/sort-and-filter';
+import { CourseCreateRequest, CourseDto } from '@/lib/dto';
 import { CourseDialog } from '@/app/offerings/CourseDialog';
-import { disciplinesSuspenseQuery, resultHasData, trainersSuspenseQuery } from '@/lib/shared-queries';
-import { CourseCard } from '@/components/CourseCard';
-
-type CourseCardsProps = {
-  courses: CourseDto[] | null;
-  activeCourse: CourseDto | null;
-  setActiveCourse: (ac: CourseDto) => void;
-}
-
-function CourseCards(props: CourseCardsProps) {
-  if (props.courses === null) {
-    return <Stack alignItems="center"><CircularProgress /> </Stack>;
-  }
-
-  return <Grid container spacing={2}>
-    {
-      props.courses.map((c) => (
-        <Grid key={c.id}>
-          <CourseCard
-            highlight={props.activeCourse?.id === c.id}
-            onCourseClicked={props.setActiveCourse}
-            course={c} />
-        </Grid>))
-    }
-  </Grid>;
-}
+import { disciplinesSuspenseQuery, trainersSuspenseQuery } from '@/lib/shared-queries';
+import CourseTable from '@/app/offerings/CourseTable';
 
 function OfferingsPageContents({ session }: { session: JanusSession }) {
-
-  const [courses, setCourses] = React.useState<CourseDto[]>([]);
+  const queryClient = useQueryClient();
   const [activeCourse, setActiveCourse] = React.useState<CourseDto | null>(null);
   const [createCourseOpen, setCourseDialogOpen] = React.useState(false);
 
-  const courseResult = useSuspenseQuery({
+  const { data: courses } = useSuspenseQuery({
     queryKey: [API_COURSES],
     queryFn: () => fetchListFromApi<CourseDto>(`${API_COURSES}`, session.accessToken),
     staleTime: 10 * 60 * 1000,
@@ -59,13 +33,12 @@ function OfferingsPageContents({ session }: { session: JanusSession }) {
   trainers.sort(compareNamed);
 
   let { data: disciplines } = disciplinesSuspenseQuery(session.accessToken);
-  disciplines.sort(compareNamed);
 
   const deleteCourseMutation = useMutation({
     mutationFn: (course: CourseDto) => deleteFromApi(API_COURSES, course, session.accessToken),
     onSuccess: (data) => {
       showSuccess(`Kurs ${data.name} gelöscht`);
-      setCourses(courses.filter(d => (d.id !== data.id)));
+      queryClient.setQueryData([API_COURSES], courses.filter(d => (d.id !== data.id)));
     },
     onError: (e) => {
       showError(`Fehler beim Löschen von ${activeCourse?.name}`, e.message);
@@ -77,7 +50,7 @@ function OfferingsPageContents({ session }: { session: JanusSession }) {
       return createInApi<CourseDto>(API_COURSES, props, session?.accessToken ?? '');
     },
     onSuccess: (data: CourseDto) => {
-      setCourses([...courses, data].toSorted(compareNamed));
+      queryClient.setQueryData([API_COURSES], [...courses, data]);
       showSuccess(`Kurs ${data.name} erstellt`);
     },
     onError: (e) => {
@@ -91,33 +64,14 @@ function OfferingsPageContents({ session }: { session: JanusSession }) {
       return updateInApi<CourseDto>(API_COURSES, props.activeCourse?.id ?? '', updateRequest, session?.accessToken ?? '');
     },
     onSuccess: (data: CourseDto) => {
-      const newCourses = courses.map((d) => {
-        if (d.id === data.id) {
-          return data;
-        } else {
-          return d;
-        }
-      });
-      setCourses(newCourses.toSorted(compareNamed));
+      queryClient.setQueryData([API_COURSES], replaceElementWithId(courses, data));
+
       showSuccess(`Kurs ${data.name} aktualisiert`);
     },
     onError: (e) => {
       showError(`Fehler beim Erstellen vom Kurs`, e.message);
     },
   });
-
-  React.useEffect(() => {
-    if (courseResult.isLoading) {
-      return;
-    }
-    if (courseResult.isError) {
-      showError(`Konnte Termine für nicht laden.`);
-      return;
-    }
-    setCourses(courseResult.data!.toSorted(compareNamed));
-  }, [
-    courseResult.data,
-  ]);
 
   const confirm = useConfirm();
   const handleDeleteCourseClick = () => {
@@ -161,10 +115,11 @@ function OfferingsPageContents({ session }: { session: JanusSession }) {
             hinzufügen
           </Button>
         </ButtonGroup>
-        <CourseCards
-          courses={courses !== undefined ? courses : null}
+        <CourseTable
+          courses={courses}
           activeCourse={activeCourse}
           setActiveCourse={setActiveCourse}
+          disciplines={disciplines}
         />
       </Stack>
     </Paper>
