@@ -5,7 +5,7 @@ import { useSession } from 'next-auth/react';
 
 import { JanusSession } from '@/lib/auth';
 import LoginRequired from '@/components/LoginRequired';
-import DisciplineCard from '@/app/configure/cost-centers/DisciplineCard';
+import DisciplineCard from '@/app/offerings/cost-centers/DisciplineCard';
 import Box from '@mui/material/Box';
 
 function ConfigurationPageContents({ session }: { session: JanusSession }) {

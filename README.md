@@ -15,24 +15,23 @@ Then, you have to include the api tests in jest.config.js and run `yarn test`.
 # TODO
 
 ## Next up
-* Cost centers should go to offerings
+* prettier + eslint do not run
 
 ## Bugs
 * Current IBAN is used in payments, not the one that was used for the actual
   payment. This should be fixed.
 
 ## Features
+* Re-send verification mail
+* Reset password
 * Offerings should be list
-* Split analysis: Euros (per trainer)/ #trainings (per course/trainer)
-  * List of trainers. For each trainer: how many Euros have been received
 * Make courses disabled. (Also in the UI.)
 * Playwright test: enter -> approve -> compensate.
 * Warning if training limits have been reached
 * offerings: make weekday a radio group. Training can have only 1 weekday
-* Re-send verification mail
-* Reset password
 * Report: Same Courses on same day
 * Filter dates on enter page
+* Pdf download for taxes. Trainer x received y euros for z units. Lock year! 
 
 ## Tech update
 * Add training index for user, date, and user+date

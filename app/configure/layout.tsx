@@ -1,7 +1,7 @@
 'use client';
 
 import React, { ErrorInfo, Suspense } from 'react';
-import { ErrorBoundary, FallbackProps } from 'react-error-boundary';
+import { ErrorBoundary } from 'react-error-boundary';
 import PleaseReload from '@/components/PleaseReload';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { redirect, usePathname } from 'next/navigation';
@@ -15,7 +15,7 @@ const logError = (error: Error, info: ErrorInfo) => {
 export default function ConfigureLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   if (pathname === '/configure') {
-    redirect('/configure/holidays')
+    redirect('/configure/holidays');
   }
   let value;
   switch (pathname) {
@@ -26,9 +26,6 @@ export default function ConfigureLayout({ children }: { children: React.ReactNod
     case '/configure/compensation-values':
       value = 1;
       break;
-    case '/configure/cost-centers':
-      value=2;
-      break;
     default:
       value = 0;
   }
@@ -36,10 +33,9 @@ export default function ConfigureLayout({ children }: { children: React.ReactNod
   return <React.Fragment>
     <ErrorBoundary fallbackRender={PleaseReload} onError={logError}>
 
-      <Tabs orientation={'horizontal'} value={value} >
-        <Tab label='Feiertage' value={0} component={Link} href={'/configure/holidays'} />
-        <Tab label='Pauschalen' value={1}  component={Link} href={'/configure/compensation-values'}/>
-        <Tab label='Kostenstellen' value={2}  component={Link} href={'/configure/cost-centers'}/>
+      <Tabs orientation={'horizontal'} value={value}>
+        <Tab label="Feiertage" value={0} component={Link} href={'/configure/holidays'} />
+        <Tab label="Pauschalen" value={1} component={Link} href={'/configure/compensation-values'} />
       </Tabs>
       <Suspense fallback={<LoadingSpinner />}>
         {children}
