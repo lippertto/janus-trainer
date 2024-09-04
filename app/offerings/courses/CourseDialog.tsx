@@ -217,7 +217,7 @@ export function CourseDialog(
   };
 
   return (
-    <Dialog open={open}>
+    <Dialog open={open} onClose={handleClose}>
       <DialogTitle>{courseToEdit ? 'Kurs bearbeiten' : 'Kurs hinzufügen'}</DialogTitle>
 
       <DialogContent>

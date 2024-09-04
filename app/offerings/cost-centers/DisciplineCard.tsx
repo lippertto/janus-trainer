@@ -15,10 +15,9 @@ import List from '@mui/material/List';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
 import { disciplinesSuspenseQuery } from '@/lib/shared-queries';
-import { ClickAwayListener } from '@mui/base/ClickAwayListener';
 import Box from '@mui/system/Box';
 import { compareByField } from '@/lib/sort-and-filter';
-import { DisciplineDialog } from '@/app/configure/cost-centers/DisciplineDialog';
+import { DisciplineDialog } from '@/app/offerings/cost-centers/DisciplineDialog';
 
 
 function DisciplineList(props: {

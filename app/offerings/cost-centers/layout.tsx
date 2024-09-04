@@ -1,7 +1,7 @@
 'use client';
 
 import React, { ErrorInfo, Suspense } from 'react';
-import { ErrorBoundary, FallbackProps } from 'react-error-boundary';
+import { ErrorBoundary } from 'react-error-boundary';
 import PleaseReload from '@/components/PleaseReload';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 
