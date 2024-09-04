@@ -15,8 +15,8 @@ const logError = (error: Error, info: ErrorInfo) => {
 
 export default function ConfigureLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  if (pathname === '/configure') {
-    redirect('/configure/courses');
+  if (pathname === '/offerings') {
+    redirect('/offerings/courses');
   }
   let value;
   switch (pathname) {
