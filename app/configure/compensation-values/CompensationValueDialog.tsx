@@ -42,7 +42,7 @@ export default function CompensationValueDialog(props: {
       }
       const defaultValues = {
         description: props.toEdit?.description ?? '',
-        cents: cents?.toString() ?? '',
+        cents: cents?.toFixed(2).replace('.', ',') ?? '',
         durationMinutes: props.toEdit?.durationMinutes?.toString() ?? '',
       };
       reset(defaultValues);

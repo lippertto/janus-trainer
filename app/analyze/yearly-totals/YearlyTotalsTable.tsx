@@ -1,14 +1,7 @@
 import { YearlyTotalDto } from '@/lib/dto';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import Box from '@mui/material/Box';
-
-function currencyFormatter(value: number) {
-  return new Intl.NumberFormat('de-DE', {
-    style: 'currency',
-    currency: 'EUR',
-    minimumFractionDigits: 2,
-  }).format(value);
-}
+import { currencyFormatter } from '@/lib/formatters';
 
 function buildColumns(): GridColDef[] {
   const compensationCentsWidth = 100; // allows to show 1000,00 €

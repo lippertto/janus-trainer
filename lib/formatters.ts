@@ -55,3 +55,12 @@ export function trainingStatusToHumanReadable(value: TrainingStatus) {
 export function ibanToHumanReadable(value: string) {
   return value.replace(/(.{4})/g, '$1 ').trim();
 }
+
+/** Takes the given number and formats it as a euro display value. */
+export function currencyFormatter(euros: number) {
+  return new Intl.NumberFormat('de-DE', {
+    style: 'currency',
+    currency: 'EUR',
+    minimumFractionDigits: 2,
+  }).format(euros);
+}
