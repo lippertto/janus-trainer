@@ -54,7 +54,7 @@ export default function CompensationValueDialog(props: {
     if (isValid) {
       props.handleSave({
         description: data.description,
-        cents: parseFloat(data.cents.replace(',', '.')) * 100,
+        cents: Math.round(parseFloat(data.cents.replace(',', '.')) * 100),
         durationMinutes: parseInt(data.durationMinutes),
       });
       props.handleClose();

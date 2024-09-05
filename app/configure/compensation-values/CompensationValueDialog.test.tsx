@@ -49,4 +49,45 @@ describe('compensation value dialog', () => {
       }),
     );
   });
+
+  test('Can enter floating point values for cents', async () => {
+    const save = jest.fn();
+    const close = jest.fn();
+    render(
+      <CompensationValueDialog
+        open={true}
+        handleClose={close}
+        handleSave={save}
+        toEdit={null}
+      />,
+    );
+
+    const centsTextBox = await screen.findByRole('textbox', { name: 'Betrag' });
+    await userEvent.type(centsTextBox!, '32,13');
+    expect(centsTextBox).toHaveValue('32,13');
+
+    const nameTextBox = await screen.findByRole('textbox', {
+      name: 'Bezeichnung',
+    });
+    await userEvent.type(nameTextBox!, 'name');
+
+    const durationTextBox = await screen.findByRole('spinbutton', {
+      name: /dauer.*/i,
+    });
+    await userEvent.type(durationTextBox!, '120');
+
+    const saveButton = await screen.findByRole('button', {
+      name: /Speichern/i,
+    });
+    expect(saveButton).toBeEnabled();
+    fireEvent.submit(saveButton);
+
+    await waitFor(() =>
+      expect(save).toHaveBeenCalledWith({
+        cents: 3213,
+        description: 'name',
+        durationMinutes: 120,
+      }),
+    );
+  });
 });
