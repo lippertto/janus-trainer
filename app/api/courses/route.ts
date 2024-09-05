@@ -11,8 +11,8 @@ import prisma from '@/lib/prisma';
 
 async function createCourse(nextRequest: NextRequest) {
   const rawRequest = new CourseCreateRequest(await nextRequest.json());
-  const request: CourseCreateRequest = await validateOrThrowOld<CourseCreateRequest>(
-    rawRequest);
+  const request: CourseCreateRequest =
+    await validateOrThrowOld<CourseCreateRequest>(rawRequest);
 
   const course = await prisma.course.create({
     data: {
@@ -32,7 +32,9 @@ async function createCourse(nextRequest: NextRequest) {
   return NextResponse.json(course, { status: 201 });
 }
 
-export async function POST(nextRequest: NextRequest): Promise<NextResponse<Course | ErrorDto>> {
+export async function POST(
+  nextRequest: NextRequest,
+): Promise<NextResponse<Course | ErrorDto>> {
   try {
     await allowOnlyAdmins(nextRequest);
 
@@ -42,7 +44,9 @@ export async function POST(nextRequest: NextRequest): Promise<NextResponse<Cours
   }
 }
 
-async function getAllCourses(trainerId: string | null): Promise<NextResponse<CourseQueryResponse>> {
+async function getAllCourses(
+  trainerId: string | null,
+): Promise<NextResponse<CourseQueryResponse>> {
   let filter;
   if (trainerId) {
     filter = {
@@ -53,16 +57,16 @@ async function getAllCourses(trainerId: string | null): Promise<NextResponse<Cou
   } else {
     filter = {};
   }
-  const value = await prisma.course.findMany(
-    {
-      where: filter,
-      include: { trainers: true },
-    },
-  );
+  const value = await prisma.course.findMany({
+    where: filter,
+    include: { trainers: true },
+  });
   return NextResponse.json({ value });
 }
 
-export async function GET(request: NextRequest): Promise<NextResponse<CourseQueryResponse | ErrorDto>> {
+export async function GET(
+  request: NextRequest,
+): Promise<NextResponse<CourseQueryResponse | ErrorDto>> {
   try {
     await allowAnyLoggedIn(request);
     return await getAllCourses(request.nextUrl.searchParams.get('trainerId'));

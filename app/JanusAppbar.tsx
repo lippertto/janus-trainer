@@ -31,7 +31,7 @@ export default function JanusAppbar() {
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             Janus Abrechnungs-App
           </Typography>
-         <HelpButton/>
+          <HelpButton />
         </Toolbar>
       </AppBar>
       <JanusDrawer state={drawerOpen} setState={setDrawerOpen} />

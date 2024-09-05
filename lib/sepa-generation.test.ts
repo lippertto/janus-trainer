@@ -34,7 +34,7 @@ describe('sepa generation works', () => {
       totalCompensationCents: 50000,
       totalTrainings: 4,
       costCenterId: 1,
-      costCenterName: "Kostenstelle 1",
+      costCenterName: 'Kostenstelle 1',
       courseName: 'Kurs 1',
     };
     const c2: CompensationDto = {
@@ -49,7 +49,7 @@ describe('sepa generation works', () => {
       totalCompensationCents: 10000,
       totalTrainings: 2,
       costCenterId: 2,
-      costCenterName: "Kostenstelle 2",
+      costCenterName: 'Kostenstelle 2',
       courseName: 'Kurs 2',
     };
     // WHEN
@@ -68,15 +68,13 @@ describe('sepa generation works', () => {
       sepaDom,
       false,
     ) as any;
-    expect(remittanceInfo[0].textContent).toBe(
-      'Kurs 1 2023-04-01..2023-04-30',
-    );
+    expect(remittanceInfo[0].textContent).toBe('Kurs 1 2023-04-01..2023-04-30');
     // test the amounts
     const instructedAmounts = select(
       `${TRANSACTIONS}/pain:Amt/pain:InstdAmt/text()`,
       sepaDom,
       false,
-    )as any as Node[];
+    ) as any as Node[];
     expect(instructedAmounts).toHaveLength(2);
     expect(instructedAmounts[0]?.textContent).toBe('500.00');
     expect(instructedAmounts[1]?.textContent).toBe('100.00');

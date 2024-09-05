@@ -8,9 +8,12 @@ export function compareNamed(a: { name: string }, b: { name: string }): number {
   return 0;
 }
 
-type ElementWithId = { id: number | string }
+type ElementWithId = { id: number | string };
 
-export function replaceElementWithId<T extends ElementWithId>(array: T[], value: T): T[] {
+export function replaceElementWithId<T extends ElementWithId>(
+  array: T[],
+  value: T,
+): T[] {
   let found = false;
   const result = array.map((d) => {
     if (d.id === value.id) {
@@ -24,7 +27,9 @@ export function replaceElementWithId<T extends ElementWithId>(array: T[], value:
     }
   });
   if (!found) {
-    console.error(`Wanted to update element with id ${value.id}, but it was not found`);
+    console.error(
+      `Wanted to update element with id ${value.id}, but it was not found`,
+    );
   }
   return result;
 }

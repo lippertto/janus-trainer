@@ -3,7 +3,6 @@ import React, { useEffect } from 'react';
 
 import { useSession } from 'next-auth/react';
 
-
 import { JanusSession } from '@/lib/auth';
 import LoginRequired from '@/components/LoginRequired';
 import Stack from '@mui/system/Stack';
@@ -13,18 +12,32 @@ import { compareByField } from '@/lib/sort-and-filter';
 import { CompensationValueCard } from '@/app/configure/compensation-values/CompensationValueCard';
 import CompensationClassCard from '@/app/configure/compensation-values/CompensationClassCard';
 
-function CompensationvalueConfigurationPageContents({ session }: { session: JanusSession }) {
-  const [activeCompensationClass, setActiveCompensationClass] = React.useState<CompensationClassDto | null>(null);
-  const [compensationClasses, setCompensationClasses] = React.useState<CompensationClassDto[]>([]);
+function CompensationvalueConfigurationPageContents({
+  session,
+}: {
+  session: JanusSession;
+}) {
+  const [activeCompensationClass, setActiveCompensationClass] =
+    React.useState<CompensationClassDto | null>(null);
+  const [compensationClasses, setCompensationClasses] = React.useState<
+    CompensationClassDto[]
+  >([]);
 
-  const compensationClassesResult = compensationClassesQuery(session.accessToken);
+  const compensationClassesResult = compensationClassesQuery(
+    session.accessToken,
+  );
   useEffect(() => {
     if (resultHasData(compensationClassesResult)) {
-      setCompensationClasses(compensationClassesResult.data!.toSorted((a, b) => compareByField(a, b, 'description')).toReversed());
+      setCompensationClasses(
+        compensationClassesResult
+          .data!.toSorted((a, b) => compareByField(a, b, 'description'))
+          .toReversed(),
+      );
     }
   }, [compensationClassesResult.data]);
 
-  return (<>
+  return (
+    <>
       <Stack direction={'row'} spacing={5}>
         <CompensationClassCard
           compensationClasses={compensationClasses}
@@ -32,7 +45,6 @@ function CompensationvalueConfigurationPageContents({ session }: { session: Janu
           activeCompensationClass={activeCompensationClass}
           setActiveCompensationClass={setActiveCompensationClass}
           accessToken={session.accessToken}
-
         />
 
         <CompensationValueCard

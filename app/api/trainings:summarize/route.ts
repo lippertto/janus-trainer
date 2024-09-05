@@ -4,7 +4,10 @@ import dayjs from 'dayjs';
 import { TrainingSummaryListDto } from '@/lib/dto';
 import prisma from '@/lib/prisma';
 
-async function summarizeTrainings(startDate: dayjs.Dayjs, endDate: dayjs.Dayjs): Promise<NextResponse<TrainingSummaryListDto>> {
+async function summarizeTrainings(
+  startDate: dayjs.Dayjs,
+  endDate: dayjs.Dayjs,
+): Promise<NextResponse<TrainingSummaryListDto>> {
   const sqlResult: any[] = await prisma.$queryRaw`
 SELECT CAST(u."id" AS TEXT) AS "trainerId",
             u.name as "trainerName",
@@ -12,8 +15,8 @@ SELECT CAST(u."id" AS TEXT) AS "trainerId",
             SUM(case when gt.status = 'APPROVED' then 1 else 0 end) as "approvedTrainingCount"
     FROM "Training" AS gt INNER JOIN "User" AS u ON gt."userId" = u."id"
     WHERE "u"."deletedAt" IS NULL
-    AND "gt"."date" >= ${startDate.format("YYYY-MM-DD")}
-    AND "gt"."date" <= ${endDate.format("YYYY-MM-DD")}
+    AND "gt"."date" >= ${startDate.format('YYYY-MM-DD')}
+    AND "gt"."date" <= ${endDate.format('YYYY-MM-DD')}
     GROUP BY ("u"."id", "u"."name");
 `;
   const value = sqlResult.map((r) => ({
@@ -22,7 +25,7 @@ SELECT CAST(u."id" AS TEXT) AS "trainerId",
     newTrainingCount: Number(r.newTrainingCount),
     approvedTrainingCount: Number(r.approvedTrainingCount),
   }));
-  return NextResponse.json({value});
+  return NextResponse.json({ value });
 }
 
 export async function POST(request: NextRequest) {
@@ -38,5 +41,4 @@ export async function POST(request: NextRequest) {
   } catch (e) {
     return handleTopLevelCatch(e);
   }
-
 }

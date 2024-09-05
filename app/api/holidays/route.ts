@@ -19,10 +19,7 @@ function convertStringToNumberArray(str: string): number[] {
   return numberArray;
 }
 
-async function doGET(
-  request: NextRequest,
-
-) {
+async function doGET(request: NextRequest) {
   await allowAnyLoggedIn(request);
 
   const yearAsString = request.nextUrl.searchParams.get('year');
@@ -49,7 +46,6 @@ async function doGET(
   }
 
   return NextResponse.json({ value: result });
-
 }
 
 export async function GET(

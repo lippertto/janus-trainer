@@ -19,7 +19,6 @@ async function deletePayment(idAsString: string) {
   return emptyResponse();
 }
 
-
 export async function DELETE(
   request: NextRequest,
   { params }: { params: { id: string } },

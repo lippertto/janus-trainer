@@ -2,7 +2,8 @@ import {
   CompensationClass,
   CompensationValue,
   Course,
-  DayOfWeek, Discipline,
+  DayOfWeek,
+  Discipline,
   Holiday,
   Training,
   TrainingStatus,
@@ -40,19 +41,22 @@ export type UserDto = {
   termsAcceptedVersion: string | null;
 };
 
-export type TrainerLight = Pick<UserDto, 'name' | 'id'>
-export type CourseLight = Pick<CourseDto, 'name' | 'id' | 'weekdays' | 'startHour' | 'startMinute' | 'durationMinutes'>
+export type TrainerLight = Pick<UserDto, 'name' | 'id'>;
+export type CourseLight = Pick<
+  CourseDto,
+  'name' | 'id' | 'weekdays' | 'startHour' | 'startMinute' | 'durationMinutes'
+>;
 
-export type TrainingDto = Omit<Training, "approvedAt" | "compensatedAt"> & {
-  user?: TrainerLight,
-  course?: CourseLight,
-  approvedAt?: string,
-  compensatedAt?: string,
-}
+export type TrainingDto = Omit<Training, 'approvedAt' | 'compensatedAt'> & {
+  user?: TrainerLight;
+  course?: CourseLight;
+  approvedAt?: string;
+  compensatedAt?: string;
+};
 
 export type TrainingQueryResponse = {
-  value: TrainingDto[],
-}
+  value: TrainingDto[];
+};
 
 export class TrainingCreateRequest {
   constructor(obj: any) {
@@ -118,12 +122,11 @@ export class UserCreateRequest {
   @IsEnum(Group, { each: true })
   groups: Group[];
 
-  @IsInt({each: true})
+  @IsInt({ each: true })
   compensationClassIds: number[];
 }
 
-export class UserUpdateRequest extends UserCreateRequest {
-}
+export class UserUpdateRequest extends UserCreateRequest {}
 
 export class UserPatchRequest {
   constructor(obj: any) {
@@ -205,12 +208,11 @@ export class CompensationValueCreateRequest {
   durationMinutes: number | null;
 }
 
-export class CompensationValueUpdateRequest extends CompensationValueCreateRequest {
-}
+export class CompensationValueUpdateRequest extends CompensationValueCreateRequest {}
 
 export type CompensationValueQueryResponse = {
-  value: CompensationValueDto[]
-}
+  value: CompensationValueDto[];
+};
 
 export class CourseCreateRequest {
   constructor(obj: any) {
@@ -243,45 +245,44 @@ export class CourseCreateRequest {
 
 export type CourseQueryResponse = {
   value: CourseDto[];
-}
+};
 
 export type CourseDto = Course & {
-  trainers: { name: string, id: string }[]
-}
+  trainers: { name: string; id: string }[];
+};
 
-export class CourseUpdateRequest extends CourseCreateRequest {
-}
+export class CourseUpdateRequest extends CourseCreateRequest {}
 
 export function dayOfWeekToHumanReadable(w: DayOfWeek, short: boolean = false) {
   switch (w) {
     case 'MONDAY':
-      return short ? "Mo": 'Montag';
+      return short ? 'Mo' : 'Montag';
     case 'TUESDAY':
-      return short ? "Di": 'Dienstag';
+      return short ? 'Di' : 'Dienstag';
     case 'WEDNESDAY':
-      return short ? "Mi": 'Mittwoch';
+      return short ? 'Mi' : 'Mittwoch';
     case 'THURSDAY':
-      return short ? "Do": 'Donnerstag';
+      return short ? 'Do' : 'Donnerstag';
     case 'FRIDAY':
-      return short? "Fr": 'Freitag';
+      return short ? 'Fr' : 'Freitag';
     case 'SATURDAY':
-      return short? "Sa" : 'Samstag';
+      return short ? 'Sa' : 'Samstag';
     case 'SUNDAY':
-      return short? "So": 'Sunday';
+      return short ? 'So' : 'Sunday';
   }
 }
 
 export type HolidayDto = Holiday;
 
 export type TrainingSummaryDto = {
-  trainerId: string,
-  trainerName: string,
-  newTrainingCount: number,
-  approvedTrainingCount: number,
-}
+  trainerId: string;
+  trainerName: string;
+  newTrainingCount: number;
+  approvedTrainingCount: number;
+};
 
 export type TrainingSummaryListDto = {
-  value: TrainingSummaryDto[]
+  value: TrainingSummaryDto[];
 };
 
 export type DisciplineDto = Discipline;
@@ -300,7 +301,7 @@ export class DisciplineCreateRequest {
 
 export type DisciplineQueryResponseDto = {
   value: DisciplineDto[];
-}
+};
 
 export class PaymentCreateRequest {
   constructor(obj: any) {
@@ -314,11 +315,11 @@ export class PaymentCreateRequest {
 
 export type PaymentDto = {
   id: number;
-  user: { name: string }
+  user: { name: string };
   createdAt: string;
   trainingIds: number[];
   totalCents: number;
-}
+};
 
 export type YearlyTotalDto = {
   trainerId: string;
@@ -337,13 +338,15 @@ export type YearlyTotalDto = {
 
 export type YearlyTotalQueryResponseDto = {
   value: YearlyTotalDto[];
-}
+};
 
-export type CompensationClassDto = CompensationClass & {compensationValues?: CompensationValueDto[]};
+export type CompensationClassDto = CompensationClass & {
+  compensationValues?: CompensationValueDto[];
+};
 
 export type CompensationClassQueryResponse = {
-  value: CompensationClassDto[]
-}
+  value: CompensationClassDto[];
+};
 
 export class CompensationClassCreateRequest {
   @IsString()
@@ -357,6 +360,6 @@ export class CompensationClassCreateRequest {
 export class CompensationClassUpdateRequest extends CompensationClassCreateRequest {}
 
 export type TrainingCountPerCourse = {
-  course: Pick<Course, "name" |"id">;
+  course: Pick<Course, 'name' | 'id'>;
   count: number;
-}
+};

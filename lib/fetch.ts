@@ -1,6 +1,6 @@
 type JanusList<T> = {
   value: T[];
-}
+};
 
 /**
  * Use this function to query the API for anything that returns a list of
@@ -9,16 +9,18 @@ type JanusList<T> = {
 export async function fetchListFromApi<T>(
   route: string,
   accessToken: string,
-  method: string = "GET"
+  method: string = 'GET',
 ): Promise<T[]> {
   try {
     const response = await fetch(route, {
       headers: { Authorization: `Bearer ${accessToken}` },
-      method
+      method,
     });
     if (response.status !== 200) {
       return Promise.reject(
-        new Error(`Failed to get data from ${route}. Error is: ${await response.text()}`),
+        new Error(
+          `Failed to get data from ${route}. Error is: ${await response.text()}`,
+        ),
       );
     }
     const result = await response.text();
@@ -26,8 +28,10 @@ export async function fetchListFromApi<T>(
     return parsedResult.value;
   } catch (e) {
     return Promise.reject(
-      new Error(`Unexpected error while getting data from ${route}: ${JSON.stringify(e)}`)
-    )
+      new Error(
+        `Unexpected error while getting data from ${route}: ${JSON.stringify(e)}`,
+      ),
+    );
   }
 }
 
@@ -37,10 +41,10 @@ export function buildQueryString(queryComponents: string[]) {
   let firstComponent = true;
   for (const component of queryComponents) {
     if (firstComponent) {
-      result += "?";
+      result += '?';
       firstComponent = false;
     } else {
-      result += "&";
+      result += '&';
     }
     result += component;
   }
@@ -49,11 +53,11 @@ export function buildQueryString(queryComponents: string[]) {
 
 export async function fetchSingleEntity<T>(
   route: string,
-  id: string|number,
+  id: string | number,
   accessToken: string,
-  queryComponents: string[] = []
+  queryComponents: string[] = [],
 ): Promise<T> {
-  const queryString = buildQueryString(queryComponents)
+  const queryString = buildQueryString(queryComponents);
 
   try {
     const response = await fetch(`${route}/${id}${queryString}`, {
@@ -61,19 +65,23 @@ export async function fetchSingleEntity<T>(
     });
     if (response.status !== 200) {
       return Promise.reject(
-        new Error(`Failed to get data from ${route}. Error is: ${await response.text()}`),
+        new Error(
+          `Failed to get data from ${route}. Error is: ${await response.text()}`,
+        ),
       );
     }
     return response.json();
   } catch (e) {
     return Promise.reject(
-      new Error(`Unexpected error while getting data from ${route}: ${JSON.stringify(e)}`)
-    )
+      new Error(
+        `Unexpected error while getting data from ${route}: ${JSON.stringify(e)}`,
+      ),
+    );
   }
 }
 
 /** Will return the deleted object for confirmation messages, etc. */
-export async function deleteFromApi<T extends {id: number|string}>(
+export async function deleteFromApi<T extends { id: number | string }>(
   route: string,
   entity: T,
   accessToken: string,
@@ -85,21 +93,25 @@ export async function deleteFromApi<T extends {id: number|string}>(
     });
     if (response.status !== 204) {
       return Promise.reject(
-        new Error(`Failed to get delete ${entity.id} from ${route}. Error is: ${await response.text()}`),
+        new Error(
+          `Failed to get delete ${entity.id} from ${route}. Error is: ${await response.text()}`,
+        ),
       );
     }
     return entity;
   } catch (e) {
     return Promise.reject(
-      new Error(`Unexpected error while deleting ${entity.id} from ${route}: ${JSON.stringify(e)}`)
-    )
+      new Error(
+        `Unexpected error while deleting ${entity.id} from ${route}: ${JSON.stringify(e)}`,
+      ),
+    );
   }
 }
 
 export async function createInApi<T>(
   route: string,
   data: any,
-  accessToken: string
+  accessToken: string,
 ) {
   const response = await fetch(route, {
     headers: {
@@ -112,13 +124,20 @@ export async function createInApi<T>(
   if (response.status != 201) {
     const message = await response.json();
     return Promise.reject(
-      new Error(`Failed to create new entity via ${route}. Message is: ${JSON.stringify(message.error?.message)}`)
-    )
+      new Error(
+        `Failed to create new entity via ${route}. Message is: ${JSON.stringify(message.error?.message)}`,
+      ),
+    );
   }
-  return await response.json() as T;
+  return (await response.json()) as T;
 }
 
-function callApiWithMethod(route: string, accessToken: string, method: 'PUT'|'PATCH', body: any) {
+function callApiWithMethod(
+  route: string,
+  accessToken: string,
+  method: 'PUT' | 'PATCH',
+  body: any,
+) {
   return fetch(route, {
     headers: {
       Authorization: `Bearer ${accessToken}`,
@@ -126,32 +145,30 @@ function callApiWithMethod(route: string, accessToken: string, method: 'PUT'|'PA
     },
     method: method,
     body: JSON.stringify(body),
-  })
+  });
 }
 
 export async function updateInApi<T>(
   route: string,
-  id: string|number,
+  id: string | number,
   data: any,
-  accessToken: string
+  accessToken: string,
 ) {
   const response = await callApiWithMethod(
     `${route}/${id}`,
     accessToken,
     'PUT',
-    data
+    data,
   );
   if (response.status != 200) {
-    return Promise.reject(
-      new Error(`Failed to update entity via ${route}`)
-    )
+    return Promise.reject(new Error(`Failed to update entity via ${route}`));
   }
-  return await response.json() as T;
+  return (await response.json()) as T;
 }
 
 export async function patchInApi<T>(
   route: string,
-  id: string|number,
+  id: string | number,
   data: any,
   accessToken: string,
 ) {
@@ -159,12 +176,10 @@ export async function patchInApi<T>(
     `${route}/${id}`,
     accessToken,
     'PATCH',
-    data
+    data,
   );
   if (response.status != 200) {
-    return Promise.reject(
-      new Error(`Failed to patch entity via ${route}`)
-    )
+    return Promise.reject(new Error(`Failed to patch entity via ${route}`));
   }
-  return await response.json() as T;
+  return (await response.json()) as T;
 }

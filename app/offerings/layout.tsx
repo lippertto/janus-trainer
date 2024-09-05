@@ -13,7 +13,11 @@ const logError = (error: Error, info: ErrorInfo) => {
   console.log(error);
 };
 
-export default function ConfigureLayout({ children }: { children: React.ReactNode }) {
+export default function ConfigureLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const pathname = usePathname();
   if (pathname === '/offerings') {
     redirect('/offerings/courses');
@@ -30,18 +34,27 @@ export default function ConfigureLayout({ children }: { children: React.ReactNod
       value = 0;
   }
 
-  return <React.Fragment>
-    <ErrorBoundary fallbackRender={PleaseReload} onError={logError}>
-
-      <Tabs orientation={'horizontal'} value={value}>
-        <Tab label="Kurse" value={0} component={Link} href={'/offerings/courses'} />
-        <Tab label="Kostenstellen" value={1} component={Link} href={'/offerings/cost-centers'} />
-      </Tabs>
-      <Box sx={{ b: 1 }}>
-        <Suspense fallback={<LoadingSpinner />}>
-          {children}
-        </Suspense>
-      </Box>
-    </ErrorBoundary>
-  </React.Fragment>;
+  return (
+    <React.Fragment>
+      <ErrorBoundary fallbackRender={PleaseReload} onError={logError}>
+        <Tabs orientation={'horizontal'} value={value}>
+          <Tab
+            label="Kurse"
+            value={0}
+            component={Link}
+            href={'/offerings/courses'}
+          />
+          <Tab
+            label="Kostenstellen"
+            value={1}
+            component={Link}
+            href={'/offerings/cost-centers'}
+          />
+        </Tabs>
+        <Box sx={{ b: 1 }}>
+          <Suspense fallback={<LoadingSpinner />}>{children}</Suspense>
+        </Box>
+      </ErrorBoundary>
+    </React.Fragment>
+  );
 }

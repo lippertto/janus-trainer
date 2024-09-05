@@ -1,4 +1,10 @@
-import { DataGrid, GridActionsCellItem, GridColDef, GridRowParams, GridToolbar } from '@mui/x-data-grid';
+import {
+  DataGrid,
+  GridActionsCellItem,
+  GridColDef,
+  GridRowParams,
+  GridToolbar,
+} from '@mui/x-data-grid';
 import React from 'react';
 import { CompensationDto, CourseDto, UserDto } from '@/lib/dto';
 import { centsToHumanReadable, ibanToHumanReadable } from '@/lib/formatters';
@@ -7,8 +13,8 @@ import { useRouter } from 'next/navigation';
 import dayjs from 'dayjs';
 
 export default function CompensationTable({
-                                            compensations,
-                                          }: {
+  compensations,
+}: {
   compensations: CompensationDto[];
 }) {
   const { push } = useRouter();
@@ -18,7 +24,8 @@ export default function CompensationTable({
       field: 'first',
       headerName: 'Name',
       flex: 2,
-      valueGetter: (_, row: CompensationDto) => `${row.user.name} / ${row.courseName}`,
+      valueGetter: (_, row: CompensationDto) =>
+        `${row.user.name} / ${row.courseName}`,
     },
     {
       field: 'costCenterId',
@@ -43,30 +50,40 @@ export default function CompensationTable({
       headerName: 'IBAN',
       flex: 1.5,
       valueGetter: (_value, row) =>
-        row.user.iban ?
-          ibanToHumanReadable(row.user.iban) : 'Keine IBAN',
-
+        row.user.iban ? ibanToHumanReadable(row.user.iban) : 'Keine IBAN',
     },
     {
       field: 'actions',
       headerName: '',
       flex: 0.5,
       type: 'actions',
-      getActions: (params: GridRowParams<CompensationDto>) => ([
-        <GridActionsCellItem icon={<LaunchIcon />} onClick={() => {
-          push(`approve?startDate=${params.row.periodStart}&endDate=${params.row.periodEnd}&trainerId=${params.row.user.id}`);
-        }} label="Ansehen" />,
-      ]),
+      getActions: (params: GridRowParams<CompensationDto>) => [
+        <GridActionsCellItem
+          icon={<LaunchIcon />}
+          onClick={() => {
+            push(
+              `approve?startDate=${params.row.periodStart}&endDate=${params.row.periodEnd}&trainerId=${params.row.user.id}`,
+            );
+          }}
+          label="Ansehen"
+        />,
+      ],
     },
   ];
 
   return (
     <DataGrid
       slots={{ toolbar: GridToolbar }}
-      slotProps={{ toolbar: { csvOptions: { fileName: `${dayjs().format('YYYY-MM-DD')} Pauschalen-Export.csv` } } }}
+      slotProps={{
+        toolbar: {
+          csvOptions: {
+            fileName: `${dayjs().format('YYYY-MM-DD')} Pauschalen-Export.csv`,
+          },
+        },
+      }}
       columns={columns}
       rows={compensations}
-      getRowId={(c: CompensationDto) => (`${c.user.id}_${c.courseName}`)}
+      getRowId={(c: CompensationDto) => `${c.user.id}_${c.courseName}`}
     />
   );
 }

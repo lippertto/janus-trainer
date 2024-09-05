@@ -4,7 +4,10 @@ import { JanusSession } from '@/lib/auth';
 
 import React from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { termsOfServiceSuspenseQuery, userSuspenseQuery } from '@/lib/shared-queries';
+import {
+  termsOfServiceSuspenseQuery,
+  userSuspenseQuery,
+} from '@/lib/shared-queries';
 import { API_USERS } from '@/lib/routes';
 import { showError } from '@/lib/notifications';
 import { useSession } from 'next-auth/react';
@@ -21,16 +24,21 @@ function TermsAcceptanceContents(props: { session: JanusSession }) {
 
   const acceptTermsMutation = useMutation({
     mutationFn: async () => {
-      const response = await fetch(`${API_USERS}/${session.userId}`,
-        { method: 'PATCH', body: JSON.stringify({ termsAcceptedVersion: termsVersion }) },
-      );
+      const response = await fetch(`${API_USERS}/${session.userId}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ termsAcceptedVersion: termsVersion }),
+      });
       if (!response.ok) {
         throw new Error();
       }
-    }, onSuccess: () => {
+    },
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [API_USERS, session.userId] });
-    }, onError: () => {
-      showError('Konnte Nutzungsbedingungen nicht bestätigen. Bitte erneut versuchen');
+    },
+    onError: () => {
+      showError(
+        'Konnte Nutzungsbedingungen nicht bestätigen. Bitte erneut versuchen',
+      );
     },
   });
 
@@ -38,7 +46,14 @@ function TermsAcceptanceContents(props: { session: JanusSession }) {
     return <></>;
   }
 
-  return <TosDialog tosData={tosData} handleAccept={acceptTermsMutation.mutate} open={true} needsToAccept={true}/>;
+  return (
+    <TosDialog
+      tosData={tosData}
+      handleAccept={acceptTermsMutation.mutate}
+      open={true}
+      needsToAccept={true}
+    />
+  );
 }
 
 export default function TermsAcceptance(): React.ReactNode {

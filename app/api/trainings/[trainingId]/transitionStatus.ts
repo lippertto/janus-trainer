@@ -2,7 +2,10 @@ import prisma from '@/lib/prisma';
 import { ApiErrorConflict, ApiErrorNotFound } from '@/lib/helpers-for-api';
 import { Course, Training, TrainingStatus, UserInDb } from '@prisma/client';
 
-export async function transitionStatus(id: number, status: TrainingStatus): Promise<Training & {course: Course, user: UserInDb}> {
+export async function transitionStatus(
+  id: number,
+  status: TrainingStatus,
+): Promise<Training & { course: Course; user: UserInDb }> {
   const currentTraining = await prisma.training.findFirst({
     where: { id },
   });
@@ -20,7 +23,7 @@ export async function transitionStatus(id: number, status: TrainingStatus): Prom
   }
 
   // let data: {status: TrainingStatus, approvedAt?: Date, compensatedAt?: Date} = {
-  let data: Pick<Training, "status"|"approvedAt"|"compensatedAt"> = {
+  let data: Pick<Training, 'status' | 'approvedAt' | 'compensatedAt'> = {
     status,
     approvedAt: null,
     compensatedAt: null,

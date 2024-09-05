@@ -10,10 +10,16 @@ import {
 } from '@/lib/helpers-for-api';
 import prisma from '@/lib/prisma';
 import { Prisma } from '@prisma/client';
-import { ErrorDto, YearlyTotalDto, YearlyTotalQueryResponseDto } from '@/lib/dto';
+import {
+  ErrorDto,
+  YearlyTotalDto,
+  YearlyTotalQueryResponseDto,
+} from '@/lib/dto';
 
-
-async function calculateYearlyTotals(year: number, trainerId: string | null): Promise<YearlyTotalDto[]> {
+async function calculateYearlyTotals(
+  year: number,
+  trainerId: string | null,
+): Promise<YearlyTotalDto[]> {
   let trainerWhere = Prisma.empty;
   if (trainerId) {
     trainerWhere = Prisma.sql`AND "userId" = ${trainerId}`;
@@ -68,20 +74,21 @@ async function calculateYearlyTotals(year: number, trainerId: string | null): Pr
 
   if (trainerId && sqlResult.length == 0) {
     console.log(sqlResult.length === 0);
-    return [{
-      trainerId: trainerId,
-      trainerName: trainerId, // we use the id but we don't care
-      trainingCountQ1: 0,
-      trainingCountQ2: 0,
-      trainingCountQ3: 0,
-      trainingCountQ4: 0,
-      trainingCountTotal: 0,
-      compensationCentsQ1: 0,
-      compensationCentsQ2: 0,
-      compensationCentsQ3: 0,
-      compensationCentsQ4: 0,
-      compensationCentsTotal: 0,
-    },
+    return [
+      {
+        trainerId: trainerId,
+        trainerName: trainerId, // we use the id but we don't care
+        trainingCountQ1: 0,
+        trainingCountQ2: 0,
+        trainingCountQ3: 0,
+        trainingCountQ4: 0,
+        trainingCountTotal: 0,
+        compensationCentsQ1: 0,
+        compensationCentsQ2: 0,
+        compensationCentsQ3: 0,
+        compensationCentsQ4: 0,
+        compensationCentsTotal: 0,
+      },
     ];
   }
 
@@ -101,8 +108,9 @@ async function calculateYearlyTotals(year: number, trainerId: string | null): Pr
   }));
 }
 
-
-export async function POST(request: NextRequest): Promise<NextResponse<YearlyTotalQueryResponseDto | ErrorDto>> {
+export async function POST(
+  request: NextRequest,
+): Promise<NextResponse<YearlyTotalQueryResponseDto | ErrorDto>> {
   try {
     await allowAnyLoggedIn(request);
 
@@ -124,7 +132,6 @@ export async function POST(request: NextRequest): Promise<NextResponse<YearlyTot
 
     const result = await calculateYearlyTotals(year, trainerId);
     return NextResponse.json({ value: result });
-
   } catch (e) {
     return handleTopLevelCatch(e);
   }

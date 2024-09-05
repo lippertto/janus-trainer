@@ -1,4 +1,8 @@
-import type { GetServerSidePropsContext, NextApiRequest, NextApiResponse } from 'next';
+import type {
+  GetServerSidePropsContext,
+  NextApiRequest,
+  NextApiResponse,
+} from 'next';
 import type { AuthOptions, NextAuthOptions, Profile, Session } from 'next-auth';
 import { getServerSession } from 'next-auth';
 import type { JWT } from 'next-auth/jwt';
@@ -52,7 +56,7 @@ async function refreshAccessToken(token: JWT) {
   }
 }
 
-const COGNITO_ISSUER = `https://cognito-idp.${process.env.COGNITO_REGION}.amazonaws.com/${process.env.COGNITO_USER_POOL_ID}`
+const COGNITO_ISSUER = `https://cognito-idp.${process.env.COGNITO_REGION}.amazonaws.com/${process.env.COGNITO_USER_POOL_ID}`;
 
 async function doCheckIfUserExists(userId: string) {
   try {
@@ -72,7 +76,7 @@ async function doCheckIfUserExists(userId: string) {
 }
 
 async function checkIfUserExists(userId: string) {
-  return retry(() => doCheckIfUserExists(userId))
+  return retry(() => doCheckIfUserExists(userId));
 }
 
 // configuration according to https://github.com/nextauthjs/next-auth/issues/4707
@@ -83,7 +87,7 @@ export const config: AuthOptions = {
       // @ts-expect-error: we actually have to pass null in here.
       clientSecret: null,
       issuer: COGNITO_ISSUER!,
-      checks: process.env.DISABLE_JWT_CHECKS ? "none" : undefined,
+      checks: process.env.DISABLE_JWT_CHECKS ? 'none' : undefined,
       client: {
         token_endpoint_auth_method: 'none',
       },

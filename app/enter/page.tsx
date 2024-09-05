@@ -8,7 +8,11 @@ import LoginRequired from '@/components/LoginRequired';
 import { TrainingDto } from '@/lib/dto';
 import { useQueryClient, useSuspenseQuery } from '@tanstack/react-query';
 import { API_TRAININGS } from '@/lib/routes';
-import { coursesForTrainerSuspenseQuery, holidaysSuspenseQuery, userSuspenseQuery } from '@/lib/shared-queries';
+import {
+  coursesForTrainerSuspenseQuery,
+  holidaysSuspenseQuery,
+  userSuspenseQuery,
+} from '@/lib/shared-queries';
 import Typography from '@mui/material/Typography';
 import { TrainingList } from '@/app/enter/TrainingList';
 import { Fab } from '@mui/material';
@@ -16,93 +20,130 @@ import AddIcon from '@mui/icons-material/Add';
 
 import 'core-js/modules/es.array.to-sorted';
 import 'core-js/modules/es.array.to-reversed';
-import { trainingCreateQuery, trainingDeleteQuery, trainingUpdateQuery } from '@/lib/queries-training';
+import {
+  trainingCreateQuery,
+  trainingDeleteQuery,
+  trainingUpdateQuery,
+} from '@/lib/queries-training';
 import { compareByField } from '@/lib/sort-and-filter';
 import { fetchListFromApi } from '@/lib/fetch';
 import TrainingDialog from '@/app/enter/TrainingDialog';
 import { intToDayOfWeek } from '@/lib/warnings-for-date';
 
-
 function EnterPageContents(props: { session: JanusSession }) {
   const { session } = props;
   const queryClient = useQueryClient();
   const queryKey = [API_TRAININGS, `trainerId=${session.userId}`];
-  const [trainingToEdit, setTrainingToEdit] = React.useState<TrainingDto | null>(null);
-  const [showTrainingDialog, setShowTrainingDialog] = React.useState<boolean>(false);
+  const [trainingToEdit, setTrainingToEdit] =
+    React.useState<TrainingDto | null>(null);
+  const [showTrainingDialog, setShowTrainingDialog] =
+    React.useState<boolean>(false);
 
-  const { data: courses } = coursesForTrainerSuspenseQuery(session.userId, session.accessToken);
-  const { data: user } = userSuspenseQuery(session.userId, session.accessToken, false, true, true);
-  const { data: holidays } = holidaysSuspenseQuery(session.accessToken, [new Date().getFullYear(), new Date().getFullYear() - 1]);
+  const { data: courses } = coursesForTrainerSuspenseQuery(
+    session.userId,
+    session.accessToken,
+  );
+  const { data: user } = userSuspenseQuery(
+    session.userId,
+    session.accessToken,
+    false,
+    true,
+    true,
+  );
+  const { data: holidays } = holidaysSuspenseQuery(session.accessToken, [
+    new Date().getFullYear(),
+    new Date().getFullYear() - 1,
+  ]);
 
   const { data: trainings } = useSuspenseQuery({
     queryKey,
-    queryFn: () => fetchListFromApi<TrainingDto>(
-      `${API_TRAININGS}?trainerId=${(session.userId)}`,
-      session.accessToken,
-    ),
+    queryFn: () =>
+      fetchListFromApi<TrainingDto>(
+        `${API_TRAININGS}?trainerId=${session.userId}`,
+        session.accessToken,
+      ),
   });
-  trainings.sort((a, b) => (compareByField(b, a, 'date')));
+  trainings.sort((a, b) => compareByField(b, a, 'date'));
 
   const updateQueryData = (trainings: TrainingDto[]) => {
     queryClient.setQueryData(queryKey, trainings);
   };
 
-  const createTrainingMutation = trainingCreateQuery(session.accessToken, trainings, updateQueryData);
-  const updateTrainingMutation = trainingUpdateQuery(session.accessToken, trainings, updateQueryData);
-  const deleteTrainingMutation = trainingDeleteQuery(session.accessToken, trainings, updateQueryData);
+  const createTrainingMutation = trainingCreateQuery(
+    session.accessToken,
+    trainings,
+    updateQueryData,
+  );
+  const updateTrainingMutation = trainingUpdateQuery(
+    session.accessToken,
+    trainings,
+    updateQueryData,
+  );
+  const deleteTrainingMutation = trainingDeleteQuery(
+    session.accessToken,
+    trainings,
+    updateQueryData,
+  );
 
-  return <React.Fragment>
-    {trainings.length > 0 ?
-      <TrainingList
-        trainings={trainings}
-        holidays={holidays}
-        handleEdit={(v: TrainingDto) => {
-          setTrainingToEdit(v);
+  return (
+    <React.Fragment>
+      {trainings.length > 0 ? (
+        <TrainingList
+          trainings={trainings}
+          holidays={holidays}
+          handleEdit={(v: TrainingDto) => {
+            setTrainingToEdit(v);
+            setShowTrainingDialog(true);
+          }}
+        />
+      ) : (
+        <Typography>
+          Klicke auf das Plus rechts unten um ein Training hinzuzufügen.
+        </Typography>
+      )}
+
+      <Fab
+        color="primary"
+        sx={{
+          position: 'fixed',
+          bottom: 16,
+          right: 16,
+        }}
+        onClick={() => {
+          setTrainingToEdit(null);
           setShowTrainingDialog(true);
         }}
-      />
-      : <Typography>Klicke auf das Plus rechts unten um ein Training hinzuzufügen.</Typography>
-    }
+        data-testid="enter-training-button"
+      >
+        <AddIcon />
+      </Fab>
 
-    <Fab
-      color="primary"
-      sx={{
-        position: 'fixed',
-        bottom: 16,
-        right: 16,
-      }}
-      onClick={() => {
-        setTrainingToEdit(null);
-        setShowTrainingDialog(true);
-      }}
-      data-testid="enter-training-button"
-    >
-      <AddIcon />
-    </Fab>
-
-    <TrainingDialog
-      open={showTrainingDialog}
-      toEdit={trainingToEdit}
-      courses={courses}
-      compensationValues={user.compensationClasses!.flatMap((cc) => (cc.compensationValues!))}
-      today={intToDayOfWeek(new Date().getDay())}
-      userId={session.userId}
-      handleClose={() => setShowTrainingDialog(false)}
-      handleSave={
-        trainingToEdit ? (data) => {
-            updateTrainingMutation.mutate({ data, trainingId: trainingToEdit.id });
-          } :
-          createTrainingMutation.mutate
-      }
-      handleDelete={
-        (v: TrainingDto) => {
-          deleteTrainingMutation.mutate(v);
+      <TrainingDialog
+        open={showTrainingDialog}
+        toEdit={trainingToEdit}
+        courses={courses}
+        compensationValues={user.compensationClasses!.flatMap(
+          (cc) => cc.compensationValues!,
+        )}
+        today={intToDayOfWeek(new Date().getDay())}
+        userId={session.userId}
+        handleClose={() => setShowTrainingDialog(false)}
+        handleSave={
+          trainingToEdit
+            ? (data) => {
+                updateTrainingMutation.mutate({
+                  data,
+                  trainingId: trainingToEdit.id,
+                });
+              }
+            : createTrainingMutation.mutate
         }
-      }
-    />
-  </React.Fragment>
-
-    ;
+        handleDelete={(v: TrainingDto) => {
+          deleteTrainingMutation.mutate(v);
+        }}
+      />
+    </React.Fragment>
+  );
 }
 
 export default function EnterPage() {

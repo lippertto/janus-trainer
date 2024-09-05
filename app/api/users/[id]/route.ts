@@ -16,13 +16,22 @@ import {
   listGroupsForUser,
   updateCognitoUser,
 } from '../cognito';
-import { ErrorDto, Group, UserCreateRequest, UserDto, UserPatchRequest, UserUpdateRequest } from '@/lib/dto';
+import {
+  ErrorDto,
+  Group,
+  UserCreateRequest,
+  UserDto,
+  UserPatchRequest,
+  UserUpdateRequest,
+} from '@/lib/dto';
 import { patchOneUser } from '@/app/api/users/[id]/patch';
 
 async function doDELETE(id: string) {
   const dbUser = await prisma.userInDb.findFirst({ where: { id } });
   if (!dbUser || dbUser.deletedAt) {
-    console.log(`User with ${id} not found or soft-deleted. Will not delete it.`);
+    console.log(
+      `User with ${id} not found or soft-deleted. Will not delete it.`,
+    );
     return new Response(null, { status: 204 });
   }
 
@@ -58,21 +67,31 @@ export async function HEAD(
   { params }: { params: { id: string } },
 ) {
   try {
-    const user = await prisma.userInDb.findFirst({ where: { id: params.id, deletedAt: null } });
-    if (!user) return notFoundResponse()
+    const user = await prisma.userInDb.findFirst({
+      where: { id: params.id, deletedAt: null },
+    });
+    if (!user) return notFoundResponse();
     return NextResponse.json({ id: params.id }, { status: 200 });
   } catch (e) {
     return handleTopLevelCatch(e);
   }
 }
 
-async function doPUT(request: UserUpdateRequest, params: { id: string }): Promise<UserDto> {
-
+async function doPUT(
+  request: UserUpdateRequest,
+  params: { id: string },
+): Promise<UserDto> {
   const client = new CognitoIdentityProviderClient({
     region: process.env.COGNITO_REGION,
   });
 
-  await updateCognitoUser(client, params.id, request.email, request.name, request.groups);
+  await updateCognitoUser(
+    client,
+    params.id,
+    request.email,
+    request.name,
+    request.groups,
+  );
 
   const dbResult = await prisma.userInDb.update({
     where: { id: params.id },
@@ -89,19 +108,26 @@ async function doPUT(request: UserUpdateRequest, params: { id: string }): Promis
   });
   return {
     ...dbResult,
-    groups: request.groups, email: request.email,
+    groups: request.groups,
+    email: request.email,
     termsAcceptedAt: dbResult.termsAcceptedAt?.toLocaleDateString() ?? null,
-    compensationClasses: dbResult.compensationClasses.map((cc) => ({ ...cc, compensationValues: [] })),
+    compensationClasses: dbResult.compensationClasses.map((cc) => ({
+      ...cc,
+      compensationValues: [],
+    })),
   };
 }
 
 export async function PUT(
   nextRequest: NextRequest,
   { params }: { params: { id: string } },
-): Promise<NextResponse<UserDto|ErrorDto>> {
+): Promise<NextResponse<UserDto | ErrorDto>> {
   try {
     await allowOnlyAdmins(nextRequest);
-    const request = await validateOrThrow(UserCreateRequest, await nextRequest.json());
+    const request = await validateOrThrow(
+      UserCreateRequest,
+      await nextRequest.json(),
+    );
 
     const updated = await doPUT(request, params);
     return NextResponse.json(updated);
@@ -125,7 +151,7 @@ async function selectOneUser(
     expand = { compensationClasses: { include: { compensationValues: true } } };
   }
 
-  const dbUser= await prisma.userInDb.findUnique({
+  const dbUser = await prisma.userInDb.findUnique({
     where: { id },
     include: expand,
   });
@@ -165,12 +191,21 @@ export async function GET(
   try {
     await allowAdminOrSelf(request, params.id);
 
-    const expandParameters = (request.nextUrl.searchParams.get('expand') ?? '').split(',');
-    let includeCognitoProperties = (expandParameters.indexOf('cognito') !== -1);
-    let includeCompensationClasses = (expandParameters.indexOf('compensationClasses') !== -1);
-    let includeCompensationValues = (expandParameters.indexOf('compensationValues') !== -1);
+    const expandParameters = (
+      request.nextUrl.searchParams.get('expand') ?? ''
+    ).split(',');
+    let includeCognitoProperties = expandParameters.indexOf('cognito') !== -1;
+    let includeCompensationClasses =
+      expandParameters.indexOf('compensationClasses') !== -1;
+    let includeCompensationValues =
+      expandParameters.indexOf('compensationValues') !== -1;
 
-    const user = await selectOneUser(params.id, includeCognitoProperties, includeCompensationValues, includeCompensationClasses);
+    const user = await selectOneUser(
+      params.id,
+      includeCognitoProperties,
+      includeCompensationValues,
+      includeCompensationClasses,
+    );
     return NextResponse.json(user);
   } catch (e) {
     return handleTopLevelCatch(e);
@@ -184,7 +219,10 @@ export async function PATCH(
 ): Promise<NextResponse<UserDto | ErrorDto>> {
   try {
     await allowAdminOrSelf(nextRequest, params.id);
-    const request = await validateOrThrow(UserPatchRequest, await nextRequest.json());
+    const request = await validateOrThrow(
+      UserPatchRequest,
+      await nextRequest.json(),
+    );
     await patchOneUser(params.id, request);
     const result = await selectOneUser(params.id, true, false, false);
     return NextResponse.json(result);

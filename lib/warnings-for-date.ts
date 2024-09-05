@@ -50,7 +50,11 @@ GERMAN_DAYS[4] = 'Do';
 GERMAN_DAYS[5] = 'Fr';
 GERMAN_DAYS[6] = 'Sa';
 
-export function warningsForDate(dateString: string, holidays: HolidayDto[], weekdays: DayOfWeek[]): string[] {
+export function warningsForDate(
+  dateString: string,
+  holidays: HolidayDto[],
+  weekdays: DayOfWeek[],
+): string[] {
   let result: string[] = [];
   let dayNumber = new Date(dateString).getDay();
   if (dayNumber === 0) {
@@ -68,9 +72,9 @@ export function warningsForDate(dateString: string, holidays: HolidayDto[], week
     }
   }
   if (!isOnValidWeekday) {
-    const allowedDays = weekdays.map(
-      (wd) => (GERMAN_DAYS.at(dayOfWeekToInt(wd))),
-    ).join(', ');
+    const allowedDays = weekdays
+      .map((wd) => GERMAN_DAYS.at(dayOfWeekToInt(wd)))
+      .join(', ');
     result.push(`Nicht an Kurstag (${allowedDays})`);
   }
 

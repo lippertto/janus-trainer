@@ -19,7 +19,11 @@ function buildColumns(): GridColDef[] {
     { field: 'trainingCountQ2', headerName: 'Q2 T', width: trainingCountWidth },
     { field: 'trainingCountQ3', headerName: 'Q3 T', width: trainingCountWidth },
     { field: 'trainingCountQ4', headerName: 'Q4 T', width: trainingCountWidth },
-    { field: 'trainingCountTotal', headerName: 'Σ T', width: trainingCountWidth },
+    {
+      field: 'trainingCountTotal',
+      headerName: 'Σ T',
+      width: trainingCountWidth,
+    },
     {
       field: 'compensationCentsQ1',
       headerName: 'Q1 €',
@@ -49,7 +53,8 @@ function buildColumns(): GridColDef[] {
       valueFormatter: currencyFormatter,
     },
     {
-      field: 'compensationCentsTotal', headerName: 'Σ €',
+      field: 'compensationCentsTotal',
+      headerName: 'Σ €',
       type: 'number',
       width: compensationCentsWidth,
       valueGetter: (value) => value / 100,
@@ -65,21 +70,21 @@ function buildColumns(): GridColDef[] {
   ];
 }
 
-export default function YearlyTotalsTable(props: {
-  totals: YearlyTotalDto[]
-}) {
-  return <Box
-    sx={{
-      '.yearly-total-warning': {
-        backgroundColor: '#ff943975',
-      },
-    }}
-  >
-    <DataGrid
-      rows={props.totals}
-      getRowId={(row) => (row.trainerId)}
-      disableRowSelectionOnClick
-      columns={buildColumns()}
-    />
-  </Box>;
+export default function YearlyTotalsTable(props: { totals: YearlyTotalDto[] }) {
+  return (
+    <Box
+      sx={{
+        '.yearly-total-warning': {
+          backgroundColor: '#ff943975',
+        },
+      }}
+    >
+      <DataGrid
+        rows={props.totals}
+        getRowId={(row) => row.trainerId}
+        disableRowSelectionOnClick
+        columns={buildColumns()}
+      />
+    </Box>
+  );
 }

@@ -1,24 +1,36 @@
-import { CompensationDto, CompensationQueryResponse, ErrorDto } from '@/lib/dto';
-import { allowOnlyAdmins, handleTopLevelCatch, idAsNumberOrThrow } from '@/lib/helpers-for-api';
+import {
+  CompensationDto,
+  CompensationQueryResponse,
+  ErrorDto,
+} from '@/lib/dto';
+import {
+  allowOnlyAdmins,
+  handleTopLevelCatch,
+  idAsNumberOrThrow,
+} from '@/lib/helpers-for-api';
 import prisma from '@/lib/prisma';
 import { NextRequest, NextResponse } from 'next/server';
 
 function sqlResultToQueryResponse(sqlResult: any): CompensationQueryResponse {
-  const value: CompensationDto[] = sqlResult.map((r: any): CompensationDto => ({
-    user: {
-      id: r.userId,
-      name: r.userName,
-      iban: r.userIban,
-    },
-    totalCompensationCents: Number(r.totalCompensationCents),
-    totalTrainings: Number(r.totalTrainings),
-    correspondingIds: r.correspondingIds.split(',').map((id: any) => Number(id)),
-    periodStart: r.periodStart,
-    periodEnd: r.periodEnd,
-    costCenterId: r.costCenterId,
-    costCenterName: r.costCenterName,
-    courseName: r.courseName,
-  }));
+  const value: CompensationDto[] = sqlResult.map(
+    (r: any): CompensationDto => ({
+      user: {
+        id: r.userId,
+        name: r.userName,
+        iban: r.userIban,
+      },
+      totalCompensationCents: Number(r.totalCompensationCents),
+      totalTrainings: Number(r.totalTrainings),
+      correspondingIds: r.correspondingIds
+        .split(',')
+        .map((id: any) => Number(id)),
+      periodStart: r.periodStart,
+      periodEnd: r.periodEnd,
+      costCenterId: r.costCenterId,
+      costCenterName: r.costCenterName,
+      courseName: r.courseName,
+    }),
+  );
   return { value };
 }
 
@@ -44,10 +56,12 @@ async function compensationForApprovedTrainings(): Promise<CompensationQueryResp
       AND "u"."iban" IS NOT NULL
       GROUP BY ("u"."id", "u"."name", "u"."iban", "d"."costCenterId", "d"."name", "course"."name");
   `;
-  return sqlResultToQueryResponse(sqlResult)
+  return sqlResultToQueryResponse(sqlResult);
 }
 
-async function compensationsForPayments(paymentIdAsString: string): Promise<CompensationQueryResponse> {
+async function compensationsForPayments(
+  paymentIdAsString: string,
+): Promise<CompensationQueryResponse> {
   const paymentId = idAsNumberOrThrow(paymentIdAsString);
 
   const sqlResult: any[] = await prisma.$queryRaw`

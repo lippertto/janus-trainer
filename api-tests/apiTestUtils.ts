@@ -15,16 +15,17 @@ export class LocalApi {
     this.baseUrl = baseUrl;
   }
 
-  async createTraining(
-    {
-      date = '2020-01-01', courseId = 1, compensationCents = 100,
-      userId = USER_ID_ADMIN,
-    }: {
-      date?: string, courseId?: number,
-      compensationCents?: number,
-      userId?: string,
-    },
-  ): Promise<TrainingDto> {
+  async createTraining({
+    date = '2020-01-01',
+    courseId = 1,
+    compensationCents = 100,
+    userId = USER_ID_ADMIN,
+  }: {
+    date?: string;
+    courseId?: number;
+    compensationCents?: number;
+    userId?: string;
+  }): Promise<TrainingDto> {
     const request: TrainingCreateRequest = {
       date,
       courseId,
@@ -49,24 +50,28 @@ export class LocalApi {
     await superagent.delete(`${this.baseUrl}/api/trainings`);
   }
 
-  async createPayment({ userId = USER_ID_ADMIN, trainingIds }: {
-    userId?: string,
-    trainingIds: number[]
+  async createPayment({
+    userId = USER_ID_ADMIN,
+    trainingIds,
+  }: {
+    userId?: string;
+    trainingIds: number[];
   }): Promise<PaymentDto> {
-    const result = await superagent
-      .post(`${this.baseUrl}/api/payments`)
-      .send({
-        userId,
-        trainingIds: trainingIds,
-      })
-    ;
+    const result = await superagent.post(`${this.baseUrl}/api/payments`).send({
+      userId,
+      trainingIds: trainingIds,
+    });
     return result.body as PaymentDto;
   }
 
-  async getPaymentsForTrainer({ trainerId }: { trainerId: string }): Promise<PaymentDto[]> {
-    const result = await superagent
-      .get(`${this.baseUrl}/api/payments?trainerId=${trainerId}`)
-    ;
+  async getPaymentsForTrainer({
+    trainerId,
+  }: {
+    trainerId: string;
+  }): Promise<PaymentDto[]> {
+    const result = await superagent.get(
+      `${this.baseUrl}/api/payments?trainerId=${trainerId}`,
+    );
     return result.body.value as PaymentDto[];
   }
 }

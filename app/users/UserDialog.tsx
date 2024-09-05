@@ -1,5 +1,10 @@
 import React from 'react';
-import { CompensationClassDto, Group, UserCreateRequest, UserDto } from '@/lib/dto';
+import {
+  CompensationClassDto,
+  Group,
+  UserCreateRequest,
+  UserDto,
+} from '@/lib/dto';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -16,12 +21,12 @@ import Autocomplete from '@mui/material/Autocomplete';
 import { validateIBAN } from 'sepa';
 
 type FormData = {
-  name: string,
-  iban: string,
-  email: string,
-  isTrainer: boolean,
-  isAdmin: boolean,
-  compensationClasses: CompensationClassDto[]
+  name: string;
+  iban: string;
+  email: string;
+  isTrainer: boolean;
+  isAdmin: boolean;
+  compensationClasses: CompensationClassDto[];
 };
 
 function determineDefaultValues(toEdit: UserDto | null): FormData {
@@ -47,7 +52,7 @@ function determineDefaultValues(toEdit: UserDto | null): FormData {
 
 export function UserDialog(props: {
   toEdit: UserDto | null;
-  compensationClasses: CompensationClassDto[],
+  compensationClasses: CompensationClassDto[];
   open: boolean;
   handleClose: () => void;
   handleSave: (data: UserCreateRequest) => void;
@@ -69,7 +74,6 @@ export function UserDialog(props: {
     }
   }, [props.toEdit]);
 
-
   const onSubmit = (data: FormData) => {
     if (isValid) {
       let groups = [];
@@ -85,7 +89,8 @@ export function UserDialog(props: {
         email: data.email,
         iban: iban,
         groups: groups,
-        compensationClassIds: data.compensationClasses?.map((cc) => (cc.id)) ?? [],
+        compensationClassIds:
+          data.compensationClasses?.map((cc) => cc.id) ?? [],
       });
       props.handleClose();
       reset();
@@ -131,7 +136,9 @@ export function UserDialog(props: {
                 },
               })}
               error={!!errors.iban}
-              helperText={errors.iban ? 'Das sieht nicht aus wie eine IBAN' : ''}
+              helperText={
+                errors.iban ? 'Das sieht nicht aus wie eine IBAN' : ''
+              }
             />
             <FormGroup>
               <FormLabel id="compensation-label">Rollen</FormLabel>
@@ -144,9 +151,13 @@ export function UserDialog(props: {
                       <Checkbox
                         {...props}
                         checked={props.value}
-                        inputProps={{ 'data-testid': 'is-trainer-checkbox' } as React.InputHTMLAttributes<HTMLInputElement>}
-                      />)
-                    }
+                        inputProps={
+                          {
+                            'data-testid': 'is-trainer-checkbox',
+                          } as React.InputHTMLAttributes<HTMLInputElement>
+                        }
+                      />
+                    )}
                   />
                 }
                 label="Übungsleitung"
@@ -160,9 +171,13 @@ export function UserDialog(props: {
                       <Checkbox
                         {...props}
                         checked={props.value}
-                        inputProps={{ 'data-testid': 'is-admin-checkbox' } as React.InputHTMLAttributes<HTMLInputElement>}
-                      />)
-                    }
+                        inputProps={
+                          {
+                            'data-testid': 'is-admin-checkbox',
+                          } as React.InputHTMLAttributes<HTMLInputElement>
+                        }
+                      />
+                    )}
                   />
                 }
                 label="Admin"
@@ -174,13 +189,12 @@ export function UserDialog(props: {
               render={({ field: { onChange, onBlur, value } }) => (
                 <Autocomplete
                   renderInput={(params) => {
-                    return <TextField
-                      {...params}
-                      label={'Pauschalen-Gruppen'}
-                    />;
+                    return (
+                      <TextField {...params} label={'Pauschalen-Gruppen'} />
+                    );
                   }}
                   options={props.compensationClasses}
-                  getOptionLabel={(t) => (t.name)}
+                  getOptionLabel={(t) => t.name}
                   multiple={true}
                   onChange={(e, data) => onChange(data)}
                   onBlur={onBlur}
@@ -191,14 +205,17 @@ export function UserDialog(props: {
           </Stack>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => {
-            props.handleClose();
-            reset();
-          }}>Abbrechen</Button>
           <Button
-            type="submit"
-            data-testid="save-user-button"
-          >Speichern</Button>
+            onClick={() => {
+              props.handleClose();
+              reset();
+            }}
+          >
+            Abbrechen
+          </Button>
+          <Button type="submit" data-testid="save-user-button">
+            Speichern
+          </Button>
         </DialogActions>
       </form>
     </Dialog>

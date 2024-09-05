@@ -2,13 +2,20 @@ import superagent from 'superagent';
 import { PaymentDto, TrainingCreateRequest, TrainingDto } from '@/lib/dto';
 import { TrainingStatus } from '@prisma/client';
 import dayjs from 'dayjs';
-import { LocalApi, USER_ID_ADMIN, USER_ID_TRAINER } from '@/api-tests/apiTestUtils';
-
+import {
+  LocalApi,
+  USER_ID_ADMIN,
+  USER_ID_TRAINER,
+} from '@/api-tests/apiTestUtils';
 
 const SERVER = 'http://localhost:3000';
 const api = new LocalApi(SERVER);
 
-async function createAndValidatePayment(trainerId: string, trainingIds: number[], expectedCents: number) {
+async function createAndValidatePayment(
+  trainerId: string,
+  trainingIds: number[],
+  expectedCents: number,
+) {
   // WHEN
   const payment = await api.createPayment({ userId: trainerId, trainingIds });
 
@@ -77,21 +84,30 @@ describe('/payments', () => {
       },
     ];
     const trainingIds = await Promise.all(
-      trainings.map(async (t) => ((await api.createTraining(t)).id)))
-    ;
-
+      trainings.map(async (t) => (await api.createTraining(t)).id),
+    );
     let paymentId1 = 0;
     let paymentId2 = 0;
     try {
-      paymentId1 = await createAndValidatePayment(USER_ID_ADMIN, trainingIds.slice(0, 3), 3000);
-      paymentId2 = await createAndValidatePayment(USER_ID_ADMIN, trainingIds.slice(3, 5), 2000);
+      paymentId1 = await createAndValidatePayment(
+        USER_ID_ADMIN,
+        trainingIds.slice(0, 3),
+        3000,
+      );
+      paymentId2 = await createAndValidatePayment(
+        USER_ID_ADMIN,
+        trainingIds.slice(3, 5),
+        2000,
+      );
 
       for (let tid of trainingIds) {
         await checkIfTrainingStatusIsCompensated(tid);
       }
 
       // check payment list
-      const paymentListResponse = await superagent.get(`${SERVER}/api/payments`);
+      const paymentListResponse = await superagent.get(
+        `${SERVER}/api/payments`,
+      );
       expect(paymentListResponse.statusCode).toEqual(200);
       const paymentList = paymentListResponse.body.value as PaymentDto[];
 
@@ -102,13 +118,11 @@ describe('/payments', () => {
       const payment2 = paymentList[paymentList.length - 1];
       expect(payment2.trainingIds).toHaveLength(2);
       expect(payment2.totalCents).toBe(2000);
-
     } finally {
       // clean up
-      await Promise.all([...
-        trainingIds.map((t) => (
-            superagent.delete(`${SERVER}/api/trainings/${t}`)
-          ),
+      await Promise.all([
+        ...trainingIds.map((t) =>
+          superagent.delete(`${SERVER}/api/trainings/${t}`),
         ),
       ]);
       if (paymentId1) {
@@ -133,39 +147,51 @@ describe('/payments?trainerid', () => {
       userId: USER_ID_TRAINER,
       compensationCents: 300,
     });
-    const trainingByDifferentTrainerToBeIncludedInPayment1 = await api.createTraining({
-      userId: USER_ID_ADMIN,
-      compensationCents: 400,
-    });
-    const trainingByDifferentTrainerToBeIncludedInPayment2 = await api.createTraining({
-      userId: USER_ID_ADMIN,
-      compensationCents: 500,
-    });
+    const trainingByDifferentTrainerToBeIncludedInPayment1 =
+      await api.createTraining({
+        userId: USER_ID_ADMIN,
+        compensationCents: 400,
+      });
+    const trainingByDifferentTrainerToBeIncludedInPayment2 =
+      await api.createTraining({
+        userId: USER_ID_ADMIN,
+        compensationCents: 500,
+      });
 
     // put all trainings to APPROVED
-    await Promise.all([training1ToBeIncludedInPayment1, training2ToBeIncludedInPayment1, trainingByDifferentTrainerToBeIncludedInPayment1, trainingByDifferentTrainerToBeIncludedInPayment2].map(async (t) => {
+    await Promise.all(
+      [
+        training1ToBeIncludedInPayment1,
+        training2ToBeIncludedInPayment1,
+        trainingByDifferentTrainerToBeIncludedInPayment1,
+        trainingByDifferentTrainerToBeIncludedInPayment2,
+      ].map(async (t) => {
         await api.transitionTraining(t.id, TrainingStatus.APPROVED);
-      },
-    ));
+      }),
+    );
 
     // create payments
     await api.createPayment({
       trainingIds: [
-        training1ToBeIncludedInPayment1.id, training2ToBeIncludedInPayment1.id, trainingByDifferentTrainerToBeIncludedInPayment1.id,
+        training1ToBeIncludedInPayment1.id,
+        training2ToBeIncludedInPayment1.id,
+        trainingByDifferentTrainerToBeIncludedInPayment1.id,
       ],
     });
     // create another payment
     await api.createPayment({
-      trainingIds: [
-        trainingByDifferentTrainerToBeIncludedInPayment2.id,
-      ],
+      trainingIds: [trainingByDifferentTrainerToBeIncludedInPayment2.id],
     });
 
     // WHEN we get the payments for one user
-    const result = await api.getPaymentsForTrainer({ trainerId: USER_ID_TRAINER });
+    const result = await api.getPaymentsForTrainer({
+      trainerId: USER_ID_TRAINER,
+    });
     // THEN
     expect(result).toHaveLength(1); // only one payment for this user
-    const payment = result.find((p) => (p.trainingIds.indexOf(training1ToBeIncludedInPayment1.id) !== -1));
+    const payment = result.find(
+      (p) => p.trainingIds.indexOf(training1ToBeIncludedInPayment1.id) !== -1,
+    );
     expect(payment).not.toBeNull();
   });
 });

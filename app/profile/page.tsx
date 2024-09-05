@@ -5,7 +5,10 @@ import type { JanusSession } from '@/lib/auth';
 import LoginRequired from '@/components/LoginRequired';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import React from 'react';
-import { coursesForTrainerSuspenseQuery, userSuspenseQuery } from '@/lib/shared-queries';
+import {
+  coursesForTrainerSuspenseQuery,
+  userSuspenseQuery,
+} from '@/lib/shared-queries';
 import { EditIbanDialog } from '@/app/profile/EditIbanDialog';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { UserDto } from '@/lib/dto';
@@ -17,7 +20,13 @@ import Profile from '@/app/profile/Profile';
 function ProfilePageContents({ session }: { session: JanusSession }) {
   const queryClient = useQueryClient();
   const [showIbanDialog, setShowIbanDialog] = React.useState(false);
-  const { data: user } = userSuspenseQuery(session.userId, session.accessToken, true, true, false);
+  const { data: user } = userSuspenseQuery(
+    session.userId,
+    session.accessToken,
+    true,
+    true,
+    false,
+  );
 
   const { data: courses } = coursesForTrainerSuspenseQuery(
     session.userId,
@@ -25,7 +34,13 @@ function ProfilePageContents({ session }: { session: JanusSession }) {
   );
 
   const updateIbanMutation = useMutation({
-    mutationFn: (iban: string) => patchInApi<UserDto>(API_USERS, session.userId, { iban }, session.accessToken),
+    mutationFn: (iban: string) =>
+      patchInApi<UserDto>(
+        API_USERS,
+        session.userId,
+        { iban },
+        session.accessToken,
+      ),
     onSuccess: (_) => {
       showSuccess(`Iban aktualisiert`);
       queryClient.invalidateQueries({ queryKey: [API_USERS, session.userId] });
@@ -35,22 +50,24 @@ function ProfilePageContents({ session }: { session: JanusSession }) {
     },
   });
 
-  return <React.Fragment>
-    <Profile
-      user={user}
-      courses={courses}
-      handleEditIbanClick={() => setShowIbanDialog(true)}
-      accessToken={session.accessToken}
-    />
-    <EditIbanDialog
-      open={showIbanDialog}
-      handleClose={() => {
-        setShowIbanDialog(false);
-      }}
-      handleConfirm={updateIbanMutation.mutate}
-      initialValue={user.iban}
-    />
-  </React.Fragment>;
+  return (
+    <React.Fragment>
+      <Profile
+        user={user}
+        courses={courses}
+        handleEditIbanClick={() => setShowIbanDialog(true)}
+        accessToken={session.accessToken}
+      />
+      <EditIbanDialog
+        open={showIbanDialog}
+        handleClose={() => {
+          setShowIbanDialog(false);
+        }}
+        handleConfirm={updateIbanMutation.mutate}
+        initialValue={user.iban}
+      />
+    </React.Fragment>
+  );
 }
 
 export default function ProfilePage() {

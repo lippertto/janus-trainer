@@ -13,10 +13,14 @@ const logError = (error: Error, info: ErrorInfo) => {
   console.log(error);
 };
 
-export default function ConfigureLayout({ children }: { children: React.ReactNode }) {
+export default function ConfigureLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const pathname = usePathname();
   if (pathname === '/analyze') {
-    redirect('/analyze/yearly-totals')
+    redirect('/analyze/yearly-totals');
   }
   let value;
   switch (pathname) {
@@ -31,18 +35,27 @@ export default function ConfigureLayout({ children }: { children: React.ReactNod
       value = 0;
   }
 
-  return <React.Fragment>
-    <ErrorBoundary fallbackRender={PleaseReload} onError={logError}>
-
-      <Tabs orientation={'horizontal'} value={value} >
-        <Tab label='Vergütung pro ÜL' value={0} component={Link} href={'/analyze/yearly-totals'} />
-        <Tab label='Anzahl Kurse' value={1}  component={Link} href={'/analyze/count-per-course'}/>
-      </Tabs>
-      <Box sx={{ m: 2 }}>
-      <Suspense fallback={<LoadingSpinner />}>
-        {children}
-      </Suspense>
-      </Box>
-    </ErrorBoundary>
-  </React.Fragment>;
+  return (
+    <React.Fragment>
+      <ErrorBoundary fallbackRender={PleaseReload} onError={logError}>
+        <Tabs orientation={'horizontal'} value={value}>
+          <Tab
+            label="Vergütung pro ÜL"
+            value={0}
+            component={Link}
+            href={'/analyze/yearly-totals'}
+          />
+          <Tab
+            label="Anzahl Kurse"
+            value={1}
+            component={Link}
+            href={'/analyze/count-per-course'}
+          />
+        </Tabs>
+        <Box sx={{ m: 2 }}>
+          <Suspense fallback={<LoadingSpinner />}>{children}</Suspense>
+        </Box>
+      </ErrorBoundary>
+    </React.Fragment>
+  );
 }

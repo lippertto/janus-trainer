@@ -19,16 +19,15 @@ import Box from '@mui/system/Box';
 import { compareByField } from '@/lib/sort-and-filter';
 import { DisciplineDialog } from '@/app/offerings/cost-centers/DisciplineDialog';
 
-
 function DisciplineList(props: {
-  disciplines: DisciplineDto[],
-  selectedDisciplineId: number | null,
-  setSelectedDisciplineId: (v: number) => void
+  disciplines: DisciplineDto[];
+  selectedDisciplineId: number | null;
+  setSelectedDisciplineId: (v: number) => void;
 }) {
-  return <List style={{ maxHeight: 500, overflow: 'auto' }}>
-    {props.disciplines.map(
-      (d) =>
-        (<ListItemButton
+  return (
+    <List style={{ maxHeight: 500, overflow: 'auto' }}>
+      {props.disciplines.map((d) => (
+        <ListItemButton
           key={d.id}
           onClick={() => {
             props.setSelectedDisciplineId(d.id);
@@ -36,22 +35,30 @@ function DisciplineList(props: {
           selected={props.selectedDisciplineId === d.id}
         >
           <ListItemText primary={d.name} secondary={d.costCenterId} />
-        </ListItemButton>))}
-  </List>;
+        </ListItemButton>
+      ))}
+    </List>
+  );
 }
 
 function DisciplineCardContents(props: { session: JanusSession }) {
   const queryClient = useQueryClient();
   const [open, setOpen] = React.useState<boolean>(false);
-  const [selectedDisciplineId, setSelectedDisciplineId] = React.useState<number | null>(null);
-  const { data: disciplines } = disciplinesSuspenseQuery(props.session.accessToken);
-  disciplines.sort((a, b) => (compareByField(a, b, 'name')));
+  const [selectedDisciplineId, setSelectedDisciplineId] = React.useState<
+    number | null
+  >(null);
+  const { data: disciplines } = disciplinesSuspenseQuery(
+    props.session.accessToken,
+  );
+  disciplines.sort((a, b) => compareByField(a, b, 'name'));
 
   const disciplinesAddMutation = useMutation({
-    mutationFn: (
-      data: DisciplineCreateRequest,
-    ) => {
-      return createInApi<DisciplineDto>(API_DISCIPLINES, data, props.session.accessToken);
+    mutationFn: (data: DisciplineCreateRequest) => {
+      return createInApi<DisciplineDto>(
+        API_DISCIPLINES,
+        data,
+        props.session.accessToken,
+      );
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: [API_DISCIPLINES] });
@@ -61,43 +68,52 @@ function DisciplineCardContents(props: { session: JanusSession }) {
     },
   });
 
-  return <Stack spacing={2}>
-    <ButtonGroup>
-      <Button onClick={() => {
-        setSelectedDisciplineId(null);
-        setOpen(true);
-      }}>
-        Hinzufügen
-      </Button>
-      <Button
-        onClick={() => {
-          setOpen(true);
-        }}
-        disabled={!selectedDisciplineId}
-      >
-        Bearbeiten
-      </Button>
-    </ButtonGroup>
-    <Box>
-      <DisciplineList disciplines={disciplines} selectedDisciplineId={selectedDisciplineId}
-                      setSelectedDisciplineId={setSelectedDisciplineId} />
-    </Box>
-    <DisciplineDialog
-      open={open}
-      handleClose={() => setOpen(false)}
-      handleSave={disciplinesAddMutation.mutate}
-      toEdit={disciplines.find((d) => (d.id === selectedDisciplineId)) ?? null}
-    />
-  </Stack>;
+  return (
+    <Stack spacing={2}>
+      <ButtonGroup>
+        <Button
+          onClick={() => {
+            setSelectedDisciplineId(null);
+            setOpen(true);
+          }}
+        >
+          Hinzufügen
+        </Button>
+        <Button
+          onClick={() => {
+            setOpen(true);
+          }}
+          disabled={!selectedDisciplineId}
+        >
+          Bearbeiten
+        </Button>
+      </ButtonGroup>
+      <Box>
+        <DisciplineList
+          disciplines={disciplines}
+          selectedDisciplineId={selectedDisciplineId}
+          setSelectedDisciplineId={setSelectedDisciplineId}
+        />
+      </Box>
+      <DisciplineDialog
+        open={open}
+        handleClose={() => setOpen(false)}
+        handleSave={disciplinesAddMutation.mutate}
+        toEdit={disciplines.find((d) => d.id === selectedDisciplineId) ?? null}
+      />
+    </Stack>
+  );
 }
 
 export default function DisciplineCard(props: { session: JanusSession }) {
-  return <Paper sx={{ p: 2 }}>
-    <Stack spacing={2}>
-      <Typography variant="h5">Kostenstellen</Typography>
-      <Suspense fallback={<CircularProgress />}>
-        <DisciplineCardContents session={props.session} />
-      </Suspense>
-    </Stack>
-  </Paper>;
+  return (
+    <Paper sx={{ p: 2 }}>
+      <Stack spacing={2}>
+        <Typography variant="h5">Kostenstellen</Typography>
+        <Suspense fallback={<CircularProgress />}>
+          <DisciplineCardContents session={props.session} />
+        </Suspense>
+      </Stack>
+    </Paper>
+  );
 }

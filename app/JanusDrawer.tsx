@@ -44,16 +44,20 @@ const TRAINER_LINKS = [
   { text: 'Profil', href: '/profile', icon: AccountBoxIcon },
 ];
 
-function JanusDrawerContents(
-  {
-    state, ...props
-  }: {
-    state: boolean;
-    session: JanusSession;
-    toggleDrawer: (value: boolean) => (event: React.KeyboardEvent | React.MouseEvent) => void;
-  }) {
-
-  const links = props.session.groups.indexOf(Group.ADMINS) >= 0 ? ADMIN_LINKS : TRAINER_LINKS;
+function JanusDrawerContents({
+  state,
+  ...props
+}: {
+  state: boolean;
+  session: JanusSession;
+  toggleDrawer: (
+    value: boolean,
+  ) => (event: React.KeyboardEvent | React.MouseEvent) => void;
+}) {
+  const links =
+    props.session.groups.indexOf(Group.ADMINS) >= 0
+      ? ADMIN_LINKS
+      : TRAINER_LINKS;
 
   return (
     <Drawer anchor={'left'} open={state} onClose={props.toggleDrawer(false)}>
@@ -79,24 +83,32 @@ export default function JanusDrawer(props: {
 }) {
   const toggleDrawer =
     (newState: boolean) =>
-      (event: React.KeyboardEvent | React.MouseEvent): void => {
-        if (
-          event.type === 'keydown' &&
-          ((event as React.KeyboardEvent).key === 'Tab' ||
-            (event as React.KeyboardEvent).key === 'Shift')
-        ) {
-          return;
-        }
+    (event: React.KeyboardEvent | React.MouseEvent): void => {
+      if (
+        event.type === 'keydown' &&
+        ((event as React.KeyboardEvent).key === 'Tab' ||
+          (event as React.KeyboardEvent).key === 'Shift')
+      ) {
+        return;
+      }
 
-        props.setState(newState);
-      };
+      props.setState(newState);
+    };
 
   const { data, status: authenticationStatus } = useSession();
   const session = data as JanusSession;
 
   if (authenticationStatus !== 'authenticated') {
-    return <Drawer anchor="left" open={props.state} onClose={toggleDrawer(false)} />;
+    return (
+      <Drawer anchor="left" open={props.state} onClose={toggleDrawer(false)} />
+    );
   }
 
-  return <JanusDrawerContents toggleDrawer={toggleDrawer} session={session} {...props} />;
+  return (
+    <JanusDrawerContents
+      toggleDrawer={toggleDrawer}
+      session={session}
+      {...props}
+    />
+  );
 }

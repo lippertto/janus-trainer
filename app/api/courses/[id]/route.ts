@@ -31,7 +31,7 @@ export async function GET(
 }
 
 async function deleteOneCourse(idString: string) {
-  const id = idAsNumberOrThrow(idString)
+  const id = idAsNumberOrThrow(idString);
   await prisma.course.delete({ where: { id } });
   return emptyResponse();
 }
@@ -54,20 +54,20 @@ async function updateOneCourse(idString: string, data: any) {
   return prisma.course.update({
     where: { id },
     data: {
-      ...{...request, trainerIds: undefined },
+      ...{ ...request, trainerIds: undefined },
 
       trainers: {
         set: request.trainerIds.map((t) => ({ id: t })),
       },
     },
-    include: { trainers: true }
+    include: { trainers: true },
   });
 }
 
 export async function PUT(
   request: NextRequest,
   { params }: { params: { id: string } },
-): Promise<NextResponse<CourseDto|ErrorDto>> {
+): Promise<NextResponse<CourseDto | ErrorDto>> {
   try {
     await allowOnlyAdmins(request);
     const data = await request.json();

@@ -48,29 +48,26 @@ export async function allowAdminOrSelf(
   }
 
   throw new ApiErrorForbidden(
-    'You are trying to change other people\'s data. You must be admin to do that',
+    "You are trying to change other people's data. You must be admin to do that",
   );
 }
 
 export async function getOwnUserId(req: NextRequest): Promise<string> {
-  if (process.env.DISABLE_JWT_CHECKS) return "502c79bc-e051-70f5-048c-5619e49e2383";
+  if (process.env.DISABLE_JWT_CHECKS)
+    return '502c79bc-e051-70f5-048c-5619e49e2383';
   const token = await getToken({ req });
   if (!token) throw new ApiErrorUnauthorized('Token is missing');
   return token.sub!;
 }
 
 /** Will throw if the token is not valid. */
-export async function allowAnyLoggedIn(
-  req: NextRequest,
-): Promise<void> {
+export async function allowAnyLoggedIn(req: NextRequest): Promise<void> {
   if (process.env.DISABLE_JWT_CHECKS) return;
   const token = await getToken({ req });
   if (!token) throw new ApiErrorUnauthorized('Token is missing');
 }
 
-export function badRequestResponse(
-  message: string,
-): NextResponse<ErrorDto> {
+export function badRequestResponse(message: string): NextResponse<ErrorDto> {
   return errorResponse(message, 400);
 }
 
@@ -80,7 +77,7 @@ export function emptyResponse(): Response {
 }
 
 export function notFoundResponse(): NextResponse<ErrorDto> {
-  const error: ErrorDto = {error: {message: "not found", code: "NotFound"}}
+  const error: ErrorDto = { error: { message: 'not found', code: 'NotFound' } };
   return NextResponse.json(error, { status: 404 });
 }
 
@@ -195,7 +192,9 @@ function validationErrorToMessage(error: ValidationError): string {
   // result += error.property
   let constraints = error.constraints;
   if (typeof constraints === 'object') {
-    result += Object.keys(constraints).map((constraint) => (constraints[constraint])).join(", ");
+    result += Object.keys(constraints)
+      .map((constraint) => constraints[constraint])
+      .join(', ');
   }
   return result;
 }
@@ -204,32 +203,36 @@ function validationErrorToMessage(error: ValidationError): string {
 export async function validateOrThrowOld<T extends object>(arg: T): Promise<T> {
   const validationErrors = await validate(arg);
   if (validationErrors.length !== 0) {
-    const validationMessage = validationErrors.map(validationErrorToMessage).join("; ")
-    throw new ApiErrorBadRequest(
-      'Request is invalid: ' + validationMessage
-    );
+    const validationMessage = validationErrors
+      .map(validationErrorToMessage)
+      .join('; ');
+    throw new ApiErrorBadRequest('Request is invalid: ' + validationMessage);
   }
   return arg;
 }
 
-export async function validateOrThrow<T extends object>(type: {new(args: any): T}, data: any): Promise<T> {
+export async function validateOrThrow<T extends object>(
+  type: { new (args: any): T },
+  data: any,
+): Promise<T> {
   const validationErrors = await validate(new type(data));
 
   if (validationErrors.length !== 0) {
-    const validationMessage = validationErrors.map(validationErrorToMessage).join("; ")
-    throw new ApiErrorBadRequest(
-      'Request is invalid: ' + validationMessage
-    );
+    const validationMessage = validationErrors
+      .map(validationErrorToMessage)
+      .join('; ');
+    throw new ApiErrorBadRequest('Request is invalid: ' + validationMessage);
   }
   return data as T;
 }
 
-
-export function idAsNumberOrThrow(id: string|number) {
+export function idAsNumberOrThrow(id: string | number) {
   if (typeof id === 'number') return id;
   const result = parseInt(id);
   if (!result) {
-    throw new ApiErrorBadRequest(`Provided id '${id}' does not seem to be a number`);
+    throw new ApiErrorBadRequest(
+      `Provided id '${id}' does not seem to be a number`,
+    );
   }
   return result;
 }

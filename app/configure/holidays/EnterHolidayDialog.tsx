@@ -17,10 +17,10 @@ type EnterHolidayDialogProps = {
 };
 
 export function EnterHolidayDialog({
-                                     open,
-                                     handleClose,
-                                     handleSave,
-                                   }: EnterHolidayDialogProps) {
+  open,
+  handleClose,
+  handleSave,
+}: EnterHolidayDialogProps) {
   const [start, setStart] = React.useState<dayjs.Dayjs | null>(null);
   const [end, setEnd] = React.useState<dayjs.Dayjs | null>(null);
   const [name, setName] = React.useState<string>('');

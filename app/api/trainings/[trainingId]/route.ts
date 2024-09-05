@@ -1,4 +1,9 @@
-import { ErrorDto, TrainingDto, TrainingUpdateRequest, TrainingUpdateStatusRequest } from '@/lib/dto';
+import {
+  ErrorDto,
+  TrainingDto,
+  TrainingUpdateRequest,
+  TrainingUpdateStatusRequest,
+} from '@/lib/dto';
 import {
   allowAdminOrSelf,
   allowAnyLoggedIn,
@@ -16,8 +21,14 @@ import { transitionStatus } from '@/app/api/trainings/[trainingId]/transitionSta
 import { trainingToDto } from '@/app/api/trainings/trainingUtils';
 import { logger } from '@/lib/logging';
 
-async function checkIfTrainingExistsAndIsOwn(id: number, nextRequest: NextRequest) {
-  const training = await prisma.training.findUnique({ where: { id }, include: { user: true } });
+async function checkIfTrainingExistsAndIsOwn(
+  id: number,
+  nextRequest: NextRequest,
+) {
+  const training = await prisma.training.findUnique({
+    where: { id },
+    include: { user: true },
+  });
   if (!training) {
     throw new ApiErrorNotFound(`Training with id=${id} was not found`);
   }
@@ -34,7 +45,10 @@ export async function DELETE(
     await checkIfTrainingExistsAndIsOwn(id, nextRequest);
     const userId = await getOwnUserId(nextRequest);
     await prisma.training.delete({ where: { id } });
-    logger.info({ userId, trainingId: id }, `User ${userId} deleted training ${id}`);
+    logger.info(
+      { userId, trainingId: id },
+      `User ${userId} deleted training ${id}`,
+    );
     return emptyResponse();
   } catch (e) {
     return handleTopLevelCatch(e);
@@ -66,10 +80,16 @@ export async function PUT(
     const userId = await getOwnUserId(nextRequest);
     await checkIfTrainingExistsAndIsOwn(id, nextRequest);
 
-    const request = await validateOrThrow(TrainingUpdateRequest, await nextRequest.json());
+    const request = await validateOrThrow(
+      TrainingUpdateRequest,
+      await nextRequest.json(),
+    );
 
     const result = await updateTraining(request, id);
-    logger.info({ userId, trainingId: id }, `User ${userId} updated training ${id}`);
+    logger.info(
+      { userId, trainingId: id },
+      `User ${userId} updated training ${id}`,
+    );
 
     return NextResponse.json(trainingToDto(result));
   } catch (e) {
@@ -85,16 +105,25 @@ export async function PATCH(
     await allowOnlyAdmins(nextRequest);
     const userId = await getOwnUserId(nextRequest);
     const id = idAsNumberOrThrow(params.trainingId);
-    const request = await validateOrThrow(TrainingUpdateStatusRequest, await nextRequest.json());
+    const request = await validateOrThrow(
+      TrainingUpdateStatusRequest,
+      await nextRequest.json(),
+    );
     const result = await transitionStatus(id, request.status);
-    logger.info({ userId, trainingId: id }, `User ${userId} changed status of training ${id} to ${result.status}`);
+    logger.info(
+      { userId, trainingId: id },
+      `User ${userId} changed status of training ${id} to ${result.status}`,
+    );
     return NextResponse.json(trainingToDto(result));
   } catch (e) {
     return handleTopLevelCatch(e);
   }
 }
 
-async function returnOneTraining(request: NextRequest, idAsString: string): Promise<TrainingDto> {
+async function returnOneTraining(
+  request: NextRequest,
+  idAsString: string,
+): Promise<TrainingDto> {
   const id = idAsNumberOrThrow(idAsString);
   await checkIfTrainingExistsAndIsOwn(id, request);
 
@@ -106,9 +135,7 @@ async function returnOneTraining(request: NextRequest, idAsString: string): Prom
     },
   });
   if (!training) {
-    throw new ApiErrorNotFound(
-      'Training not found.',
-    );
+    throw new ApiErrorNotFound('Training not found.');
   }
 
   return trainingToDto(training);
@@ -121,7 +148,9 @@ export async function GET(
   try {
     // first test that we are logged in. Further down, we do more checks
     await allowAnyLoggedIn(request);
-    return NextResponse.json(await returnOneTraining(request, params.trainingId));
+    return NextResponse.json(
+      await returnOneTraining(request, params.trainingId),
+    );
   } catch (e) {
     return handleTopLevelCatch(e);
   }

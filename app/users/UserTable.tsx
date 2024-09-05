@@ -11,8 +11,17 @@ import React from 'react';
 import Button from '@mui/material/Button';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import { JanusSession } from '@/lib/auth';
-import { useMutation, useQueryClient, useSuspenseQuery } from '@tanstack/react-query';
-import { createInApi, deleteFromApi, fetchListFromApi, updateInApi } from '@/lib/fetch';
+import {
+  useMutation,
+  useQueryClient,
+  useSuspenseQuery,
+} from '@tanstack/react-query';
+import {
+  createInApi,
+  deleteFromApi,
+  fetchListFromApi,
+  updateInApi,
+} from '@/lib/fetch';
 import { API_USERS } from '@/lib/routes';
 import { useConfirm } from 'material-ui-confirm';
 import { showError, showSuccess } from '@/lib/notifications';
@@ -32,26 +41,33 @@ declare module '@mui/x-data-grid' {
   }
 }
 
-function UserTableToolbar(
-  {
-    handleAddUser,
-    handleDeleteUser,
-    handleEditUser,
-    rowIsSelected,
-  }: ToolbarPropsOverrides) {
+function UserTableToolbar({
+  handleAddUser,
+  handleDeleteUser,
+  handleEditUser,
+  rowIsSelected,
+}: ToolbarPropsOverrides) {
   return (
     <GridToolbarContainer>
-      <Button startIcon={<PersonAddIcon />} onClick={handleAddUser} data-testid={'add-user-button'}>
+      <Button
+        startIcon={<PersonAddIcon />}
+        onClick={handleAddUser}
+        data-testid={'add-user-button'}
+      >
         hinzufügen
       </Button>
-      <Button startIcon={<DeleteIcon />} onClick={handleDeleteUser}
-              disabled={!Boolean(rowIsSelected)}
-              data-testid="delete-user-button"
+      <Button
+        startIcon={<DeleteIcon />}
+        onClick={handleDeleteUser}
+        disabled={!Boolean(rowIsSelected)}
+        data-testid="delete-user-button"
       >
         löschen
       </Button>
-      <Button startIcon={<EditIcon />} onClick={handleEditUser}
-              disabled={!Boolean(rowIsSelected)}
+      <Button
+        startIcon={<EditIcon />}
+        onClick={handleEditUser}
+        disabled={!Boolean(rowIsSelected)}
       >
         bearbeiten
       </Button>
@@ -59,23 +75,19 @@ function UserTableToolbar(
   );
 }
 
-export default function UserTable({
-                                    session,
-                                  }: {
-  session: JanusSession;
-}) {
+export default function UserTable({ session }: { session: JanusSession }) {
   const [showUserDialog, setShowUserDialog] = React.useState(false);
   const queryClient = useQueryClient();
   const { data: users } = useSuspenseQuery({
     queryKey: ['users'],
-    queryFn: () => fetchListFromApi<UserDto>(
-      `${API_USERS}`,
-      session!.accessToken,
-    ),
+    queryFn: () =>
+      fetchListFromApi<UserDto>(`${API_USERS}`, session!.accessToken),
     staleTime: 10 * 60 * 1000,
   });
 
-  const { data: compensationClasses } = compensationClassesSuspenseQuery(session.accessToken);
+  const { data: compensationClasses } = compensationClassesSuspenseQuery(
+    session.accessToken,
+  );
 
   const createUserMutation = useMutation({
     mutationFn: (data: UserCreateRequest) => {
@@ -91,44 +103,49 @@ export default function UserTable({
   });
 
   const updateUserMutation = useMutation({
-      mutationFn: (props: { data: UserUpdateRequest, userId: string }) => {
-        return updateInApi<UserDto>(API_USERS, props.userId, props.data, session?.accessToken ?? '');
-      },
-      onSuccess: (data: UserDto) => {
-        const newUsers = users.map((u) => {
-          if (u.id === data.id) {
-            return data;
-          } else {
-            return u;
-          }
-        });
-        queryClient.setQueryData(['users'], newUsers);
-        showSuccess(`Konto für ${data.name} wurde aktualisiert`);
-      },
-      onError: (e) => {
-        showError(`Fehler beim Aktualisieren des Kontos`, e.message);
-      },
+    mutationFn: (props: { data: UserUpdateRequest; userId: string }) => {
+      return updateInApi<UserDto>(
+        API_USERS,
+        props.userId,
+        props.data,
+        session?.accessToken ?? '',
+      );
     },
-  );
+    onSuccess: (data: UserDto) => {
+      const newUsers = users.map((u) => {
+        if (u.id === data.id) {
+          return data;
+        } else {
+          return u;
+        }
+      });
+      queryClient.setQueryData(['users'], newUsers);
+      showSuccess(`Konto für ${data.name} wurde aktualisiert`);
+    },
+    onError: (e) => {
+      showError(`Fehler beim Aktualisieren des Kontos`, e.message);
+    },
+  });
 
   const confirm = useConfirm();
   const handleDeleteUser = (user: UserDto | null) => {
     confirm({
       title: 'Konto löschen?',
       description: `Soll der Konto "${user?.email}" gelöscht werden?`,
-    })
-      .then(() => {
-        if (!user) return;
-        deleteFromApi(API_USERS, user, session.accessToken)
-          .then((deleted) => {
-            queryClient.setQueryData(['users'], users.filter((u) => u.id !== deleted.id));
-            showSuccess(`Konto ${user.name} wurde gelöscht`);
-          })
-          .catch((err) => {
-            showError(`Konnte Konto ${user.email} nicht löschen`, err.message);
-          });
-      })
-    ;
+    }).then(() => {
+      if (!user) return;
+      deleteFromApi(API_USERS, user, session.accessToken)
+        .then((deleted) => {
+          queryClient.setQueryData(
+            ['users'],
+            users.filter((u) => u.id !== deleted.id),
+          );
+          showSuccess(`Konto ${user.name} wurde gelöscht`);
+        })
+        .catch((err) => {
+          showError(`Konnte Konto ${user.email} nicht löschen`, err.message);
+        });
+    });
   };
 
   const columns: GridColDef[] = [
@@ -138,14 +155,13 @@ export default function UserTable({
       field: 'groups',
       headerName: 'Gruppen',
       flex: 1,
-      renderCell: (params) => (
-        params.value?.map(groupToHumanReadable).join(', ')
-      ),
-    }];
+      renderCell: (params) =>
+        params.value?.map(groupToHumanReadable).join(', '),
+    },
+  ];
 
-  const [rowSelectionModel, setRowSelectionModel] = React.useState<GridRowSelectionModel>(
-    [],
-  );
+  const [rowSelectionModel, setRowSelectionModel] =
+    React.useState<GridRowSelectionModel>([]);
   const [activeUser, setActiveUser] = React.useState<UserDto | null>(null);
 
   return (
@@ -175,20 +191,16 @@ export default function UserTable({
           },
         }}
         rowSelectionModel={rowSelectionModel}
-        onRowSelectionModelChange={
-          (newValue) => {
-            if (newValue.length === 0) {
-              setActiveUser(null);
-            } else {
-              setActiveUser(
-                users.find((u) => (u?.id === newValue[0] as string)) ??
-                null,
-              )
-              ;
-            }
-            setRowSelectionModel(newValue);
+        onRowSelectionModelChange={(newValue) => {
+          if (newValue.length === 0) {
+            setActiveUser(null);
+          } else {
+            setActiveUser(
+              users.find((u) => u?.id === (newValue[0] as string)) ?? null,
+            );
           }
-        }
+          setRowSelectionModel(newValue);
+        }}
       />
       <UserDialog
         toEdit={activeUser}

@@ -1,7 +1,11 @@
 import { NextRequest } from 'next/server';
 import { Group, UserDto } from '@/lib/dto';
 import { CognitoIdentityProviderClient } from '@aws-sdk/client-cognito-identity-provider';
-import { findUsersForGroup, listAllUsers, listGroups } from '@/app/api/users/cognito';
+import {
+  findUsersForGroup,
+  listAllUsers,
+  listGroups,
+} from '@/app/api/users/cognito';
 import prisma from '@/lib/prisma';
 
 /** List all users.
@@ -60,7 +64,8 @@ export async function listUsers(request: NextRequest): Promise<UserDto[]> {
       groups: cognitoUser.groups,
       compensationClasses: userInDatabase.compensationClasses,
       iban: userInDatabase.iban ?? null,
-      termsAcceptedAt: userInDatabase.termsAcceptedAt?.toLocaleDateString() ?? null,
+      termsAcceptedAt:
+        userInDatabase.termsAcceptedAt?.toLocaleDateString() ?? null,
     };
     result.push(userResponse);
   }

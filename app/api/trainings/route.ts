@@ -1,4 +1,9 @@
-import { ErrorDto, TrainingCreateRequest, TrainingDto, TrainingQueryResponse } from '@/lib/dto';
+import {
+  ErrorDto,
+  TrainingCreateRequest,
+  TrainingDto,
+  TrainingQueryResponse,
+} from '@/lib/dto';
 import {
   allowAdminOrSelf,
   allowNoOne,
@@ -17,7 +22,8 @@ async function selectTrainings(
   trainerId: string | null,
   startDate: string | null,
   endDate: string | null,
-  expandUser: boolean): Promise<TrainingDto[]> {
+  expandUser: boolean,
+): Promise<TrainingDto[]> {
   let filter: Prisma.TrainingWhereInput = {};
   if (trainerId) {
     filter['userId'] = trainerId;
@@ -36,16 +42,20 @@ async function selectTrainings(
       course: true,
     },
   });
-  return trainings.map((t) => (trainingToDto(t)));
+  return trainings.map((t) => trainingToDto(t));
 }
 
-export async function GET(request: NextRequest): Promise<NextResponse<TrainingQueryResponse | ErrorDto>> {
+export async function GET(
+  request: NextRequest,
+): Promise<NextResponse<TrainingQueryResponse | ErrorDto>> {
   try {
     const trainerId = request.nextUrl.searchParams.get('trainerId');
     const startDate = request.nextUrl.searchParams.get('start');
     const endDate = request.nextUrl.searchParams.get('end');
 
-    const expandParameters = (request.nextUrl.searchParams.get('expand') ?? '').split(',');
+    const expandParameters = (
+      request.nextUrl.searchParams.get('expand') ?? ''
+    ).split(',');
     const expandUser = expandParameters.indexOf('user') !== -1;
 
     if (trainerId) {
@@ -54,7 +64,12 @@ export async function GET(request: NextRequest): Promise<NextResponse<TrainingQu
       await allowOnlyAdmins(request);
     }
 
-    const value = await selectTrainings(trainerId, startDate, endDate, expandUser);
+    const value = await selectTrainings(
+      trainerId,
+      startDate,
+      endDate,
+      expandUser,
+    );
     return NextResponse.json({ value });
   } catch (e) {
     return handleTopLevelCatch(e);
@@ -64,7 +79,6 @@ export async function GET(request: NextRequest): Promise<NextResponse<TrainingQu
 async function doPOST(
   request: TrainingCreateRequest,
 ): Promise<NextResponse<Training>> {
-
   const result = await prisma.training.create({
     data: {
       date: request.date,
@@ -84,7 +98,10 @@ async function doPOST(
 
 export async function POST(nextRequest: NextRequest) {
   try {
-    const request = await validateOrThrow(TrainingCreateRequest, await nextRequest.json());
+    const request = await validateOrThrow(
+      TrainingCreateRequest,
+      await nextRequest.json(),
+    );
     await allowAdminOrSelf(nextRequest, request.userId);
 
     if (request.participantCount <= 0) {

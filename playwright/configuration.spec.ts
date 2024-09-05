@@ -2,7 +2,6 @@ import { expect, test } from '@playwright/test';
 import { v4 as uuidv4 } from 'uuid';
 import { newBrowser } from './browser';
 
-
 test.describe.serial('Configuration page', () => {
   test.use({ storageState: 'playwright/.auth/admin.json' });
 
@@ -29,11 +28,9 @@ test.describe.serial('Configuration page', () => {
     await page.getByText(holidayName).click();
     await page.getByRole('button', { name: 'Löschen' }).click();
     await page.getByRole('button', { name: 'Ok' }).click();
-    await expect(page.getByText(holidayName, {exact: true})).toBeHidden();
+    await expect(page.getByText(holidayName, { exact: true })).toBeHidden();
 
     await page.close();
     await browser.close();
   });
-
-
 });

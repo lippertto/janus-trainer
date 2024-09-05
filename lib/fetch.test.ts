@@ -1,23 +1,23 @@
 import { buildQueryString } from '@/lib/fetch';
 
-describe("fetchSingleEntity", () => {
-  test("empty components result in empty string", () => {
+describe('fetchSingleEntity', () => {
+  test('empty components result in empty string', () => {
     const result = buildQueryString([]);
-    expect(result).toBe("")
-  })
-
-  test("one component has only question mark", () => {
-    const result = buildQueryString(["a=b"]);
-    expect(result).toBe("?a=b")
+    expect(result).toBe('');
   });
 
-  test("second component is joined with ampersand", () => {
-    const result = buildQueryString(["a=b", "c=d"]);
-    expect(result).toBe("?a=b&c=d")
+  test('one component has only question mark', () => {
+    const result = buildQueryString(['a=b']);
+    expect(result).toBe('?a=b');
   });
 
-  test("three components have two ampersands", () => {
-    const result = buildQueryString(["a=b", "c=d", "e=f"]);
-    expect(result).toBe("?a=b&c=d&e=f")
+  test('second component is joined with ampersand', () => {
+    const result = buildQueryString(['a=b', 'c=d']);
+    expect(result).toBe('?a=b&c=d');
+  });
+
+  test('three components have two ampersands', () => {
+    const result = buildQueryString(['a=b', 'c=d', 'e=f']);
+    expect(result).toBe('?a=b&c=d&e=f');
   });
 });

@@ -25,7 +25,8 @@ function buildColumns(
       headerName: 'Registrierung',
       field: 'scanDate',
       width: 200,
-      valueFormatter: (value: dayjs.Dayjs) => value.format('DD.MM.YYYY (dd) HH:mm'),
+      valueFormatter: (value: dayjs.Dayjs) =>
+        value.format('DD.MM.YYYY (dd) HH:mm'),
     },
     {
       field: 'Vorname',
@@ -58,7 +59,6 @@ declare module '@mui/x-data-grid' {
   }
 }
 
-
 function ScannedUserTableToolbar({ handleClear }: ScannedUserToolbarProps) {
   return (
     <GridToolbarContainer>
@@ -67,7 +67,7 @@ function ScannedUserTableToolbar({ handleClear }: ScannedUserToolbarProps) {
         startIcon={<ClearIcon />}
         onClick={() => {
           if (handleClear) {
-            handleClear()
+            handleClear();
           }
         }}
       >

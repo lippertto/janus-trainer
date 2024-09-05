@@ -10,19 +10,20 @@ import { TrainingList } from './TrainingList';
 import React from 'react';
 import { DayOfWeek, TrainingStatus } from '@prisma/client';
 
-
 test('Shows edit icon for new trainings', async () => {
   const edit = jest.fn();
 
-  const trainings = [{
-    id: 1, course: { name: 'any-name', weekdays: [DayOfWeek.SATURDAY] }, status: TrainingStatus.NEW,
-  } as any as TrainingDto];
+  const trainings = [
+    {
+      id: 1,
+      course: { name: 'any-name', weekdays: [DayOfWeek.SATURDAY] },
+      status: TrainingStatus.NEW,
+    } as any as TrainingDto,
+  ];
 
-  render(<TrainingList
-    trainings={trainings}
-    holidays={[]}
-    handleEdit={edit}
-  />);
+  render(
+    <TrainingList trainings={trainings} holidays={[]} handleEdit={edit} />,
+  );
 
   const editButton = await screen.findByRole('button', { name: /Bearbeiten/i });
   fireEvent.click(editButton);
@@ -31,19 +32,20 @@ test('Shows edit icon for new trainings', async () => {
 });
 
 test('Shows no edit icon for other trainings', async () => {
-    const edit = jest.fn();
+  const edit = jest.fn();
 
-    const trainings = [{
-      id: 1, course: { name: 'any-name', weekdays: [DayOfWeek.SATURDAY] }, status: TrainingStatus.APPROVED,
-    } as any as TrainingDto];
+  const trainings = [
+    {
+      id: 1,
+      course: { name: 'any-name', weekdays: [DayOfWeek.SATURDAY] },
+      status: TrainingStatus.APPROVED,
+    } as any as TrainingDto,
+  ];
 
-    render(<TrainingList
-      trainings={trainings}
-      holidays={[]}
-      handleEdit={edit}
-    />);
+  render(
+    <TrainingList trainings={trainings} holidays={[]} handleEdit={edit} />,
+  );
 
-    const editButton = screen.queryByRole('button', { name: /Bearbeiten/i });
-    expect(editButton).toBeNull();
-  },
-);
+  const editButton = screen.queryByRole('button', { name: /Bearbeiten/i });
+  expect(editButton).toBeNull();
+});

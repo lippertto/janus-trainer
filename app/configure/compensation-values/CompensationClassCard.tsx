@@ -4,7 +4,11 @@ import Typography from '@mui/material/Typography';
 import ButtonGroup from '@mui/material/ButtonGroup';
 import Button from '@mui/material/Button';
 import React from 'react';
-import { CompensationClassCreateRequest, CompensationClassDto, CompensationValueDto } from '@/lib/dto';
+import {
+  CompensationClassCreateRequest,
+  CompensationClassDto,
+  CompensationValueDto,
+} from '@/lib/dto';
 import List from '@mui/material/List';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
@@ -16,33 +20,34 @@ import { showError } from '@/lib/notifications';
 import { useConfirm } from 'material-ui-confirm';
 import CompensationClassDialog from '@/app/configure/compensation-values/CompensationClassDialog';
 
-function CompensationClassList(
-  props: {
-    compensationClasses: CompensationClassDto[],
-    activeCompensationClass: CompensationClassDto | null,
-    setActiveCompensationClass: (v: CompensationClassDto | null) => void,
-  },
-) {
-  return <List>
-    {props.compensationClasses.toSorted((a, b) => compareByField(a, b, "name")).map((cc) => (
-      <ListItemButton
-        onClick={() => props.setActiveCompensationClass(cc)}
-        selected={(props.activeCompensationClass?.id === cc.id)}
-        key={cc.id}
-      >
-        <ListItemText>{cc.name}</ListItemText>
-      </ListItemButton>
-    ))}
-  </List>;
+function CompensationClassList(props: {
+  compensationClasses: CompensationClassDto[];
+  activeCompensationClass: CompensationClassDto | null;
+  setActiveCompensationClass: (v: CompensationClassDto | null) => void;
+}) {
+  return (
+    <List>
+      {props.compensationClasses
+        .toSorted((a, b) => compareByField(a, b, 'name'))
+        .map((cc) => (
+          <ListItemButton
+            onClick={() => props.setActiveCompensationClass(cc)}
+            selected={props.activeCompensationClass?.id === cc.id}
+            key={cc.id}
+          >
+            <ListItemText>{cc.name}</ListItemText>
+          </ListItemButton>
+        ))}
+    </List>
+  );
 }
 
-
 export default function CompensationClassCard(props: {
-  compensationClasses: CompensationClassDto[],
-  setCompensationClasses: (v: CompensationClassDto[]) => void,
-  activeCompensationClass: CompensationClassDto | null,
-  setActiveCompensationClass: (v: CompensationClassDto | null) => void,
-  accessToken: string,
+  compensationClasses: CompensationClassDto[];
+  setCompensationClasses: (v: CompensationClassDto[]) => void;
+  activeCompensationClass: CompensationClassDto | null;
+  setActiveCompensationClass: (v: CompensationClassDto | null) => void;
+  accessToken: string;
 }) {
   const {
     activeCompensationClass,
@@ -55,11 +60,17 @@ export default function CompensationClassCard(props: {
 
   const deleteMutation = useMutation({
     mutationFn: (value: CompensationClassDto) => {
-      return deleteFromApi(`${API_COMPENSATION_CLASSES}`, value, props.accessToken);
+      return deleteFromApi(
+        `${API_COMPENSATION_CLASSES}`,
+        value,
+        props.accessToken,
+      );
     },
     onSuccess: (deletedValue) => {
       setActiveCompensationClass(null);
-      setCompensationClasses(compensationClasses.filter((cc) => (cc.id !== deletedValue.id)));
+      setCompensationClasses(
+        compensationClasses.filter((cc) => cc.id !== deletedValue.id),
+      );
     },
     onError: (e) => {
       showError(`Fehler beim Löschen der Pauschalen-Gruppe`, e.message);
@@ -68,7 +79,11 @@ export default function CompensationClassCard(props: {
 
   const createMutation = useMutation({
     mutationFn: (value: CompensationClassCreateRequest) => {
-      return createInApi<CompensationClassDto>(`${API_COMPENSATION_CLASSES}`, value, props.accessToken);
+      return createInApi<CompensationClassDto>(
+        `${API_COMPENSATION_CLASSES}`,
+        value,
+        props.accessToken,
+      );
     },
     onSuccess: (createdValue) => {
       setCompensationClasses([...compensationClasses, createdValue]);
@@ -80,10 +95,17 @@ export default function CompensationClassCard(props: {
 
   const updateMutation = useMutation({
     mutationFn: (value: CompensationClassCreateRequest) => {
-      return updateInApi<CompensationClassDto>(`${API_COMPENSATION_CLASSES}`, activeCompensationClass!.id, value, props.accessToken);
+      return updateInApi<CompensationClassDto>(
+        `${API_COMPENSATION_CLASSES}`,
+        activeCompensationClass!.id,
+        value,
+        props.accessToken,
+      );
     },
     onSuccess: (createdValue) => {
-      setCompensationClasses(replaceElementWithId(compensationClasses, createdValue));
+      setCompensationClasses(
+        replaceElementWithId(compensationClasses, createdValue),
+      );
     },
     onError: (e) => {
       showError(`Fehler beim Aktualisieren der Pauschalen-Gruppe`, e.message);
@@ -95,42 +117,48 @@ export default function CompensationClassCard(props: {
     confirm({
       title: 'Pauschale löschen?',
       description: `Soll die Pauschalen-Gruppe "${activeCompensationClass?.name}" gelöscht werden?`,
-    })
-      .then(
-        () => deleteMutation.mutate(activeCompensationClass!),
-      );
+    }).then(() => deleteMutation.mutate(activeCompensationClass!));
   };
 
-
-  return <>
-    <Paper sx={{ p: 2 }}>
-      <Stack spacing={2}>
-        <Typography variant="h5">Pauschalen-Gruppen</Typography>
-        <ButtonGroup>
-          <Button
-            onClick={() => {
-              setActiveCompensationClass(null);
-              setDialogOpen(true);
-            }}
-          >Hinzufügen</Button>
-          <Button
-            disabled={!activeCompensationClass}
-            onClick={handleDeleteClick}
-          >Löschen</Button>
-          <Button onClick={() => setDialogOpen(true)}>Bearbeiten</Button>
-        </ButtonGroup>
-        <CompensationClassList
-          compensationClasses={props.compensationClasses}
-          activeCompensationClass={activeCompensationClass}
-          setActiveCompensationClass={setActiveCompensationClass}
-        />
-      </Stack>
-    </Paper>
-    <CompensationClassDialog
-      open={dialogOpen}
-      toEdit={activeCompensationClass}
-      handleClose={() => setDialogOpen(false)}
-      handleSave={activeCompensationClass ? updateMutation.mutate : createMutation.mutate}
-    />
-  </>;
+  return (
+    <>
+      <Paper sx={{ p: 2 }}>
+        <Stack spacing={2}>
+          <Typography variant="h5">Pauschalen-Gruppen</Typography>
+          <ButtonGroup>
+            <Button
+              onClick={() => {
+                setActiveCompensationClass(null);
+                setDialogOpen(true);
+              }}
+            >
+              Hinzufügen
+            </Button>
+            <Button
+              disabled={!activeCompensationClass}
+              onClick={handleDeleteClick}
+            >
+              Löschen
+            </Button>
+            <Button onClick={() => setDialogOpen(true)}>Bearbeiten</Button>
+          </ButtonGroup>
+          <CompensationClassList
+            compensationClasses={props.compensationClasses}
+            activeCompensationClass={activeCompensationClass}
+            setActiveCompensationClass={setActiveCompensationClass}
+          />
+        </Stack>
+      </Paper>
+      <CompensationClassDialog
+        open={dialogOpen}
+        toEdit={activeCompensationClass}
+        handleClose={() => setDialogOpen(false)}
+        handleSave={
+          activeCompensationClass
+            ? updateMutation.mutate
+            : createMutation.mutate
+        }
+      />
+    </>
+  );
 }

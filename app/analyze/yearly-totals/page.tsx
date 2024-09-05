@@ -14,23 +14,29 @@ function AnalyzePageContents(props: { accessToken: string }) {
   let currentYear = new Date().getFullYear();
   const [year, setYear] = useState<number>(currentYear);
 
-  const { data: yearlySummaries } = yearlyTotalsSuspenseQuery(props.accessToken, year, null);
+  const { data: yearlySummaries } = yearlyTotalsSuspenseQuery(
+    props.accessToken,
+    year,
+    null,
+  );
 
-  return <Stack>
-    <DatePicker
-      views={['year']}
-      label="Jahr"
-      value={dayjs(`${year}-01-01`)}
-      minDate={dayjs(`2023-01-01`)}
-      maxDate={dayjs(`${currentYear}-01-01`)}
-      onChange={(value) => {
-        if (!value) return;
-        setYear(value.year());
-      }}
-      sx={{ mb: 3, width: 140 }}
-    />
-    <YearlyTotalsTable totals={yearlySummaries} />
-  </Stack>;
+  return (
+    <Stack>
+      <DatePicker
+        views={['year']}
+        label="Jahr"
+        value={dayjs(`${year}-01-01`)}
+        minDate={dayjs(`2023-01-01`)}
+        maxDate={dayjs(`${currentYear}-01-01`)}
+        onChange={(value) => {
+          if (!value) return;
+          setYear(value.year());
+        }}
+        sx={{ mb: 3, width: 140 }}
+      />
+      <YearlyTotalsTable totals={yearlySummaries} />
+    </Stack>
+  );
 }
 
 export default function AnalyzePage() {
@@ -41,7 +47,5 @@ export default function AnalyzePage() {
     return <LoginRequired authenticationStatus={authenticationStatus} />;
   }
 
-  return <AnalyzePageContents
-    accessToken={session.accessToken}
-  />;
+  return <AnalyzePageContents accessToken={session.accessToken} />;
 }

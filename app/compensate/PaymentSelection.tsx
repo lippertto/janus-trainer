@@ -14,57 +14,57 @@ import { compareByField } from '@/lib/sort-and-filter';
 export const CURRENT_PAYMENT_ID = -1;
 
 function PaymentListContents(props: {
-  payments: PaymentDto[],
-  selectedPaymentId: number,
-  setSelectedPaymentId: (v: number) => void,
+  payments: PaymentDto[];
+  selectedPaymentId: number;
+  setSelectedPaymentId: (v: number) => void;
 }) {
   const { selectedPaymentId, setSelectedPaymentId } = { ...props };
 
   const sortedPayments = props.payments
-    .toSorted((a, b) => (compareByField(a, b, 'createdAt')))
+    .toSorted((a, b) => compareByField(a, b, 'createdAt'))
     .reverse();
 
-  return <List>
-    <ListItemButton
-      key={CURRENT_PAYMENT_ID}
-      onClick={() => setSelectedPaymentId(CURRENT_PAYMENT_ID)}
-      selected={selectedPaymentId === CURRENT_PAYMENT_ID}
-    >
-      <ListItemText>Offen</ListItemText>
-    </ListItemButton>
-
-    {sortedPayments.map((p) => (
+  return (
+    <List>
       <ListItemButton
-        key={p.id}
-        onClick={() => setSelectedPaymentId(p.id)}
-        selected={selectedPaymentId === p.id}
+        key={CURRENT_PAYMENT_ID}
+        onClick={() => setSelectedPaymentId(CURRENT_PAYMENT_ID)}
+        selected={selectedPaymentId === CURRENT_PAYMENT_ID}
       >
-        <ListItemText
-          primary={dateToHumanReadable(p.createdAt)}
-          secondary={centsToHumanReadable(p.totalCents)}
-        />
+        <ListItemText>Offen</ListItemText>
       </ListItemButton>
-    ))}
-  </List>;
+
+      {sortedPayments.map((p) => (
+        <ListItemButton
+          key={p.id}
+          onClick={() => setSelectedPaymentId(p.id)}
+          selected={selectedPaymentId === p.id}
+        >
+          <ListItemText
+            primary={dateToHumanReadable(p.createdAt)}
+            secondary={centsToHumanReadable(p.totalCents)}
+          />
+        </ListItemButton>
+      ))}
+    </List>
+  );
 }
 
-
 export default function PaymentSelection(props: {
-  session: JanusSession,
-  payments: PaymentDto[],
-  selectedPaymentId: number,
-  setSelectedPaymentId: (v: number) => void,
+  session: JanusSession;
+  payments: PaymentDto[];
+  selectedPaymentId: number;
+  setSelectedPaymentId: (v: number) => void;
 }) {
-  return <Paper>
-    <Stack padding={3}>
-      <Typography variant="h5">Auszahlungen</Typography>
+  return (
+    <Paper>
+      <Stack padding={3}>
+        <Typography variant="h5">Auszahlungen</Typography>
 
-      <Suspense fallback={<CircularProgress />}>
-        <PaymentListContents
-          {...props}
-        />
-      </Suspense>
-
-    </Stack>
-  </Paper>;
+        <Suspense fallback={<CircularProgress />}>
+          <PaymentListContents {...props} />
+        </Suspense>
+      </Stack>
+    </Paper>
+  );
 }

@@ -48,5 +48,5 @@ export default [
   {
     ...playwright.configs['flat/recommended'],
     files: ['playwright/**/*.ts'],
-  }
+  },
 ];

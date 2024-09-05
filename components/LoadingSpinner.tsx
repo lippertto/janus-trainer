@@ -3,5 +3,9 @@ import { CircularProgress } from '@mui/material';
 import React from 'react';
 
 export function LoadingSpinner() {
-  return <Stack alignItems="center"><CircularProgress /> </Stack>;
+  return (
+    <Stack alignItems="center">
+      <CircularProgress />{' '}
+    </Stack>
+  );
 }
