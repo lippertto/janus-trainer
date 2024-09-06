@@ -41,6 +41,7 @@ Then, you have to include the api tests in jest.config.js and run `yarn test`.
 - Hide password in POSTGRES_CONNECTION_URL of lambda. --> Use Secret
 - Join payments and compensation api routes (and domain objects) into /payments/{id}/compensations
 - Put API tests into separate folder with their own jest config
+- Put sources into src directory.
 
 ## Refinement
 
