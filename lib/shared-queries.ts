@@ -12,8 +12,7 @@ import {
   API_DISCIPLINES,
   API_HOLIDAYS,
   API_PAYMENTS,
-  API_TRAININGS_COUNT_PER_COURSE,
-  API_TRAININGS_YEARLY_TOTALS,
+  API_TRAINING_STATISTICS,
   API_USERS,
 } from '@/lib/routes';
 import {
@@ -23,9 +22,8 @@ import {
   CourseDto,
   DisciplineDto,
   PaymentDto,
-  TrainingCountPerCourse,
+  TrainingStatisticDto,
   UserDto,
-  YearlyTotalDto,
 } from '@/lib/dto';
 import { Holiday } from '@prisma/client';
 import { CURRENT_PAYMENT_ID } from '@/app/compensate/PaymentSelection';
@@ -143,30 +141,24 @@ export function disciplinesSuspenseQuery(accessToken: string) {
   });
 }
 
-export function yearlyTotalsSuspenseQuery(
+export function trainingStatisticsSuspenseQuery(
   accessToken: string,
   year: number,
-  trainerId: String | null,
+  trainerId: string | null,
+  groupBy: 'trainer' | 'cost-center',
 ) {
-  const trainerIdQuery = trainerId ? `&trainerId=${trainerId}` : '';
-  return useSuspenseQuery({
-    queryKey: [API_TRAININGS_YEARLY_TOTALS, year, trainerId],
-    queryFn: () =>
-      fetchListFromApi<YearlyTotalDto>(
-        `${API_TRAININGS_YEARLY_TOTALS}?year=${year}${trainerIdQuery}`,
-        accessToken,
-        'POST',
-      ),
-    staleTime: TEN_MINUTES,
-  });
-}
+  const params = new URLSearchParams();
+  params.append('year', year.toString());
+  params.append('groupBy', groupBy);
+  if (trainerId) {
+    params.append('trainerId', trainerId);
+  }
 
-export function countPerCourseSuspenseQuery(accessToken: string, year: number) {
   return useSuspenseQuery({
-    queryKey: [API_TRAININGS_COUNT_PER_COURSE, year],
+    queryKey: [API_TRAINING_STATISTICS, year, trainerId],
     queryFn: () =>
-      fetchListFromApi<TrainingCountPerCourse>(
-        `${API_TRAININGS_COUNT_PER_COURSE}?year=${year}`,
+      fetchListFromApi<TrainingStatisticDto>(
+        `${API_TRAINING_STATISTICS}?${params.toString()}`,
         accessToken,
         'POST',
       ),

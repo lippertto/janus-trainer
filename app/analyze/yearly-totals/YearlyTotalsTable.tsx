@@ -1,4 +1,4 @@
-import { YearlyTotalDto } from '@/lib/dto';
+import { TrainingStatisticDto } from '@/lib/dto';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import Box from '@mui/material/Box';
 import { currencyFormatter } from '@/lib/formatters';
@@ -63,7 +63,9 @@ function buildColumns(): GridColDef[] {
   ];
 }
 
-export default function YearlyTotalsTable(props: { totals: YearlyTotalDto[] }) {
+export default function YearlyTotalsTable(props: {
+  totals: TrainingStatisticDto[];
+}) {
   return (
     <Box
       sx={{

@@ -4,17 +4,19 @@ import { useSession } from 'next-auth/react';
 import type { JanusSession } from '@/lib/auth';
 import LoginRequired from '@/components/LoginRequired';
 import React, { useState } from 'react';
-import { countPerCourseSuspenseQuery } from '@/lib/shared-queries';
+import { trainingStatisticsSuspenseQuery } from '@/lib/shared-queries';
 import Stack from '@mui/material/Stack';
 import { DatePicker } from '@mui/x-date-pickers';
 import dayjs from 'dayjs';
-import { TrainingCountPerCourse } from '@/lib/dto';
+import { TrainingStatisticDto } from '@/lib/dto';
 import Box from '@mui/material/Box';
 import { DataGrid } from '@mui/x-data-grid';
+import { currencyFormatter } from '@/lib/formatters';
 
-const MAX_TRAININGS_PER_COURSE = 44;
+function Table(props: { totals: TrainingStatisticDto[] }) {
+  const compensationCentsWidth = 100; // allows to show 1000,00 €
+  const trainingCountWidth = 50;
 
-function Table(props: { counts: TrainingCountPerCourse[] }) {
   return (
     <Box
       sx={{
@@ -24,25 +26,81 @@ function Table(props: { counts: TrainingCountPerCourse[] }) {
       }}
     >
       <DataGrid
-        rows={props.counts}
-        getRowId={(row) => row.course.id}
+        rows={props.totals}
+        getRowId={(row) => row.costCenterName!}
         disableRowSelectionOnClick
         columns={[
           {
             field: 'course.name',
             headerName: 'Kurs',
             width: 200,
-            valueGetter: (_value, row) => row.course.name,
+            valueGetter: (_value, row) => row.costCenterName,
           },
           {
-            field: 'count',
-            headerName: 'Anzahl',
+            field: 'trainingCountQ1',
+            headerName: 'Q1 T',
+            width: trainingCountWidth,
+          },
+          {
+            field: 'trainingCountQ2',
+            headerName: 'Q2 T',
+            width: trainingCountWidth,
+          },
+          {
+            field: 'trainingCountQ3',
+            headerName: 'Q3 T',
+            width: trainingCountWidth,
+          },
+          {
+            field: 'trainingCountQ4',
+            headerName: 'Q4 T',
+            width: trainingCountWidth,
+          },
+          {
+            field: 'trainingCountTotal',
+            headerName: 'Σ T',
+            width: trainingCountWidth,
+          },
+          {
+            field: 'compensationCentsQ1',
+            headerName: 'Q1 €',
+            width: compensationCentsWidth,
+            valueGetter: (value) => value / 100,
+            valueFormatter: currencyFormatter,
+          },
+          {
+            field: 'compensationCentsQ2',
+            headerName: 'Q2 €',
+            width: compensationCentsWidth,
+            valueGetter: (value) => value / 100,
+            valueFormatter: currencyFormatter,
+          },
+          {
+            field: 'compensationCentsQ3',
+            headerName: 'Q3 €',
+            width: compensationCentsWidth,
+            valueGetter: (value) => value / 100,
+            valueFormatter: currencyFormatter,
+          },
+          {
+            field: 'compensationCentsQ4',
+            headerName: 'Q4 €',
+            width: compensationCentsWidth,
+            valueGetter: (value) => value / 100,
+            valueFormatter: currencyFormatter,
+          },
+          {
+            field: 'compensationCentsTotal',
+            headerName: 'Σ €',
             type: 'number',
+            width: compensationCentsWidth,
+            valueGetter: (value) => value / 100,
+            valueFormatter: currencyFormatter,
             cellClassName: (params) => {
-              if (params.row.count <= MAX_TRAININGS_PER_COURSE) {
+              if (params.row.compensationCentsTotal < 3000 * 100) {
                 return '';
               } else {
-                return 'training-count-warning';
+                return 'yearly-total-warning';
               }
             },
           },
@@ -56,9 +114,11 @@ function Contents(props: { accessToken: string }) {
   let currentYear = new Date().getFullYear();
   const [year, setYear] = useState<number>(currentYear);
 
-  const { data: yearlySummaries } = countPerCourseSuspenseQuery(
+  const { data: yearlySummaries } = trainingStatisticsSuspenseQuery(
     props.accessToken,
     year,
+    null,
+    'cost-center',
   );
 
   return (
@@ -75,8 +135,7 @@ function Contents(props: { accessToken: string }) {
         }}
         sx={{ mb: 3, width: 140 }}
       />
-
-      <Table counts={yearlySummaries} />
+      <Table totals={yearlySummaries} />
     </Stack>
   );
 }

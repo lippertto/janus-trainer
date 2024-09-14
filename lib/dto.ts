@@ -321,9 +321,11 @@ export type PaymentDto = {
   totalCents: number;
 };
 
-export type YearlyTotalDto = {
-  trainerId: string;
-  trainerName: string;
+export type TrainingStatisticDto = {
+  trainerId?: string;
+  trainerName?: string;
+  costCenterName?: string;
+
   trainingCountQ1: number;
   trainingCountQ2: number;
   trainingCountQ3: number;
@@ -336,8 +338,8 @@ export type YearlyTotalDto = {
   compensationCentsTotal: number;
 };
 
-export type YearlyTotalQueryResponseDto = {
-  value: YearlyTotalDto[];
+export type TrainingStatisticsResponse = {
+  value: TrainingStatisticDto[];
 };
 
 export type CompensationClassDto = CompensationClass & {

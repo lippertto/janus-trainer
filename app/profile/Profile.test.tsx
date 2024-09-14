@@ -7,11 +7,12 @@ import { render, screen } from '@testing-library/react';
 import Profile from '@/app/profile/Profile';
 import { Group, UserDto } from '@/lib/dto';
 import '@testing-library/jest-dom';
+import { trainingStatisticsSuspenseQuery } from '@/lib/shared-queries';
 
 jest.mock('@/lib/shared-queries', () => {
   return {
     __esModule: true,
-    yearlyTotalsSuspenseQuery: jest.fn(() => ({
+    trainingStatisticsSuspenseQuery: jest.fn(() => ({
       data: [
         {
           trainerId: 'miau',

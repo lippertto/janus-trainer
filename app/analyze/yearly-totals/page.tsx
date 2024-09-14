@@ -4,7 +4,7 @@ import { useSession } from 'next-auth/react';
 import type { JanusSession } from '@/lib/auth';
 import LoginRequired from '@/components/LoginRequired';
 import React, { useState } from 'react';
-import { yearlyTotalsSuspenseQuery } from '@/lib/shared-queries';
+import { trainingStatisticsSuspenseQuery } from '@/lib/shared-queries';
 import YearlyTotalsTable from '@/app/analyze/yearly-totals/YearlyTotalsTable';
 import Stack from '@mui/material/Stack';
 import { DatePicker } from '@mui/x-date-pickers';
@@ -14,10 +14,11 @@ function AnalyzePageContents(props: { accessToken: string }) {
   let currentYear = new Date().getFullYear();
   const [year, setYear] = useState<number>(currentYear);
 
-  const { data: yearlySummaries } = yearlyTotalsSuspenseQuery(
+  const { data: yearlySummaries } = trainingStatisticsSuspenseQuery(
     props.accessToken,
     year,
     null,
+    'trainer',
   );
 
   return (
