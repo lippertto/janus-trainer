@@ -18,7 +18,7 @@ import { CourseDto, UserDto } from '@/lib/dto';
 import 'core-js/modules/es.array.to-sorted';
 import {
   termsOfServiceSuspenseQuery,
-  yearlyTotalsSuspenseQuery,
+  trainingStatisticsSuspenseQuery,
 } from '@/lib/shared-queries';
 import { TosDialog } from '@/components/TosDialog';
 import Stack from '@mui/material/Stack';
@@ -33,10 +33,11 @@ function StatisticsData(props: {
   trainerId: string;
 }) {
   const { year } = { ...props };
-  const { data: totals } = yearlyTotalsSuspenseQuery(
+  const { data: totals } = trainingStatisticsSuspenseQuery(
     props.accessToken,
     year,
     props.trainerId,
+    'trainer',
   );
   return (
     <React.Fragment>

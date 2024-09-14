@@ -78,16 +78,26 @@ async function main() {
     ),
   );
 
-  const discipline: Discipline = {
+  const discipline1: Discipline = {
     name: 'Sportart 1',
     id: 1,
     costCenterId: 42,
   };
-  await prisma.discipline.upsert({
-    where: { id: 1 },
-    create: discipline,
-    update: discipline,
-  });
+  const discipline2: Discipline = {
+    name: 'Sportart 2',
+    id: 2,
+    costCenterId: 84,
+  };
+
+  await Promise.all(
+    [discipline1, discipline2].map((d) =>
+      prisma.discipline.upsert({
+        where: { id: d.id },
+        create: d,
+        update: d,
+      }),
+    ),
+  );
   await resetIdCounter('Discipline');
 
   const course1 = {
@@ -96,7 +106,7 @@ async function main() {
     startHour: 19,
     startMinute: 0,
     durationMinutes: 90,
-    disciplineId: discipline.id,
+    disciplineId: discipline1.id,
   };
 
   const course2 = {
@@ -105,7 +115,7 @@ async function main() {
     startHour: 19,
     startMinute: 0,
     durationMinutes: 120,
-    disciplineId: discipline.id,
+    disciplineId: discipline2.id,
   };
 
   await prisma.course.upsert({

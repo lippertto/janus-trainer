@@ -6,29 +6,40 @@ import {
   allowAnyLoggedIn,
   allowOnlyAdmins,
   ApiErrorBadRequest,
+  badRequestResponse,
   handleTopLevelCatch,
 } from '@/lib/helpers-for-api';
 import prisma from '@/lib/prisma';
-import { Prisma } from '@prisma/client';
 import {
   ErrorDto,
-  YearlyTotalDto,
-  YearlyTotalQueryResponseDto,
+  TrainingStatisticDto,
+  TrainingStatisticsResponse,
 } from '@/lib/dto';
 
 async function calculateYearlyTotals(
   year: number,
   trainerId: string | null,
-): Promise<YearlyTotalDto[]> {
-  let trainerWhere = Prisma.empty;
+  groupBy: 'trainer' | 'cost-center',
+): Promise<TrainingStatisticDto[]> {
+  let trainerWhere = '';
   if (trainerId) {
-    trainerWhere = Prisma.sql`AND "userId" = ${trainerId}`;
+    trainerWhere = `AND "userId" = '${trainerId}'`;
   }
-  const startDate = `${year}-01-01`;
-  const endDate = `${year}-12-31`;
+  const startDate = `'${year}-01-01'`;
+  const endDate = `'${year}-12-31'`;
 
-  const sqlResult: any[] = await prisma.$queryRaw`
-      SELECT "User"."name"            AS "trainerName",
+  let selectSql;
+  let groupBySql;
+  if (groupBy === 'trainer') {
+    selectSql = `SELECT "User"."name" AS "trainerName", \n`;
+    groupBySql = `GROUP BY "User"."name" \n`;
+  } else {
+    selectSql = `SELECT "Discipline"."name" AS "costCenterName", \n`;
+    groupBySql = `GROUP BY "Discipline"."name" \n`;
+  }
+
+  let query = `
+      ${selectSql}
              SUM(CASE
                      WHEN TO_NUMBER(SPLIT_PART("date", '-', 2), '09') BETWEEN 1 AND 3 THEN 1
                      ELSE 0
@@ -65,12 +76,16 @@ async function calculateYearlyTotals(
              SUM("compensationCents") as "compensationCentsTotal"
       FROM "Training"
                INNER JOIN "User" ON "Training"."userId" = "User"."id"
+               INNER JOIN "Course" ON "Training"."courseId" = "Course"."id"
+               INNER JOIN "Discipline" ON "Course"."disciplineId" = "Discipline"."id"
       WHERE "date" >= ${startDate}
         AND "date" <= ${endDate}
         AND "status" = 'COMPENSATED'
           ${trainerWhere}
-      GROUP BY "User"."name"
+      ${groupBySql}
   `;
+
+  const sqlResult: any[] = await prisma.$queryRawUnsafe(query);
 
   if (trainerId && sqlResult.length == 0) {
     console.log(sqlResult.length === 0);
@@ -95,6 +110,7 @@ async function calculateYearlyTotals(
   return sqlResult.map((r) => ({
     trainerId: r.trainerName,
     trainerName: r.trainerName,
+    costCenterName: r.costCenterName,
     trainingCountQ1: Number(r.trainingCountQ1),
     trainingCountQ2: Number(r.trainingCountQ2),
     trainingCountQ3: Number(r.trainingCountQ3),
@@ -108,11 +124,31 @@ async function calculateYearlyTotals(
   }));
 }
 
+/**
+ * Action to retrieve statistics on trainings.
+ * The request takes the following query parameters:
+ * trainerId? - filter statistics on an individual trainer.
+ * year: number - must be set to filter for a year
+ * groupBy: "cost-center" | "trainer" - whether to group the results by trainer or by cost-center
+ */
 export async function POST(
   request: NextRequest,
-): Promise<NextResponse<YearlyTotalQueryResponseDto | ErrorDto>> {
+): Promise<NextResponse<TrainingStatisticsResponse | ErrorDto>> {
   try {
     await allowAnyLoggedIn(request);
+
+    const groupByParam = request.nextUrl.searchParams.get('groupBy');
+    if (!groupByParam) {
+      return badRequestResponse('Must provide groupBy parameter');
+    }
+    let groupBy: 'trainer' | 'cost-center';
+    if (groupByParam === 'trainer') {
+      groupBy = 'trainer';
+    } else if (groupByParam === 'cost-center') {
+      groupBy = 'cost-center';
+    } else {
+      return badRequestResponse('Unknown groupBy parameter');
+    }
 
     const trainerId = request.nextUrl.searchParams.get('trainerId');
     if (trainerId) {
@@ -130,7 +166,7 @@ export async function POST(
       throw new ApiErrorBadRequest('year is not a number');
     }
 
-    const result = await calculateYearlyTotals(year, trainerId);
+    const result = await calculateYearlyTotals(year, trainerId, groupBy);
     return NextResponse.json({ value: result });
   } catch (e) {
     return handleTopLevelCatch(e);
