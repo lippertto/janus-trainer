@@ -19,6 +19,7 @@ import { Controller, useForm } from 'react-hook-form';
 import Stack from '@mui/material/Stack';
 import Autocomplete from '@mui/material/Autocomplete';
 import { validateIBAN } from 'sepa';
+import { ibanToHumanReadable } from '@/lib/formatters';
 
 type FormData = {
   name: string;
@@ -126,19 +127,30 @@ export function UserDialog(props: {
                 'data-testid': 'enter-email-textfield',
               }}
             />
-            <TextField
-              label="IBAN"
-              {...register('iban', {
-                setValueAs: (value: string) => value.trim(),
-                validate: (v: string) => {
+            <Controller
+              control={control}
+              name="iban"
+              rules={{
+                validate: (v) => {
                   if (!v) return true;
-                  return validateIBAN(v);
+                  if (validateIBAN(v)) return true;
+                  return 'Das sieht nicht aus wie eine IBAN';
                 },
-              })}
-              error={!!errors.iban}
-              helperText={
-                errors.iban ? 'Das sieht nicht aus wie eine IBAN' : ''
-              }
+              }}
+              render={({ field: props }) => (
+                <TextField
+                  {...props}
+                  value={ibanToHumanReadable(props.value ?? '')}
+                  onChange={(e) =>
+                    props.onChange(
+                      e.target.value.replaceAll(' ', '').toUpperCase(),
+                    )
+                  }
+                  label="IBAN"
+                  error={Boolean(errors.iban)}
+                  helperText={errors.iban?.message ?? ''}
+                />
+              )}
             />
             <FormGroup>
               <FormLabel id="compensation-label">Rollen</FormLabel>
