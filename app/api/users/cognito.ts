@@ -186,7 +186,11 @@ export async function createCognitoUser(
   const createUserRequest = new AdminCreateUserCommand({
     UserPoolId: USER_POOL_ID,
     Username: email,
-    UserAttributes: [{ Name: 'name', Value: name }],
+    UserAttributes: [
+      { Name: 'name', Value: name },
+      { Name: 'email', Value: email },
+      { Name: 'email_verified', Value: 'True' },
+    ],
   });
   let createResponse;
   try {
@@ -235,6 +239,7 @@ export async function disableCognitoUser(
   }
 }
 
+/** Returns a cognito user - without the groups. */
 export async function getCognitoUserById(
   client: CognitoIdentityProviderClient,
   username: string,
@@ -274,6 +279,7 @@ export async function updateCognitoUser(
 
   const attributes = [
     { Name: 'email', Value: email },
+    { Name: 'email_verified', Value: 'True' },
     { Name: 'name', Value: name },
   ];
 

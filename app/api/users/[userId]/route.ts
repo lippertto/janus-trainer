@@ -24,7 +24,7 @@ import {
   UserPatchRequest,
   UserUpdateRequest,
 } from '@/lib/dto';
-import { patchOneUser } from '@/app/api/users/[id]/patch';
+import { patchOneUser } from '@/app/api/users/[userId]/patch';
 
 async function doDELETE(id: string) {
   const dbUser = await prisma.userInDb.findFirst({ where: { id } });
@@ -51,11 +51,11 @@ async function doDELETE(id: string) {
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: { userId: string } },
 ) {
   try {
     await allowOnlyAdmins(request);
-    return await doDELETE(params.id);
+    return await doDELETE(params.userId);
   } catch (e) {
     return handleTopLevelCatch(e);
   }
@@ -64,14 +64,14 @@ export async function DELETE(
 // We do a HEAD request to checks if a user exists in the database
 export async function HEAD(
   _nextRequest: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: { userId: string } },
 ) {
   try {
     const user = await prisma.userInDb.findFirst({
-      where: { id: params.id, deletedAt: null },
+      where: { id: params.userId, deletedAt: null },
     });
     if (!user) return notFoundResponse();
-    return NextResponse.json({ id: params.id }, { status: 200 });
+    return NextResponse.json({ id: params.userId }, { status: 200 });
   } catch (e) {
     return handleTopLevelCatch(e);
   }
@@ -79,7 +79,7 @@ export async function HEAD(
 
 async function doPUT(
   request: UserUpdateRequest,
-  params: { id: string },
+  params: { userId: string },
 ): Promise<UserDto> {
   const client = new CognitoIdentityProviderClient({
     region: process.env.COGNITO_REGION,
@@ -87,14 +87,14 @@ async function doPUT(
 
   await updateCognitoUser(
     client,
-    params.id,
+    params.userId,
     request.email,
     request.name,
     request.groups,
   );
 
   const dbResult = await prisma.userInDb.update({
-    where: { id: params.id },
+    where: { id: params.userId },
     data: {
       name: request.name,
       iban: request.iban,
@@ -120,7 +120,7 @@ async function doPUT(
 
 export async function PUT(
   nextRequest: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: { userId: string } },
 ): Promise<NextResponse<UserDto | ErrorDto>> {
   try {
     await allowOnlyAdmins(nextRequest);
@@ -186,10 +186,10 @@ async function selectOneUser(
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: { userId: string } },
 ): Promise<NextResponse<UserDto | ErrorDto>> {
   try {
-    await allowAdminOrSelf(request, params.id);
+    await allowAdminOrSelf(request, params.userId);
 
     const expandParameters = (
       request.nextUrl.searchParams.get('expand') ?? ''
@@ -201,7 +201,7 @@ export async function GET(
       expandParameters.indexOf('compensationValues') !== -1;
 
     const user = await selectOneUser(
-      params.id,
+      params.userId,
       includeCognitoProperties,
       includeCompensationValues,
       includeCompensationClasses,
@@ -215,16 +215,16 @@ export async function GET(
 /** Patch a user. This is intended to be used from the profile page. */
 export async function PATCH(
   nextRequest: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: { userId: string } },
 ): Promise<NextResponse<UserDto | ErrorDto>> {
   try {
-    await allowAdminOrSelf(nextRequest, params.id);
+    await allowAdminOrSelf(nextRequest, params.userId);
     const request = await validateOrThrow(
       UserPatchRequest,
       await nextRequest.json(),
     );
-    await patchOneUser(params.id, request);
-    const result = await selectOneUser(params.id, true, false, false);
+    await patchOneUser(params.userId, request);
+    const result = await selectOneUser(params.userId, true, false, false);
     return NextResponse.json(result);
   } catch (e) {
     return handleTopLevelCatch(e);
