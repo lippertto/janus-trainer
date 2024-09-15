@@ -365,3 +365,10 @@ export type TrainingCountPerCourse = {
   course: Pick<Course, 'name' | 'id'>;
   count: number;
 };
+
+export type LoginInfo = {
+  cognitoId: string;
+  email: string;
+  confirmed: boolean;
+  groups: Group[];
+};

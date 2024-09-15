@@ -151,13 +151,6 @@ export default function UserTable({ session }: { session: JanusSession }) {
   const columns: GridColDef[] = [
     { field: 'name', headerName: 'Name', flex: 1 },
     { field: 'email', headerName: 'E-Mail', flex: 1 },
-    {
-      field: 'groups',
-      headerName: 'Gruppen',
-      flex: 1,
-      renderCell: (params) =>
-        params.value?.map(groupToHumanReadable).join(', '),
-    },
   ];
 
   const [rowSelectionModel, setRowSelectionModel] =

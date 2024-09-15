@@ -16,6 +16,7 @@ import {
   ListUsersInGroupCommand,
   ListUsersInGroupResponse,
   UsernameExistsException,
+  UserStatusType,
 } from '@aws-sdk/client-cognito-identity-provider';
 import { Group } from '@/lib/dto';
 import {
@@ -32,6 +33,8 @@ export type ParsedCognitoUser = {
   groups: Group[];
   name: string;
   enabled: boolean;
+  /** If the status is confirmed or not. (All statuses that are not CONFIRMED  are mapped to false). */
+  confirmed: boolean;
 };
 
 function getCognitoAttributeOrNull(
@@ -55,6 +58,7 @@ function convertOneCognitoUser(
   username?: string,
   attributes?: AttributeType[],
   enabled?: boolean,
+  userStatus?: UserStatusType,
 ): ParsedCognitoUser | null {
   if (!username || !attributes) {
     return null;
@@ -72,6 +76,7 @@ function convertOneCognitoUser(
     name: name,
     groups: [],
     enabled: enabled ?? false,
+    confirmed: userStatus === UserStatusType.CONFIRMED,
   };
 }
 
@@ -98,6 +103,7 @@ async function listCognitoUsers(
           u.Username!,
           u.Attributes ?? [],
           u.Enabled ?? false,
+          u.UserStatus,
         ),
       )
       .filter((u) => u !== null) as ParsedCognitoUser[];
@@ -216,7 +222,7 @@ export async function createCognitoUser(
   }
 
   const username = createResponse!.User!.Username!;
-  return { username, email, groups: [], name, enabled: true };
+  return { username, email, groups: [], name, enabled: true, confirmed: false };
 }
 
 export async function disableCognitoUser(
@@ -256,6 +262,7 @@ export async function getCognitoUserById(
       response.Username!!,
       response.UserAttributes,
       response.Enabled,
+      response.UserStatus,
     );
   } catch (e) {
     console.log(`Error while getting cognito user ${username}`, e);
