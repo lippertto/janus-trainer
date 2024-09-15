@@ -60,6 +60,7 @@ model UserInDb {
   deletedAt DateTime?
   trainings Training[]
   courses   Course[]
+  email     String? // remove as soon as all accounts have an email.
 
   compensationClasses CompensationClass[]
 

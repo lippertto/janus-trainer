@@ -7,6 +7,7 @@ import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { redirect, usePathname } from 'next/navigation';
 import { Tab, Tabs } from '@mui/material';
 import Link from '@mui/material/Link';
+import Box from '@mui/system/Box';
 
 const logError = (error: Error, info: ErrorInfo) => {
   console.log(error);
@@ -30,6 +31,9 @@ export default function ConfigureLayout({
     case '/configure/compensation-values':
       value = 1;
       break;
+    case '/configure/users':
+      value = 2;
+      break;
     default:
       value = 0;
   }
@@ -50,8 +54,16 @@ export default function ConfigureLayout({
             component={Link}
             href={'/configure/compensation-values'}
           />
+          <Tab
+            label="Konten"
+            value={2}
+            component={Link}
+            href={'/configure/users'}
+          />
         </Tabs>
-        <Suspense fallback={<LoadingSpinner />}>{children}</Suspense>
+        <Box sx={{ p: 1 }}>
+          <Suspense fallback={<LoadingSpinner />}>{children}</Suspense>
+        </Box>
       </ErrorBoundary>
     </React.Fragment>
   );
