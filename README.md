@@ -25,8 +25,7 @@ Then, you have to include the api tests in jest.config.js and run `yarn test`.
 
 ## Features
 
-- Re-send verification mail
-- Reset password
+- Logout includes cognito logout
 - Make courses disabled. (Also in the UI.)
 - Playwright test: enter -> approve -> compensate.
 - Warning if training limits have been reached

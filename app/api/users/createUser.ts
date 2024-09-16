@@ -1,12 +1,12 @@
 import prisma from '@/lib/prisma';
 import { UserCreateRequest, UserDto } from '@/lib/dto';
 import {
-  createCognitoClient,
   createCognitoUser,
   enableCognitoUser,
   getUserByEmail,
   setGroupsForUser,
 } from '@/app/api/users/cognito';
+import { createCognitoClient } from '@/app/api/users/cognito-client';
 
 /** Creates a users in cognito and in the database. */
 export async function createUser(request: UserCreateRequest): Promise<UserDto> {

@@ -10,7 +10,6 @@ import prisma from '@/lib/prisma';
 import { CognitoIdentityProviderClient } from '@aws-sdk/client-cognito-identity-provider';
 import { NextRequest, NextResponse } from 'next/server';
 import {
-  createCognitoClient,
   disableCognitoUser,
   getCognitoUserById,
   listGroupsForUser,
@@ -25,6 +24,7 @@ import {
   UserUpdateRequest,
 } from '@/lib/dto';
 import { patchOneUser } from '@/app/api/users/[userId]/patch';
+import { createCognitoClient } from '@/app/api/users/cognito-client';
 
 async function doDELETE(id: string) {
   const dbUser = await prisma.userInDb.findFirst({ where: { id } });

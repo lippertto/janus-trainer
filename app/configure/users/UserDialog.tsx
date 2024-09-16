@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import {
   CompensationClassDto,
   Group,
@@ -20,6 +20,9 @@ import Stack from '@mui/material/Stack';
 import Autocomplete from '@mui/material/Autocomplete';
 import { validateIBAN } from 'sepa';
 import { ibanToHumanReadable } from '@/lib/formatters';
+import { LoadingSpinner } from '@/components/LoadingSpinner';
+import ResendInvitationButton from '@/app/configure/users/ResendInvitationButton';
+import { JanusSession } from '@/lib/auth';
 
 type FormData = {
   name: string;
@@ -52,6 +55,7 @@ function determineDefaultValues(toEdit: UserDto | null): FormData {
 }
 
 export function UserDialog(props: {
+  session: JanusSession;
   toEdit: UserDto | null;
   compensationClasses: CompensationClassDto[];
   open: boolean;
@@ -214,6 +218,15 @@ export function UserDialog(props: {
                 />
               )}
             />
+            {props.toEdit ? (
+              <Suspense fallback={<LoadingSpinner />}>
+                <ResendInvitationButton
+                  accessToken={props.session.accessToken}
+                  userId={props.toEdit.id}
+                  email={props.toEdit.email}
+                />
+              </Suspense>
+            ) : null}
           </Stack>
         </DialogContent>
         <DialogActions>

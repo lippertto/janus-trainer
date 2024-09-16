@@ -196,6 +196,7 @@ export default function UserTable({ session }: { session: JanusSession }) {
         }}
       />
       <UserDialog
+        session={session}
         toEdit={activeUser}
         compensationClasses={compensationClasses}
         open={showUserDialog}

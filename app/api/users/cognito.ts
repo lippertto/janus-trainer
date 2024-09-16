@@ -15,6 +15,7 @@ import {
   ListUsersCommandOutput,
   ListUsersInGroupCommand,
   ListUsersInGroupResponse,
+  ResendConfirmationCodeCommand,
   UsernameExistsException,
   UserStatusType,
 } from '@aws-sdk/client-cognito-identity-provider';
@@ -23,7 +24,9 @@ import {
   ApiConflictError,
   ApiErrorInternalServerError,
   ApiErrorNotFound,
+  notFoundResponse,
 } from '@/lib/helpers-for-api';
+import { cognitoClient } from '@/app/api/users/cognito-client';
 
 const USER_POOL_ID = process.env.COGNITO_USER_POOL_ID;
 
@@ -345,12 +348,6 @@ async function ensureOneGroupMembership(
   }
 }
 
-export function createCognitoClient() {
-  return new CognitoIdentityProviderClient({
-    region: process.env.COGNITO_REGION ?? 'eu-north-1',
-  });
-}
-
 export async function enableCognitoUser(
   client: CognitoIdentityProviderClient,
   username: string,
@@ -384,4 +381,18 @@ export async function listGroupsForUser(
     }
   }
   return result as Group[];
+}
+
+// implements solution from https://stackoverflow.com/questions/63449499/cognito-user-is-unable-to-reset-his-password-or-ask-for-resent-if-his-is-in-fo
+// i.e., when we want to re-send an invitation email, we need to re-create the user.
+export async function resendInvitationEmail(
+  client: CognitoIdentityProviderClient,
+  username: string,
+): Promise<void> {
+  const cognitoUser = await getCognitoUserById(client, username);
+  if (!cognitoUser) {
+    throw new ApiErrorNotFound();
+  }
+
+  await createCognitoUser(client, cognitoUser.email, cognitoUser.name);
 }

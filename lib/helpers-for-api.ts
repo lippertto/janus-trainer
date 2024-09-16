@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { ErrorDto } from './dto';
 import { getToken } from 'next-auth/jwt';
 import { validate, ValidationError } from 'class-validator';
+import { logger } from '@/lib/logging';
 
 /** Will throw if the token does not have the admin role. */
 export async function allowOnlyAdmins(req: NextRequest) {
@@ -177,10 +178,11 @@ export class ApiErrorConflict extends ApiError {
 
 export function handleTopLevelCatch(e: any): NextResponse<ErrorDto> {
   if (e instanceof ApiError) {
+    logger.info(`Exception: ${e.message})`);
     return e.toResponse();
   }
   if (e instanceof Error) {
-    console.log(e);
+    logger.info(e);
     return internalServerErrorResponse(e.message);
   }
 
