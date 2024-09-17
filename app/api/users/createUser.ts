@@ -45,6 +45,7 @@ export async function createUser(request: UserCreateRequest): Promise<UserDto> {
       data: {
         id: cognitoUser.username,
         name: request.name,
+        email: request.email,
         iban: request.iban,
         compensationClasses: {
           connect: request.compensationClassIds.map((ccId) => ({ id: ccId })),

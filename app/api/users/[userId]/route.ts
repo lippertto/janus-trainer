@@ -24,21 +24,22 @@ import {
   UserUpdateRequest,
 } from '@/lib/dto';
 import { patchOneUser } from '@/app/api/users/[userId]/patch';
-import { createCognitoClient } from '@/app/api/users/cognito-client';
+import {
+  cognitoClient,
+  createCognitoClient,
+} from '@/app/api/users/cognito-client';
+import { logger } from '@/lib/logging';
 
 async function doDELETE(id: string) {
   const dbUser = await prisma.userInDb.findFirst({ where: { id } });
   if (!dbUser || dbUser.deletedAt) {
-    console.log(
+    logger.info(
       `User with ${id} not found or soft-deleted. Will not delete it.`,
     );
     return new Response(null, { status: 204 });
   }
 
-  const client = new CognitoIdentityProviderClient({
-    region: process.env.COGNITO_REGION,
-  });
-  await disableCognitoUser(client, id);
+  await disableCognitoUser(cognitoClient(), id);
 
   await prisma.userInDb.update({
     where: { id, deletedAt: null },
@@ -81,12 +82,8 @@ async function doPUT(
   request: UserUpdateRequest,
   params: { userId: string },
 ): Promise<UserDto> {
-  const client = new CognitoIdentityProviderClient({
-    region: process.env.COGNITO_REGION,
-  });
-
   await updateCognitoUser(
-    client,
+    cognitoClient(),
     params.userId,
     request.email,
     request.name,
@@ -98,6 +95,7 @@ async function doPUT(
     data: {
       name: request.name,
       iban: request.iban,
+      email: request.email,
       compensationClasses: {
         set: request.compensationClassIds.map((ccId) => ({ id: ccId })),
       },
