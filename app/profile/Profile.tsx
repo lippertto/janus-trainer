@@ -222,6 +222,10 @@ export default function Profile(props: {
             </Button>
             <Button
               onClick={() => {
+                // sign out is not implemented in authjs.
+                // https://github.com/nextauthjs/next-auth/issues/5862
+                // to log out, we would have to go to the following url:
+                // https://janus-trainer-dev.auth.eu-north-1.amazoncognito.com/logout?client_id=1efpqu750v8rhmmb8du7gss4k5&scope=openid&response_type=code&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fapi%2Fauth%2Fcallback%2Fcognito
                 signOut().catch((e) => {
                   console.log('Could not log out properly', JSON.stringify(e));
                 });
