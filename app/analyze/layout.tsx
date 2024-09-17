@@ -40,13 +40,13 @@ export default function ConfigureLayout({
       <ErrorBoundary fallbackRender={PleaseReload} onError={logError}>
         <Tabs orientation={'horizontal'} value={value}>
           <Tab
-            label="Vergütung pro ÜL"
+            label="Nach ÜL"
             value={0}
             component={Link}
             href={'/analyze/yearly-totals'}
           />
           <Tab
-            label="Anzahl Kurse"
+            label="Nach Kostenstelle"
             value={1}
             component={Link}
             href={'/analyze/count-per-course'}

@@ -15,14 +15,18 @@ import {
   ListUsersCommandOutput,
   ListUsersInGroupCommand,
   ListUsersInGroupResponse,
+  ResendConfirmationCodeCommand,
   UsernameExistsException,
+  UserStatusType,
 } from '@aws-sdk/client-cognito-identity-provider';
 import { Group } from '@/lib/dto';
 import {
   ApiConflictError,
   ApiErrorInternalServerError,
   ApiErrorNotFound,
+  notFoundResponse,
 } from '@/lib/helpers-for-api';
+import { cognitoClient } from '@/app/api/users/cognito-client';
 
 const USER_POOL_ID = process.env.COGNITO_USER_POOL_ID;
 
@@ -32,6 +36,8 @@ export type ParsedCognitoUser = {
   groups: Group[];
   name: string;
   enabled: boolean;
+  /** If the status is confirmed or not. (All statuses that are not CONFIRMED  are mapped to false). */
+  confirmed: boolean;
 };
 
 function getCognitoAttributeOrNull(
@@ -55,6 +61,7 @@ function convertOneCognitoUser(
   username?: string,
   attributes?: AttributeType[],
   enabled?: boolean,
+  userStatus?: UserStatusType,
 ): ParsedCognitoUser | null {
   if (!username || !attributes) {
     return null;
@@ -72,6 +79,7 @@ function convertOneCognitoUser(
     name: name,
     groups: [],
     enabled: enabled ?? false,
+    confirmed: userStatus === UserStatusType.CONFIRMED,
   };
 }
 
@@ -98,6 +106,7 @@ async function listCognitoUsers(
           u.Username!,
           u.Attributes ?? [],
           u.Enabled ?? false,
+          u.UserStatus,
         ),
       )
       .filter((u) => u !== null) as ParsedCognitoUser[];
@@ -186,7 +195,11 @@ export async function createCognitoUser(
   const createUserRequest = new AdminCreateUserCommand({
     UserPoolId: USER_POOL_ID,
     Username: email,
-    UserAttributes: [{ Name: 'name', Value: name }],
+    UserAttributes: [
+      { Name: 'name', Value: name },
+      { Name: 'email', Value: email },
+      { Name: 'email_verified', Value: 'True' },
+    ],
   });
   let createResponse;
   try {
@@ -212,7 +225,7 @@ export async function createCognitoUser(
   }
 
   const username = createResponse!.User!.Username!;
-  return { username, email, groups: [], name, enabled: true };
+  return { username, email, groups: [], name, enabled: true, confirmed: false };
 }
 
 export async function disableCognitoUser(
@@ -235,6 +248,7 @@ export async function disableCognitoUser(
   }
 }
 
+/** Returns a cognito user - without the groups. */
 export async function getCognitoUserById(
   client: CognitoIdentityProviderClient,
   username: string,
@@ -251,6 +265,7 @@ export async function getCognitoUserById(
       response.Username!!,
       response.UserAttributes,
       response.Enabled,
+      response.UserStatus,
     );
   } catch (e) {
     console.log(`Error while getting cognito user ${username}`, e);
@@ -274,6 +289,7 @@ export async function updateCognitoUser(
 
   const attributes = [
     { Name: 'email', Value: email },
+    { Name: 'email_verified', Value: 'True' },
     { Name: 'name', Value: name },
   ];
 
@@ -332,12 +348,6 @@ async function ensureOneGroupMembership(
   }
 }
 
-export function createCognitoClient() {
-  return new CognitoIdentityProviderClient({
-    region: process.env.COGNITO_REGION ?? 'eu-north-1',
-  });
-}
-
 export async function enableCognitoUser(
   client: CognitoIdentityProviderClient,
   username: string,
@@ -371,4 +381,18 @@ export async function listGroupsForUser(
     }
   }
   return result as Group[];
+}
+
+// implements solution from https://stackoverflow.com/questions/63449499/cognito-user-is-unable-to-reset-his-password-or-ask-for-resent-if-his-is-in-fo
+// i.e., when we want to re-send an invitation email, we need to re-create the user.
+export async function resendInvitationEmail(
+  client: CognitoIdentityProviderClient,
+  username: string,
+): Promise<void> {
+  const cognitoUser = await getCognitoUserById(client, username);
+  if (!cognitoUser) {
+    throw new ApiErrorNotFound();
+  }
+
+  await createCognitoUser(client, cognitoUser.email, cognitoUser.name);
 }

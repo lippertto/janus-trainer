@@ -12,7 +12,7 @@ yarn start:dev
 To execute the API tests, you have to start the server with the environment variable
 `DISABLE_JWT_CHECKS=1` set.
 
-Then, you have to include the api tests in jest.config.js and run `yarn test`.
+Then, run `yarn jest -c api-tests/jest.config.js`
 
 # TODO
 
@@ -21,17 +21,15 @@ Then, you have to include the api tests in jest.config.js and run `yarn test`.
 ## Bugs
 
 - Current IBAN is used in payments, not the one that was used for the actual
-  payment. This should be fixed.
+  payment. This should be fixed, e.g., by using historized ibans.
 
 ## Features
 
-- Re-send verification mail
-- Reset password
+- Report: Same Courses on same day
 - Make courses disabled. (Also in the UI.)
 - Playwright test: enter -> approve -> compensate.
 - Warning if training limits have been reached
 - offerings: make weekday a radio group. Training can have only 1 weekday
-- Report: Same Courses on same day
 - Filter dates on enter page
 - Pdf download for taxes. Trainer x received y euros for z units. Lock year!
 
@@ -41,12 +39,7 @@ Then, you have to include the api tests in jest.config.js and run `yarn test`.
 - Add training index for user, date, and user+date
 - Hide password in POSTGRES_CONNECTION_URL of lambda. --> Use Secret
 - Join payments and compensation api routes (and domain objects) into /payments/{id}/compensations
-- Put API tests into separate folder with their own jest config
 - Put sources into src directory.
-
-## Refinement
-
-- Sort imports with eslint: https://eslint.org/docs/latest/rules/sort-imports
 
 # Common tasks
 

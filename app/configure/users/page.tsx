@@ -6,7 +6,7 @@ import { useSession } from 'next-auth/react';
 
 import UserTable from './UserTable';
 
-import LoginRequired from '../../components/LoginRequired';
+import LoginRequired from '../../../components/LoginRequired';
 import type { JanusSession } from '@/lib/auth';
 
 function UserManagementContents(props: { session: JanusSession }) {

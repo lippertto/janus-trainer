@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import {
   CompensationClassDto,
   Group,
@@ -19,6 +19,10 @@ import { Controller, useForm } from 'react-hook-form';
 import Stack from '@mui/material/Stack';
 import Autocomplete from '@mui/material/Autocomplete';
 import { validateIBAN } from 'sepa';
+import { ibanToHumanReadable } from '@/lib/formatters';
+import { LoadingSpinner } from '@/components/LoadingSpinner';
+import ResendInvitationButton from '@/app/configure/users/ResendInvitationButton';
+import { JanusSession } from '@/lib/auth';
 
 type FormData = {
   name: string;
@@ -51,6 +55,7 @@ function determineDefaultValues(toEdit: UserDto | null): FormData {
 }
 
 export function UserDialog(props: {
+  session: JanusSession;
   toEdit: UserDto | null;
   compensationClasses: CompensationClassDto[];
   open: boolean;
@@ -126,19 +131,30 @@ export function UserDialog(props: {
                 'data-testid': 'enter-email-textfield',
               }}
             />
-            <TextField
-              label="IBAN"
-              {...register('iban', {
-                setValueAs: (value: string) => value.trim(),
-                validate: (v: string) => {
+            <Controller
+              control={control}
+              name="iban"
+              rules={{
+                validate: (v) => {
                   if (!v) return true;
-                  return validateIBAN(v);
+                  if (validateIBAN(v)) return true;
+                  return 'Das sieht nicht aus wie eine IBAN';
                 },
-              })}
-              error={!!errors.iban}
-              helperText={
-                errors.iban ? 'Das sieht nicht aus wie eine IBAN' : ''
-              }
+              }}
+              render={({ field: props }) => (
+                <TextField
+                  {...props}
+                  value={ibanToHumanReadable(props.value ?? '')}
+                  onChange={(e) =>
+                    props.onChange(
+                      e.target.value.replaceAll(' ', '').toUpperCase(),
+                    )
+                  }
+                  label="IBAN"
+                  error={Boolean(errors.iban)}
+                  helperText={errors.iban?.message ?? ''}
+                />
+              )}
             />
             <FormGroup>
               <FormLabel id="compensation-label">Rollen</FormLabel>
@@ -202,6 +218,15 @@ export function UserDialog(props: {
                 />
               )}
             />
+            {props.toEdit ? (
+              <Suspense fallback={<LoadingSpinner />}>
+                <ResendInvitationButton
+                  accessToken={props.session.accessToken}
+                  userId={props.toEdit.id}
+                  email={props.toEdit.email}
+                />
+              </Suspense>
+            ) : null}
           </Stack>
         </DialogContent>
         <DialogActions>

@@ -14,12 +14,11 @@ import AnalyticsIcon from '@mui/icons-material/Analytics';
 import AssignmentTurnedInIcon from '@mui/icons-material/AssignmentTurnedIn';
 import EditCalendarIcon from '@mui/icons-material/EditCalendar';
 import HomeIcon from '@mui/icons-material/Home';
-import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
 import QrCodeScannerIcon from '@mui/icons-material/QrCodeScanner';
 import SettingsIcon from '@mui/icons-material/Settings';
 import SportsIcon from '@mui/icons-material/Sports';
 
-import { auth, JanusSession } from '@/lib/auth';
+import { JanusSession } from '@/lib/auth';
 import { useSession } from 'next-auth/react';
 import { Group } from '@/lib/dto';
 import AccountBoxIcon from '@mui/icons-material/AccountBox';
@@ -29,7 +28,6 @@ const ADMIN_LINKS = [
   { text: 'Eingeben', href: '/enter', icon: EditCalendarIcon },
   { text: 'Freigeben', href: '/approve', icon: AssignmentTurnedInIcon },
   { text: 'Auszahlen', href: '/compensate', icon: AccountBalanceIcon },
-  { text: 'Konten', href: '/users', icon: ManageAccountsIcon },
   { text: 'Angebot', href: '/offerings', icon: SportsIcon },
   { text: 'Verwaltung', href: '/configure', icon: SettingsIcon },
   { text: 'Auswertung', href: '/analyze', icon: AnalyticsIcon },

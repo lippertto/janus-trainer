@@ -21,6 +21,7 @@ import {
   CompensationValueDto,
   CourseDto,
   DisciplineDto,
+  LoginInfo,
   PaymentDto,
   TrainingStatisticDto,
   UserDto,
@@ -240,4 +241,31 @@ export function queryCompensations(accessToken: string, paymentId: number) {
       ),
     staleTime: 10 * 60 * 1000,
   }).data;
+}
+
+export async function resendInvitation(accessToken: string, userId: string) {
+  await fetch(`${API_USERS}/${userId}/login-info:resend-invitation`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+}
+
+export function loginInfoSuspenseQuery(accessToken: string, userId: string) {
+  return useSuspenseQuery({
+    queryKey: [API_USERS, userId, 'login-info'],
+    queryFn: async () => {
+      const response = await fetch(`${API_USERS}/${userId}/login-info`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      if (response.status !== 200) {
+        return Promise.reject(
+          new Error(
+            `Failed to get login-info. Error is: ${await response.text()}`,
+          ),
+        );
+      }
+      return (await response.json()) as LoginInfo;
+    },
+    staleTime: TEN_MINUTES,
+  });
 }
