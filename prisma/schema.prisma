@@ -48,6 +48,8 @@ model Training {
   paymentId Int?
 
   comment String @default("")
+
+  @@index([date, userId])
 }
 
 // The user in the database is only part of the domain object.

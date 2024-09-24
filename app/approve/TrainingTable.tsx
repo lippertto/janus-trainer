@@ -26,11 +26,11 @@ import { showError } from '@/lib/notifications';
 import { Holiday, TrainingStatus } from '@prisma/client';
 import { TrainingDto } from '@/lib/dto';
 import {
+  QueryClient,
   useMutation,
   useQueryClient,
-  useSuspenseQuery,
 } from '@tanstack/react-query';
-import { fetchListFromApi, patchInApi } from '@/lib/fetch';
+import { patchInApi } from '@/lib/fetch';
 import { API_TRAININGS, API_TRAININGS_SUMMARIZE } from '@/lib/routes';
 import { useConfirm } from 'material-ui-confirm';
 import {
@@ -42,7 +42,11 @@ import {
 import { replaceElementWithId } from '@/lib/sort-and-filter';
 import { warningsForDate } from '@/lib/warnings-for-date';
 import { throttle } from 'throttle-debounce';
-import { trainingDeleteQuery } from '@/lib/queries-training';
+import {
+  approveTrainingDeleteMutation,
+  invalidateTrainingsForApprovePage,
+  trainingsQueryForApprovePage,
+} from '@/app/approve/queries';
 
 require('dayjs/locale/de');
 dayjs.locale('de');
@@ -192,46 +196,6 @@ function TrainingTableToolbar({ handleDelete }: TrainingTableToolbarProps) {
   );
 }
 
-function queryKeyForTrainings(
-  start: dayjs.Dayjs,
-  end: dayjs.Dayjs,
-  trainerId?: string,
-) {
-  return [
-    API_TRAININGS,
-    start.format('YYYY-MM-DD'),
-    end.format('YYYY-MM-DD'),
-    trainerId,
-  ];
-}
-
-function trainingsQuery(
-  accessToken: string,
-  filterStart: dayjs.Dayjs,
-  filterEnd: dayjs.Dayjs,
-  trainerId?: string,
-) {
-  let queryComponents = ['expand=user'];
-  const startString = filterStart.format('YYYY-MM-DD');
-  queryComponents.push(`start=${startString}`);
-  const endString = filterEnd.format('YYYY-MM-DD');
-  queryComponents.push(`end=${endString}`);
-  if (trainerId) {
-    queryComponents.push(`trainerId=${trainerId}`);
-  }
-  const queryString = queryComponents.join('&');
-
-  return useSuspenseQuery({
-    queryKey: queryKeyForTrainings(filterStart, filterEnd, trainerId),
-    queryFn: () =>
-      fetchListFromApi<TrainingDto>(
-        `${API_TRAININGS}?${queryString}`,
-        accessToken!,
-      ),
-    staleTime: 10 * 60 * 1000,
-  });
-}
-
 function compareTrainings(a: TrainingDto, b: TrainingDto) {
   if (a.date < b.date) return -1;
   if (a.date > b.date) return 1;
@@ -321,7 +285,7 @@ export default function TrainingTable({
   const [trainings, setTrainings] = React.useState<TrainingDto[]>([]);
 
   const { data: trainingData } = props.trainerId
-    ? trainingsQuery(
+    ? trainingsQueryForApprovePage(
         session.accessToken,
         props.startDate,
         props.endDate,
@@ -336,13 +300,12 @@ export default function TrainingTable({
   const refresh = throttle(
     3000,
     () => {
-      queryClient.invalidateQueries({
-        queryKey: queryKeyForTrainings(
-          props.startDate,
-          props.endDate,
-          props.trainerId ?? undefined,
-        ),
-      });
+      invalidateTrainingsForApprovePage(
+        queryClient,
+        props.startDate,
+        props.endDate,
+        props.trainerId ?? undefined,
+      );
       queryClient.invalidateQueries({
         queryKey: [API_TRAININGS_SUMMARIZE, props.startDate, props.endDate],
       });
@@ -362,10 +325,10 @@ export default function TrainingTable({
     trainings,
     refresh,
   );
-  const deleteTrainingMutation = trainingDeleteQuery(
+  const deleteTrainingMutation = approveTrainingDeleteMutation(
     session.accessToken,
     trainings,
-    (trainings) => {
+    (trainings: TrainingDto[]) => {
       setTrainings(trainings);
       refresh();
     },

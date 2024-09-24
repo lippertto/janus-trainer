@@ -2,12 +2,14 @@
 
 import React from 'react';
 
+import 'core-js/modules/es.array.to-sorted';
+import 'core-js/modules/es.array.to-reversed';
+
 import { useSession } from 'next-auth/react';
 import type { JanusSession } from '@/lib/auth';
 import LoginRequired from '@/components/LoginRequired';
 import { TrainingDto } from '@/lib/dto';
-import { useQueryClient, useSuspenseQuery } from '@tanstack/react-query';
-import { API_TRAININGS } from '@/lib/routes';
+import { useQueryClient } from '@tanstack/react-query';
 import {
   coursesForTrainerSuspenseQuery,
   holidaysSuspenseQuery,
@@ -17,27 +19,40 @@ import Typography from '@mui/material/Typography';
 import { TrainingList } from '@/app/enter/TrainingList';
 import { Fab } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
-
-import 'core-js/modules/es.array.to-sorted';
-import 'core-js/modules/es.array.to-reversed';
+import { compareByField } from '@/lib/sort-and-filter';
+import TrainingDialog from '@/app/enter/TrainingDialog';
+import { intToDayOfWeek } from '@/lib/warnings-for-date';
+import dayjs from 'dayjs';
+import Stack from '@mui/system/Stack';
+import DateButton from '@/app/enter/DateButton';
+import DateDialog from '@/app/enter/DateDialog';
 import {
+  FIRST_DAY_OF_THIS_QUARTER,
+  LAST_DAY_OF_THIS_QUARTER,
+} from '@/lib/helpers-for-date';
+import {
+  enterScreenTrainingQuery,
   trainingCreateQuery,
   trainingDeleteQuery,
   trainingUpdateQuery,
-} from '@/lib/queries-training';
-import { compareByField } from '@/lib/sort-and-filter';
-import { fetchListFromApi } from '@/lib/fetch';
-import TrainingDialog from '@/app/enter/TrainingDialog';
-import { intToDayOfWeek } from '@/lib/warnings-for-date';
+} from '@/app/enter/queries';
 
 function EnterPageContents(props: { session: JanusSession }) {
   const { session } = props;
   const queryClient = useQueryClient();
-  const queryKey = [API_TRAININGS, `trainerId=${session.userId}`];
+
   const [trainingToEdit, setTrainingToEdit] =
     React.useState<TrainingDto | null>(null);
   const [showTrainingDialog, setShowTrainingDialog] =
     React.useState<boolean>(false);
+
+  const [showDateDialog, setShowDateDialog] = React.useState<boolean>(false);
+  const [startDate, setStartDate] = React.useState<dayjs.Dayjs>(
+    FIRST_DAY_OF_THIS_QUARTER,
+  );
+  const [endDate, setEndDate] = React.useState<dayjs.Dayjs>(
+    LAST_DAY_OF_THIS_QUARTER,
+  );
 
   const { data: courses } = coursesForTrainerSuspenseQuery(
     session.userId,
@@ -55,52 +70,54 @@ function EnterPageContents(props: { session: JanusSession }) {
     new Date().getFullYear() - 1,
   ]);
 
-  const { data: trainings } = useSuspenseQuery({
-    queryKey,
-    queryFn: () =>
-      fetchListFromApi<TrainingDto>(
-        `${API_TRAININGS}?trainerId=${session.userId}`,
-        session.accessToken,
-      ),
-  });
+  const { data: trainings } = enterScreenTrainingQuery(
+    props.session.accessToken,
+    startDate,
+    endDate,
+    props.session.userId,
+  );
   trainings.sort((a, b) => compareByField(b, a, 'date'));
-
-  const updateQueryData = (trainings: TrainingDto[]) => {
-    queryClient.setQueryData(queryKey, trainings);
-  };
 
   const createTrainingMutation = trainingCreateQuery(
     session.accessToken,
     trainings,
-    updateQueryData,
+    queryClient,
   );
   const updateTrainingMutation = trainingUpdateQuery(
     session.accessToken,
     trainings,
-    updateQueryData,
+    queryClient,
   );
   const deleteTrainingMutation = trainingDeleteQuery(
     session.accessToken,
     trainings,
-    updateQueryData,
+    queryClient,
   );
 
   return (
     <React.Fragment>
-      {trainings.length > 0 ? (
-        <TrainingList
-          trainings={trainings}
-          holidays={holidays}
-          handleEdit={(v: TrainingDto) => {
-            setTrainingToEdit(v);
-            setShowTrainingDialog(true);
-          }}
+      <Stack>
+        <DateButton
+          startDate={startDate}
+          endDate={endDate}
+          onClick={() => setShowDateDialog(true)}
         />
-      ) : (
-        <Typography>
-          Klicke auf das Plus rechts unten um ein Training hinzuzufügen.
-        </Typography>
-      )}
+
+        {trainings.length > 0 ? (
+          <TrainingList
+            trainings={trainings}
+            holidays={holidays}
+            handleEdit={(v: TrainingDto) => {
+              setTrainingToEdit(v);
+              setShowTrainingDialog(true);
+            }}
+          />
+        ) : (
+          <Typography>
+            Klicke auf das Plus rechts unten um ein Training hinzuzufügen.
+          </Typography>
+        )}
+      </Stack>
 
       <Fab
         color="primary"
@@ -117,6 +134,15 @@ function EnterPageContents(props: { session: JanusSession }) {
       >
         <AddIcon />
       </Fab>
+
+      <DateDialog
+        open={showDateDialog}
+        onClose={() => setShowDateDialog(false)}
+        startDate={startDate}
+        setStartDate={setStartDate}
+        endDate={endDate}
+        setEndDate={setEndDate}
+      />
 
       <TrainingDialog
         open={showTrainingDialog}
