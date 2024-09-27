@@ -1,5 +1,5 @@
 'use client';
-import Grid from '@mui/material/Unstable_Grid2'; // Grid version 2
+import Grid from '@mui/material/Grid2';
 import React, { Suspense } from 'react';
 import { useSession } from 'next-auth/react';
 import LoginRequired from '../../components/LoginRequired';
@@ -50,7 +50,7 @@ function CompensationPageContents(props: { session: JanusSession }) {
 
   return (
     <Grid container spacing={2}>
-      <Grid xs={3}>
+      <Grid size={{ xs: 3 }}>
         <Stack spacing={2}>
           <TrainerDropdown
             trainers={trainers}
@@ -65,7 +65,7 @@ function CompensationPageContents(props: { session: JanusSession }) {
           />
         </Stack>
       </Grid>
-      <Grid xs={9}>
+      <Grid size={{ xs: 9 }}>
         <Suspense fallback={<LoadingSpinner />}>
           <CompensationCard
             session={props.session}
