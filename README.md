@@ -22,6 +22,7 @@ Then, run `yarn jest -c api-tests/jest.config.js`
 
 - Current IBAN is used in payments, not the one that was used for the actual
   payment. This should be fixed, e.g., by using historized ibans.
+- Something in the console logs for enter user?
 
 ## Features
 
@@ -30,12 +31,12 @@ Then, run `yarn jest -c api-tests/jest.config.js`
 - Playwright test: enter -> approve -> compensate.
 - Warning if training limits have been reached
 - offerings: make weekday a radio group. Training can have only 1 weekday
-- Filter dates on enter page
 - Pdf download for taxes. Trainer x received y euros for z units. Lock year!
+- FAB should not hide pen icon on enter list
 
 ## Tech update
 
-- Use a shared api-object which holds the access token (and refreshes it when needed)
+- Update dependencies
 - Hide password in POSTGRES_CONNECTION_URL of lambda. --> Use Secret
 - Join payments and compensation api routes (and domain objects) into /payments/{id}/compensations
 - Put sources into src directory.
