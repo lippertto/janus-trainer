@@ -45,7 +45,7 @@ export default function CourseTable(props: {
   courses: CourseDto[];
   activeCourse: CourseDto | null;
   setActiveCourse: (v: CourseDto) => void;
-  disciplines: DisciplineDto[];
+  costCenters: DisciplineDto[];
 }) {
   const handleRowClick: GridEventListener<'rowClick'> = (params) => {
     props.setActiveCourse(params.row);
@@ -55,7 +55,7 @@ export default function CourseTable(props: {
     <DataGrid
       rows={props.courses}
       getRowId={(row) => row.id}
-      columns={buildColumns(props.disciplines)}
+      columns={buildColumns(props.costCenters)}
       onRowClick={handleRowClick}
       initialState={{
         sorting: {

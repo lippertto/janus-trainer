@@ -23,12 +23,10 @@ import { useConfirm } from 'material-ui-confirm';
 import { showError, showSuccess } from '@/lib/notifications';
 import { compareNamed, replaceElementWithId } from '@/lib/sort-and-filter';
 import { CourseCreateRequest, CourseDto } from '@/lib/dto';
-import { CourseDialog } from '@/app/offerings/courses/CourseDialog';
-import {
-  disciplinesSuspenseQuery,
-  trainersSuspenseQuery,
-} from '@/lib/shared-queries';
-import CourseTable from '@/app/offerings/courses/CourseTable';
+import { CourseDialog } from './CourseDialog';
+import { trainersSuspenseQuery } from '@/lib/shared-queries';
+import CourseTable from './CourseTable';
+import { costCenterQuery } from './queries';
 
 function OfferingsPageContents({ session }: { session: JanusSession }) {
   const queryClient = useQueryClient();
@@ -47,7 +45,8 @@ function OfferingsPageContents({ session }: { session: JanusSession }) {
   let { data: trainers } = trainersSuspenseQuery(session.accessToken);
   trainers.sort(compareNamed);
 
-  let { data: disciplines } = disciplinesSuspenseQuery(session.accessToken);
+  let { data: costCenters } = costCenterQuery(session.accessToken);
+  costCenters.sort(compareNamed);
 
   const deleteCourseMutation = useMutation({
     mutationFn: (course: CourseDto) =>
@@ -152,7 +151,7 @@ function OfferingsPageContents({ session }: { session: JanusSession }) {
             courses={courses}
             activeCourse={activeCourse}
             setActiveCourse={setActiveCourse}
-            disciplines={disciplines}
+            costCenters={costCenters}
           />
         </Stack>
       </Paper>
@@ -171,7 +170,7 @@ function OfferingsPageContents({ session }: { session: JanusSession }) {
           }
         }}
         trainers={trainers}
-        disciplines={disciplines}
+        costCenters={costCenters}
         courseToEdit={activeCourse}
       />
     </React.Fragment>

@@ -26,7 +26,7 @@ type CourseDialogProps = {
   handleClose: () => void;
   handleSave: (data: CourseCreateRequest) => void;
   trainers: UserDto[];
-  disciplines: DisciplineDto[];
+  costCenters: DisciplineDto[];
   courseToEdit: CourseDto | null;
 };
 
@@ -186,7 +186,7 @@ export function CourseDialog({
   handleClose,
   handleSave,
   trainers,
-  disciplines,
+  costCenters,
   courseToEdit,
 }: CourseDialogProps) {
   const [courseName, setCourseName] = React.useState('');
@@ -225,7 +225,7 @@ export function CourseDialog({
       setSelectedTrainers(courseToEdit.trainers);
       setDays(enumToWeekdaySelection(courseToEdit.weekdays));
       setDiscipline(
-        disciplines.find((v) => v.id === courseToEdit.disciplineId) ?? null,
+        costCenters.find((v) => v.id === courseToEdit.disciplineId) ?? null,
       );
     } else {
       resetFields();
@@ -292,7 +292,7 @@ export function CourseDialog({
             />
 
             <DisciplineDropdown
-              disciplines={disciplines}
+              disciplines={costCenters}
               selectedDiscipline={discipline}
               setSelectedDiscipline={setDiscipline}
             />
