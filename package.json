@@ -83,7 +83,6 @@
     "@types/uuid": "^9.0.8",
     "@typescript-eslint/eslint-plugin": "^7.18.0",
     "@typescript-eslint/parser": "^7.18.0",
-    "concurrently": "^8.2.2",
     "dotenv-cli": "^7.4.2",
     "eslint": "^9.11.1",
     "eslint-config-next": "^14.2.13",
