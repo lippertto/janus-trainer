@@ -24,7 +24,7 @@ import ListItemText from '@mui/material/ListItemText';
 import { dateToHumanReadable } from '@/lib/formatters';
 import { EnterHolidayDialog } from '@/app/configure/holidays/EnterHolidayDialog';
 import { useConfirm } from 'material-ui-confirm';
-import { ClickAwayListener } from '@mui/base/ClickAwayListener';
+import ClickAwayListener from '@mui/material/ClickAwayListener';
 import Box from '@mui/system/Box';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { DatePicker } from '@mui/x-date-pickers';

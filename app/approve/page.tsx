@@ -6,7 +6,7 @@ import { useSession } from 'next-auth/react';
 import type { JanusSession } from '@/lib/auth';
 import LoginRequired from '@/components/LoginRequired';
 import dayjs from 'dayjs';
-import Grid from '@mui/material/Unstable_Grid2'; // Grid version 2
+import Grid from '@mui/material/Grid2';
 import { DatePicker } from '@mui/x-date-pickers';
 import quarterOfYear from 'dayjs/plugin/quarterOfYear';
 import ButtonGroup from '@mui/material/ButtonGroup';
@@ -72,8 +72,8 @@ function ApprovePageContents(
 
   return (
     <Grid container spacing={2}>
-      <Grid xs={3}></Grid>
-      <Grid xs={3} style={{ display: 'flex', alignItems: 'center' }}>
+      <Grid size={{ xs: 3 }}></Grid>
+      <Grid size={{ xs: 3 }} style={{ display: 'flex', alignItems: 'center' }}>
         <ButtonGroup>
           <Button
             onClick={() => {
@@ -95,7 +95,7 @@ function ApprovePageContents(
           </Button>
         </ButtonGroup>
       </Grid>
-      <Grid xs={2}>
+      <Grid size={{ xs: 2 }}>
         <DatePicker
           label="Start"
           value={datePickerStart}
@@ -106,7 +106,7 @@ function ApprovePageContents(
           }}
         />
       </Grid>
-      <Grid xs={2}>
+      <Grid size={{ xs: 2 }}>
         <DatePicker
           label="Ende"
           value={datePickerEnd}
@@ -117,8 +117,8 @@ function ApprovePageContents(
           }}
         />
       </Grid>
-      <Grid xs={2}></Grid>
-      <Grid xs={3}>
+      <Grid size={{ xs: 2 }}></Grid>
+      <Grid size={{ xs: 3 }}>
         <TrainerList
           session={session}
           filterEnd={datePickerEnd}
@@ -127,7 +127,7 @@ function ApprovePageContents(
           setSelectedTrainerId={setSelectedTrainerId}
         />
       </Grid>
-      <Grid xs={9}>
+      <Grid size={{ xs: 9 }}>
         {selectedTrainerId ? (
           <Suspense fallback={<LoadingSpinner />}>
             <TrainingTable

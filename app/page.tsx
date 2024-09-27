@@ -12,8 +12,8 @@ function Contents() {
         Willkommen in der Janus Abrechnungs-App.
       </Typography>
       <Typography component="p" sx={{ display: 'flex', alignItems: 'top' }}>
-        Um in der App zu navigieren, klicke oben links auf das &nbsp;{' '}
-        <MenuIcon /> &nbsp; Zeichen
+        Um in der App zu navigieren, klicke oben links auf Symbol mit den drei
+        Strichen.
       </Typography>
     </React.Fragment>
   );

@@ -1,6 +1,6 @@
 import React, { Suspense, useState } from 'react';
 
-import Grid from '@mui/material/Unstable_Grid2';
+import Grid from '@mui/material/Grid2';
 import { CircularProgress, Typography } from '@mui/material';
 import IconButton from '@mui/material/IconButton';
 import TextField from '@mui/material/TextField';
@@ -41,7 +41,7 @@ function StatisticsData(props: {
   );
   return (
     <React.Fragment>
-      <Grid xs={12} sm={3}>
+      <Grid size={{ xs: 12, sm: 3 }}>
         <TextField
           fullWidth
           label={`${year}/Q1`}
@@ -51,7 +51,7 @@ function StatisticsData(props: {
           )}
         />
       </Grid>
-      <Grid xs={12} sm={3}>
+      <Grid size={{ xs: 12, sm: 3 }}>
         <TextField
           fullWidth
           label={`${year}/Q2`}
@@ -61,7 +61,7 @@ function StatisticsData(props: {
           )}
         />
       </Grid>
-      <Grid xs={12} sm={3}>
+      <Grid size={{ xs: 12, sm: 3 }}>
         <TextField
           fullWidth
           label={`${year}/Q3`}
@@ -71,7 +71,7 @@ function StatisticsData(props: {
           )}
         />
       </Grid>
-      <Grid xs={12} sm={3}>
+      <Grid size={{ xs: 12, sm: 3 }}>
         <TextField
           fullWidth
           label={`${year}/Q4`}
@@ -92,12 +92,12 @@ function ProfileStatistics(props: {
 }) {
   return (
     <React.Fragment>
-      <Grid xs={12}>
+      <Grid size={{ xs: 12 }}>
         <Typography variant="h5">Statistik</Typography>
       </Grid>
       <Suspense
         fallback={
-          <Grid xs={12}>
+          <Grid size={{ xs: 12 }}>
             <CircularProgress />
           </Grid>
         }
@@ -131,15 +131,15 @@ export default function Profile(props: {
   return (
     <>
       <Grid container display={'flex'} spacing={2} sx={{ pl: 2, pr: 2 }}>
-        <Grid xs={12}>
+        <Grid size={{ xs: 12 }}>
           <Typography variant={'h5'}>Stammdaten</Typography>
         </Grid>
 
-        <Grid xs={12} sm={4}>
+        <Grid size={{ xs: 12, sm: 4 }}>
           <TextField fullWidth disabled={true} label="Name" value={user.name} />
         </Grid>
 
-        <Grid xs={12} sm={4}>
+        <Grid size={{ xs: 12, sm: 4 }}>
           <TextField
             fullWidth
             disabled={true}
@@ -147,7 +147,7 @@ export default function Profile(props: {
             value={user.email}
           />
         </Grid>
-        <Grid xs={12} sm={4}>
+        <Grid size={{ xs: 12, sm: 4 }}>
           <TextField
             fullWidth
             disabled={true}
@@ -158,7 +158,7 @@ export default function Profile(props: {
             }}
           />
         </Grid>
-        <Grid xs={12} sm={6}>
+        <Grid size={{ xs: 12, sm: 6 }}>
           <TextField
             fullWidth
             disabled={true}
@@ -181,7 +181,7 @@ export default function Profile(props: {
             }}
           />
         </Grid>
-        <Grid xs={12} sm={6}>
+        <Grid size={{ xs: 12, sm: 6 }}>
           <TextField
             fullWidth={true}
             disabled={true}
@@ -200,11 +200,11 @@ export default function Profile(props: {
           trainerId={user.id}
         />
 
-        <Grid xs={12}>
+        <Grid size={{ xs: 12 }}>
           <Typography variant={'h5'}>Kurse</Typography>
         </Grid>
         {props.courses.length === 0 ? (
-          <Grid xs={12}>
+          <Grid size={{ xs: 12 }}>
             <Typography>Keine Kurse hinterlegt.</Typography>
           </Grid>
         ) : (
@@ -215,7 +215,7 @@ export default function Profile(props: {
           ))
         )}
 
-        <Grid xs={12}>
+        <Grid size={{ xs: 12 }}>
           <Stack direction={'row'}>
             <Button onClick={() => setShowTosDialog(true)}>
               AGBs anzeigen
