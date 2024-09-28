@@ -5,13 +5,14 @@ import {
   UserDto,
 } from '@/lib/dto';
 import { DataGrid, GridColDef, GridEventListener } from '@mui/x-data-grid';
-import { Course, DayOfWeek } from '@prisma/client';
+import { DayOfWeek } from '@prisma/client';
+import Box from '@mui/system/Box';
 
 function buildColumns(
   disciplines: { id: number; name: string; costCenterId: number }[],
 ): GridColDef[] {
   return [
-    { field: 'name', headerName: 'Kurs', width: 200 },
+    { field: 'name', headerName: 'Kurs' },
     {
       field: 'weekdays',
       headerName: 'Wochentag',
@@ -45,23 +46,25 @@ export default function CourseTable(props: {
   courses: CourseDto[];
   activeCourse: CourseDto | null;
   setActiveCourse: (v: CourseDto) => void;
-  disciplines: DisciplineDto[];
+  costCenters: DisciplineDto[];
 }) {
   const handleRowClick: GridEventListener<'rowClick'> = (params) => {
     props.setActiveCourse(params.row);
   };
 
   return (
-    <DataGrid
-      rows={props.courses}
-      getRowId={(row) => row.id}
-      columns={buildColumns(props.disciplines)}
-      onRowClick={handleRowClick}
-      initialState={{
-        sorting: {
-          sortModel: [{ field: 'name', sort: 'asc' }],
-        },
-      }}
-    />
+    <Box component="div" overflow="auto" sx={{ height: 'calc(100vh - 310px)' }}>
+      <DataGrid
+        rows={props.courses}
+        getRowId={(row) => row.id}
+        columns={buildColumns(props.costCenters)}
+        onRowClick={handleRowClick}
+        initialState={{
+          sorting: {
+            sortModel: [{ field: 'name', sort: 'asc' }],
+          },
+        }}
+      />
+    </Box>
   );
 }

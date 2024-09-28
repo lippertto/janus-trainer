@@ -14,9 +14,9 @@ import { showError } from '@/lib/notifications';
 import List from '@mui/material/List';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
-import { disciplinesSuspenseQuery } from '@/lib/shared-queries';
+import { costCentersQuery } from './queries';
 import Box from '@mui/system/Box';
-import { compareByField } from '@/lib/sort-and-filter';
+import { compareNamed } from '@/lib/sort-and-filter';
 import { DisciplineDialog } from '@/app/offerings/cost-centers/DisciplineDialog';
 
 function DisciplineList(props: {
@@ -47,10 +47,8 @@ function DisciplineCardContents(props: { session: JanusSession }) {
   const [selectedDisciplineId, setSelectedDisciplineId] = React.useState<
     number | null
   >(null);
-  const { data: disciplines } = disciplinesSuspenseQuery(
-    props.session.accessToken,
-  );
-  disciplines.sort((a, b) => compareByField(a, b, 'name'));
+  const { data: costCenters } = costCentersQuery(props.session.accessToken);
+  costCenters.sort(compareNamed);
 
   const disciplinesAddMutation = useMutation({
     mutationFn: (data: DisciplineCreateRequest) => {
@@ -90,7 +88,7 @@ function DisciplineCardContents(props: { session: JanusSession }) {
       </ButtonGroup>
       <Box>
         <DisciplineList
-          disciplines={disciplines}
+          disciplines={costCenters}
           selectedDisciplineId={selectedDisciplineId}
           setSelectedDisciplineId={setSelectedDisciplineId}
         />
@@ -99,7 +97,7 @@ function DisciplineCardContents(props: { session: JanusSession }) {
         open={open}
         handleClose={() => setOpen(false)}
         handleSave={disciplinesAddMutation.mutate}
-        toEdit={disciplines.find((d) => d.id === selectedDisciplineId) ?? null}
+        toEdit={costCenters.find((d) => d.id === selectedDisciplineId) ?? null}
       />
     </Stack>
   );

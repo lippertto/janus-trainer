@@ -26,7 +26,7 @@ type CourseDialogProps = {
   handleClose: () => void;
   handleSave: (data: CourseCreateRequest) => void;
   trainers: UserDto[];
-  disciplines: DisciplineDto[];
+  costCenters: DisciplineDto[];
   courseToEdit: CourseDto | null;
 };
 
@@ -153,7 +153,7 @@ function DisciplineDropdown(props: {
   selectedDiscipline: DisciplineDto | null;
   setSelectedDiscipline: (v: DisciplineDto | null) => void;
 }) {
-  const error = props.selectedDiscipline ? ' ' : 'Muss ausgwählt sein';
+  const error = props.selectedDiscipline ? ' ' : 'Muss ausgewählt sein';
   return (
     <Autocomplete
       renderInput={(params) => (
@@ -186,7 +186,7 @@ export function CourseDialog({
   handleClose,
   handleSave,
   trainers,
-  disciplines,
+  costCenters,
   courseToEdit,
 }: CourseDialogProps) {
   const [courseName, setCourseName] = React.useState('');
@@ -225,7 +225,7 @@ export function CourseDialog({
       setSelectedTrainers(courseToEdit.trainers);
       setDays(enumToWeekdaySelection(courseToEdit.weekdays));
       setDiscipline(
-        disciplines.find((v) => v.id === courseToEdit.disciplineId) ?? null,
+        costCenters.find((v) => v.id === courseToEdit.disciplineId) ?? null,
       );
     } else {
       resetFields();
@@ -264,8 +264,8 @@ export function CourseDialog({
               }}
               // needs to be set in Dialogs according to https://github.com/mui/material-ui/issues/29892#issuecomment-979745849
               margin="dense"
-              inputProps={{
-                'data-testid': 'enter-course-textfield',
+              slotProps={{
+                htmlInput: { 'data-testid': 'enter-course-textfield' },
               }}
               error={nameError !== ' '}
               helperText={nameError}
@@ -280,9 +280,9 @@ export function CourseDialog({
             <TextField
               value={duration}
               onChange={(v) => setDuration(v.target.value)}
-              label={'Dauer'}
-              type={'number'}
-              inputProps={{ step: 15, min: 15 }}
+              label="Dauer"
+              type="number"
+              slotProps={{ htmlInput: { step: 15, min: 15 } }}
             />
 
             <TrainerDropdown
@@ -292,7 +292,7 @@ export function CourseDialog({
             />
 
             <DisciplineDropdown
-              disciplines={disciplines}
+              disciplines={costCenters}
               selectedDiscipline={discipline}
               setSelectedDiscipline={setDiscipline}
             />
@@ -390,7 +390,7 @@ export function CourseDialog({
             setTimeout(resetFields, 300);
             handleClose();
             handleSave({
-              name: courseName,
+              name: courseName.trim(),
               durationMinutes: parseInt(duration),
               startHour: time!.hour(),
               startMinute: time!.minute(),

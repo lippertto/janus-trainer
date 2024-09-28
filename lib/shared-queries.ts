@@ -133,15 +133,6 @@ export function userSuspenseQuery(
   });
 }
 
-export function disciplinesSuspenseQuery(accessToken: string) {
-  return useSuspenseQuery({
-    queryKey: [API_DISCIPLINES],
-    queryFn: () =>
-      fetchListFromApi<DisciplineDto>(`${API_DISCIPLINES}`, accessToken),
-    staleTime: TEN_MINUTES,
-  });
-}
-
 export function trainingStatisticsSuspenseQuery(
   accessToken: string,
   year: number,
