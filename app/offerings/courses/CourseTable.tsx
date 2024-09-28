@@ -5,7 +5,8 @@ import {
   UserDto,
 } from '@/lib/dto';
 import { DataGrid, GridColDef, GridEventListener } from '@mui/x-data-grid';
-import { Course, DayOfWeek } from '@prisma/client';
+import { DayOfWeek } from '@prisma/client';
+import Box from '@mui/system/Box';
 
 function buildColumns(
   disciplines: { id: number; name: string; costCenterId: number }[],
@@ -52,16 +53,18 @@ export default function CourseTable(props: {
   };
 
   return (
-    <DataGrid
-      rows={props.courses}
-      getRowId={(row) => row.id}
-      columns={buildColumns(props.costCenters)}
-      onRowClick={handleRowClick}
-      initialState={{
-        sorting: {
-          sortModel: [{ field: 'name', sort: 'asc' }],
-        },
-      }}
-    />
+    <Box component="div" overflow="auto" sx={{ height: 'calc(100vh - 310px)' }}>
+      <DataGrid
+        rows={props.courses}
+        getRowId={(row) => row.id}
+        columns={buildColumns(props.costCenters)}
+        onRowClick={handleRowClick}
+        initialState={{
+          sorting: {
+            sortModel: [{ field: 'name', sort: 'asc' }],
+          },
+        }}
+      />
+    </Box>
   );
 }
