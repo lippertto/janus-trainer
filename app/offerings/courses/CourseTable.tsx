@@ -11,7 +11,7 @@ function buildColumns(
   disciplines: { id: number; name: string; costCenterId: number }[],
 ): GridColDef[] {
   return [
-    { field: 'name', headerName: 'Kurs', width: 200 },
+    { field: 'name', headerName: 'Kurs' },
     {
       field: 'weekdays',
       headerName: 'Wochentag',
