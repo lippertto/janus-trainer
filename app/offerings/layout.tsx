@@ -51,7 +51,7 @@ export default function ConfigureLayout({
             href={'/offerings/cost-centers'}
           />
         </Tabs>
-        <Box sx={{ b: 1 }}>
+        <Box sx={{ p: 1 }}>
           <Suspense fallback={<LoadingSpinner />}>{children}</Suspense>
         </Box>
       </ErrorBoundary>

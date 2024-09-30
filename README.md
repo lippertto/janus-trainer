@@ -26,6 +26,9 @@ Then, run `yarn jest -c api-tests/jest.config.js`
 
 ## Features
 
+- Custom Courses for one-off costs
+- Auto-Approve
+- Normen: Monthly pdf downloads
 - Report: Same Courses on same day
 - Make courses disabled. (Also in the UI.)
 - Playwright test: enter -> approve -> compensate.
