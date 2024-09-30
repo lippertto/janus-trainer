@@ -55,7 +55,7 @@ function determineDefaultValues(toEdit: UserDto | null): FormData {
 }
 
 export function UserDialog(props: {
-  session: JanusSession;
+  accessToken: string;
   toEdit: UserDto | null;
   compensationClasses: CompensationClassDto[];
   open: boolean;
@@ -221,7 +221,7 @@ export function UserDialog(props: {
             {props.toEdit ? (
               <Suspense fallback={<LoadingSpinner />}>
                 <ResendInvitationButton
-                  accessToken={props.session.accessToken}
+                  accessToken={props.accessToken}
                   userId={props.toEdit.id}
                   email={props.toEdit.email}
                 />

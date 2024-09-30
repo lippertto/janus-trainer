@@ -4,9 +4,15 @@ import {
   DisciplineDto,
   UserDto,
 } from '@/lib/dto';
-import { DataGrid, GridColDef, GridEventListener } from '@mui/x-data-grid';
+import {
+  DataGrid,
+  GridColDef,
+  GridEventListener,
+  useGridApiRef,
+} from '@mui/x-data-grid';
 import { DayOfWeek } from '@prisma/client';
 import Box from '@mui/system/Box';
+import React from 'react';
 
 function buildColumns(
   disciplines: { id: number; name: string; costCenterId: number }[],
@@ -53,7 +59,7 @@ export default function CourseTable(props: {
   };
 
   return (
-    <Box component="div" overflow="auto" sx={{ height: 'calc(100vh - 310px)' }}>
+    <Box component="div" overflow="auto" sx={{ height: 'calc(100vh - 320px)' }}>
       <DataGrid
         rows={props.courses}
         getRowId={(row) => row.id}
@@ -64,6 +70,8 @@ export default function CourseTable(props: {
             sortModel: [{ field: 'name', sort: 'asc' }],
           },
         }}
+        autosizeOnMount={true}
+        autosizeOptions={{}}
       />
     </Box>
   );
