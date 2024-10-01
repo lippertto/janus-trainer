@@ -26,7 +26,6 @@ Then, run `yarn jest -c api-tests/jest.config.js`
 
 ## Features
 
-- Custom Courses for one-off costs
 - Auto-Approve
 - Normen: Monthly pdf downloads
 - Report: Same Courses on same day
@@ -39,7 +38,6 @@ Then, run `yarn jest -c api-tests/jest.config.js`
 
 ## Tech update
 
-- Update dependencies
 - Hide password in POSTGRES_CONNECTION_URL of lambda. --> Use Secret
 - Join payments and compensation api routes (and domain objects) into /payments/{id}/compensations
 - Put sources into src directory.
