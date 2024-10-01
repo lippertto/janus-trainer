@@ -8,17 +8,29 @@ import {
   DataGrid,
   GridColDef,
   GridEventListener,
+  GridRenderCellParams,
   useGridApiRef,
 } from '@mui/x-data-grid';
 import { DayOfWeek } from '@prisma/client';
 import Box from '@mui/system/Box';
 import React from 'react';
-
+import LockIcon from '@mui/icons-material/Lock';
 function buildColumns(
   disciplines: { id: number; name: string; costCenterId: number }[],
 ): GridColDef[] {
   return [
     { field: 'name', headerName: 'Kurs' },
+    {
+      field: 'isCustomCourse',
+      headerName: '',
+      renderCell: (params: GridRenderCellParams<any, boolean>) => {
+        if (params.value) {
+          return <LockIcon style={{ fontSize: 'small' }} />;
+        } else {
+          return <></>;
+        }
+      },
+    },
     {
       field: 'weekdays',
       headerName: 'Wochentag',
@@ -29,8 +41,13 @@ function buildColumns(
     {
       field: 'time',
       headerName: 'Uhrzeit',
-      valueGetter: (_, course: CourseDto) =>
-        `${course.startHour.toString().padStart(2, '0')}:${course.startMinute.toString().padStart(2, '0')}`,
+      valueGetter: (_, course: CourseDto) => {
+        if (course.isCustomCourse) {
+          return '';
+        } else {
+          `${course.startHour!.toString().padStart(2, '0')}:${course.startMinute!.toString().padStart(2, '0')}`;
+        }
+      },
     },
     {
       field: 'disciplineId',
@@ -58,12 +75,17 @@ export default function CourseTable(props: {
     props.setActiveCourse(params.row);
   };
 
+  const columns = React.useMemo(
+    () => buildColumns(props.costCenters),
+    [props.costCenters],
+  );
+
   return (
     <Box component="div" overflow="auto" sx={{ height: 'calc(100vh - 320px)' }}>
       <DataGrid
         rows={props.courses}
         getRowId={(row) => row.id}
-        columns={buildColumns(props.costCenters)}
+        columns={columns}
         onRowClick={handleRowClick}
         initialState={{
           sorting: {
@@ -71,7 +93,7 @@ export default function CourseTable(props: {
           },
         }}
         autosizeOnMount={true}
-        autosizeOptions={{}}
+        autosizeOptions={{ includeOutliers: true }}
       />
     </Box>
   );

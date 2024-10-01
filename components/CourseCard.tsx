@@ -14,11 +14,11 @@ function CourseContents({ course }: { course: CourseDto }) {
           .join(', ')}
       </Typography>
       <Typography>
-        {course.startHour.toString().padStart(2, '0')}:
-        {course.startMinute.toString().padStart(2, '0')},{' '}
+        {course.startHour?.toString().padStart(2, '0') ?? '00'}:
+        {course.startMinute?.toString().padStart(2, '0') ?? '00'},{' '}
         {course.durationMinutes}min
       </Typography>
-      <Typography>{course.trainers.map((t) => t.name).join(', ')}</Typography>
+      <Typography>{course.trainers?.map((t) => t.name).join(', ')}</Typography>
     </CardContent>
   );
 }

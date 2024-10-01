@@ -42,14 +42,13 @@ export type UserDto = {
 };
 
 export type TrainerLight = Pick<UserDto, 'name' | 'id'>;
-export type CourseLight = Pick<
-  CourseDto,
-  'name' | 'id' | 'weekdays' | 'startHour' | 'startMinute' | 'durationMinutes'
->;
 
-export type TrainingDto = Omit<Training, 'approvedAt' | 'compensatedAt'> & {
+export type TrainingDto = Omit<
+  Training,
+  'approvedAt' | 'compensatedAt' | 'createdAt'
+> & {
   user?: TrainerLight;
-  course?: CourseLight;
+  course?: CourseDto;
   approvedAt?: string;
   compensatedAt?: string;
 };
@@ -248,7 +247,7 @@ export type CourseQueryResponse = {
 };
 
 export type CourseDto = Course & {
-  trainers: { name: string; id: string }[];
+  trainers?: { name: string; id: string }[];
 };
 
 export class CourseUpdateRequest extends CourseCreateRequest {}

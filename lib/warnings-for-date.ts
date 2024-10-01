@@ -72,10 +72,12 @@ export function warningsForDate(
     }
   }
   if (!isOnValidWeekday) {
-    const allowedDays = weekdays
-      .map((wd) => GERMAN_DAYS.at(dayOfWeekToInt(wd)))
-      .join(', ');
-    result.push(`Nicht an Kurstag (${allowedDays})`);
+    if (weekdays.length > 0) {
+      const allowedDays = weekdays
+        .map((wd) => GERMAN_DAYS.at(dayOfWeekToInt(wd)))
+        .join(', ');
+      result.push(`Nicht an Kurstag (${allowedDays})`);
+    }
   }
 
   return result;

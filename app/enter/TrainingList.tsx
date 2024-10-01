@@ -24,7 +24,15 @@ function statusString(
   } else if (training.approvedAt) {
     result += ' am ' + dateToHumanReadable(training.approvedAt);
   }
-  return result;
+  return result + '.';
+}
+
+function secondaryString(training: TrainingDto): string {
+  if (training.course?.isCustomCourse) {
+    return `${centsToHumanReadable(training.compensationCents)}. `;
+  } else {
+    return `${training.participantCount} Personen. ${centsToHumanReadable(training.compensationCents)}. `;
+  }
 }
 
 function TrainingListElement(props: {
@@ -35,7 +43,7 @@ function TrainingListElement(props: {
   const { training } = props;
 
   const primary = `${dateToHumanReadable(training.date)} - ${training.course!.name}`;
-  const secondary = `${training.participantCount} Personen. ${centsToHumanReadable(training.compensationCents)} `;
+  const secondary = secondaryString(training);
   const warnings = warningsForDate(
     training.date,
     props.holidays,
@@ -59,16 +67,15 @@ function TrainingListElement(props: {
         primary={primary}
         secondary={
           <>
-            <span>{secondary}</span>
-            <span>{statusString(training)}</span>
+            {secondary}
+            {statusString(training)}
+            {training.comment ? `"${training.comment}"` : null}
             {warnings.length > 0 ? (
-              <span style={{ color: 'darkorange' }}>
-                {' '}
-                {warnings.join(', ')}
-              </span>
+              <div style={{ color: 'darkorange' }}> {warnings.join(', ')}</div>
             ) : null}
           </>
         }
+        secondaryTypographyProps={{ component: 'span' }}
       />
     </ListItem>
   );

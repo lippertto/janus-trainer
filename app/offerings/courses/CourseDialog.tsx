@@ -221,8 +221,8 @@ export function CourseDialog({
           `2024-06-03 ${courseToEdit.startHour}:${courseToEdit.startMinute}`,
         ),
       );
-      setDuration(courseToEdit.durationMinutes.toString());
-      setSelectedTrainers(courseToEdit.trainers);
+      setDuration(courseToEdit.durationMinutes?.toString() ?? '');
+      setSelectedTrainers(courseToEdit.trainers ?? []);
       setDays(enumToWeekdaySelection(courseToEdit.weekdays));
       setDiscipline(
         costCenters.find((v) => v.id === courseToEdit.disciplineId) ?? null,

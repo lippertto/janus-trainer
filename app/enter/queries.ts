@@ -11,16 +11,18 @@ import {
   updateInApi,
 } from '@/lib/fetch';
 import {
+  CourseDto,
   TrainingCreateRequest,
   TrainingDto,
   TrainingUpdateRequest,
 } from '@/lib/dto';
-import { API_TRAININGS } from '@/lib/routes';
+import { API_COURSES, API_TRAININGS } from '@/lib/routes';
 import {
   FIRST_DAY_OF_PREVIOUS_QUARTER,
   FIRST_DAY_OF_THIS_QUARTER,
   isCurrentQuarter,
   isPreviousQuarter,
+  LAST_DAY_OF_PREVIOUS_QUARTER,
 } from '@/lib/helpers-for-date';
 import { replaceElementWithId } from '@/lib/sort-and-filter';
 import { showError, showSuccess } from '@/lib/notifications';
@@ -39,7 +41,7 @@ enum Timeframe {
 
 function determineTimeframeForDate(dateString: string): Timeframe {
   const date = dayjs(dateString);
-  if (date.isAfter(FIRST_DAY_OF_THIS_QUARTER)) {
+  if (date.isAfter(LAST_DAY_OF_PREVIOUS_QUARTER)) {
     return Timeframe.CURRENT;
   } else if (date.isAfter(FIRST_DAY_OF_PREVIOUS_QUARTER)) {
     return Timeframe.PREVIOUS;
@@ -194,5 +196,14 @@ export function trainingCreateQuery(
     onError: (e) => {
       showError(`Fehler beim Erstellen des Trainings`, e.message);
     },
+  });
+}
+
+export function customCostsQuery(accessToken: string) {
+  return useSuspenseQuery({
+    queryKey: ['ENTER', 'custom-costs'],
+    queryFn: () =>
+      fetchListFromApi<CourseDto>(`${API_COURSES}?custom=true`, accessToken!),
+    staleTime: 10 * 60 * 1000,
   });
 }

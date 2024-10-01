@@ -1,18 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Course } from '@prisma/client';
-import { CourseCreateRequest, CourseQueryResponse, ErrorDto } from '@/lib/dto';
+import {
+  CourseCreateRequest,
+  CourseDto,
+  CourseQueryResponse,
+  ErrorDto,
+} from '@/lib/dto';
 import {
   allowAnyLoggedIn,
   allowOnlyAdmins,
+  badRequestResponse,
   handleTopLevelCatch,
-  validateOrThrowOld,
+  validateOrThrow,
 } from '@/lib/helpers-for-api';
 import prisma from '@/lib/prisma';
 
 async function createCourse(nextRequest: NextRequest) {
-  const rawRequest = new CourseCreateRequest(await nextRequest.json());
-  const request: CourseCreateRequest =
-    await validateOrThrowOld<CourseCreateRequest>(rawRequest);
+  const request: CourseCreateRequest = await validateOrThrow(
+    CourseCreateRequest,
+    await nextRequest.json(),
+  );
 
   const course = await prisma.course.create({
     data: {
@@ -44,9 +51,7 @@ export async function POST(
   }
 }
 
-async function getAllCourses(
-  trainerId: string | null,
-): Promise<NextResponse<CourseQueryResponse>> {
+async function getAllCourses(trainerId: string | null): Promise<CourseDto[]> {
   let filter;
   if (trainerId) {
     filter = {
@@ -57,11 +62,20 @@ async function getAllCourses(
   } else {
     filter = {};
   }
-  const value = await prisma.course.findMany({
+  return prisma.course.findMany({
     where: filter,
     include: { trainers: true },
   });
-  return NextResponse.json({ value });
+}
+
+async function getCustomCourses(costCenterId?: number): Promise<CourseDto[]> {
+  const value = await prisma.course.findMany({
+    where: {
+      isCustomCourse: true,
+      disciplineId: costCenterId,
+    },
+  });
+  return value.map((c) => ({ ...c, trainers: [] }));
 }
 
 export async function GET(
@@ -69,7 +83,27 @@ export async function GET(
 ): Promise<NextResponse<CourseQueryResponse | ErrorDto>> {
   try {
     await allowAnyLoggedIn(request);
-    return await getAllCourses(request.nextUrl.searchParams.get('trainerId'));
+
+    const trainerId = request.nextUrl.searchParams.get('trainerId');
+    const customCourse = request.nextUrl.searchParams.get('custom') === 'true';
+    const costCenterIdString = request.nextUrl.searchParams.get('costCenterId');
+
+    let costCenterId = undefined;
+    if (costCenterIdString) {
+      costCenterId = parseInt(costCenterIdString);
+      if (isNaN(costCenterId)) {
+        return badRequestResponse('costCenterId must be a number');
+      }
+    }
+
+    let result: CourseDto[];
+    if (customCourse) {
+      result = await getCustomCourses(costCenterId);
+    } else {
+      result = await getAllCourses(trainerId);
+    }
+
+    return NextResponse.json({ value: result });
   } catch (e) {
     return handleTopLevelCatch(e);
   }

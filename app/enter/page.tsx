@@ -31,6 +31,7 @@ import {
   LAST_DAY_OF_THIS_QUARTER,
 } from '@/lib/helpers-for-date';
 import {
+  customCostsQuery,
   enterScreenTrainingQuery,
   trainingCreateQuery,
   trainingDeleteQuery,
@@ -166,6 +167,9 @@ function EnterPageContents(props: { session: JanusSession }) {
         }
         handleDelete={(v: TrainingDto) => {
           deleteTrainingMutation.mutate(v);
+        }}
+        getCustomCourses={() => {
+          return customCostsQuery(props.session.accessToken).data;
         }}
       />
     </React.Fragment>

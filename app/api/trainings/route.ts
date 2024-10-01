@@ -104,10 +104,6 @@ export async function POST(nextRequest: NextRequest) {
     );
     await allowAdminOrSelf(nextRequest, request.userId);
 
-    if (request.participantCount <= 0) {
-      return badRequestResponse('participantCount must be greater than 0');
-    }
-
     return await doPOST(request);
   } catch (e) {
     return handleTopLevelCatch(e);

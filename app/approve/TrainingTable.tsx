@@ -25,11 +25,7 @@ import { JanusSession } from '@/lib/auth';
 import { showError } from '@/lib/notifications';
 import { Holiday, TrainingStatus } from '@prisma/client';
 import { TrainingDto } from '@/lib/dto';
-import {
-  QueryClient,
-  useMutation,
-  useQueryClient,
-} from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { patchInApi } from '@/lib/fetch';
 import { API_TRAININGS, API_TRAININGS_SUMMARIZE } from '@/lib/routes';
 import { useConfirm } from 'material-ui-confirm';
@@ -61,7 +57,6 @@ function buildGridColumns(
       field: 'date',
       headerName: 'Datum',
       type: 'date',
-      flex: 1.1,
       valueFormatter: (value: string) => {
         return dateToHumanReadable(value);
       },
@@ -88,12 +83,10 @@ function buildGridColumns(
         }
         return null;
       },
-      flex: 0.1,
     },
     {
       field: 'userName',
       headerName: 'Übungsleitung',
-      flex: 1.5,
       valueGetter: (_value, row: TrainingDto) => {
         return row.user?.name ?? '';
       },
@@ -101,37 +94,36 @@ function buildGridColumns(
     {
       field: 'course',
       headerName: 'Kurs',
-      flex: 2,
       valueGetter: (_value, row: TrainingDto) => {
-        const hour = row.course?.startHour.toString().padStart(2, '0') ?? '';
+        const hour = row.course?.startHour?.toString().padStart(2, '0') ?? '';
         const minute =
-          row.course?.startMinute.toString().padStart(2, '0') ?? '';
-        return `${row.course?.name} ${hour}:${minute}, ${row.course?.durationMinutes}min`;
+          row.course?.startMinute?.toString().padStart(2, '0') ?? '';
+        if (row.course?.isCustomCourse) {
+          return `${row.course?.name}`;
+        } else {
+          return `${row.course?.name} ${hour}:${minute}, ${row.course?.durationMinutes}min`;
+        }
       },
     },
     {
       field: 'participantCount',
       headerName: 'Mitglieder',
       type: 'number',
-      flex: 0.7,
     },
     {
       field: 'compensationCents',
       headerName: 'Pauschale',
-      flex: 0.7,
       valueFormatter: (value: number) => centsToHumanReadable(value),
     },
     {
       field: 'status',
       headerName: 'Status',
-      flex: 0.7,
       valueGetter: (value: TrainingStatus) =>
         trainingStatusToHumanReadable(value),
     },
     {
       field: 'comment',
       headerName: 'Kommentar',
-      flex: 2,
     },
     {
       field: 'approvalActions',
@@ -349,10 +341,14 @@ export default function TrainingTable({
       });
   };
 
-  const columns = buildGridColumns(
-    holidays,
-    (id: GridRowId) => () => approveTrainingMutation.mutate(id as number),
-    (id: GridRowId) => () => revokeTrainingMutation.mutate(id as number),
+  const columns = React.useMemo(
+    () =>
+      buildGridColumns(
+        holidays,
+        (id: GridRowId) => () => approveTrainingMutation.mutate(id as number),
+        (id: GridRowId) => () => revokeTrainingMutation.mutate(id as number),
+      ),
+    [holidays],
   );
 
   return (
@@ -377,6 +373,8 @@ export default function TrainingTable({
           }
           setRowSelectionModel(newValue);
         }}
+        autosizeOnMount={true}
+        autosizeOptions={{}}
         slots={{
           toolbar: TrainingTableToolbar,
         }}
