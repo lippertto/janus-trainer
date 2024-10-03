@@ -15,6 +15,7 @@ import Checkbox from '@mui/material/Checkbox';
 import DialogActions from '@mui/material/DialogActions';
 import { CircularProgress } from '@mui/material';
 import Button from '@mui/material/Button';
+import { JanusMarkdown } from '@/components/JanusMarkdown';
 
 export function TosDialog(props: {
   tosData: string;
@@ -32,82 +33,7 @@ export function TosDialog(props: {
       <DialogContent>
         <Box maxHeight={'80%'}>
           <Stack>
-            <Markdown
-              children={props.tosData}
-              components={{
-                h1: ({ children }) => (
-                  <Typography
-                    sx={{ mt: 1 }}
-                    variant={'h1'}
-                    children={children}
-                  />
-                ),
-                h2: ({ children }) => (
-                  <Typography
-                    sx={{ mt: 1 }}
-                    variant={'h2'}
-                    children={children}
-                  />
-                ),
-                h3: ({ children }) => (
-                  <Typography
-                    sx={{ mt: 1 }}
-                    variant={'h3'}
-                    children={children}
-                  />
-                ),
-                h4: ({ children }) => (
-                  <Typography
-                    sx={{ mt: 1 }}
-                    variant={'h4'}
-                    children={children}
-                  />
-                ),
-                h5: ({ children }) => (
-                  <Typography
-                    sx={{ mt: 1 }}
-                    variant={'h5'}
-                    children={children}
-                  />
-                ),
-                p: ({ children }) => (
-                  <Typography sx={{ mt: 1 }} children={children} />
-                ),
-                ol: ({ children }) => (
-                  <List
-                    sx={{
-                      listStyleType: 'decimal',
-                      mt: 2,
-                      pl: 2,
-                      '& .MuiListItem-root': {
-                        display: 'list-item',
-                      },
-                    }}
-                  >
-                    {children}
-                  </List>
-                ),
-                ul: ({ children }) => (
-                  <List
-                    sx={{
-                      listStyleType: 'disc',
-                      mt: 2,
-                      pl: 2,
-                      '& .MuiListItem-root': {
-                        display: 'list-item',
-                      },
-                    }}
-                  >
-                    {children}
-                  </List>
-                ),
-                li: ({ children, ...props }) => (
-                  <ListItem sx={{ m: 0, p: 0, ml: 2 }} disableGutters>
-                    <ListItemText sx={{ pl: 0.25 }}>{children}</ListItemText>
-                  </ListItem>
-                ),
-              }}
-            />
+            <JanusMarkdown children={props.tosData} />
             {needsToAccept ? (
               <FormGroup>
                 <FormControlLabel

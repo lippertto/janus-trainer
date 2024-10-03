@@ -1,11 +1,14 @@
 import React from 'react';
-
-import MenuIcon from '@mui/icons-material/Menu';
 import Typography from '@mui/material/Typography';
-import { auth } from '../lib/auth';
+import { auth } from '@/lib/auth';
 import LoginRequired from '../components/LoginRequired';
+import { promises as fs } from 'fs';
+import { JanusMarkdown } from '@/components/JanusMarkdown';
+import Box from '@mui/system/Box';
 
-function Contents() {
+async function Contents() {
+  const changelog = await fs.readFile('./public/changelog.md', 'utf8');
+
   return (
     <React.Fragment>
       <Typography component="p">
@@ -15,6 +18,9 @@ function Contents() {
         Um in der App zu navigieren, klicke oben links auf Symbol mit den drei
         Strichen.
       </Typography>
+      <Box paddingTop={5}>
+        <JanusMarkdown children={changelog} />
+      </Box>
     </React.Fragment>
   );
 }

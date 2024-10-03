@@ -148,12 +148,12 @@ export const config: AuthOptions = {
 } satisfies NextAuthOptions;
 
 // Use it in server contexts
-export function auth(
+export async function auth(
   ...args:
     | [GetServerSidePropsContext['req'], GetServerSidePropsContext['res']]
     | [NextApiRequest, NextApiResponse]
     | []
-): JanusSession {
+): Promise<JanusSession> {
   return getServerSession(...args, config) as any as JanusSession;
 }
 
