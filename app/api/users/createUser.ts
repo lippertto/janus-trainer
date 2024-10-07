@@ -14,7 +14,12 @@ export async function createUser(request: UserCreateRequest): Promise<UserDto> {
 
   let cognitoUser = await getUserByEmail(client, request.email);
   if (!cognitoUser) {
-    cognitoUser = await createCognitoUser(client, request.email, request.name);
+    cognitoUser = await createCognitoUser(
+      client,
+      request.email,
+      request.name,
+      false,
+    );
     cognitoUser.groups = await setGroupsForUser(
       client,
       cognitoUser.username,
