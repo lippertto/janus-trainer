@@ -26,6 +26,7 @@ Then, run `yarn jest -c api-tests/jest.config.js`
 
 ## Features
 
+- Normen: In enter dialog: update dates when current/last quarter is selected
 - Auto-Approve
 - Normen: Monthly pdf downloads
 - Report: Same Courses on same day

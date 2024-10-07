@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ErrorDto } from './dto';
-import { getToken } from 'next-auth/jwt';
+import { getToken, JWT } from 'next-auth/jwt';
 import { validate, ValidationError } from 'class-validator';
 import { logger } from '@/lib/logging';
 
@@ -25,6 +25,28 @@ export async function allowNoOne(_: NextRequest) {
   throw new ApiErrorForbidden('This operation is allowed only in tests');
 }
 
+export async function isAdmin(
+  request: NextRequest,
+  jwt: JWT | null = null,
+): Promise<boolean> {
+  if (process.env.DISABLE_JWT_CHECKS) return true;
+
+  if (!jwt) {
+    jwt = await getToken({ req: request });
+  }
+  if (!jwt) {
+    throw new ApiErrorInternalServerError('Could not obtain jwt token');
+  }
+  const groups = jwt.groups as string[];
+  if (groups === undefined) {
+    throw new ApiErrorBadRequest('Groups field is missing in JWT');
+  }
+  if (groups.findIndex((e) => e === 'admins') !== -1) {
+    return true;
+  }
+  return false;
+}
+
 /**
  * Throws an exception, unless: the request belongs to an admin user, or the 'sub' of the token is the same as
  * 'ownUserId'
@@ -36,14 +58,8 @@ export async function allowAdminOrSelf(
   if (process.env.DISABLE_JWT_CHECKS) return;
   const token = await getToken({ req });
   if (!token) throw new ApiErrorUnauthorized('Token is missing');
+  if (await isAdmin(req, token)) return;
 
-  const groups = token.groups as string[];
-  if (groups === undefined) {
-    throw new ApiErrorBadRequest('Groups field is missing in JWT');
-  }
-  if (groups.findIndex((e) => e === 'admins') !== -1) {
-    return;
-  }
   if (token.sub === ownUserId) {
     return;
   }
@@ -70,6 +86,10 @@ export async function allowAnyLoggedIn(req: NextRequest): Promise<void> {
 
 export function badRequestResponse(message: string): NextResponse<ErrorDto> {
   return errorResponse(message, 400);
+}
+
+export function forbiddenResponse(message: string): NextResponse<ErrorDto> {
+  return errorResponse(message, 403);
 }
 
 /** A response for DELETE functions. */

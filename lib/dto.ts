@@ -371,3 +371,14 @@ export type LoginInfo = {
   confirmed: boolean;
   groups: Group[];
 };
+
+export type TrainingDuplicateDto = {
+  queriedId: number;
+  duplicateId: number;
+  duplicateTrainerName: string;
+  duplicateCourseName: string;
+};
+
+export type TrainingDuplicatResponse = {
+  value: TrainingDuplicateDto[];
+};
