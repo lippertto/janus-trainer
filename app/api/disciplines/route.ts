@@ -41,17 +41,6 @@ export async function POST(
 
     const result = await prisma.discipline.create({ data: request });
 
-    await prisma.course.create({
-      data: {
-        name: `Einmalzahlung ${request.name}`,
-        weekdays: [],
-        isCustomCourse: true,
-        discipline: {
-          connect: { id: result.id },
-        },
-      },
-    });
-
     return NextResponse.json(result, { status: 201 });
   } catch (e) {
     return handleTopLevelCatch(e);
