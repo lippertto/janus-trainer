@@ -3,7 +3,7 @@
 ###### 02. Oktober 2024
 
 Es lassen sich nun auch Einmalzahlungen abrechnen.
-Das ist zum Beispiel für
+Aktuell ist das nur für Vergütungen, die dem Zweckbetrieb zugeordnet werden, möglich.
 
 Der Stift zum Bearbeiten von eingetragenen Stunden wurde entfernt.
 Um ein Training zu bearbeiten, muss man jetzt auf den Eintrag selbst klicken.
