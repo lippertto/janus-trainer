@@ -14,14 +14,14 @@ import {
 import React from 'react';
 import TrainingDialog from '@/app/enter/TrainingDialog';
 import userEvent from '@testing-library/user-event';
-import { DayOfWeek } from '@prisma/client';
-import { CompensationValueDto, CourseLight, TrainingDto } from '@/lib/dto';
+import { DayOfWeek, TrainingStatus } from '@prisma/client';
+import { CompensationValueDto, CourseDto, TrainingDto } from '@/lib/dto';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import 'dayjs/locale/de';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import dayjs from 'dayjs';
 
-const COURSES: CourseLight[] = [
+const COURSES: CourseDto[] = [
   {
     id: 19,
     name: 'course-1',
@@ -46,7 +46,7 @@ const COURSES: CourseLight[] = [
     startHour: 19,
     durationMinutes: 120,
   },
-];
+] as CourseDto[];
 
 const COMPENSATION_VALUES: CompensationValueDto[] = [
   {
@@ -71,6 +71,15 @@ const COMPENSATION_VALUES: CompensationValueDto[] = [
     compensationClassId: 1,
   },
 ];
+
+function selectFirstComboboxElement(element: HTMLElement) {
+  act(() => {
+    element.focus();
+  });
+  fireEvent.keyDown(element, { key: 'ArrowDown' });
+  fireEvent.keyDown(element, { key: 'ArrowDown' });
+  fireEvent.keyDown(element, { key: 'Enter' });
+}
 
 // set date to a value in 'DD.MM.YYYY' format. If not set, will use today
 async function setDate(value: string | null = null) {
@@ -98,230 +107,365 @@ async function pressSave() {
   fireEvent.submit(saveButton);
 }
 
-test('happy case', async () => {
-  const save = jest.fn();
-  const close = jest.fn();
+describe('enter courses', () => {
+  test('happy case', async () => {
+    const save = jest.fn();
+    const close = jest.fn();
 
-  const userId = 'userId123';
+    const userId = 'userId123';
 
-  render(
-    <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="de">
-      <TrainingDialog
-        open={true}
-        handleClose={close}
-        handleSave={save}
-        handleDelete={jest.fn()}
-        toEdit={null}
-        today={DayOfWeek.MONDAY}
-        courses={COURSES}
-        compensationValues={COMPENSATION_VALUES}
-        userId={userId}
-      />
-    </LocalizationProvider>,
-  );
+    render(
+      <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="de">
+        <TrainingDialog
+          open={true}
+          handleClose={close}
+          handleSave={save}
+          handleDelete={jest.fn()}
+          toEdit={null}
+          today={DayOfWeek.MONDAY}
+          courses={COURSES}
+          compensationValues={COMPENSATION_VALUES}
+          userId={userId}
+          getCustomCourses={() => []}
+        />
+      </LocalizationProvider>,
+    );
 
-  const comment = 'any-comment';
-  const commentTextBox = await screen.findByRole('textbox', {
-    name: 'Kommentar',
+    const comment = 'any-comment';
+    const commentTextBox = await screen.findByRole('textbox', {
+      name: 'Kommentar',
+    });
+    await userEvent.type(commentTextBox!, comment);
+    expect(commentTextBox).toHaveValue(comment);
+
+    await setDate('03.10.2024');
+    const participantCount = 12;
+    await setParticipantCount(participantCount);
+
+    await pressSave();
+
+    await waitFor(() =>
+      expect(save).toHaveBeenCalledWith({
+        comment: comment,
+        courseId: 21, // we want this to be auto-selected based on the day
+        compensationCents: 500, // we want this to be auto-selected based on the duration
+        date: '2024-10-03',
+        participantCount: participantCount,
+        userId: userId,
+      }),
+    );
   });
-  await userEvent.type(commentTextBox!, comment);
-  expect(commentTextBox).toHaveValue(comment);
 
-  await setDate('03.10.2024');
-  const participantCount = 12;
-  await setParticipantCount(participantCount);
+  test('selects matching compensation value when course changes', async () => {
+    const save = jest.fn();
+    const close = jest.fn();
 
-  await pressSave();
+    render(
+      <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="de">
+        <TrainingDialog
+          open={true}
+          handleClose={close}
+          handleSave={save}
+          handleDelete={jest.fn()}
+          toEdit={null}
+          today={DayOfWeek.MONDAY}
+          courses={COURSES}
+          compensationValues={COMPENSATION_VALUES}
+          userId={'userId123'}
+          getCustomCourses={() => []}
+        />
+      </LocalizationProvider>,
+    );
 
-  await waitFor(() =>
-    expect(save).toHaveBeenCalledWith({
-      comment: comment,
-      courseId: 21, // we want this to be auto-selected based on the day
-      compensationCents: 500, // we want this to be auto-selected based on the duration
-      date: '2024-10-03',
-      participantCount: participantCount,
-      userId: userId,
-    }),
-  );
+    await setDate();
+    await setParticipantCount();
+
+    // move one value down in the combobox
+    const courseBox = await screen.findByRole('combobox', { name: /Kurs.*/i });
+    selectFirstComboboxElement(courseBox);
+
+    await pressSave();
+
+    await waitFor(() =>
+      expect(save).toHaveBeenCalledWith(
+        expect.objectContaining({
+          userId: 'userId123',
+        }),
+      ),
+    );
+  });
+
+  test('Sets values from toEdit as defaults', async () => {
+    const cents = COMPENSATION_VALUES[1].cents;
+    const toEdit = {
+      comment: 'comment',
+      date: '2024-01-02',
+      participantCount: 7,
+      compensationCents: cents,
+      course: COURSES[0],
+    } as TrainingDto;
+    const save = jest.fn();
+    const close = jest.fn();
+
+    // first render with toEdit=null. This is what happens in the app.
+    const { rerender } = render(
+      <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="de">
+        <TrainingDialog
+          open={true}
+          handleClose={close}
+          handleSave={save}
+          handleDelete={jest.fn()}
+          toEdit={null}
+          today={DayOfWeek.MONDAY}
+          courses={COURSES}
+          compensationValues={COMPENSATION_VALUES}
+          userId={'userId123'}
+          getCustomCourses={() => []}
+        />
+      </LocalizationProvider>,
+    );
+
+    // then update with the actual toEdit value.
+    rerender(
+      <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="de">
+        <TrainingDialog
+          open={true}
+          handleClose={close}
+          handleSave={save}
+          handleDelete={jest.fn()}
+          toEdit={toEdit}
+          today={DayOfWeek.MONDAY}
+          courses={COURSES}
+          compensationValues={COMPENSATION_VALUES}
+          userId={'userId123'}
+          getCustomCourses={() => []}
+        />
+      </LocalizationProvider>,
+    );
+
+    const participantCountTextBox = await screen.findByRole('spinbutton', {
+      name: /Anzahl.*/i,
+    });
+    expect(participantCountTextBox).toHaveValue(toEdit.participantCount);
+
+    await pressSave();
+
+    await waitFor(() =>
+      expect(save).toHaveBeenCalledWith(
+        expect.objectContaining({
+          userId: 'userId123',
+          date: '2024-01-02',
+          compensationCents: cents,
+          comment: 'comment',
+          courseId: toEdit.course!.id,
+          participantCount: toEdit.participantCount,
+        }),
+      ),
+    );
+  });
+
+  test('add new compensation value when no corresponding exists', async () => {
+    const save = jest.fn();
+    const close = jest.fn();
+
+    const compensationValues: CompensationValueDto[] = [
+      {
+        compensationClassId: 1,
+        cents: 300,
+        description: 'desc',
+        id: 1,
+        durationMinutes: 120,
+      },
+    ];
+    const toEdit = {
+      comment: 'comment',
+      date: '2024-01-02',
+      participantCount: 7,
+      compensationCents: 399,
+      course: COURSES[0],
+    } as TrainingDto;
+
+    // first render with null
+    const { rerender } = render(
+      <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="de">
+        <TrainingDialog
+          open={true}
+          handleClose={close}
+          handleSave={save}
+          handleDelete={jest.fn()}
+          toEdit={null}
+          today={DayOfWeek.MONDAY}
+          courses={COURSES}
+          compensationValues={compensationValues}
+          userId={'userId123'}
+          getCustomCourses={() => []}
+        />
+      </LocalizationProvider>,
+    );
+    // then render with toEdit
+    rerender(
+      <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="de">
+        <TrainingDialog
+          open={true}
+          handleClose={close}
+          handleSave={save}
+          handleDelete={jest.fn()}
+          toEdit={toEdit}
+          today={DayOfWeek.MONDAY}
+          courses={COURSES}
+          compensationValues={compensationValues}
+          userId={'userId123'}
+          getCustomCourses={() => []}
+        />
+      </LocalizationProvider>,
+    );
+
+    // for some reason, isValid is only checked after we check this field
+    const participantCountTextBox = await screen.findByRole('spinbutton', {
+      name: /Anzahl.*/i,
+    });
+    expect(participantCountTextBox).toHaveValue(toEdit.participantCount);
+
+    await pressSave();
+
+    await waitFor(() =>
+      expect(save).toHaveBeenCalledWith(
+        expect.objectContaining({
+          compensationCents: 399,
+        }),
+      ),
+    );
+  });
 });
 
-test('selects matching compensation value when course changes', async () => {
-  const save = jest.fn();
-  const close = jest.fn();
+describe('enter custom', () => {
+  test('happy case', async () => {
+    const save = jest.fn().mockName('handleSave mock');
+    const userId = 'user-id';
 
-  render(
-    <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="de">
-      <TrainingDialog
-        open={true}
-        handleClose={close}
-        handleSave={save}
-        handleDelete={jest.fn()}
-        toEdit={null}
-        today={DayOfWeek.MONDAY}
-        courses={COURSES}
-        compensationValues={COMPENSATION_VALUES}
-        userId={'userId123'}
-      />
-    </LocalizationProvider>,
-  );
+    const customCourses = [
+      {
+        id: 1,
+        name: 'B custom course 1',
+      },
+      {
+        id: 2,
+        name: 'A custom course 2',
+      },
+    ] as CourseDto[];
 
-  await setDate();
-  await setParticipantCount();
+    render(
+      <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="de">
+        <TrainingDialog
+          open={true}
+          handleClose={jest.fn()}
+          handleSave={save}
+          handleDelete={jest.fn()}
+          toEdit={null}
+          today={DayOfWeek.MONDAY}
+          courses={COURSES}
+          compensationValues={COMPENSATION_VALUES}
+          userId={userId}
+          getCustomCourses={() => customCourses}
+        />
+      </LocalizationProvider>,
+    );
 
-  // move one value down in the combobox
-  const courseBox = await screen.findByRole('combobox', { name: /Kurs.*/i });
-  act(() => {
-    courseBox.focus();
+    const toggleButton = await screen.findByRole('button', { name: /einmal/i });
+    expect(fireEvent.click(toggleButton)).toBe(true);
+
+    const courseBox = await screen.findByRole('combobox', {
+      name: /Kostenstelle/i,
+    });
+    selectFirstComboboxElement(courseBox);
+
+    const comment = 'any-comment';
+    const commentTextBox = await screen.findByRole('textbox', {
+      name: 'Kommentar',
+    });
+    await userEvent.type(commentTextBox!, comment);
+
+    const valueTextbox = await screen.findByRole('textbox', {
+      name: 'Betrag',
+    });
+    await userEvent.type(valueTextbox, '30,40');
+
+    await pressSave();
+
+    await waitFor(() =>
+      expect(save).toHaveBeenCalledWith(
+        expect.objectContaining({
+          courseId: 2, // with sorting, this should be the first entry
+          comment,
+          compensationCents: 3040,
+          date: dayjs().format('YYYY-MM-DD'),
+          participantCount: 0,
+          userId,
+        }),
+      ),
+    );
   });
-  fireEvent.keyDown(courseBox, { key: 'ArrowDown' });
-  fireEvent.keyDown(courseBox, { key: 'ArrowDown' });
-  fireEvent.keyDown(courseBox, { key: 'Enter' });
 
-  await pressSave();
+  test('happy edit case', async () => {
+    const save = jest.fn().mockName('handleSave mock');
+    const userId = 'user-id';
 
-  await waitFor(() =>
-    expect(save).toHaveBeenCalledWith(
-      expect.objectContaining({
-        userId: 'userId123',
-      }),
-    ),
-  );
-});
+    const customCourses = [
+      {
+        id: 1,
+        name: 'B custom course 1',
+        isCustomCourse: true,
+      },
+      {
+        id: 2,
+        name: 'A custom course 2',
+        isCustomCourse: true,
+      },
+    ] as CourseDto[];
 
-test('Sets values from toEdit as defaults', async () => {
-  const cents = COMPENSATION_VALUES[1].cents;
-  const toEdit = {
-    comment: 'comment',
-    date: '2024-01-02',
-    participantCount: 7,
-    compensationCents: cents,
-    course: COURSES[0],
-  } as TrainingDto;
-  const save = jest.fn();
-  const close = jest.fn();
+    const toEdit: TrainingDto = {
+      id: 5,
+      status: TrainingStatus.NEW,
+      date: '2020-01-02',
+      compensationCents: 3456,
+      participantCount: 0,
+      courseId: customCourses[0].id,
+      course: customCourses[0],
+      userId: 'abc',
+      paymentId: null,
+      comment: 'some comment',
+    };
 
-  // first render with toEdit=null. This is what happens in the app.
-  const { rerender } = render(
-    <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="de">
-      <TrainingDialog
-        open={true}
-        handleClose={close}
-        handleSave={save}
-        handleDelete={jest.fn()}
-        toEdit={null}
-        today={DayOfWeek.MONDAY}
-        courses={COURSES}
-        compensationValues={COMPENSATION_VALUES}
-        userId={'userId123'}
-      />
-    </LocalizationProvider>,
-  );
+    render(
+      <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="de">
+        <TrainingDialog
+          open={true}
+          handleClose={jest.fn()}
+          handleSave={jest.fn()}
+          handleDelete={jest.fn()}
+          toEdit={toEdit}
+          today={DayOfWeek.MONDAY}
+          courses={COURSES}
+          compensationValues={COMPENSATION_VALUES}
+          userId={userId}
+          getCustomCourses={() => customCourses}
+        />
+      </LocalizationProvider>,
+    );
 
-  // then update with the actual toEdit value.
-  rerender(
-    <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="de">
-      <TrainingDialog
-        open={true}
-        handleClose={close}
-        handleSave={save}
-        handleDelete={jest.fn()}
-        toEdit={toEdit}
-        today={DayOfWeek.MONDAY}
-        courses={COURSES}
-        compensationValues={COMPENSATION_VALUES}
-        userId={'userId123'}
-      />
-    </LocalizationProvider>,
-  );
+    const courseBox = await screen.findByRole('combobox', {
+      name: /Kostenstelle/i,
+    });
+    expect(courseBox).toHaveValue('B custom course 1');
 
-  const participantCountTextBox = await screen.findByRole('spinbutton', {
-    name: /Anzahl.*/i,
+    const commentTextBox = await screen.findByRole('textbox', {
+      name: 'Kommentar',
+    });
+    expect(commentTextBox).toHaveValue(toEdit.comment);
+
+    const valueTextbox = await screen.findByRole('textbox', {
+      name: 'Betrag',
+    });
+    expect(valueTextbox).toHaveValue('34,56');
   });
-  expect(participantCountTextBox).toHaveValue(toEdit.participantCount);
-
-  await pressSave();
-
-  await waitFor(() =>
-    expect(save).toHaveBeenCalledWith(
-      expect.objectContaining({
-        userId: 'userId123',
-        date: '2024-01-02',
-        compensationCents: cents,
-        comment: 'comment',
-        courseId: toEdit.course!.id,
-        participantCount: toEdit.participantCount,
-      }),
-    ),
-  );
-});
-
-test('add new compensation value when no corresponding exists', async () => {
-  const save = jest.fn();
-  const close = jest.fn();
-
-  const compensationValues: CompensationValueDto[] = [
-    {
-      compensationClassId: 1,
-      cents: 300,
-      description: 'desc',
-      id: 1,
-      durationMinutes: 120,
-    },
-  ];
-  const toEdit = {
-    comment: 'comment',
-    date: '2024-01-02',
-    participantCount: 7,
-    compensationCents: 399,
-    course: COURSES[0],
-  } as TrainingDto;
-
-  // first render with null
-  const { rerender } = render(
-    <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="de">
-      <TrainingDialog
-        open={true}
-        handleClose={close}
-        handleSave={save}
-        handleDelete={jest.fn()}
-        toEdit={null}
-        today={DayOfWeek.MONDAY}
-        courses={COURSES}
-        compensationValues={compensationValues}
-        userId={'userId123'}
-      />
-    </LocalizationProvider>,
-  );
-  // then render with toEdit
-  rerender(
-    <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="de">
-      <TrainingDialog
-        open={true}
-        handleClose={close}
-        handleSave={save}
-        handleDelete={jest.fn()}
-        toEdit={toEdit}
-        today={DayOfWeek.MONDAY}
-        courses={COURSES}
-        compensationValues={compensationValues}
-        userId={'userId123'}
-      />
-    </LocalizationProvider>,
-  );
-
-  // for some reason, isValid is only checked after we check this field
-  const participantCountTextBox = await screen.findByRole('spinbutton', {
-    name: /Anzahl.*/i,
-  });
-  expect(participantCountTextBox).toHaveValue(toEdit.participantCount);
-
-  await pressSave();
-
-  await waitFor(() =>
-    expect(save).toHaveBeenCalledWith(
-      expect.objectContaining({
-        compensationCents: 399,
-      }),
-    ),
-  );
 });

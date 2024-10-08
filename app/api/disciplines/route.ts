@@ -10,7 +10,7 @@ import {
   allowAnyLoggedIn,
   allowOnlyAdmins,
   handleTopLevelCatch,
-  validateOrThrowOld,
+  validateOrThrow,
 } from '@/lib/helpers-for-api';
 
 async function getAllDisciplines() {
@@ -29,23 +29,19 @@ export async function GET(
   }
 }
 
-async function createDiscipline(body: any) {
-  const request = await validateOrThrowOld<DisciplineCreateRequest>(
-    new DisciplineCreateRequest(body),
-  );
-
-  const result = await prisma.discipline.create({ data: request });
-
-  return NextResponse.json(result, { status: 201 });
-}
-
 export async function POST(
-  request: NextRequest,
+  nextRequest: NextRequest,
 ): Promise<NextResponse<DisciplineDto | ErrorDto>> {
   try {
-    await allowOnlyAdmins(request);
+    await allowOnlyAdmins(nextRequest);
+    const request = await validateOrThrow(
+      DisciplineCreateRequest,
+      await nextRequest.json(),
+    );
 
-    return await createDiscipline(await request.json());
+    const result = await prisma.discipline.create({ data: request });
+
+    return NextResponse.json(result, { status: 201 });
   } catch (e) {
     return handleTopLevelCatch(e);
   }

@@ -31,7 +31,7 @@ model Training {
 
   createdAt DateTime
 
-  participantCount Int
+  participantCount Int?
 
   status TrainingStatus
 
@@ -105,9 +105,11 @@ model Course {
   id              Int         @id @default(autoincrement())
   name            String
   weekdays        DayOfWeek[]
-  startHour       Int
-  startMinute     Int
-  durationMinutes Int
+  startHour       Int?
+  startMinute     Int?
+  durationMinutes Int?
+
+  isCustomCourse Boolean @default(false)
 
   discipline   Discipline? @relation(fields: [disciplineId], references: [id])
   disciplineId Int?

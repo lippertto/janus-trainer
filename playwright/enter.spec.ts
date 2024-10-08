@@ -18,14 +18,14 @@ test.describe.serial('Enter page', () => {
 
     // create a new training
     await page.getByTestId('enter-training-button').click();
-    await expect(page.getByText('Training hinzufügen')).toBeVisible();
+    await expect(page.getByText('Vergütung beantragen')).toBeVisible();
 
     await page
       .getByLabel(/.*Anzahl Personen.*/i)
       .fill(participantCount.toString());
 
     await page.getByRole('button', { name: 'Speichern' }).click();
-    await expect(page.getByText('Training hinzufügen')).toBeHidden();
+    await expect(page.getByText('Vergütung beantragen')).toBeHidden();
 
     // Check that training has been created
     await expect(page.getByText(`${participantCount} Personen`)).toBeVisible();
@@ -33,10 +33,10 @@ test.describe.serial('Enter page', () => {
     // update (a) training
     const newCount = participantCount - 1;
     await page.getByRole('list').getByRole('button').last().click();
-    await expect(page.getByText('Training bearbeiten')).toBeVisible();
+    await expect(page.getByText('Vergütung bearbeiten')).toBeVisible();
     await page.getByLabel('Anzahl Personen *').fill(newCount.toString());
     await page.getByRole('button', { name: 'Speichern' }).click();
-    await expect(page.getByText('Training bearbeiten')).toBeHidden();
+    await expect(page.getByText('Vergütung bearbeiten')).toBeHidden();
 
     // Check that the training has been updated
     await expect(page.getByText(`${newCount} Personen`)).toBeVisible();
@@ -44,7 +44,7 @@ test.describe.serial('Enter page', () => {
     // Delete the training
     const trainingCountBefore = await page.locator('li').count();
     await page.getByRole('list').getByRole('button').last().click();
-    await expect(page.getByText('Training bearbeiten')).toBeVisible();
+    await expect(page.getByText('Vergütung bearbeiten')).toBeVisible();
     await page.getByRole('button', { name: 'löschen' }).click();
     await page.getByRole('button', { name: 'Ok' }).click();
 
@@ -65,7 +65,7 @@ test.describe.serial('Enter page', () => {
 
     // create a new training
     await page.getByTestId('enter-training-button').click();
-    await expect(page.getByText('Training hinzufügen')).toBeVisible();
+    await expect(page.getByText('Vergütung beantragen')).toBeVisible();
 
     await page
       .getByLabel(/.*Anzahl Personen.*/i)
@@ -76,7 +76,7 @@ test.describe.serial('Enter page', () => {
       .fill(dateInLastQuarter.format('DD.MM.YYYY'));
 
     await page.getByRole('button', { name: 'Speichern' }).click();
-    await expect(page.getByText('Training hinzufügen')).toBeHidden();
+    await expect(page.getByText('Vergütung beantragen')).toBeHidden();
 
     // Go to last quarter
     await page.getByRole('button', { name: /.*Quartal.*/i }).click();

@@ -10,7 +10,7 @@ import { TrainingList } from './TrainingList';
 import React from 'react';
 import { DayOfWeek, TrainingStatus } from '@prisma/client';
 
-test('Shows edit icon for new trainings', async () => {
+test('new trainings can be clicked', async () => {
   const edit = jest.fn();
 
   const trainings = [
@@ -18,6 +18,7 @@ test('Shows edit icon for new trainings', async () => {
       id: 1,
       course: { name: 'any-name', weekdays: [DayOfWeek.SATURDAY] },
       status: TrainingStatus.NEW,
+      comment: 'any-comment',
     } as any as TrainingDto,
   ];
 
@@ -25,13 +26,15 @@ test('Shows edit icon for new trainings', async () => {
     <TrainingList trainings={trainings} holidays={[]} handleEdit={edit} />,
   );
 
-  const editButton = await screen.findByRole('button', { name: /Bearbeiten/i });
+  const editButton = await screen.findByRole('button', {
+    name: /any-comment/i,
+  });
   fireEvent.click(editButton);
 
   expect(edit).toHaveBeenCalled();
 });
 
-test('Shows no edit icon for other trainings', async () => {
+test('non-new trainings cannot be clicked', async () => {
   const edit = jest.fn();
 
   const trainings = [
@@ -46,6 +49,6 @@ test('Shows no edit icon for other trainings', async () => {
     <TrainingList trainings={trainings} holidays={[]} handleEdit={edit} />,
   );
 
-  const editButton = screen.queryByRole('button', { name: /Bearbeiten/i });
+  const editButton = screen.queryByRole('button');
   expect(editButton).toBeNull();
 });

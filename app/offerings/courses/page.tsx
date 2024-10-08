@@ -126,12 +126,12 @@ function OfferingsPageContents({ session }: { session: JanusSession }) {
               onClick={() => {
                 handleDeleteCourseClick();
               }}
-              disabled={activeCourse === null}
+              disabled={activeCourse === null || activeCourse.isCustomCourse}
             >
               löschen
             </Button>
             <Button
-              disabled={activeCourse === null}
+              disabled={activeCourse === null || activeCourse.isCustomCourse}
               onClick={() => {
                 setCourseDialogOpen(true);
               }}

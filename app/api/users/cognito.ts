@@ -191,6 +191,7 @@ export async function createCognitoUser(
   client: CognitoIdentityProviderClient,
   email: string,
   name: string,
+  resend: boolean,
 ): Promise<ParsedCognitoUser> {
   const createUserRequest = new AdminCreateUserCommand({
     UserPoolId: USER_POOL_ID,
@@ -200,6 +201,7 @@ export async function createCognitoUser(
       { Name: 'email', Value: email },
       { Name: 'email_verified', Value: 'True' },
     ],
+    MessageAction: resend ? 'RESEND' : undefined,
   });
   let createResponse;
   try {
@@ -394,5 +396,5 @@ export async function resendInvitationEmail(
     throw new ApiErrorNotFound();
   }
 
-  await createCognitoUser(client, cognitoUser.email, cognitoUser.name);
+  await createCognitoUser(client, cognitoUser.email, cognitoUser.name, true);
 }
