@@ -26,22 +26,20 @@ Then, run `yarn jest -c api-tests/jest.config.js`
 
 ## Features
 
+- Pdf download for taxes. Trainer x received y euros for z units. Lock year!
 - Normen: In enter dialog: update dates when current/last quarter is selected
 - Auto-Approve
 - Normen: Monthly pdf downloads
-- Report: Same Courses on same day
 - Make courses disabled. (Also in the UI.)
 - Playwright test: enter -> approve -> compensate.
+- Playwright test: duplicates
 - Warning if training limits have been reached
 - offerings: make weekday a radio group. Training can have only 1 weekday
-- Pdf download for taxes. Trainer x received y euros for z units. Lock year!
-- FAB should not hide pen icon on enter list
 
 ## Tech update
 
 - Hide password in POSTGRES_CONNECTION_URL of lambda. --> Use Secret
 - Join payments and compensation api routes (and domain objects) into /payments/{id}/compensations
-- Put sources into src directory.
 
 # Common tasks
 
