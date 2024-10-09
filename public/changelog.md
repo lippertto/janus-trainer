@@ -1,9 +1,9 @@
 ##### Änderungen
 
-###### Nächstes
+###### 10. Oktober 2024
 
 Es werden nun Duplikate angezeigt. Ein Training wird als Duplikat betrachtet, wenn es zum selben Kurs gehört und am
-selben Tag stattfinde, wie ein anderes. Zum Beispiel, wenn jemand anderes auf den Kurs "Boxen Anfänger" am 10. Oktober
+selben Tag stattfindet, wie ein anderes. Zum Beispiel, wenn jemand anderes auf den Kurs "Boxen Anfänger" am 10. Oktober
 bucht.
 
 ###### 08. Oktober 2024
