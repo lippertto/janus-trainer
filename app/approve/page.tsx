@@ -16,6 +16,11 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import TrainerList from '@/app/approve/TrainerList';
 import { Typography } from '@mui/material';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
+import {
+  queryDuplicates,
+  queryTrainingsForApprovePage,
+} from '@/app/approve/queries';
+import { TrainingDuplicateDto } from '@/lib/dto';
 
 dayjs.extend(quarterOfYear);
 
@@ -69,6 +74,19 @@ function ApprovePageContents(
     }
     replace(`${pathname}?${params.toString()}`);
   }, [datePickerStart, datePickerEnd, selectedTrainerId]);
+
+  const getTrainings = () => {
+    return queryTrainingsForApprovePage(
+      session.accessToken,
+      props.startDate,
+      props.endDate,
+      props.trainerId ?? '',
+    ).data;
+  };
+
+  const getDuplicates = (trainingIds: number[]): TrainingDuplicateDto[] => {
+    return queryDuplicates(session.accessToken, trainingIds).data;
+  };
 
   return (
     <Grid container spacing={2}>
@@ -136,6 +154,8 @@ function ApprovePageContents(
               trainerId={selectedTrainerId}
               startDate={datePickerStart}
               endDate={datePickerEnd}
+              getTrainings={getTrainings}
+              getDuplicates={getDuplicates}
             />
           </Suspense>
         ) : (

@@ -1,7 +1,7 @@
 import React from 'react';
 
 import List from '@mui/material/List';
-import { HolidayDto, TrainingDto } from '@/lib/dto';
+import { HolidayDto, TrainingDto, TrainingDuplicateDto } from '@/lib/dto';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import {
@@ -40,16 +40,26 @@ function TrainingListElement(props: {
   training: TrainingDto;
   holidays: HolidayDto[];
   handleEdit: () => void;
+  duplicates: TrainingDuplicateDto[];
 }) {
   const { training } = props;
 
   const primary = `${dateToHumanReadable(training.date)} - ${training.course!.name}`;
   const secondary = secondaryString(training);
-  const warnings = warningsForDate(
+  const dateWarnings = warningsForDate(
     training.date,
     props.holidays,
     training.course!.weekdays,
   );
+  const duplicateWarnings = props.duplicates
+    .filter((d) => d.queriedId === training.id)
+    .map(
+      (dup) =>
+        `Duplikat: ${dup.duplicateTrainerName} für ${dup.duplicateCourseName}`,
+    );
+
+  const allWarnings = dateWarnings.concat(duplicateWarnings);
+
   const text = (
     <ListItemText
       primary={primary}
@@ -58,8 +68,8 @@ function TrainingListElement(props: {
           {secondary}
           {statusString(training)}
           {training.comment ? `"${training.comment}"` : null}
-          {warnings.length > 0 ? (
-            <div style={{ color: 'darkorange' }}> {warnings.join(', ')}</div>
+          {allWarnings.length > 0 ? (
+            <div style={{ color: 'darkorange' }}> {allWarnings.join(', ')}</div>
           ) : null}
         </>
       }
@@ -89,6 +99,7 @@ export function TrainingList(props: {
   trainings: TrainingDto[];
   holidays: HolidayDto[];
   handleEdit: (t: TrainingDto) => void;
+  duplicates: TrainingDuplicateDto[];
 }) {
   const { trainings } = props;
   return (
@@ -99,6 +110,7 @@ export function TrainingList(props: {
             key={t.id}
             training={t}
             holidays={props.holidays}
+            duplicates={props.duplicates}
             handleEdit={() => props.handleEdit(t)}
           />
         ))}

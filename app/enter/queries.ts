@@ -2,6 +2,7 @@ import dayjs from 'dayjs';
 import {
   QueryClient,
   useMutation,
+  useQuery,
   useSuspenseQuery,
 } from '@tanstack/react-query';
 import {
@@ -11,15 +12,21 @@ import {
   updateInApi,
 } from '@/lib/fetch';
 import {
+  CompensationClassDto,
   CourseDto,
   TrainingCreateRequest,
   TrainingDto,
+  TrainingDuplicateDto,
   TrainingUpdateRequest,
 } from '@/lib/dto';
-import { API_COURSES, API_TRAININGS } from '@/lib/routes';
+import {
+  API_COMPENSATION_CLASSES,
+  API_COURSES,
+  API_TRAININGS,
+  API_TRAININGS_DUPLICATES,
+} from '@/lib/routes';
 import {
   FIRST_DAY_OF_PREVIOUS_QUARTER,
-  FIRST_DAY_OF_THIS_QUARTER,
   isCurrentQuarter,
   isPreviousQuarter,
   LAST_DAY_OF_PREVIOUS_QUARTER,
@@ -87,7 +94,7 @@ function determineQueryKey(
   }
 }
 
-export function enterScreenTrainingQuery(
+export function trainingQueryForEnterScreen(
   accessToken: string,
   startDate: dayjs.Dayjs,
   endDate: dayjs.Dayjs,
@@ -205,5 +212,22 @@ export function customCostsQuery(accessToken: string) {
     queryFn: () =>
       fetchListFromApi<CourseDto>(`${API_COURSES}?custom=true`, accessToken!),
     staleTime: 10 * 60 * 1000,
+  });
+}
+
+export function duplicatesQueryForEnterScreen(
+  accessToken: string,
+  trainingIds: number[],
+) {
+  return useQuery({
+    queryKey: ['ENTER', trainingIds],
+    queryFn: () =>
+      fetchListFromApi<TrainingDuplicateDto>(
+        `${API_TRAININGS_DUPLICATES}?trainingIds=${trainingIds.join(',')}`,
+        accessToken,
+        'POST',
+      ),
+    enabled: trainingIds.length > 0,
+    initialData: [],
   });
 }

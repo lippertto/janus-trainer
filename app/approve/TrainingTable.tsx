@@ -24,7 +24,7 @@ import { JanusSession } from '@/lib/auth';
 
 import { showError } from '@/lib/notifications';
 import { Holiday, TrainingStatus } from '@prisma/client';
-import { TrainingDto } from '@/lib/dto';
+import { TrainingDto, TrainingDuplicateDto } from '@/lib/dto';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { patchInApi } from '@/lib/fetch';
 import { API_TRAININGS, API_TRAININGS_SUMMARIZE } from '@/lib/routes';
@@ -39,9 +39,10 @@ import { replaceElementWithId } from '@/lib/sort-and-filter';
 import { warningsForDate } from '@/lib/warnings-for-date';
 import { throttle } from 'throttle-debounce';
 import {
+  approveMutation,
   approveTrainingDeleteMutation,
   invalidateTrainingsForApprovePage,
-  trainingsQueryForApprovePage,
+  queryKeyForTrainings,
 } from '@/app/approve/queries';
 
 require('dayjs/locale/de');
@@ -49,9 +50,36 @@ dayjs.locale('de');
 
 function buildGridColumns(
   holidays: Holiday[],
+  duplicates: TrainingDuplicateDto[],
   handleApproveClick: { (id: GridRowId): () => void },
   handleRevokeClick: { (id: GridRowId): () => void },
 ): GridColDef[] {
+  const renderWarnings = ({ row }: { row: TrainingDto }) => {
+    const dateMessages = warningsForDate(
+      row.date,
+      holidays,
+      row.course!.weekdays,
+    );
+    const duplicateMessages = duplicates
+      .filter((dup) => dup.queriedId === row.id)
+      .map(
+        (dup) =>
+          `Duplikat: ${dup.duplicateTrainerName} für ${dup.duplicateCourseName}`,
+      );
+    const warnings = dateMessages.concat(duplicateMessages);
+    if (warnings.length !== 0) {
+      return (
+        <Tooltip title={warnings.join(', ')}>
+          <WarningAmberIcon
+            sx={{ color: 'orange' }}
+            style={{ verticalAlign: 'middle' }}
+          />
+        </Tooltip>
+      );
+    }
+    return null;
+  };
+
   return [
     {
       field: 'date',
@@ -65,24 +93,7 @@ function buildGridColumns(
     {
       field: 'warnings',
       headerName: '',
-      renderCell: ({ row }: { row: TrainingDto }) => {
-        const dateMessages = warningsForDate(
-          row.date,
-          holidays,
-          row.course!.weekdays,
-        );
-        if (dateMessages.length !== 0) {
-          return (
-            <Tooltip title={dateMessages.join(', ')}>
-              <WarningAmberIcon
-                sx={{ color: 'orange' }}
-                style={{ verticalAlign: 'middle' }}
-              />
-            </Tooltip>
-          );
-        }
-        return null;
-      },
+      renderCell: renderWarnings,
     },
     {
       field: 'userName',
@@ -188,39 +199,6 @@ function TrainingTableToolbar({ handleDelete }: TrainingTableToolbarProps) {
   );
 }
 
-function compareTrainings(a: TrainingDto, b: TrainingDto) {
-  if (a.date < b.date) return -1;
-  if (a.date > b.date) return 1;
-  if (a.id < b.id) return -1;
-  if (a.id > b.id) return 1;
-  return 0;
-}
-
-function approveMutation(
-  accessToken: string,
-  trainings: TrainingDto[],
-  setTrainings: (v: TrainingDto[]) => void,
-  refresh: () => void,
-) {
-  return useMutation({
-    mutationFn: (id: number) => {
-      return patchInApi<TrainingDto>(
-        API_TRAININGS,
-        id,
-        { status: 'APPROVED' },
-        accessToken,
-      );
-    },
-    onSuccess: (updated) => {
-      setTrainings(replaceElementWithId(trainings, updated));
-      refresh();
-    },
-    onError: (e) => {
-      showError(`Fehler bei der Freigabe des Trainings`, e.message);
-    },
-  });
-}
-
 function revokeMutation(
   session: JanusSession,
   setTrainings: (value: TrainingDto[]) => void,
@@ -253,6 +231,8 @@ type TrainingTableProps = {
   trainerId: string | null;
   startDate: dayjs.Dayjs;
   endDate: dayjs.Dayjs;
+  getTrainings: () => TrainingDto[];
+  getDuplicates: (trainingIds: number[]) => TrainingDuplicateDto[];
 };
 
 /**
@@ -262,11 +242,8 @@ type TrainingTableProps = {
  * Every change to the trainings will trigger a refresh of the data from the server.
  * The refresh function has been throttled to keep the load low.
  */
-export default function TrainingTable({
-  holidays,
-  session,
-  ...props
-}: TrainingTableProps) {
+export default function TrainingTable(props: TrainingTableProps) {
+  const { holidays, session } = { ...props };
   const queryClient = useQueryClient();
 
   const [rowSelectionModel, setRowSelectionModel] =
@@ -274,20 +251,8 @@ export default function TrainingTable({
   const [activeTraining, setActiveTraining] =
     React.useState<TrainingDto | null>(null);
 
-  const [trainings, setTrainings] = React.useState<TrainingDto[]>([]);
-
-  const { data: trainingData } = props.trainerId
-    ? trainingsQueryForApprovePage(
-        session.accessToken,
-        props.startDate,
-        props.endDate,
-        props.trainerId,
-      )
-    : { data: [] };
-
-  React.useEffect(() => {
-    setTrainings(trainingData.toSorted(compareTrainings));
-  }, [trainingData]);
+  const trainings = props.getTrainings();
+  const duplicates = props.getDuplicates(trainings.map((t) => t.id));
 
   const refresh = throttle(
     3000,
@@ -296,7 +261,7 @@ export default function TrainingTable({
         queryClient,
         props.startDate,
         props.endDate,
-        props.trainerId ?? undefined,
+        props.trainerId,
       );
       queryClient.invalidateQueries({
         queryKey: [API_TRAININGS_SUMMARIZE, props.startDate, props.endDate],
@@ -304,6 +269,12 @@ export default function TrainingTable({
     },
     { noLeading: true },
   );
+
+  const setTrainings = (v: TrainingDto[]) =>
+    queryClient.setQueryData(
+      queryKeyForTrainings(props.startDate, props.endDate, props.trainerId),
+      v,
+    );
 
   const approveTrainingMutation = approveMutation(
     session.accessToken,
@@ -345,10 +316,11 @@ export default function TrainingTable({
     () =>
       buildGridColumns(
         holidays,
+        duplicates,
         (id: GridRowId) => () => approveTrainingMutation.mutate(id as number),
         (id: GridRowId) => () => revokeTrainingMutation.mutate(id as number),
       ),
-    [holidays],
+    [holidays, duplicates],
   );
 
   return (
