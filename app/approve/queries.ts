@@ -80,7 +80,7 @@ export function invalidateTrainingsForApprovePage(
 
 export function queryDuplicates(accessToken: string, ids: number[]) {
   return useSuspenseQuery({
-    queryKey: ['COMPENSATE', 'find-duplicates'],
+    queryKey: ['COMPENSATE', 'find-duplicates', ...ids],
     queryFn: () =>
       fetchListFromApi<TrainingDuplicateDto>(
         `${API_TRAININGS_DUPLICATES}?trainingIds=${ids.join(',')}`,
