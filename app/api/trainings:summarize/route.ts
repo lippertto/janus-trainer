@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { ApiErrorBadRequest, handleTopLevelCatch } from '@/lib/helpers-for-api';
+import {
+  ApiErrorBadRequest,
+  badRequestResponse,
+  handleTopLevelCatch,
+} from '@/lib/helpers-for-api';
 import dayjs from 'dayjs';
 import { TrainingSummaryListDto } from '@/lib/dto';
 import prisma from '@/lib/prisma';
@@ -35,7 +39,7 @@ export async function POST(request: NextRequest) {
     const startDate = dayjs(startString);
     const endDate = dayjs(endString);
     if (!startDate.isValid() || !endDate.isValid()) {
-      throw new ApiErrorBadRequest('startDate and endDate must be valid dates');
+      return badRequestResponse('startDate and endDate must be valid dates');
     }
     return summarizeTrainings(startDate, endDate);
   } catch (e) {

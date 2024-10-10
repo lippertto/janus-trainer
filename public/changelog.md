@@ -1,6 +1,12 @@
 ##### Änderungen
 
-###### 02. Oktober 2024
+###### 10. Oktober 2024
+
+Es werden nun Duplikate angezeigt. Ein Training wird als Duplikat betrachtet, wenn es zum selben Kurs gehört und am
+selben Tag stattfindet, wie ein anderes. Zum Beispiel, wenn jemand anderes auf den Kurs "Boxen Anfänger" am 10. Oktober
+bucht.
+
+###### 08. Oktober 2024
 
 Es lassen sich nun auch Einmalzahlungen abrechnen.
 Aktuell ist das nur für Vergütungen, die dem Zweckbetrieb zugeordnet werden, möglich.

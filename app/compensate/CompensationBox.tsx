@@ -23,7 +23,7 @@ function handleSepaGeneration(compensations: CompensationDto[]) {
   link.click();
 }
 
-export default function CompensationCard(props: {
+export default function CompensationBox(props: {
   session: JanusSession;
   selectedPaymentId: number;
   trainer: UserDto | null;

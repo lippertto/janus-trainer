@@ -5,6 +5,9 @@ import { TrainingStatus } from '@prisma/client';
 export const USER_ID_ADMIN = '502c79bc-e051-70f5-048c-5619e49e2383';
 export const USER_ID_TRAINER = '80ac598c-e0b1-7040-5e0e-6fd257a53699';
 
+export const USER_NAME_ADMIN = 'Test-User Admin';
+export const USER_NAME_TRAINER = 'Test-User Trainer';
+
 export const COURSE_1_NAME = 'Test-Kurs 1';
 export const COURSE_2_NAME = 'Test-Kurs 2';
 
@@ -38,6 +41,10 @@ export class LocalApi {
       .post(`${this.baseUrl}/api/trainings`)
       .send(request);
     return result.body as TrainingDto;
+  }
+
+  async deleteTraining(id: number) {
+    await superagent.delete(`${this.baseUrl}/api/trainings/${id}`);
   }
 
   async transitionTraining(id: number, status: TrainingStatus) {

@@ -8,11 +8,12 @@ import 'core-js/modules/es.array.to-reversed';
 import { useSession } from 'next-auth/react';
 import type { JanusSession } from '@/lib/auth';
 import LoginRequired from '@/components/LoginRequired';
-import { TrainingDto } from '@/lib/dto';
+import { TrainingDto, TrainingDuplicateDto } from '@/lib/dto';
 import { useQueryClient } from '@tanstack/react-query';
 import {
   coursesForTrainerSuspenseQuery,
   holidaysSuspenseQuery,
+  resultHasData,
   userSuspenseQuery,
 } from '@/lib/shared-queries';
 import Typography from '@mui/material/Typography';
@@ -32,10 +33,11 @@ import {
 } from '@/lib/helpers-for-date';
 import {
   customCostsQuery,
-  enterScreenTrainingQuery,
+  trainingQueryForEnterScreen,
   trainingCreateQuery,
   trainingDeleteQuery,
   trainingUpdateQuery,
+  duplicatesQueryForEnterScreen,
 } from '@/app/enter/queries';
 
 function EnterPageContents(props: { session: JanusSession }) {
@@ -46,6 +48,10 @@ function EnterPageContents(props: { session: JanusSession }) {
     React.useState<TrainingDto | null>(null);
   const [showTrainingDialog, setShowTrainingDialog] =
     React.useState<boolean>(false);
+
+  const [duplicates, setDuplicates] = React.useState<TrainingDuplicateDto[]>(
+    [],
+  );
 
   const [showDateDialog, setShowDateDialog] = React.useState<boolean>(false);
   const [startDate, setStartDate] = React.useState<dayjs.Dayjs>(
@@ -71,13 +77,25 @@ function EnterPageContents(props: { session: JanusSession }) {
     new Date().getFullYear() - 1,
   ]);
 
-  const { data: trainings } = enterScreenTrainingQuery(
+  const { data: trainings } = trainingQueryForEnterScreen(
     props.session.accessToken,
     startDate,
     endDate,
     props.session.userId,
   );
   trainings.sort((a, b) => compareByField(b, a, 'date'));
+
+  const duplicateResult = duplicatesQueryForEnterScreen(
+    session.accessToken,
+    trainings.map((t) => t.id),
+  );
+
+  React.useEffect(() => {
+    if (resultHasData(duplicateResult)) {
+      console.log(duplicateResult.data);
+      setDuplicates(duplicateResult.data);
+    }
+  }, [duplicateResult]);
 
   const createTrainingMutation = trainingCreateQuery(
     session.accessToken,
@@ -108,6 +126,7 @@ function EnterPageContents(props: { session: JanusSession }) {
           <TrainingList
             trainings={trainings}
             holidays={holidays}
+            duplicates={duplicates}
             handleEdit={(v: TrainingDto) => {
               setTrainingToEdit(v);
               setShowTrainingDialog(true);

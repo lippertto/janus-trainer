@@ -7,7 +7,7 @@ import { JanusSession } from '@/lib/auth';
 import PaymentSelection, {
   CURRENT_PAYMENT_ID,
 } from '@/app/compensate/PaymentSelection';
-import CompensationCard from '@/app/compensate/CompensationCard';
+import CompensationBox from '@/app/compensate/CompensationBox';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { UserDto } from '@/lib/dto';
 import {
@@ -67,7 +67,7 @@ function CompensationPageContents(props: { session: JanusSession }) {
       </Grid>
       <Grid size={{ xs: 9 }}>
         <Suspense fallback={<LoadingSpinner />}>
-          <CompensationCard
+          <CompensationBox
             session={props.session}
             selectedPaymentId={selectedPaymentId}
             trainer={trainer}

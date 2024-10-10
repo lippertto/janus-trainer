@@ -23,7 +23,12 @@ test('new trainings can be clicked', async () => {
   ];
 
   render(
-    <TrainingList trainings={trainings} holidays={[]} handleEdit={edit} />,
+    <TrainingList
+      trainings={trainings}
+      holidays={[]}
+      handleEdit={edit}
+      duplicates={[]}
+    />,
   );
 
   const editButton = await screen.findByRole('button', {
@@ -46,7 +51,12 @@ test('non-new trainings cannot be clicked', async () => {
   ];
 
   render(
-    <TrainingList trainings={trainings} holidays={[]} handleEdit={edit} />,
+    <TrainingList
+      trainings={trainings}
+      holidays={[]}
+      handleEdit={edit}
+      duplicates={[]}
+    />,
   );
 
   const editButton = screen.queryByRole('button');
