@@ -3,13 +3,7 @@
  */
 
 import React from 'react';
-import {
-  act,
-  fireEvent,
-  render,
-  screen,
-  waitFor,
-} from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
 import DateDialog from './DateDialog';
@@ -185,6 +179,79 @@ describe('DateDialog', () => {
     expect(startDate.isSame(FIRST_DAY_OF_PREVIOUS_QUARTER, 'days'));
     const endDate = setEndDate.mock.calls[0][0] as dayjs.Dayjs;
     expect(endDate.isSame(LAST_DAY_OF_PREVIOUS_QUARTER, 'days'));
+
+    unmount();
+  });
+
+  test('Updates timestamps when last quarter is selected', async () => {
+    const { unmount } = render(
+      <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="de">
+        <DateDialog
+          open={true}
+          onClose={jest.fn()}
+          startDate={dayjs()}
+          endDate={dayjs()}
+          setStartDate={jest.fn()}
+          setEndDate={jest.fn()}
+        />
+      </LocalizationProvider>,
+    );
+
+    // WHEN
+    const previousQuarterRadio =
+      await screen.findByLabelText('Letztes Quartal');
+    await userEvent.click(previousQuarterRadio);
+
+    const startDatepickerTextBox = await screen.findByRole('textbox', {
+      name: 'Start',
+    });
+    expect(startDatepickerTextBox).toHaveValue(
+      FIRST_DAY_OF_PREVIOUS_QUARTER.format('DD.MM.YYYY'),
+    );
+    const endDatepickerTextBox = await screen.findByRole('textbox', {
+      name: 'Ende',
+    });
+    expect(endDatepickerTextBox).toHaveValue(
+      LAST_DAY_OF_PREVIOUS_QUARTER.format('DD.MM.YYYY'),
+    );
+
+    unmount();
+  });
+
+  test('Updates timestamps when current quarter is selected', async () => {
+    const { unmount } = render(
+      <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="de">
+        <DateDialog
+          open={true}
+          onClose={jest.fn()}
+          startDate={dayjs()}
+          endDate={dayjs()}
+          setStartDate={jest.fn()}
+          setEndDate={jest.fn()}
+        />
+      </LocalizationProvider>,
+    );
+
+    // WHEN
+    const previousQuarterRadio =
+      await screen.findByLabelText('Letztes Quartal');
+    await userEvent.click(previousQuarterRadio);
+    const currentQuarterRadio =
+      await screen.findByLabelText('Aktuelles Quartal');
+    await userEvent.click(currentQuarterRadio);
+
+    const startDatepickerTextBox = await screen.findByRole('textbox', {
+      name: 'Start',
+    });
+    expect(startDatepickerTextBox).toHaveValue(
+      FIRST_DAY_OF_THIS_QUARTER.format('DD.MM.YYYY'),
+    );
+    const endDatepickerTextBox = await screen.findByRole('textbox', {
+      name: 'Ende',
+    });
+    expect(endDatepickerTextBox).toHaveValue(
+      LAST_DAY_OF_THIS_QUARTER.format('DD.MM.YYYY'),
+    );
 
     unmount();
   });
