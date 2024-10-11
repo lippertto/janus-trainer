@@ -92,7 +92,6 @@ function EnterPageContents(props: { session: JanusSession }) {
 
   React.useEffect(() => {
     if (resultHasData(duplicateResult)) {
-      console.log(duplicateResult.data);
       setDuplicates(duplicateResult.data);
     }
   }, [duplicateResult]);

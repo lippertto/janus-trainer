@@ -42,6 +42,7 @@ export default function DateDialog(props: {
     control,
     handleSubmit,
     watch,
+    setValue,
     formState: { errors, isValid },
   } = useForm<FormData>({
     defaultValues: {
@@ -54,21 +55,8 @@ export default function DateDialog(props: {
   const onSubmit = (data: FormData) => {
     if (isValid) {
       props.onClose();
-      switch (data.timeframe) {
-        case CURRENT_QUARTER:
-          props.setStartDate(FIRST_DAY_OF_THIS_QUARTER);
-          props.setEndDate(LAST_DAY_OF_THIS_QUARTER);
-          break;
-        case PREVIOUS_QUARTER:
-          props.setStartDate(FIRST_DAY_OF_PREVIOUS_QUARTER);
-          props.setEndDate(LAST_DAY_OF_PREVIOUS_QUARTER);
-          break;
-        case CUSTOM_TIMEFRAME:
-        default:
-          props.setStartDate(data.startDate);
-          props.setEndDate(data.endDate);
-          break;
-      }
+      props.setStartDate(data.startDate);
+      props.setEndDate(data.endDate);
     }
   };
   const timeframe = watch('timeframe');
@@ -91,7 +79,19 @@ export default function DateDialog(props: {
                 control={control}
                 name="timeframe"
                 render={({ field }) => (
-                  <RadioGroup {...field}>
+                  <RadioGroup
+                    {...field}
+                    onChange={(event, timeframe) => {
+                      if (timeframe === CURRENT_QUARTER) {
+                        setValue('startDate', FIRST_DAY_OF_THIS_QUARTER);
+                        setValue('endDate', LAST_DAY_OF_THIS_QUARTER);
+                      } else if (timeframe === PREVIOUS_QUARTER) {
+                        setValue('startDate', FIRST_DAY_OF_PREVIOUS_QUARTER);
+                        setValue('endDate', LAST_DAY_OF_PREVIOUS_QUARTER);
+                      }
+                      field.onChange(event, timeframe);
+                    }}
+                  >
                     <FormControlLabel
                       value={PREVIOUS_QUARTER}
                       control={<Radio />}

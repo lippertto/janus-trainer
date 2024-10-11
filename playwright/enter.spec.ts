@@ -79,7 +79,7 @@ test.describe.serial('Enter page', () => {
     await expect(page.getByText('Vergütung beantragen')).toBeHidden();
 
     // Go to last quarter
-    await page.getByRole('button', { name: /.*Quartal.*/i }).click();
+    await page.getByTestId('timeframe-button').click();
     await page.getByLabel(/.*Letztes.*/).click();
     await page.getByRole('button', { name: /Bestätigen/i }).click();
 
