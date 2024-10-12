@@ -14,7 +14,6 @@ async function compensateTrainings(trainings: TrainingDto[]): Promise<void> {
   await api.createPayment({ trainingIds: trainings.map((t) => t.id) });
 }
 
-// FIXME - use new route (training-statistics)
 test('happy case: group by cost-center', async () => {
   await api.clearTrainings();
 

@@ -1,11 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import {
-  ApiErrorBadRequest,
-  badRequestResponse,
-  handleTopLevelCatch,
-} from '@/lib/helpers-for-api';
+import { badRequestResponse, handleTopLevelCatch } from '@/lib/helpers-for-api';
 import dayjs from 'dayjs';
-import { TrainingSummaryListDto } from '@/lib/dto';
+import { ErrorDto, TrainingSummaryListDto } from '@/lib/dto';
 import prisma from '@/lib/prisma';
 
 async function summarizeTrainings(
@@ -13,16 +9,17 @@ async function summarizeTrainings(
   endDate: dayjs.Dayjs,
 ): Promise<NextResponse<TrainingSummaryListDto>> {
   const sqlResult: any[] = await prisma.$queryRaw`
-SELECT CAST(u."id" AS TEXT) AS "trainerId",
-            u.name as "trainerName",
-            SUM(case when gt.status = 'NEW' then 1 else 0 end) as "newTrainingCount",
-            SUM(case when gt.status = 'APPROVED' then 1 else 0 end) as "approvedTrainingCount"
-    FROM "Training" AS gt INNER JOIN "User" AS u ON gt."userId" = u."id"
-    WHERE "u"."deletedAt" IS NULL
-    AND "gt"."date" >= ${startDate.format('YYYY-MM-DD')}
-    AND "gt"."date" <= ${endDate.format('YYYY-MM-DD')}
-    GROUP BY ("u"."id", "u"."name");
-`;
+      SELECT CAST(u."id" AS TEXT)                                    AS "trainerId",
+             u.name                                                  as "trainerName",
+             SUM(case when gt.status = 'NEW' then 1 else 0 end)      as "newTrainingCount",
+             SUM(case when gt.status = 'APPROVED' then 1 else 0 end) as "approvedTrainingCount"
+      FROM "Training" AS gt
+               INNER JOIN "User" AS u ON gt."userId" = u."id"
+      WHERE "u"."deletedAt" IS NULL
+        AND "gt"."date" >= ${startDate.format('YYYY-MM-DD')}
+        AND "gt"."date" <= ${endDate.format('YYYY-MM-DD')}
+      GROUP BY ("u"."id", "u"."name");
+  `;
   const value = sqlResult.map((r) => ({
     trainerId: r.trainerId,
     trainerName: r.trainerName,
@@ -32,7 +29,9 @@ SELECT CAST(u."id" AS TEXT) AS "trainerId",
   return NextResponse.json({ value });
 }
 
-export async function POST(request: NextRequest) {
+export async function POST(
+  request: NextRequest,
+): Promise<NextResponse<TrainingSummaryListDto | ErrorDto>> {
   try {
     const startString = request.nextUrl.searchParams.get('startDate');
     const endString = request.nextUrl.searchParams.get('endDate');
