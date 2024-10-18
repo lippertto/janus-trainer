@@ -12,6 +12,7 @@ import { TrainerReportCourseDto } from '@/lib/dto';
 import { showError } from '@/lib/notifications';
 import List from '@mui/material/List';
 import ListItemText from '@mui/material/ListItemText';
+import { CircularProgress } from '@mui/material';
 
 function ReportCourseList(props: { courses: TrainerReportCourseDto[] }) {
   return (
@@ -58,11 +59,12 @@ export function ReportPage(props: {
     .reduce((partial, value) => partial + value, 0);
   const value = currencyFormatter(totalCompensation / 100.0);
 
-  let maxValue = '';
-  if (
+  const isOneYear =
     startDate.isSame(endDate.startOf('year')) &&
-    endDate.isSame(startDate.endOf('year'))
-  ) {
+    endDate.isSame(startDate.endOf('year'));
+
+  let maxValue = '';
+  if (isOneYear) {
     maxValue = ' / ' + currencyFormatter(3000);
   }
 
@@ -72,7 +74,6 @@ export function ReportPage(props: {
     <Box padding={2}>
       <Stack spacing={2}>
         <Typography variant="h4">Statistiken</Typography>
-
         <Stack direction="row" justifyContent="space-between">
           <DateButton
             startDate={startDate}
@@ -92,30 +93,33 @@ export function ReportPage(props: {
               },
             ]}
           />
-          <Button
-            onClick={() => {
-              if (courses.length > 5) {
-                showError(
-                  'Export von mehr als 5 Kursen nicht möglich. Bitte Tobias kontaktieren.',
-                );
-                return;
-              }
-              setDownloading(true);
-              props
-                .handleDownloadClick()
-                .then(() => setDownloading(false))
-                .catch(() => {
-                  showError('Pdf Download fehlgeschlagen');
-                  setDownloading(false);
-                });
-            }}
-            endIcon={<PictureAsPdfIcon />}
-            disabled={downloading}
-          >
-            Export
-          </Button>
+          {downloading ? (
+            <CircularProgress />
+          ) : (
+            <Button
+              onClick={() => {
+                if (courses.length > 5) {
+                  showError(
+                    'Export von mehr als 5 Kursen nicht möglich. Bitte Tobias kontaktieren.',
+                  );
+                  return;
+                }
+                setDownloading(true);
+                props
+                  .handleDownloadClick()
+                  .then(() => setDownloading(false))
+                  .catch(() => {
+                    showError('Pdf Download fehlgeschlagen');
+                    setDownloading(false);
+                  });
+              }}
+              endIcon={<PictureAsPdfIcon />}
+              disabled={!isOneYear}
+            >
+              Export
+            </Button>
+          )}
         </Stack>
-
         <Paper>
           <Box padding={2}>
             <Typography variant="h6">Gesamt</Typography>
@@ -127,7 +131,6 @@ export function ReportPage(props: {
             </Typography>
           </Box>
         </Paper>
-
         <Paper>
           <Box padding={2}>
             <Typography variant="h6">Pro Kurs</Typography>
@@ -135,6 +138,7 @@ export function ReportPage(props: {
             <ReportCourseList courses={courses} />
           </Box>
         </Paper>
+        ;
       </Stack>
     </Box>
   );

@@ -124,6 +124,10 @@ function ReportHelpText() {
         erstellt. Der Export braucht einen kurzen Moment, um generiert zu
         werden. Bitte geduldige dich etwas, nachdem du darauf geklickt hast
       </DialogContentText>
+      <DialogContentText>
+        Achtung: Der Export ist nur aktiv, wenn ein komplettes Jahr ausgewählt
+        ist.
+      </DialogContentText>
     </>
   );
 }
