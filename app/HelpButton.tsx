@@ -108,6 +108,30 @@ function ApprovalHelpText() {
   );
 }
 
+function ReportHelpText() {
+  return (
+    <>
+      <DialogContentText>
+        Auf dieser Seite siehst du eine Übersicht der Trainings, die du gegeben
+        hast, und die vom Janus entschädigt worden sind.
+      </DialogContentText>
+      <DialogContentText>
+        Wenn du auf die blaue Datumsangabe klickst, kannst du den Zeitraum
+        einschränken für den Daten angezeigt werden.
+      </DialogContentText>
+      <DialogContentText>
+        Wenn du auf den Export-Knopf klickst, wird dir ein Pdf-Export der Daten
+        erstellt. Der Export braucht einen kurzen Moment, um generiert zu
+        werden. Bitte geduldige dich etwas, nachdem du darauf geklickt hast
+      </DialogContentText>
+      <DialogContentText>
+        Achtung: Der Export ist nur aktiv, wenn ein komplettes Jahr ausgewählt
+        ist.
+      </DialogContentText>
+    </>
+  );
+}
+
 function dialogContents(pathname: string) {
   const pathnameWithoutQuery = pathname.split('?').pop();
   switch (pathnameWithoutQuery) {
@@ -124,6 +148,8 @@ function dialogContents(pathname: string) {
       return <ProfileHelpText />;
     case '/approve':
       return <ApprovalHelpText />;
+    case '/report':
+      return <ReportHelpText />;
     default:
       return (
         <DialogContentText>Leider keine Hilfe verfügbar</DialogContentText>
