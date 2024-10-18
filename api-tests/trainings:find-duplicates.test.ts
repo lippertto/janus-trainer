@@ -13,6 +13,8 @@ const api = new LocalApi(SERVER);
 
 describe('/trainings:find-duplicates', () => {
   test('happy case', async () => {
+    await api.clearTrainings();
+
     let t1, t2, t3, t4, t5;
     try {
       // GIVEN trainings are created with the same course and day

@@ -50,9 +50,10 @@ export class LocalApi {
   }
 
   async transitionTraining(id: number, status: TrainingStatus) {
-    await superagent
+    const response = await superagent
       .patch(`${this.baseUrl}/api/trainings/${id}`)
       .send({ status });
+    return response.body as TrainingDto;
   }
 
   async clearTrainings() {

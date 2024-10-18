@@ -5,6 +5,7 @@ import {
   USER_ID_TRAINER,
 } from '@/api-tests/apiTestUtils';
 import superagent from 'superagent';
+import { TrainingStatus } from '@prisma/client';
 
 const SERVER = 'http://localhost:3000';
 const api = new LocalApi(SERVER);
@@ -13,24 +14,35 @@ describe('/trainer-reports:generate-pdf', () => {
   test('happy case', async () => {
     await api.clearTrainings();
 
-    await api.createTraining({
-      date: '2024-03-04',
-      userId: USER_ID_TRAINER,
-      compensationCents: 9000,
-      courseId: COURSE_1_ID,
-    });
-    await api.createTraining({
-      date: '2024-04-05',
-      userId: USER_ID_TRAINER,
-      compensationCents: 7000,
-      courseId: COURSE_1_ID,
-    });
-    await api.createTraining({
-      date: '2024-05-06',
-      userId: USER_ID_TRAINER,
-      compensationCents: 8000,
-      courseId: COURSE_2_ID,
-    });
+    await api
+      .createTraining({
+        date: '2024-03-04',
+        userId: USER_ID_TRAINER,
+        compensationCents: 9000,
+        courseId: COURSE_1_ID,
+      })
+      .then((c) => api.transitionTraining(c.id, TrainingStatus.APPROVED))
+      .then((c) => api.transitionTraining(c.id, TrainingStatus.COMPENSATED));
+
+    await api
+      .createTraining({
+        date: '2024-04-05',
+        userId: USER_ID_TRAINER,
+        compensationCents: 7000,
+        courseId: COURSE_1_ID,
+      })
+      .then((c) => api.transitionTraining(c.id, TrainingStatus.APPROVED))
+      .then((c) => api.transitionTraining(c.id, TrainingStatus.COMPENSATED));
+
+    await api
+      .createTraining({
+        date: '2024-05-06',
+        userId: USER_ID_TRAINER,
+        compensationCents: 8000,
+        courseId: COURSE_2_ID,
+      })
+      .then((c) => api.transitionTraining(c.id, TrainingStatus.APPROVED))
+      .then((c) => api.transitionTraining(c.id, TrainingStatus.COMPENSATED));
 
     const response = await superagent
       .post(
