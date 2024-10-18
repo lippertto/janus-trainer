@@ -8,7 +8,7 @@ import DateButton from '@/components/DateButton';
 import Button from '@mui/material/Button';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import Paper from '@mui/material/Paper';
-import { TrainerReportCourseDto, TrainerReportDto } from '@/lib/dto';
+import { TrainerReportCourseDto } from '@/lib/dto';
 import { showError } from '@/lib/notifications';
 import List from '@mui/material/List';
 import ListItemText from '@mui/material/ListItemText';
@@ -41,9 +41,11 @@ export function ReportPage(props: {
   endDate: dayjs.Dayjs;
   setEndDate: (v: dayjs.Dayjs) => void;
   getReportCourses: () => TrainerReportCourseDto[];
-  handleDownloadClick: () => void;
+  handleDownloadClick: () => Promise<void>;
 }) {
   const { startDate, endDate } = { ...props };
+
+  const [downloading, setDownloading] = React.useState<boolean>(false);
 
   const courses = props.getReportCourses();
 
@@ -98,9 +100,17 @@ export function ReportPage(props: {
                 );
                 return;
               }
-              props.handleDownloadClick();
+              setDownloading(true);
+              props
+                .handleDownloadClick()
+                .then(() => setDownloading(false))
+                .catch(() => {
+                  showError('Pdf Download fehlgeschlagen');
+                  setDownloading(false);
+                });
             }}
             endIcon={<PictureAsPdfIcon />}
+            disabled={downloading}
           >
             Export
           </Button>

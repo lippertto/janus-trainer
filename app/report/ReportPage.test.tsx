@@ -53,7 +53,7 @@ describe('ReportPage', () => {
       trainings: [],
     }));
 
-    const handleDownloadClick = jest.fn();
+    const handleDownloadClick = jest.fn(() => Promise.resolve());
     render(
       <SnackbarProvider>
         <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="de">
