@@ -22,6 +22,26 @@ type FormData = {
 
 const CUSTOM_TIMEFRAME = '-1';
 
+function findTimeframe(
+  options: DateDialogOptions[],
+  startDate: dayjs.Dayjs,
+  endDate: dayjs.Dayjs,
+): string {
+  for (let i = 0; i < options.length; i++) {
+    const oneOption = options[i];
+    if (oneOption.start.isSame(startDate) && oneOption.end.isSame(endDate)) {
+      return i.toString();
+    }
+  }
+  return CUSTOM_TIMEFRAME;
+}
+
+type DateDialogOptions = {
+  label: string;
+  start: dayjs.Dayjs;
+  end: dayjs.Dayjs;
+};
+
 export default function DateDialog(props: {
   open: boolean;
   onClose: () => void;
@@ -29,8 +49,13 @@ export default function DateDialog(props: {
   setStartDate: (v: dayjs.Dayjs) => void;
   endDate: dayjs.Dayjs;
   setEndDate: (v: dayjs.Dayjs) => void;
-  options: { label: string; start: dayjs.Dayjs; end: dayjs.Dayjs }[];
+  options: DateDialogOptions[];
 }) {
+  const defaultTimeframe = findTimeframe(
+    props.options,
+    props.startDate,
+    props.endDate,
+  );
   const {
     control,
     handleSubmit,
@@ -39,7 +64,7 @@ export default function DateDialog(props: {
     formState: { errors, isValid },
   } = useForm<FormData>({
     defaultValues: {
-      timeframe: props.options.length > 0 ? '0' : CUSTOM_TIMEFRAME,
+      timeframe: defaultTimeframe,
       startDate: props.startDate,
       endDate: props.endDate,
     },

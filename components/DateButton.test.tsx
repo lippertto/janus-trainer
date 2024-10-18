@@ -18,6 +18,7 @@ describe('Date Button', () => {
         setStartDate={jest.fn()}
         endDate={lastDayOfQuarter}
         setEndDate={jest.fn()}
+        options={[]}
       />,
     );
 
