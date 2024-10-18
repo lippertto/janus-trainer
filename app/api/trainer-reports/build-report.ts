@@ -20,6 +20,7 @@ export async function buildTrainerReport(
         gte: startDate.format('YYYY-MM-DD'),
         lte: endDate.format('YYYY-MM-DD'),
       },
+      status: 'COMPENSATED',
     },
     include: { course: true },
   });
