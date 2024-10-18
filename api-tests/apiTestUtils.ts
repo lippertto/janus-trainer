@@ -8,6 +8,8 @@ export const USER_ID_TRAINER = '80ac598c-e0b1-7040-5e0e-6fd257a53699';
 export const USER_NAME_ADMIN = 'Test-User Admin';
 export const USER_NAME_TRAINER = 'Test-User Trainer';
 
+export const COURSE_1_ID = 1;
+export const COURSE_2_ID = 2;
 export const COURSE_1_NAME = 'Test-Kurs 1';
 export const COURSE_2_NAME = 'Test-Kurs 2';
 

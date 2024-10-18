@@ -22,6 +22,7 @@ import {
   Matches,
   ValidateNested,
 } from 'class-validator';
+import dayjs from 'dayjs';
 
 export enum Group {
   ADMINS = 'admins',
@@ -381,4 +382,17 @@ export type TrainingDuplicateDto = {
 
 export type TrainingDuplicatResponse = {
   value: TrainingDuplicateDto[];
+};
+
+export type TrainerReportCourseDto = {
+  courseName: string;
+  courseId: number;
+  trainings: { date: string; compensationCents: number }[];
+};
+
+export type TrainerReportDto = {
+  trainerName: string;
+  courses: TrainerReportCourseDto[];
+  periodStart: string;
+  periodEnd: string;
 };

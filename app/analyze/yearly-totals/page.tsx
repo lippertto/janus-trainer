@@ -17,7 +17,6 @@ function AnalyzePageContents(props: { accessToken: string }) {
   const { data: yearlySummaries } = trainingStatisticsSuspenseQuery(
     props.accessToken,
     year,
-    null,
     'trainer',
   );
 

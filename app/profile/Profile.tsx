@@ -5,112 +5,16 @@ import { CircularProgress, Typography } from '@mui/material';
 import IconButton from '@mui/material/IconButton';
 import TextField from '@mui/material/TextField';
 import EditIcon from '@mui/icons-material/Edit';
-import {
-  centsToHumanReadable,
-  groupToHumanReadable,
-  ibanToHumanReadable,
-} from '@/lib/formatters';
+import { groupToHumanReadable, ibanToHumanReadable } from '@/lib/formatters';
 import { CourseCard } from '@/components/CourseCard';
 import Button from '@mui/material/Button';
 import { signOut } from 'next-auth/react';
 import { CourseDto, UserDto } from '@/lib/dto';
 
 import 'core-js/modules/es.array.to-sorted';
-import {
-  termsOfServiceSuspenseQuery,
-  trainingStatisticsSuspenseQuery,
-} from '@/lib/shared-queries';
+import { termsOfServiceSuspenseQuery } from '@/lib/shared-queries';
 import { TosDialog } from '@/components/TosDialog';
 import Stack from '@mui/material/Stack';
-
-function statisticsString(cents: number, trainingCoung: number) {
-  return `Trainings: ${trainingCoung} / ${centsToHumanReadable(cents)}`;
-}
-
-function StatisticsData(props: {
-  accessToken: string;
-  year: number;
-  trainerId: string;
-}) {
-  const { year } = { ...props };
-  const { data: totals } = trainingStatisticsSuspenseQuery(
-    props.accessToken,
-    year,
-    props.trainerId,
-    'trainer',
-  );
-  return (
-    <React.Fragment>
-      <Grid size={{ xs: 12, sm: 3 }}>
-        <TextField
-          fullWidth
-          label={`${year}/Q1`}
-          value={statisticsString(
-            totals[0].compensationCentsQ1,
-            totals[0].trainingCountQ1,
-          )}
-        />
-      </Grid>
-      <Grid size={{ xs: 12, sm: 3 }}>
-        <TextField
-          fullWidth
-          label={`${year}/Q2`}
-          value={statisticsString(
-            totals[0].compensationCentsQ2,
-            totals[0].trainingCountQ2,
-          )}
-        />
-      </Grid>
-      <Grid size={{ xs: 12, sm: 3 }}>
-        <TextField
-          fullWidth
-          label={`${year}/Q3`}
-          value={statisticsString(
-            totals[0].compensationCentsQ3,
-            totals[0].trainingCountQ3,
-          )}
-        />
-      </Grid>
-      <Grid size={{ xs: 12, sm: 3 }}>
-        <TextField
-          fullWidth
-          label={`${year}/Q4`}
-          value={statisticsString(
-            totals[0].compensationCentsQ4,
-            totals[0].trainingCountQ4,
-          )}
-        />
-      </Grid>
-    </React.Fragment>
-  );
-}
-
-function ProfileStatistics(props: {
-  accessToken: string;
-  year: number;
-  trainerId: string;
-}) {
-  return (
-    <React.Fragment>
-      <Grid size={{ xs: 12 }}>
-        <Typography variant="h5">Statistik</Typography>
-      </Grid>
-      <Suspense
-        fallback={
-          <Grid size={{ xs: 12 }}>
-            <CircularProgress />
-          </Grid>
-        }
-      >
-        <StatisticsData
-          accessToken={props.accessToken}
-          year={props.year}
-          trainerId={props.trainerId}
-        />
-      </Suspense>
-    </React.Fragment>
-  );
-}
 
 export default function Profile(props: {
   accessToken: string;
@@ -193,12 +97,6 @@ export default function Profile(props: {
             }
           />
         </Grid>
-
-        <ProfileStatistics
-          accessToken={props.accessToken}
-          year={new Date().getFullYear()}
-          trainerId={user.id}
-        />
 
         <Grid size={{ xs: 12 }}>
           <Typography variant={'h5'}>Kurse</Typography>

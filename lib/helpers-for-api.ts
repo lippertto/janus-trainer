@@ -92,6 +92,10 @@ export function forbiddenResponse(message: string): NextResponse<ErrorDto> {
   return errorResponse(message, 403);
 }
 
+export function notAcceptableResponse(message: string): NextResponse<ErrorDto> {
+  return errorResponse(message, 406);
+}
+
 /** A response for DELETE functions. */
 export function emptyResponse(): Response {
   return new Response(null, { status: 204 });

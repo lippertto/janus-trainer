@@ -8,12 +8,6 @@ import Stack from '@mui/system/Stack';
 import { Controller, useForm } from 'react-hook-form';
 import { DatePicker } from '@mui/x-date-pickers';
 import Button from '@mui/material/Button';
-import {
-  FIRST_DAY_OF_PREVIOUS_QUARTER,
-  FIRST_DAY_OF_THIS_QUARTER,
-  LAST_DAY_OF_PREVIOUS_QUARTER,
-  LAST_DAY_OF_THIS_QUARTER,
-} from '@/lib/helpers-for-date';
 import FormControl from '@mui/material/FormControl';
 import FormLabel from '@mui/material/FormLabel';
 import RadioGroup from '@mui/material/RadioGroup';
@@ -26,9 +20,27 @@ type FormData = {
   endDate: dayjs.Dayjs;
 };
 
-const CUSTOM_TIMEFRAME = 'customTimeframe';
-const CURRENT_QUARTER = 'currentQuarter';
-const PREVIOUS_QUARTER = 'previousQuarter';
+const CUSTOM_TIMEFRAME = '-1';
+
+function findTimeframe(
+  options: DateDialogOptions[],
+  startDate: dayjs.Dayjs,
+  endDate: dayjs.Dayjs,
+): string {
+  for (let i = 0; i < options.length; i++) {
+    const oneOption = options[i];
+    if (oneOption.start.isSame(startDate) && oneOption.end.isSame(endDate)) {
+      return i.toString();
+    }
+  }
+  return CUSTOM_TIMEFRAME;
+}
+
+type DateDialogOptions = {
+  label: string;
+  start: dayjs.Dayjs;
+  end: dayjs.Dayjs;
+};
 
 export default function DateDialog(props: {
   open: boolean;
@@ -37,7 +49,13 @@ export default function DateDialog(props: {
   setStartDate: (v: dayjs.Dayjs) => void;
   endDate: dayjs.Dayjs;
   setEndDate: (v: dayjs.Dayjs) => void;
+  options: DateDialogOptions[];
 }) {
+  const defaultTimeframe = findTimeframe(
+    props.options,
+    props.startDate,
+    props.endDate,
+  );
   const {
     control,
     handleSubmit,
@@ -46,7 +64,7 @@ export default function DateDialog(props: {
     formState: { errors, isValid },
   } = useForm<FormData>({
     defaultValues: {
-      timeframe: CURRENT_QUARTER,
+      timeframe: defaultTimeframe,
       startDate: props.startDate,
       endDate: props.endDate,
     },
@@ -81,31 +99,33 @@ export default function DateDialog(props: {
                 render={({ field }) => (
                   <RadioGroup
                     {...field}
-                    onChange={(event, timeframe) => {
-                      if (timeframe === CURRENT_QUARTER) {
-                        setValue('startDate', FIRST_DAY_OF_THIS_QUARTER);
-                        setValue('endDate', LAST_DAY_OF_THIS_QUARTER);
-                      } else if (timeframe === PREVIOUS_QUARTER) {
-                        setValue('startDate', FIRST_DAY_OF_PREVIOUS_QUARTER);
-                        setValue('endDate', LAST_DAY_OF_PREVIOUS_QUARTER);
+                    onChange={(event, timeframeString) => {
+                      if (timeframeString !== CUSTOM_TIMEFRAME) {
+                        const timeframeIdx = parseInt(timeframeString);
+                        if (timeframeIdx >= 0) {
+                          setValue(
+                            'startDate',
+                            props.options[timeframeIdx].start,
+                          );
+                          setValue('endDate', props.options[timeframeIdx].end);
+                        }
                       }
-                      field.onChange(event, timeframe);
+                      field.onChange(event, timeframeString);
                     }}
                   >
-                    <FormControlLabel
-                      value={PREVIOUS_QUARTER}
-                      control={<Radio />}
-                      label="Letztes Quartal"
-                    />
-                    <FormControlLabel
-                      value={CURRENT_QUARTER}
-                      control={<Radio />}
-                      label="Aktuelles Quartal"
-                    />
+                    {props.options.map((o, index) => (
+                      <FormControlLabel
+                        value={index.toString()}
+                        control={<Radio />}
+                        label={o.label}
+                        key={index.toString()}
+                      />
+                    ))}
                     <FormControlLabel
                       value={CUSTOM_TIMEFRAME}
                       control={<Radio />}
                       label="Start / Ende"
+                      key={CUSTOM_TIMEFRAME}
                     />
                   </RadioGroup>
                 )}

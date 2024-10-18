@@ -69,7 +69,8 @@ model UserInDb {
   termsAcceptedAt      DateTime? @db.Timestamptz()
   termsAcceptedVersion String?
 
-  payments Payment[]
+  payments          Payment[]
+  trainerReportData TrainerReportData[]
 
   // We want the table to be called User
   @@map("User")
@@ -134,4 +135,15 @@ model Payment {
   createdById String
 
   trainings Training[]
+}
+
+model TrainerReportData {
+  id Int @id @default(autoincrement())
+
+  createdAt DateTime @default(now())
+
+  createdBy   UserInDb @relation(fields: [createdById], references: [id])
+  createdById String
+
+  data String
 }
