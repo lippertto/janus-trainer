@@ -25,19 +25,20 @@ import TrainingDialog from '@/app/enter/TrainingDialog';
 import { intToDayOfWeek } from '@/lib/warnings-for-date';
 import dayjs from 'dayjs';
 import Stack from '@mui/system/Stack';
-import DateButton from '@/app/enter/DateButton';
-import DateDialog from '@/app/enter/DateDialog';
+import DateButton from '@/components/DateButton';
 import {
+  FIRST_DAY_OF_PREVIOUS_QUARTER,
   FIRST_DAY_OF_THIS_QUARTER,
+  LAST_DAY_OF_PREVIOUS_QUARTER,
   LAST_DAY_OF_THIS_QUARTER,
 } from '@/lib/helpers-for-date';
 import {
   customCostsQuery,
-  trainingQueryForEnterScreen,
+  duplicatesQueryForEnterScreen,
   trainingCreateQuery,
   trainingDeleteQuery,
+  trainingQueryForEnterScreen,
   trainingUpdateQuery,
-  duplicatesQueryForEnterScreen,
 } from '@/app/enter/queries';
 
 function EnterPageContents(props: { session: JanusSession }) {
@@ -53,7 +54,6 @@ function EnterPageContents(props: { session: JanusSession }) {
     [],
   );
 
-  const [showDateDialog, setShowDateDialog] = React.useState<boolean>(false);
   const [startDate, setStartDate] = React.useState<dayjs.Dayjs>(
     FIRST_DAY_OF_THIS_QUARTER,
   );
@@ -117,8 +117,21 @@ function EnterPageContents(props: { session: JanusSession }) {
       <Stack>
         <DateButton
           startDate={startDate}
+          setStartDate={setStartDate}
           endDate={endDate}
-          onClick={() => setShowDateDialog(true)}
+          setEndDate={setEndDate}
+          options={[
+            {
+              label: 'Letztes Quartal',
+              start: FIRST_DAY_OF_PREVIOUS_QUARTER,
+              end: LAST_DAY_OF_PREVIOUS_QUARTER,
+            },
+            {
+              label: 'Aktuelles Quartal',
+              start: FIRST_DAY_OF_THIS_QUARTER,
+              end: LAST_DAY_OF_THIS_QUARTER,
+            },
+          ]}
         />
 
         {trainings.length > 0 ? (
@@ -153,15 +166,6 @@ function EnterPageContents(props: { session: JanusSession }) {
       >
         <AddIcon />
       </Fab>
-
-      <DateDialog
-        open={showDateDialog}
-        onClose={() => setShowDateDialog(false)}
-        startDate={startDate}
-        setStartDate={setStartDate}
-        endDate={endDate}
-        setEndDate={setEndDate}
-      />
 
       <TrainingDialog
         open={showTrainingDialog}

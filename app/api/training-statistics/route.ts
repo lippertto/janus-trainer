@@ -18,13 +18,8 @@ import {
 
 async function calculateYearlyTotals(
   year: number,
-  trainerId: string | null,
   groupBy: 'trainer' | 'cost-center',
 ): Promise<TrainingStatisticDto[]> {
-  let trainerWhere = '';
-  if (trainerId) {
-    trainerWhere = `AND "userId" = '${trainerId}'`;
-  }
   const startDate = `'${year}-01-01'`;
   const endDate = `'${year}-12-31'`;
 
@@ -81,31 +76,10 @@ async function calculateYearlyTotals(
       WHERE "date" >= ${startDate}
         AND "date" <= ${endDate}
         AND "status" = 'COMPENSATED'
-          ${trainerWhere}
       ${groupBySql}
   `;
 
   const sqlResult: any[] = await prisma.$queryRawUnsafe(query);
-
-  if (trainerId && sqlResult.length == 0) {
-    console.log(sqlResult.length === 0);
-    return [
-      {
-        trainerId: trainerId,
-        trainerName: trainerId, // we use the id but we don't care
-        trainingCountQ1: 0,
-        trainingCountQ2: 0,
-        trainingCountQ3: 0,
-        trainingCountQ4: 0,
-        trainingCountTotal: 0,
-        compensationCentsQ1: 0,
-        compensationCentsQ2: 0,
-        compensationCentsQ3: 0,
-        compensationCentsQ4: 0,
-        compensationCentsTotal: 0,
-      },
-    ];
-  }
 
   return sqlResult.map((r) => ({
     trainerId: r.trainerName,
@@ -150,12 +124,7 @@ export async function POST(
       return badRequestResponse('Unknown groupBy parameter');
     }
 
-    const trainerId = request.nextUrl.searchParams.get('trainerId');
-    if (trainerId) {
-      await allowAdminOrSelf(request, trainerId);
-    } else {
-      await allowOnlyAdmins(request);
-    }
+    await allowOnlyAdmins(request);
 
     const yearAsString = request.nextUrl.searchParams.get('year');
     if (!yearAsString) {
@@ -166,7 +135,7 @@ export async function POST(
       throw new ApiErrorBadRequest('year is not a number');
     }
 
-    const result = await calculateYearlyTotals(year, trainerId, groupBy);
+    const result = await calculateYearlyTotals(year, groupBy);
     return NextResponse.json({ value: result });
   } catch (e) {
     return handleTopLevelCatch(e);

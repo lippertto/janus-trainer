@@ -12,7 +12,6 @@ import {
   updateInApi,
 } from '@/lib/fetch';
 import {
-  CompensationClassDto,
   CourseDto,
   TrainingCreateRequest,
   TrainingDto,
@@ -20,7 +19,6 @@ import {
   TrainingUpdateRequest,
 } from '@/lib/dto';
 import {
-  API_COMPENSATION_CLASSES,
   API_COURSES,
   API_TRAININGS,
   API_TRAININGS_DUPLICATES,

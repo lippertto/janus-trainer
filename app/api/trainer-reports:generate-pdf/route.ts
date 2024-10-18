@@ -24,13 +24,15 @@ export async function POST(nextRequest: NextRequest) {
         courseName: c.courseName,
         trainings: c.trainings,
       })),
-      docId: 1,
     };
 
     const data = await generatePdf(dayjs(), reportInput);
 
     return new Response(data, {
-      headers: { 'Content-Type': 'application/pdf' },
+      headers: {
+        'Content-Type': 'application/pdf',
+        'Content-Disposition': `attachment, filename="Janus-Trainings-${dayjs().format('YYYY-MM-DD')}.xlsx"`,
+      },
     });
   } catch (e) {
     return handleTopLevelCatch(e);

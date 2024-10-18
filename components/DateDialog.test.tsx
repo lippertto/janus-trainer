@@ -20,6 +20,19 @@ import {
   LAST_DAY_OF_THIS_QUARTER,
 } from '@/lib/helpers-for-date';
 
+const options = [
+  {
+    label: 'Letztes Quartal',
+    start: FIRST_DAY_OF_PREVIOUS_QUARTER,
+    end: LAST_DAY_OF_PREVIOUS_QUARTER,
+  },
+  {
+    label: 'Aktuelles Quartal',
+    start: FIRST_DAY_OF_THIS_QUARTER,
+    end: LAST_DAY_OF_THIS_QUARTER,
+  },
+];
+
 describe('DateDialog', () => {
   test('Shows header', async () => {
     render(
@@ -31,6 +44,7 @@ describe('DateDialog', () => {
           endDate={dayjs()}
           setStartDate={jest.fn()}
           setEndDate={jest.fn()}
+          options={options}
         />
       </LocalizationProvider>,
     );
@@ -50,6 +64,7 @@ describe('DateDialog', () => {
           endDate={dayjs()}
           setStartDate={setStartDate}
           setEndDate={setEndDate}
+          options={options}
         />
       </LocalizationProvider>,
     );
@@ -75,6 +90,7 @@ describe('DateDialog', () => {
           endDate={dayjs()}
           setStartDate={setStartDate}
           setEndDate={setEndDate}
+          options={options}
         />
       </LocalizationProvider>,
     );
@@ -124,6 +140,7 @@ describe('DateDialog', () => {
           endDate={dayjs()}
           setStartDate={setStartDate}
           setEndDate={setEndDate}
+          options={options}
         />
       </LocalizationProvider>,
     );
@@ -160,6 +177,7 @@ describe('DateDialog', () => {
           endDate={dayjs()}
           setStartDate={setStartDate}
           setEndDate={setEndDate}
+          options={options}
         />
       </LocalizationProvider>,
     );
@@ -193,6 +211,7 @@ describe('DateDialog', () => {
           endDate={dayjs()}
           setStartDate={jest.fn()}
           setEndDate={jest.fn()}
+          options={options}
         />
       </LocalizationProvider>,
     );
@@ -228,6 +247,7 @@ describe('DateDialog', () => {
           endDate={dayjs()}
           setStartDate={jest.fn()}
           setEndDate={jest.fn()}
+          options={options}
         />
       </LocalizationProvider>,
     );

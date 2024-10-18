@@ -7,28 +7,10 @@ import { render, screen } from '@testing-library/react';
 import Profile from '@/app/profile/Profile';
 import { Group, UserDto } from '@/lib/dto';
 import '@testing-library/jest-dom';
-import { trainingStatisticsSuspenseQuery } from '@/lib/shared-queries';
 
 jest.mock('@/lib/shared-queries', () => {
   return {
     __esModule: true,
-    trainingStatisticsSuspenseQuery: jest.fn(() => ({
-      data: [
-        {
-          trainerId: 'miau',
-          trainingCountQ1: 0,
-          trainingCountQ2: 0,
-          trainingCountQ3: 0,
-          trainingCountQ4: 0,
-          trainingCountTotal: 0,
-          compensationCentsQ1: 0,
-          compensationCentsQ2: 0,
-          compensationCentsQ3: 0,
-          compensationCentsQ4: 0,
-          compensationCentsTotal: 0,
-        },
-      ],
-    })),
     termsOfServiceSuspenseQuery: jest.fn(() => ''),
     default: jest.fn(() => 'mocked baz'),
   };

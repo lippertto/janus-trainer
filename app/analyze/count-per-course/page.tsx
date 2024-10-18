@@ -117,7 +117,6 @@ function Contents(props: { accessToken: string }) {
   const { data: yearlySummaries } = trainingStatisticsSuspenseQuery(
     props.accessToken,
     year,
-    null,
     'cost-center',
   );
 

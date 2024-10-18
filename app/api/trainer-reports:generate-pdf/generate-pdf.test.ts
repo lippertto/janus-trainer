@@ -8,7 +8,6 @@ describe('pdf generation', () => {
       trainerName: 'Dr. Tobias Lippert',
       periodStart: dayjs('2024-01-01'),
       periodEnd: dayjs('2024-12-31'),
-      docId: 1000,
       courses: [
         {
           courseName: 'Boxen | Sissis Boxers (Fortgeschrittene)',
@@ -26,9 +25,49 @@ describe('pdf generation', () => {
             { date: '2024-03-07', compensationCents: 666 },
             { date: '2024-03-06', compensationCents: 777 },
             { date: '2024-03-05', compensationCents: 888 },
+            { date: '2024-12-05', compensationCents: 1000 },
+            { date: '2024-12-05', compensationCents: 10000 },
+            { date: '2024-12-05', compensationCents: 1000 },
+          ],
+        },
+        {
+          courseName: 'Boxen | Sissis Boxers (Anfänger)',
+          trainings: [
+            { date: '2024-03-08', compensationCents: 555 },
+            { date: '2024-03-07', compensationCents: 666 },
+            { date: '2024-03-06', compensationCents: 777 },
+            { date: '2024-03-05', compensationCents: 888 },
+            { date: '2024-12-05', compensationCents: 1000 },
+            { date: '2024-12-05', compensationCents: 10000 },
+            { date: '2024-12-05', compensationCents: 1000 },
+          ],
+        },
+        {
+          courseName: 'Boxen | Sissis Boxers (Anfänger)',
+          trainings: [
+            { date: '2024-03-08', compensationCents: 555 },
+            { date: '2024-03-07', compensationCents: 666 },
+            { date: '2024-03-06', compensationCents: 777 },
+            { date: '2024-03-05', compensationCents: 888 },
+            { date: '2024-12-05', compensationCents: 1000 },
+            { date: '2024-12-05', compensationCents: 10000 },
+            { date: '2024-12-05', compensationCents: 1000 },
+          ],
+        },
+        {
+          courseName: 'Boxen | Sissis Boxers (Anfänger)',
+          trainings: [
+            { date: '2024-03-08', compensationCents: 555 },
+            { date: '2024-03-07', compensationCents: 666 },
+            { date: '2024-03-06', compensationCents: 777 },
+            { date: '2024-03-05', compensationCents: 888 },
+            { date: '2024-12-05', compensationCents: 1000 },
+            { date: '2024-12-05', compensationCents: 10000 },
+            { date: '2024-12-05', compensationCents: 1000 },
           ],
         },
       ],
     });
+    // fs.writeFileSync('./out.pdf', data);
   });
 });

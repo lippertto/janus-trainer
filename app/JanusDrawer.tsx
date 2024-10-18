@@ -14,7 +14,8 @@ import AnalyticsIcon from '@mui/icons-material/Analytics';
 import AssignmentTurnedInIcon from '@mui/icons-material/AssignmentTurnedIn';
 import EditCalendarIcon from '@mui/icons-material/EditCalendar';
 import HomeIcon from '@mui/icons-material/Home';
-import QrCodeScannerIcon from '@mui/icons-material/QrCodeScanner';
+import LeaderboardIcon from '@mui/icons-material/Leaderboard';
+// import QrCodeScannerIcon from '@mui/icons-material/QrCodeScanner';
 import SettingsIcon from '@mui/icons-material/Settings';
 import SportsIcon from '@mui/icons-material/Sports';
 
@@ -23,24 +24,48 @@ import { useSession } from 'next-auth/react';
 import { Group } from '@/lib/dto';
 import AccountBoxIcon from '@mui/icons-material/AccountBox';
 
-const ADMIN_LINKS = [
-  { text: 'Home', href: '/', icon: HomeIcon },
-  { text: 'Eingeben', href: '/enter', icon: EditCalendarIcon },
-  { text: 'Freigeben', href: '/approve', icon: AssignmentTurnedInIcon },
-  { text: 'Auszahlen', href: '/compensate', icon: AccountBalanceIcon },
-  { text: 'Angebot', href: '/offerings', icon: SportsIcon },
-  { text: 'Verwaltung', href: '/configure', icon: SettingsIcon },
-  { text: 'Auswertung', href: '/analyze', icon: AnalyticsIcon },
-  // { text: 'Scannen', href: '/scan', icon: QrCodeScannerIcon },
-  { text: 'Profil', href: '/profile', icon: AccountBoxIcon },
-];
+function buildLinks(
+  groups: Group[],
+): { text: string; href: string; icon: any }[] {
+  const isAdmin = Boolean(groups.indexOf(Group.ADMINS) !== -1);
+  const isTrainer = Boolean(groups.indexOf(Group.TRAINERS) !== -1);
+  let result = [];
 
-const TRAINER_LINKS = [
-  { text: 'Home', href: '/', icon: HomeIcon },
-  { text: 'Eingeben', href: '/enter', icon: EditCalendarIcon },
+  result.push({ text: 'Home', href: '/', icon: HomeIcon });
+  if (isTrainer) {
+    result.push({ text: 'Eingeben', href: '/enter', icon: EditCalendarIcon });
+  }
+  if (isAdmin) {
+    result.push({
+      text: 'Freigeben',
+      href: '/approve',
+      icon: AssignmentTurnedInIcon,
+    });
+  }
+  if (isAdmin) {
+    result.push({
+      text: 'Auszahlen',
+      href: '/compensate',
+      icon: AccountBalanceIcon,
+    });
+  }
+  if (isAdmin) {
+    result.push({ text: 'Angebot', href: '/offerings', icon: SportsIcon });
+  }
+  if (isAdmin) {
+    result.push({ text: 'Verwaltung', href: '/configure', icon: SettingsIcon });
+  }
+  if (isAdmin) {
+    result.push({ text: 'Auswertung', href: '/analyze', icon: AnalyticsIcon });
+  }
+  if (isTrainer) {
+    result.push({ text: 'Statistik', href: '/report', icon: LeaderboardIcon });
+  }
   // { text: 'Scannen', href: '/scan', icon: QrCodeScannerIcon },
-  { text: 'Profil', href: '/profile', icon: AccountBoxIcon },
-];
+
+  result.push({ text: 'Profil', href: '/profile', icon: AccountBoxIcon });
+  return result;
+}
 
 function JanusDrawerContents({
   state,
@@ -52,10 +77,7 @@ function JanusDrawerContents({
     value: boolean,
   ) => (event: React.KeyboardEvent | React.MouseEvent) => void;
 }) {
-  const links =
-    props.session.groups.indexOf(Group.ADMINS) >= 0
-      ? ADMIN_LINKS
-      : TRAINER_LINKS;
+  const links = buildLinks(props.session.groups);
 
   return (
     <Drawer anchor={'left'} open={state} onClose={props.toggleDrawer(false)}>

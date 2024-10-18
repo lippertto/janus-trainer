@@ -4,7 +4,7 @@
 
 import { render, screen } from '@testing-library/react';
 import React from 'react';
-import DateButton from '@/app/enter/DateButton';
+import DateButton from '@/components/DateButton';
 import dayjs from 'dayjs';
 
 describe('Date Button', () => {
@@ -14,9 +14,10 @@ describe('Date Button', () => {
 
     render(
       <DateButton
-        onClick={jest.fn()}
         startDate={firstDayOfQuarter}
+        setStartDate={jest.fn()}
         endDate={lastDayOfQuarter}
+        setEndDate={jest.fn()}
       />,
     );
 

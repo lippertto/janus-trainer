@@ -135,18 +135,14 @@ export function userSuspenseQuery(
 export function trainingStatisticsSuspenseQuery(
   accessToken: string,
   year: number,
-  trainerId: string | null,
   groupBy: 'trainer' | 'cost-center',
 ) {
   const params = new URLSearchParams();
   params.append('year', year.toString());
   params.append('groupBy', groupBy);
-  if (trainerId) {
-    params.append('trainerId', trainerId);
-  }
 
   return useSuspenseQuery({
-    queryKey: [API_TRAINING_STATISTICS, year, trainerId],
+    queryKey: [API_TRAINING_STATISTICS, year],
     queryFn: () =>
       fetchListFromApi<TrainingStatisticDto>(
         `${API_TRAINING_STATISTICS}?${params.toString()}`,

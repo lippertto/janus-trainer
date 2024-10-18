@@ -42,7 +42,7 @@ function drawFooter(page: PDFPage, font: PDFFont) {
       size: 8,
       color: rgb(1, 1, 1),
       font: font,
-      x: 5,
+      x: 10,
       y: 13,
       lineHeight: 10,
     },
@@ -68,20 +68,16 @@ function drawBottomLine(page: PDFPage) {
   });
 }
 
-function drawDateAndSign(
+function drawDate(
   page: PDFPage,
   defaultTextOptions: DefaultTextOptions,
   today: dayjs.Dayjs,
-  docId: number,
 ) {
-  page.drawText(
-    `Köln, ${today.format('DD.MM.YYYY')}\n` + `Unser Zeichen: AA/${docId}`,
-    {
-      ...defaultTextOptions,
-      x: page.getWidth() - 140,
-      y: page.getHeight() - 300,
-    },
-  );
+  page.drawText(`Köln, ${today.format('DD.MM.YYYY')}\n`, {
+    ...defaultTextOptions,
+    x: page.getWidth() - 140,
+    y: page.getHeight() - 250,
+  });
 }
 
 function drawIntroText(
@@ -101,13 +97,13 @@ function drawIntroText(
 
   page.drawText(
     `Hiermit bestätigen wir, dass ${input.trainerName} im Zeitraum ${input.periodStart.format('DD.MM.YYYY')} bis ${input.periodEnd.format('DD.MM.YYYY')} ` +
-      `${trainingCount} Übungseinheiten im SC Janus e.V. angeleitet hat und mit ${value} entschädigt wurde.`,
+      `${trainingCount} Übungseinheiten im SC Janus e.V. angeleitet hat und mit ${value} entschädigt wurde. Die Einheiten teilen sich folgendermaßen auf:`,
     {
       ...defaultTextOptions,
       y: currentY,
     },
   );
-  return currentY - 30;
+  return currentY - 50;
 }
 
 function setMetadata(
@@ -130,45 +126,7 @@ export type TrainerReportInput = {
   courses: TrainerReportCourse[];
   periodStart: dayjs.Dayjs;
   periodEnd: dayjs.Dayjs;
-  docId: number;
 };
-
-function drawDetails(
-  page: PDFPage,
-  defaultTextOptions: DefaultTextOptions,
-  trainings: TrainerReportCourse[],
-  currentY: number,
-) {
-  page.drawText(`Die Einheiten teilen sich folgendermaßen auf:`, {
-    ...defaultTextOptions,
-
-    y: currentY,
-  });
-  currentY -= 16;
-  for (const oneTraining of trainings) {
-    const totalCompensation = oneTraining.trainings
-      .map((t) => t.compensationCents)
-      .reduce((previous, current) => previous + current, 0);
-    const value = currencyFormatter(totalCompensation / 100.0);
-    page.drawText('∙ ', {
-      ...defaultTextOptions,
-      x: defaultTextOptions.x! + 5,
-      y: currentY,
-    });
-    page.drawText(
-      `${oneTraining.courseName}\n` +
-        `${oneTraining.trainings.length} Einheiten, Gesamt-Aufwandsentschädigung: ${value}`,
-      {
-        ...defaultTextOptions,
-        x: defaultTextOptions.x! + 15,
-        y: currentY,
-      },
-    );
-    currentY -= 30;
-  }
-
-  return currentY;
-}
 
 function drawClosingStatement(
   page: PDFPage,
@@ -182,7 +140,108 @@ function drawClosingStatement(
       y: currentY,
     },
   );
-  return currentY - 20;
+  return currentY - 40;
+}
+
+function sumOfCentsForOneMonth(
+  c: TrainerReportCourse,
+  monthNumber: number,
+): number {
+  return c.trainings
+    .filter((t) => {
+      const month = t.date.split('-')[1];
+      return parseInt(month) === monthNumber;
+    })
+    .map((oneDate) => {
+      return oneDate.compensationCents;
+    })
+    .reduce((partial, value) => partial + value, 0);
+}
+
+function addOneTable(
+  page: PDFPage,
+  course: TrainerReportCourse,
+  defaultTextOptions: DefaultTextOptions,
+  currentY: number,
+): number {
+  const tableHeight = 50;
+  const tableWidth = 510;
+  const tableStartLeft = 30;
+  const tableStartBottom = currentY - tableHeight - 15; // -15 for the text
+
+  const euros = course.trainings
+    .map((t) => t.compensationCents)
+    .reduce((previous, current) => previous + current, 0);
+
+  const text = `${course.courseName}, ${course.trainings.length} Einheiten, ${currencyFormatter(euros / 100.0)}`;
+
+  page.drawText(text, {
+    ...defaultTextOptions,
+    x: tableStartLeft,
+    y: currentY,
+  });
+
+  const months = [
+    'Jan',
+    'Feb',
+    'Mär',
+    'Apr',
+    'Mai',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Okt',
+    'Nov',
+    'Dez',
+  ];
+
+  months.forEach((m, index) => {
+    const textStart = tableStartLeft + (tableWidth / 12) * index + 5;
+    page.drawText(m, {
+      ...defaultTextOptions,
+      y: currentY - 30,
+      x: textStart,
+    });
+
+    const value = sumOfCentsForOneMonth(course, index + 1);
+    page.drawText(currencyFormatter(value / 100), {
+      ...defaultTextOptions,
+      y: currentY - 55,
+      x: textStart,
+      size: 8,
+    });
+
+    const linePosition = tableStartLeft + (tableWidth / 12) * index;
+    if (index !== 0) {
+      page.drawLine({
+        start: { y: tableStartBottom, x: linePosition },
+        end: { y: tableStartBottom + tableHeight, x: linePosition },
+      });
+    }
+  });
+
+  page.drawRectangle({
+    x: tableStartLeft,
+    y: tableStartBottom,
+    width: tableWidth,
+    height: tableHeight,
+    borderColor: rgb(0, 0, 0),
+    borderWidth: 1,
+  });
+  page.drawLine({
+    start: {
+      x: tableStartLeft,
+      y: tableStartBottom + tableHeight / 2,
+    },
+    end: {
+      x: tableStartLeft + tableWidth,
+      y: tableStartBottom + tableHeight / 2,
+    },
+    color: rgb(0, 0, 0),
+  });
+
+  return tableStartBottom - 20;
 }
 
 export async function generatePdf(
@@ -218,14 +277,17 @@ export async function generatePdf(
   drawBottomLine(page);
   drawFooter(page, font);
   drawHeader(page, font);
-  drawDateAndSign(page, defaultTextOptions, currentDate, input.docId);
+  drawDate(page, defaultTextOptions, currentDate);
 
-  let currentY = 400;
+  let currentY = page.getHeight() - 300;
 
   currentY = drawIntroText(page, defaultTextOptions, input, currentY);
+  input.courses.forEach((c) => {
+    currentY = addOneTable(page, c, defaultTextOptions, currentY);
+  });
 
-  currentY = drawDetails(page, defaultTextOptions, input.courses, currentY);
-  drawClosingStatement(page, defaultTextOptions, currentY);
+  currentY -= 10;
+  currentY = drawClosingStatement(page, defaultTextOptions, currentY);
 
   return await pdfDoc.save();
 }
