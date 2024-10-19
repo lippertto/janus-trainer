@@ -58,7 +58,7 @@ function buildLinks(
   if (isAdmin) {
     result.push({ text: 'Auswertung', href: '/analyze', icon: AnalyticsIcon });
   }
-  if (isTrainer && false) {
+  if (isTrainer) {
     result.push({ text: 'Statistik', href: '/report', icon: LeaderboardIcon });
   }
   // { text: 'Scannen', href: '/scan', icon: QrCodeScannerIcon },
