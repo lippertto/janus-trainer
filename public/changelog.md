@@ -1,4 +1,15 @@
-##### Änderungen
+##### Letzte Änderungen
+
+###### 19. Oktober 2024
+
+Es gibt nun die Möglichkeit, sich Statistiken zu den bisher ausgezahlten Vergütungen anzeigen zu lassen.
+
+Dafür könnt ihr den Punkt "Statistiken" im Menü auswählen um auf die Statistik-Seite zu kommen.
+Hier seht ihr eine Zusammenfassung der überwiesenen Aufwandsentschädigungen - aufgeschlüsselt nach Kurs.
+
+Außerdem könnt ihr auch einen Pdf-Export der Daten herunterladen.
+Wir gehen davon aus, dass das nicht für die Steuer notwendig ist, aber für den Fall der Fälle könnt ihr einfach
+auf den Export-Knopf drücken, um ein Pdf herunterzuladen.
 
 ###### 10. Oktober 2024
 

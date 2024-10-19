@@ -11,10 +11,10 @@ async function Contents() {
 
   return (
     <React.Fragment>
-      <Typography component="p">
-        Willkommen in der Janus Abrechnungs-App.
+      <Typography variant="h4">
+        Willkommen in der Janus Abrechnungs-App
       </Typography>
-      <Typography component="p" sx={{ display: 'flex', alignItems: 'top' }}>
+      <Typography>
         Um in der App zu navigieren, klicke oben links auf Symbol mit den drei
         Strichen.
       </Typography>
