@@ -90,7 +90,7 @@ function HolidayPageContents({ session }: { session: JanusSession }) {
   };
 
   const handleAddHoliday = React.useCallback(
-    (start: dayjs.Dayjs, end: dayjs.Dayjs, name: string) => {
+    (start: string, end: string, name: string) => {
       addHoliday(session.accessToken, start, end, name)
         .then((h) => {
           if (h.start.substring(0, 4) === holidayYear.toString()) {

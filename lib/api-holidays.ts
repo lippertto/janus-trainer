@@ -3,14 +3,14 @@ import { Holiday, Prisma } from '@prisma/client';
 
 export async function addHoliday(
   accessToken: string,
-  start: dayjs.Dayjs,
-  end: dayjs.Dayjs,
+  start: string,
+  end: string,
   name: string,
 ): Promise<Holiday> {
   const request: Prisma.HolidayCreateInput = {
     name,
-    start: start.format('YYYY-MM-DD'),
-    end: end.format('YYYY-MM-DD'),
+    start,
+    end,
   };
   const response = await fetch(`/api/holidays`, {
     headers: {

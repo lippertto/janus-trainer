@@ -9,130 +9,132 @@ import { DatePicker } from '@mui/x-date-pickers';
 import TextField from '@mui/material/TextField';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
+import { Controller, useForm } from 'react-hook-form';
 
-type EnterHolidayDialogProps = {
-  open: boolean;
-  handleClose: () => void;
-  handleSave: (start: dayjs.Dayjs, end: dayjs.Dayjs, name: string) => void;
+type FormData = {
+  start: dayjs.Dayjs;
+  end: dayjs.Dayjs;
+  name: string;
 };
 
-export function EnterHolidayDialog({
-  open,
-  handleClose,
-  handleSave,
-}: EnterHolidayDialogProps) {
-  const [start, setStart] = React.useState<dayjs.Dayjs | null>(null);
-  const [end, setEnd] = React.useState<dayjs.Dayjs | null>(null);
-  const [name, setName] = React.useState<string>('');
+export function EnterHolidayDialog(props: {
+  open: boolean;
+  handleClose: () => void;
+  handleSave: (start: string, end: string, name: string) => void;
+}) {
+  const defaultValues = { start: dayjs(), end: dayjs(), name: '' };
 
-  const resetValues = React.useCallback(() => {
-    setStart(null);
-    setEnd(null);
-    setName('');
-  }, [setStart, setEnd, setName]);
+  const {
+    control,
+    handleSubmit,
+    reset,
+    watch,
+    formState: { isValid, errors },
+  } = useForm<FormData>({ defaultValues });
+  const onSubmit = (data: FormData) => {
+    if (!isValid) return;
+    props.handleSave(
+      data.start.format('YYYY-MM-DD'),
+      data.end.format('YYYY-MM-DD'),
+      data.name,
+    );
+    props.handleClose();
+    reset(defaultValues);
+  };
 
-  const endIsBeforeStart = start && end ? start.diff(end) > 0 : false;
-  let startErrorMessage = null;
-  if (!start) {
-    startErrorMessage = 'Muss gesetzt sein';
-  } else if (!start.isValid()) {
-    startErrorMessage = 'Ist kein Datum';
-  }
-
-  let endErrorMessage = null;
-  if (!end) {
-    if (start) {
-      endErrorMessage = 'Muss gesetzt sein';
-    }
-  } else if (!end.isValid()) {
-    endErrorMessage = 'Ist kein Datum';
-  } else if (endIsBeforeStart) {
-    endErrorMessage = 'Darf nicht vor dem Start liegen';
-  }
-
-  let nameErrorMessage = null;
-  if (start && end && name.length === 0) {
-    nameErrorMessage = 'Darf nicht leer sein';
-  }
-
-  const notYetValid =
-    Boolean(startErrorMessage) ||
-    Boolean(endErrorMessage) ||
-    Boolean(nameErrorMessage);
+  const start = watch('start');
 
   return (
-    <Dialog open={open} onClose={handleClose}>
+    <Dialog open={props.open} onClose={props.handleClose}>
       <DialogTitle>Neuen Feiertag hinzufügen</DialogTitle>
-      <DialogContent>
-        <Stack spacing={2}>
-          <Box sx={{ m: 1 }} />
-          <DatePicker
-            label="Start"
-            value={start}
-            onChange={(v) => {
-              setStart(v);
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <DialogContent>
+          <Stack spacing={2}>
+            <Box sx={{ m: 1 }} />
+
+            <Controller
+              control={control}
+              name="start"
+              rules={{
+                required: true,
+                validate: (v) => {
+                  if (!v || !v.isValid()) return 'Muss ein Datum enthalten';
+                  if (v) {
+                    return true;
+                  }
+                },
+              }}
+              render={({ field: fieldProps }) => (
+                <DatePicker
+                  {...fieldProps}
+                  label="Start"
+                  slotProps={{
+                    textField: {
+                      required: true,
+                      helperText: errors.start?.message || '',
+                      error: Boolean(errors.start),
+                    },
+                  }}
+                />
+              )}
+            />
+            <Controller
+              control={control}
+              name="end"
+              rules={{
+                required: true,
+                validate: (v) => {
+                  if (!v || !v.isValid()) return 'Muss ein Datum enthalten';
+                  if (v.isBefore(start)) return 'Muss nach dem Start liegen';
+                  return true;
+                },
+              }}
+              render={({ field: fieldProps }) => (
+                <DatePicker
+                  {...fieldProps}
+                  label="Ende"
+                  slotProps={{
+                    textField: {
+                      required: true,
+                      helperText: errors.end?.message || '',
+                      error: Boolean(errors.end),
+                    },
+                  }}
+                />
+              )}
+            />
+
+            <Controller
+              control={control}
+              name="name"
+              rules={{ required: true }}
+              render={({ field: fieldProps }) => (
+                <TextField
+                  {...fieldProps}
+                  label="Beschreibung"
+                  data-testid="holiday-text-field-description"
+                  required={true}
+                  error={!!errors.name?.message}
+                  helperText={errors.name?.message || ''}
+                />
+              )}
+            />
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => {
+              props.handleClose();
+              setTimeout(() => reset(defaultValues), 100);
             }}
-            slotProps={{
-              textField: {
-                // we have to use id, because data-testid is not passed on
-                id: 'holiday-date-picker-start',
-                error: !!startErrorMessage,
-                helperText: startErrorMessage,
-              },
-            }}
-          />
-          <DatePicker
-            label="Ende"
-            value={end}
-            onChange={(v) => {
-              setEnd(v);
-            }}
-            disabled={!start}
-            minDate={start ?? undefined}
-            slotProps={{
-              textField: {
-                id: 'holiday-date-picker-end',
-                error: !!endErrorMessage,
-                helperText: endErrorMessage,
-              },
-            }}
-          />
-          <TextField
-            label="Beschreibung"
-            data-testid="holiday-text-field-description"
-            value={name}
-            onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-              setName(event.target.value);
-            }}
-            // needs to be set in Dialogs according to https://github.com/mui/material-ui/issues/29892#issuecomment-979745849
-            margin="dense"
-            error={!!nameErrorMessage}
-            helperText={nameErrorMessage}
-            disabled={!(start && end)}
-          />
-        </Stack>
-      </DialogContent>
-      <DialogActions>
-        <Button
-          onClick={() => {
-            handleClose();
-            setTimeout(resetValues, 100);
-          }}
-        >
-          Abbrechen
-        </Button>
-        <Button
-          data-testid="holiday-button-submit"
-          disabled={notYetValid}
-          onClick={() => {
-            handleSave(start!, end!, name);
-            handleClose();
-            setTimeout(resetValues, 100);
-          }}
-        >
-          Speichern
-        </Button>
-      </DialogActions>
+          >
+            Abbrechen
+          </Button>
+          <Button data-testid="holiday-button-submit" type="submit">
+            Speichern
+          </Button>
+        </DialogActions>
+      </form>
     </Dialog>
   );
 }
