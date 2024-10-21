@@ -133,6 +133,11 @@ function buildGridColumns(
         trainingStatusToHumanReadable(value),
     },
     {
+      field: 'createdAt',
+      headerName: 'Erstellt',
+      valueFormatter: (value) => dayjs(value).format('DD.MM.YYYY'),
+    },
+    {
       field: 'comment',
       headerName: 'Kommentar',
     },

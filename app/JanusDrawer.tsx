@@ -15,7 +15,6 @@ import AssignmentTurnedInIcon from '@mui/icons-material/AssignmentTurnedIn';
 import EditCalendarIcon from '@mui/icons-material/EditCalendar';
 import HomeIcon from '@mui/icons-material/Home';
 import LeaderboardIcon from '@mui/icons-material/Leaderboard';
-// import QrCodeScannerIcon from '@mui/icons-material/QrCodeScanner';
 import SettingsIcon from '@mui/icons-material/Settings';
 import SportsIcon from '@mui/icons-material/Sports';
 
@@ -61,7 +60,6 @@ function buildLinks(
   if (isTrainer) {
     result.push({ text: 'Statistik', href: '/report', icon: LeaderboardIcon });
   }
-  // { text: 'Scannen', href: '/scan', icon: QrCodeScannerIcon },
 
   result.push({ text: 'Profil', href: '/profile', icon: AccountBoxIcon });
   return result;
