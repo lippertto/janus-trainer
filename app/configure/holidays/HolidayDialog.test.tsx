@@ -3,7 +3,7 @@
  */
 
 import { act, fireEvent, render, screen } from '@testing-library/react';
-import { EnterHolidayDialog } from '@/app/configure/holidays/EnterHolidayDialog';
+import { HolidayDialog } from '@/app/configure/holidays/HolidayDialog';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import 'dayjs/locale/de';
@@ -32,10 +32,11 @@ describe('EnterHolidayDialog', () => {
 
     render(
       <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="de">
-        <EnterHolidayDialog
+        <HolidayDialog
           open={true}
           handleClose={jest.fn()}
           handleSave={handleSave}
+          toEdit={null}
         />
         ,
       </LocalizationProvider>,
@@ -54,10 +55,11 @@ describe('EnterHolidayDialog', () => {
 
     render(
       <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="de">
-        <EnterHolidayDialog
+        <HolidayDialog
           open={true}
           handleClose={jest.fn()}
           handleSave={handleSave}
+          toEdit={null}
         />
         ,
       </LocalizationProvider>,
@@ -73,7 +75,11 @@ describe('EnterHolidayDialog', () => {
 
     await clickSave();
 
-    expect(handleSave).toHaveBeenCalledWith(startDate, endDate, name);
+    expect(handleSave).toHaveBeenCalledWith({
+      start: startDate,
+      end: endDate,
+      name,
+    });
   });
 
   test('start cannot be before end', async () => {
@@ -84,10 +90,11 @@ describe('EnterHolidayDialog', () => {
 
     render(
       <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="de">
-        <EnterHolidayDialog
+        <HolidayDialog
           open={true}
           handleClose={jest.fn()}
           handleSave={handleSave}
+          toEdit={null}
         />
         ,
       </LocalizationProvider>,

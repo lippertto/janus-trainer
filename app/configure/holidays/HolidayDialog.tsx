@@ -10,6 +10,7 @@ import TextField from '@mui/material/TextField';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import { Controller, useForm } from 'react-hook-form';
+import { HolidayCreateRequest, HolidayDto } from '@/lib/dto';
 
 type FormData = {
   start: dayjs.Dayjs;
@@ -17,11 +18,14 @@ type FormData = {
   name: string;
 };
 
-export function EnterHolidayDialog(props: {
+export function HolidayDialog(props: {
   open: boolean;
   handleClose: () => void;
-  handleSave: (start: string, end: string, name: string) => void;
+  handleSave: (v: HolidayCreateRequest) => void;
+  toEdit: HolidayDto | null;
 }) {
+  const [previous, setPrevious] = React.useState<HolidayDto | null>(null);
+
   const defaultValues = { start: dayjs(), end: dayjs(), name: '' };
 
   const {
@@ -31,22 +35,40 @@ export function EnterHolidayDialog(props: {
     watch,
     formState: { isValid, errors },
   } = useForm<FormData>({ defaultValues });
+
   const onSubmit = (data: FormData) => {
     if (!isValid) return;
-    props.handleSave(
-      data.start.format('YYYY-MM-DD'),
-      data.end.format('YYYY-MM-DD'),
-      data.name,
-    );
+    props.handleSave({
+      start: data.start.format('YYYY-MM-DD'),
+      end: data.end.format('YYYY-MM-DD'),
+      name: data.name,
+    });
     props.handleClose();
     reset(defaultValues);
   };
+
+  React.useEffect(() => {
+    if (props.toEdit != previous) {
+      setPrevious(props.toEdit);
+      if (props.toEdit === null) {
+        reset(defaultValues);
+      } else {
+        reset({
+          start: dayjs(props.toEdit.start),
+          end: dayjs(props.toEdit.end),
+          name: props.toEdit.name,
+        });
+      }
+    }
+  }, [props.toEdit]);
 
   const start = watch('start');
 
   return (
     <Dialog open={props.open} onClose={props.handleClose}>
-      <DialogTitle>Neuen Feiertag hinzufügen</DialogTitle>
+      <DialogTitle>
+        {props.toEdit ? 'Feiertag bearbeiten' : 'Neuen Feiertag hinzufügen'}
+      </DialogTitle>
       <form onSubmit={handleSubmit(onSubmit)}>
         <DialogContent>
           <Stack spacing={2}>
@@ -125,7 +147,9 @@ export function EnterHolidayDialog(props: {
           <Button
             onClick={() => {
               props.handleClose();
-              setTimeout(() => reset(defaultValues), 100);
+              if (props.toEdit === null) {
+                setTimeout(() => reset(defaultValues), 100);
+              }
             }}
           >
             Abbrechen

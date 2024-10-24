@@ -7,10 +7,13 @@ import dayjs from 'dayjs';
 
 import { JanusSession } from '@/lib/auth';
 import LoginRequired from '@/components/LoginRequired';
-import { addHoliday, deleteHoliday } from '@/lib/api-holidays';
 import { showError, showSuccess } from '@/lib/notifications';
-import { HolidayDto } from '@/lib/dto';
-import { useQueryClient } from '@tanstack/react-query';
+import {
+  HolidayCreateRequest,
+  HolidayDto,
+  HolidayUpdateRequest,
+} from '@/lib/dto';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { holidaysSuspenseQuery } from '@/lib/shared-queries';
 import { API_HOLIDAYS } from '@/lib/routes';
 import Stack from '@mui/system/Stack';
@@ -22,20 +25,20 @@ import List from '@mui/material/List';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
 import { dateToHumanReadable } from '@/lib/formatters';
-import { EnterHolidayDialog } from '@/app/configure/holidays/EnterHolidayDialog';
+import { HolidayDialog } from '@/app/configure/holidays/HolidayDialog';
 import { useConfirm } from 'material-ui-confirm';
-import ClickAwayListener from '@mui/material/ClickAwayListener';
 import Box from '@mui/system/Box';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { DatePicker } from '@mui/x-date-pickers';
-import { compareByField } from '@/lib/sort-and-filter';
+import { compareByField, replaceElementWithId } from '@/lib/sort-and-filter';
+import { createInApi, deleteFromApi, updateInApi } from '@/lib/fetch';
 
 function HolidayList(props: {
   accessToken: string;
   setHolidays: (v: HolidayDto[]) => void;
   year: number;
-  selectedHolidayId: number | null;
-  setSelectedHolidayId: (v: number) => void;
+  selectedHoliday: HolidayDto | null;
+  setSelectedHoliday: (v: HolidayDto) => void;
 }) {
   const { data: holidays } = holidaysSuspenseQuery(props.accessToken, [
     props.year,
@@ -51,9 +54,9 @@ function HolidayList(props: {
           <ListItemButton
             key={d.id}
             onClick={() => {
-              props.setSelectedHolidayId(d.id);
+              props.setSelectedHoliday(d);
             }}
-            selected={props.selectedHolidayId === d.id}
+            selected={props.selectedHoliday?.id === d.id}
           >
             <ListItemText
               primary={d.name}
@@ -69,7 +72,7 @@ function HolidayPageContents({ session }: { session: JanusSession }) {
   const currentYear = new Date().getFullYear();
   const confirm = useConfirm();
 
-  const [selectedHolidayId, setSelectedHolidayId] = useState<number | null>(
+  const [selectedHoliday, setSelectedHoliday] = useState<HolidayDto | null>(
     null,
   );
   const [dialogOpen, setDialogOpen] = React.useState<boolean>(false);
@@ -78,59 +81,96 @@ function HolidayPageContents({ session }: { session: JanusSession }) {
   const [holidayYear, setHolidayYear] = React.useState<number>(currentYear);
   const queryClient = useQueryClient();
 
-  const handleDeleteClick = (selectedHolidayId: number | null) => {
-    const holiday = holidays.find((h) => h.id === selectedHolidayId);
-    if (!holiday) return;
+  const createHolidayMutation = useMutation({
+    mutationFn: (data: HolidayCreateRequest) => {
+      return createInApi<HolidayDto>(API_HOLIDAYS, data, session.accessToken);
+    },
+    onSuccess: async (createdHoliday: HolidayDto) => {
+      const year = parseInt(createdHoliday.start.substring(0, 4));
+      if (year !== currentYear) {
+        await queryClient.invalidateQueries({
+          queryKey: [API_HOLIDAYS, year],
+        });
+      } else {
+        queryClient.setQueryData(
+          [API_HOLIDAYS, year],
+          [...holidays, createdHoliday].sort((a, b) =>
+            compareByField(a, b, 'start'),
+          ),
+        );
+      }
+    },
+    onError: (e: Error) => {
+      showError('Konnte den Feiertag nicht hinzufügen', e.message);
+    },
+  });
+
+  const updateHolidayMutation = useMutation({
+    mutationFn: (data: HolidayUpdateRequest) => {
+      return updateInApi<HolidayDto>(
+        `${API_HOLIDAYS}`,
+        selectedHoliday!.id,
+        data,
+        session.accessToken,
+      );
+    },
+    onSuccess: async (updatedHoliday: HolidayDto) => {
+      setSelectedHoliday(null);
+      const year = parseInt(updatedHoliday.start.substring(0, 4));
+      if (year !== currentYear) {
+        await queryClient.invalidateQueries({
+          queryKey: [API_HOLIDAYS, year],
+        });
+      } else {
+        queryClient.setQueryData(
+          [API_HOLIDAYS, year],
+          replaceElementWithId(holidays, updatedHoliday),
+        );
+      }
+    },
+    onError: (e) => {
+      showError(`Fehler beim Löschen der Pauschalen-Gruppe`, e.message);
+    },
+  });
+
+  const deleteHolidayMutation = useMutation({
+    mutationFn: (holidayToDelete: HolidayDto) => {
+      return deleteFromApi(API_HOLIDAYS, holidayToDelete!, session.accessToken);
+    },
+    onSuccess: async (deletedHoliday: HolidayDto) => {
+      setSelectedHoliday(null);
+
+      const year = parseInt(deletedHoliday.start.substring(0, 4));
+
+      if (year !== currentYear) {
+        await queryClient.invalidateQueries({
+          queryKey: [API_HOLIDAYS, year],
+        });
+      } else {
+        queryClient.setQueryData(
+          [API_HOLIDAYS, year],
+          holidays.filter((h) => h.id !== deletedHoliday.id),
+        );
+      }
+      showSuccess(`Feiertag ${deletedHoliday?.name ?? ''} gelöscht`);
+    },
+    onError: (e: Error) => {
+      showError(
+        `Konnte den Feiertag ${selectedHoliday?.name ?? ''} nicht löschen`,
+        e.message,
+      );
+    },
+  });
+
+  const handleDeleteClick = () => {
+    if (!selectedHoliday) return;
     confirm({
       title: 'Feiertag löschen?',
-      description: `Soll der Feiertag ${holiday.name} wirklich gelöscht werden?`,
+      description: `Soll der Feiertag ${selectedHoliday.name} wirklich gelöscht werden?`,
     }).then(() => {
-      handleDeleteHoliday(holiday);
+      deleteHolidayMutation.mutate(selectedHoliday!);
     });
   };
-
-  const handleAddHoliday = React.useCallback(
-    (start: string, end: string, name: string) => {
-      addHoliday(session.accessToken, start, end, name)
-        .then((h) => {
-          if (h.start.substring(0, 4) === holidayYear.toString()) {
-            queryClient.invalidateQueries({
-              queryKey: [API_HOLIDAYS, holidayYear],
-            });
-            setHolidays([...holidays, h]);
-          }
-        })
-        .then(() => {
-          showSuccess('Feiertag hinzugefügt');
-        })
-        .catch((e) => {
-          showError('Konnte den Feiertag nicht hinzufügen', e.message);
-        });
-    },
-    [holidays, holidayYear, setHolidays],
-  );
-
-  const handleDeleteHoliday = React.useCallback(
-    (holiday: HolidayDto) => {
-      deleteHoliday(session.accessToken, holiday.id.toString())
-        .then(() => {
-          queryClient.invalidateQueries({
-            queryKey: [API_HOLIDAYS, holidayYear],
-          });
-          setHolidays(holidays.filter((h) => h.id !== holiday.id));
-        })
-        .then(() => {
-          showSuccess(`Feiertag ${holiday?.name ?? ''} gelöscht`);
-        })
-        .catch((e) => {
-          showError(
-            `Konnte den Feiertag ${holiday?.name ?? ''} nicht löschen`,
-            e.message,
-          );
-        });
-    },
-    [holidays, setHolidays],
-  );
 
   return (
     <>
@@ -142,14 +182,21 @@ function HolidayPageContents({ session }: { session: JanusSession }) {
               <Button
                 data-testid={'add-holiday-button'}
                 onClick={() => {
+                  setSelectedHoliday(null);
                   setDialogOpen(true);
                 }}
               >
                 Hinzufügen
               </Button>
               <Button
-                disabled={!selectedHolidayId}
-                onClick={() => handleDeleteClick(selectedHolidayId)}
+                disabled={!selectedHoliday}
+                onClick={() => setDialogOpen(true)}
+              >
+                Bearbeiten
+              </Button>
+              <Button
+                disabled={!selectedHoliday}
+                onClick={() => handleDeleteClick()}
               >
                 Löschen
               </Button>
@@ -167,29 +214,28 @@ function HolidayPageContents({ session }: { session: JanusSession }) {
               sx={{ mb: 3, width: 140 }}
             />
           </Stack>
-          <ClickAwayListener
-            onClickAway={() => {
-              setSelectedHolidayId(null);
-            }}
-          >
-            <Box>
-              <Suspense fallback={<LoadingSpinner />}>
-                <HolidayList
-                  accessToken={session.accessToken}
-                  year={holidayYear}
-                  setHolidays={setHolidays}
-                  selectedHolidayId={selectedHolidayId}
-                  setSelectedHolidayId={setSelectedHolidayId}
-                />
-              </Suspense>
-            </Box>
-          </ClickAwayListener>
+          <Box>
+            <Suspense fallback={<LoadingSpinner />}>
+              <HolidayList
+                accessToken={session.accessToken}
+                year={holidayYear}
+                setHolidays={setHolidays}
+                selectedHoliday={selectedHoliday}
+                setSelectedHoliday={setSelectedHoliday}
+              />
+            </Suspense>
+          </Box>
         </Stack>
       </Paper>
-      <EnterHolidayDialog
+      <HolidayDialog
         open={dialogOpen}
         handleClose={() => setDialogOpen(false)}
-        handleSave={handleAddHoliday}
+        handleSave={
+          selectedHoliday
+            ? updateHolidayMutation.mutate
+            : createHolidayMutation.mutate
+        }
+        toEdit={selectedHoliday}
       />
     </>
   );
