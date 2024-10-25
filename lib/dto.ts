@@ -274,6 +274,14 @@ export function dayOfWeekToHumanReadable(w: DayOfWeek, short: boolean = false) {
 
 export type HolidayDto = Holiday;
 
+export type HolidayCreateRequest = {
+  name: string;
+  start: string;
+  end: string;
+};
+
+export type HolidayUpdateRequest = HolidayCreateRequest;
+
 export type TrainingSummaryDto = {
   trainerId: string;
   trainerName: string;

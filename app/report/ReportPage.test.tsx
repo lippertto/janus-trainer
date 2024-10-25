@@ -22,7 +22,7 @@ describe('ReportPage', () => {
     }));
 
     const handleDownloadClick = jest.fn();
-    render(
+    const { unmount } = render(
       <SnackbarProvider>
         <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="de">
           <ReportPage
@@ -44,6 +44,7 @@ describe('ReportPage', () => {
     );
 
     expect(handleDownloadClick).not.toHaveBeenCalled();
+    unmount();
   });
 
   test('Calls export with 5 or less courses', async () => {
@@ -54,7 +55,7 @@ describe('ReportPage', () => {
     }));
 
     const handleDownloadClick = jest.fn(() => Promise.resolve());
-    render(
+    const { unmount } = render(
       <SnackbarProvider>
         <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="de">
           <ReportPage
@@ -76,5 +77,6 @@ describe('ReportPage', () => {
     );
 
     expect(handleDownloadClick).toHaveBeenCalled();
+    unmount();
   });
 });

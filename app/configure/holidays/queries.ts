@@ -1,17 +1,19 @@
 import dayjs from 'dayjs';
 import { Holiday, Prisma } from '@prisma/client';
+import {
+  CompensationClassDto,
+  HolidayCreateRequest,
+  HolidayUpdateRequest,
+} from '@/lib/dto';
+import { useMutation } from '@tanstack/react-query';
+import { deleteFromApi, updateInApi } from '@/lib/fetch';
+import { API_COMPENSATION_CLASSES } from '@/lib/routes';
+import { showError } from '@/lib/notifications';
 
 export async function addHoliday(
   accessToken: string,
-  start: dayjs.Dayjs,
-  end: dayjs.Dayjs,
-  name: string,
+  request: HolidayCreateRequest,
 ): Promise<Holiday> {
-  const request: Prisma.HolidayCreateInput = {
-    name,
-    start: start.format('YYYY-MM-DD'),
-    end: end.format('YYYY-MM-DD'),
-  };
   const response = await fetch(`/api/holidays`, {
     headers: {
       Authorization: `Bearer ${accessToken}`,
