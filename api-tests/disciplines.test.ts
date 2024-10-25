@@ -1,11 +1,5 @@
 import superagent from 'superagent';
-import {
-  CompensationClassDto,
-  CourseDto,
-  DisciplineCreateRequest,
-  DisciplineDto,
-} from '@/lib/dto';
-import prisma from '@/lib/prisma';
+import { DisciplineCreateRequest, DisciplineDto } from '@/lib/dto';
 
 const SERVER = 'http://localhost:3000';
 

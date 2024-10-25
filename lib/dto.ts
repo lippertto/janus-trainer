@@ -20,9 +20,7 @@ import {
   IsOptional,
   IsString,
   Matches,
-  ValidateNested,
 } from 'class-validator';
-import dayjs from 'dayjs';
 
 export enum Group {
   ADMINS = 'admins',
@@ -280,7 +278,20 @@ export type HolidayCreateRequest = {
   end: string;
 };
 
-export type HolidayUpdateRequest = HolidayCreateRequest;
+export class HolidayUpdateRequest {
+  constructor(obj: any) {
+    Object.assign(this, obj);
+  }
+
+  @IsString()
+  name: string;
+
+  @IsISO8601()
+  start: string;
+
+  @IsISO8601()
+  end: string;
+}
 
 export type TrainingSummaryDto = {
   trainerId: string;
