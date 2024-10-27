@@ -26,10 +26,8 @@ Then, run `yarn jest -c api-tests/jest.config.js`
 
 ## Features
 
-- Pdf download for taxes. Trainer x received y euros for z units. Lock year!
-- Normen: In enter dialog: update dates when current/last quarter is selected
+- Allow users to choose their own courses (Michael Busch)
 - Auto-Approve
-- Normen: Monthly pdf downloads
 - Make courses disabled. (Also in the UI.)
 - Playwright test: enter -> approve -> compensate.
 - Playwright test: duplicates

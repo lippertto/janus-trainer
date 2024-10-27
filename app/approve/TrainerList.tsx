@@ -8,31 +8,11 @@ import FormControl from '@mui/material/FormControl';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { JanusSession } from '@/lib/auth';
 import dayjs from 'dayjs';
-import { useSuspenseQuery } from '@tanstack/react-query';
-import { API_TRAININGS_SUMMARIZE } from '@/lib/routes';
-import { fetchListFromApi } from '@/lib/fetch';
 import { TrainingSummaryDto } from '@/lib/dto';
 import List from '@mui/material/List';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
 import Paper from '@mui/material/Paper';
-
-function trainingSummaryQuery(
-  accessToken: string,
-  filterStart: dayjs.Dayjs,
-  filterEnd: dayjs.Dayjs,
-) {
-  return useSuspenseQuery({
-    queryKey: [API_TRAININGS_SUMMARIZE, filterStart, filterEnd],
-    queryFn: () =>
-      fetchListFromApi<TrainingSummaryDto>(
-        `${API_TRAININGS_SUMMARIZE}?startDate=${filterStart.format('YYYY-MM-DD')}&endDate=${filterEnd.format('YYYY-MM-DD')}`,
-        accessToken!,
-        'POST',
-      ),
-    staleTime: 10 * 60 * 1000,
-  });
-}
 
 function TrainerListValues(props: {
   session: JanusSession;
@@ -41,16 +21,13 @@ function TrainerListValues(props: {
   onlyNew: boolean;
   selectedTrainerId: string | null;
   setSelectedTrainerId: (v: string) => void;
+  getTrainingSummaries: () => TrainingSummaryDto[];
 }) {
-  const { data: trainers } = trainingSummaryQuery(
-    props.session.accessToken,
-    props.filterStart,
-    props.filterEnd,
-  );
+  const summaries = props.getTrainingSummaries();
 
   return (
     <List>
-      {trainers
+      {summaries
         .filter((t) => (props.onlyNew ? t.newTrainingCount > 0 : true))
         .map((t) => (
           <ListItemButton
@@ -74,6 +51,7 @@ export default function TrainerList(props: {
   filterEnd: dayjs.Dayjs;
   selectedTrainerId: string | null;
   setSelectedTrainerId: (v: string) => void;
+  getTrainingSummaries: () => TrainingSummaryDto[];
 }) {
   const [trainerFilter, setTrainerFilter] = React.useState<string>('new');
 
@@ -109,6 +87,7 @@ export default function TrainerList(props: {
               onlyNew={trainerFilter === 'new'}
               selectedTrainerId={props.selectedTrainerId}
               setSelectedTrainerId={props.setSelectedTrainerId}
+              getTrainingSummaries={props.getTrainingSummaries}
             />
           </Paper>
         </Suspense>

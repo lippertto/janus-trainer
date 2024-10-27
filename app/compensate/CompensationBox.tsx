@@ -26,6 +26,7 @@ function handleSepaGeneration(compensations: CompensationDto[]) {
 export default function CompensationBox(props: {
   session: JanusSession;
   selectedPaymentId: number;
+  /** A trainer id to filter. If filtering is active, no sepa xml files can be generated because the logic is currently undefined. */
   trainer: UserDto | null;
 }) {
   const queryClient = useQueryClient();
@@ -33,11 +34,16 @@ export default function CompensationBox(props: {
     props.session.accessToken,
     props.selectedPaymentId,
   );
+  // if we have a filter on the trainer id, look only at those
   if (props.trainer?.id) {
     compensations = compensations.filter(
       (c) => c.user.id === props.trainer!.id,
     );
   }
+
+  const negativeCompensations = compensations.filter(
+    (c) => c.totalCompensationCents < 0,
+  );
 
   const markAsCompensated = useMutation({
     mutationFn: () => {
@@ -66,7 +72,16 @@ export default function CompensationBox(props: {
       <CompensationTable compensations={compensations} />
       <Stack direction={'row'}>
         <Button
-          onClick={() => handleSepaGeneration(compensations)}
+          onClick={() => {
+            if (negativeCompensations.length > 0) {
+              const userNames = negativeCompensations
+                .map((c) => c.user.name)
+                .join(', ');
+              showError(`Negative Beträge für ${userNames}`);
+            } else {
+              handleSepaGeneration(compensations);
+            }
+          }}
           disabled={Boolean(props.trainer)}
         >
           SEPA XML generieren
@@ -77,7 +92,14 @@ export default function CompensationBox(props: {
             Boolean(props.trainer)
           }
           onClick={() => {
-            markAsCompensated.mutate();
+            if (negativeCompensations.length > 0) {
+              const userNames = negativeCompensations
+                .map((c) => c.user.name)
+                .join(', ');
+              showError(`Negative Beträge für ${userNames}`);
+            } else {
+              markAsCompensated.mutate();
+            }
           }}
         >
           Alle als überwiesen markieren

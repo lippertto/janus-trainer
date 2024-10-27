@@ -10,9 +10,6 @@ import {
   downloadTrainerReport,
   queryTrainerReport,
 } from '@/app/report/queries';
-import { showError } from '@/lib/notifications';
-
-1;
 
 export default function ReportPageContainer() {
   const [startDate, setStartDate] = React.useState(dayjs().startOf('year'));

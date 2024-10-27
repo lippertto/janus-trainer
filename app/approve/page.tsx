@@ -1,26 +1,30 @@
 'use client';
-import React, { Suspense, useEffect } from 'react';
-import TrainingTable from '@/app/approve/TrainingTable';
+import React from 'react';
 
 import { useSession } from 'next-auth/react';
 import type { JanusSession } from '@/lib/auth';
 import LoginRequired from '@/components/LoginRequired';
 import dayjs from 'dayjs';
-import Grid from '@mui/material/Grid2';
-import { DatePicker } from '@mui/x-date-pickers';
 import quarterOfYear from 'dayjs/plugin/quarterOfYear';
-import ButtonGroup from '@mui/material/ButtonGroup';
-import Button from '@mui/material/Button';
-import { holidaysSuspenseQuery } from '@/lib/shared-queries';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import TrainerList from '@/app/approve/TrainerList';
-import { Typography } from '@mui/material';
-import { LoadingSpinner } from '@/components/LoadingSpinner';
+import { useSearchParams } from 'next/navigation';
+import { ApprovePage } from '@/app/approve/ApprovePage';
 import {
-  queryDuplicates,
-  queryTrainingsForApprovePage,
-} from '@/app/approve/queries';
-import { TrainingDuplicateDto } from '@/lib/dto';
+  TrainingCreateRequest,
+  TrainingDto,
+  TrainingSummaryDto,
+} from '@/lib/dto';
+import { approveTrainingDeleteMutation } from '@/app/approve/queries';
+import {
+  useMutation,
+  useQueryClient,
+  useSuspenseQuery,
+} from '@tanstack/react-query';
+import { createInApi, fetchListFromApi, patchInApi } from '@/lib/fetch';
+import { API_TRAININGS, API_TRAININGS_SUMMARIZE } from '@/lib/routes';
+import { showError, showSuccess } from '@/lib/notifications';
+import { throttle } from 'throttle-debounce';
+import { compareByField, replaceElementWithId } from '@/lib/sort-and-filter';
+import { TrainingStatus } from '@prisma/client';
 
 dayjs.extend(quarterOfYear);
 
@@ -28,145 +32,103 @@ const QUERY_PARAM_START = 'startDate';
 const QUERY_PARAM_END = 'endDate';
 const QUERY_PARAM_TRAINER_ID = 'trainerId';
 
-type ApprovePageContentsProps = {
-  session: JanusSession;
-  startDate: dayjs.Dayjs;
-  endDate: dayjs.Dayjs;
-  trainerId: string | null;
-};
+function fetchTrainingsFromApi(
+  accessToken: string,
+  filterStart: dayjs.Dayjs,
+  filterEnd: dayjs.Dayjs,
+  trainerId: string | null,
+) {
+  const params = new URLSearchParams();
+  params.set('expand', 'user');
+  if (trainerId) {
+    params.set('trainerId', trainerId);
+  }
 
-function ApprovePageContents(
-  props: ApprovePageContentsProps,
-): React.ReactElement {
-  const { session } = props;
-  const pathname = usePathname();
-  const { replace } = useRouter();
+  params.set('start', filterStart.format('YYYY-MM-DD'));
+  params.set('end', filterEnd.format('YYYY-MM-DD'));
 
-  const [datePickerStart, setDatePickerStart] = React.useState<dayjs.Dayjs>(
-    props.startDate,
-  );
-  const [datePickerEnd, setDatePickerEnd] = React.useState<dayjs.Dayjs>(
-    props.endDate,
-  );
-
-  const [selectedTrainerId, setSelectedTrainerId] = React.useState<
-    string | null
-  >(props.trainerId);
-
-  const { data: holidays } = holidaysSuspenseQuery(session.accessToken, [
-    new Date().getFullYear(),
-    new Date().getFullYear() - 1,
-  ]);
-
-  // update the search params when the filters have changed.
-  useEffect(() => {
-    const params = new URLSearchParams();
-    if (datePickerStart) {
-      params.set(QUERY_PARAM_START, datePickerStart.format('YYYY-MM-DD'));
-    }
-    if (datePickerEnd) {
-      params.set(QUERY_PARAM_END, datePickerEnd.format('YYYY-MM-DD'));
-    }
-    if (selectedTrainerId) {
-      params.set('trainerId', selectedTrainerId);
-    } else {
-      params.delete('trainerId');
-    }
-    replace(`${pathname}?${params.toString()}`);
-  }, [datePickerStart, datePickerEnd, selectedTrainerId]);
-
-  const getTrainings = () => {
-    return queryTrainingsForApprovePage(
-      session.accessToken,
-      props.startDate,
-      props.endDate,
-      props.trainerId ?? '',
-    ).data;
-  };
-
-  const getDuplicates = (trainingIds: number[]): TrainingDuplicateDto[] => {
-    return queryDuplicates(session.accessToken, trainingIds).data;
-  };
-
-  return (
-    <Grid container spacing={2}>
-      <Grid size={{ xs: 3 }}></Grid>
-      <Grid size={{ xs: 3 }} style={{ display: 'flex', alignItems: 'center' }}>
-        <ButtonGroup>
-          <Button
-            onClick={() => {
-              setDatePickerStart(dayjs().startOf('quarter'));
-              setDatePickerEnd(dayjs().endOf('quarter'));
-            }}
-          >
-            aktuelles Quartal
-          </Button>
-          <Button
-            onClick={() => {
-              setDatePickerStart(
-                dayjs().subtract(1, 'quarter').startOf('quarter'),
-              );
-              setDatePickerEnd(dayjs().subtract(1, 'quarter').endOf('quarter'));
-            }}
-          >
-            letztes Quartal
-          </Button>
-        </ButtonGroup>
-      </Grid>
-      <Grid size={{ xs: 2 }}>
-        <DatePicker
-          label="Start"
-          value={datePickerStart}
-          onChange={(v) => {
-            if (v && v.isValid()) {
-              setDatePickerStart(v);
-            }
-          }}
-        />
-      </Grid>
-      <Grid size={{ xs: 2 }}>
-        <DatePicker
-          label="Ende"
-          value={datePickerEnd}
-          onChange={(v) => {
-            if (v && v.isValid()) {
-              setDatePickerEnd(v);
-            }
-          }}
-        />
-      </Grid>
-      <Grid size={{ xs: 2 }}></Grid>
-      <Grid size={{ xs: 3 }}>
-        <TrainerList
-          session={session}
-          filterEnd={datePickerEnd}
-          filterStart={datePickerStart}
-          selectedTrainerId={selectedTrainerId}
-          setSelectedTrainerId={setSelectedTrainerId}
-        />
-      </Grid>
-      <Grid size={{ xs: 9 }}>
-        {selectedTrainerId ? (
-          <Suspense fallback={<LoadingSpinner />}>
-            <TrainingTable
-              holidays={holidays}
-              session={session}
-              trainerId={selectedTrainerId}
-              startDate={datePickerStart}
-              endDate={datePickerEnd}
-              getTrainings={getTrainings}
-              getDuplicates={getDuplicates}
-            />
-          </Suspense>
-        ) : (
-          <Typography>Übungsleitung auswählen</Typography>
-        )}
-      </Grid>
-    </Grid>
+  return fetchListFromApi<TrainingDto>(
+    `${API_TRAININGS}?${params.toString()}`,
+    accessToken!,
   );
 }
 
-export default function ApprovePage() {
+function updateStatusMutation(
+  accessToken: string,
+  setTrainings: (v: TrainingDto[]) => void,
+  refresh: () => void,
+  newStatus: TrainingStatus,
+  errorMessage: string,
+) {
+  return useMutation({
+    mutationFn: async ({
+      trainingId,
+      trainings,
+    }: {
+      trainingId: number;
+      trainings: TrainingDto[];
+    }) => {
+      const updated = await patchInApi<TrainingDto>(
+        API_TRAININGS,
+        trainingId,
+        { status: newStatus },
+        accessToken,
+      );
+      return { updated, trainings };
+    },
+    onSuccess: ({
+      updated,
+      trainings,
+    }: {
+      updated: TrainingDto;
+      trainings: TrainingDto[];
+    }) => {
+      setTrainings(replaceElementWithId(trainings, updated));
+      refresh();
+    },
+    onError: (e) => {
+      showError(errorMessage, e.message);
+    },
+  });
+}
+
+function fetchTrainingSummaries(
+  accessToken: string,
+  start: dayjs.Dayjs,
+  end: dayjs.Dayjs,
+) {
+  return fetchListFromApi<TrainingSummaryDto>(
+    `${API_TRAININGS_SUMMARIZE}?startDate=${start.format('YYYY-MM-DD')}&endDate=${end.format('YYYY-MM-DD')}`,
+    accessToken,
+    'POST',
+  );
+}
+
+function createTrainingMutation(
+  accessToken: string,
+  invalidateTrainings: () => Promise<void>,
+) {
+  return useMutation({
+    mutationFn: (data: TrainingCreateRequest) => {
+      return createInApi<TrainingDto>(API_TRAININGS, data, accessToken);
+    },
+    onSuccess: async (createdTraining) => {
+      showSuccess(
+        `Training für den ${dayjs(createdTraining.date).format('DD.MM.YYYY')} wurde erstellt`,
+      );
+      await invalidateTrainings();
+    },
+    onError: (e: Error) => {
+      showError('Konnte Training nicht erzeugen.', e.message);
+    },
+  });
+}
+
+export default function ApprovePageContainer() {
+  const [selectedTraining, setSelectedTraining] =
+    React.useState<TrainingDto | null>(null);
+  const queryClient = useQueryClient();
+
   const searchParams = useSearchParams();
   const queryParamStart = searchParams.get(QUERY_PARAM_START)
     ? dayjs(searchParams.get(QUERY_PARAM_START))
@@ -176,19 +138,116 @@ export default function ApprovePage() {
     : dayjs().endOf('quarter');
   const queryParamTrainerId = searchParams.get(QUERY_PARAM_TRAINER_ID);
 
+  const queryKeyForTrainings = [
+    'APPROVE',
+    'trainings',
+    queryParamStart,
+    queryParamEnd,
+    queryParamTrainerId,
+  ];
+
+  const queryKeyForSummaries = [
+    'APPROVE',
+    'summaries',
+    queryParamStart,
+    queryParamEnd,
+  ];
+
   const { data, status: authenticationStatus } = useSession();
   const session = data as JanusSession;
+
+  const getTrainings = () => {
+    return useSuspenseQuery({
+      queryKey: queryKeyForTrainings,
+      queryFn: () =>
+        fetchTrainingsFromApi(
+          session!.accessToken,
+          queryParamStart,
+          queryParamEnd,
+          queryParamTrainerId,
+        ),
+      staleTime: 10 * 60 * 1000,
+    }).data.toSorted((a, b) => compareByField(a, b, 'id'));
+  };
+
+  const getTrainingSummaries = () => {
+    return useSuspenseQuery({
+      queryKey: queryKeyForSummaries,
+      queryFn: () =>
+        fetchTrainingSummaries(
+          session?.accessToken ?? '',
+          queryParamStart,
+          queryParamEnd,
+        ),
+      staleTime: 10 * 60 * 1000,
+    }).data;
+  };
+
+  const setTrainings = (v: TrainingDto[]) =>
+    queryClient.setQueryData(queryKeyForTrainings, v);
+
+  const invalidateDisplayQueries = async () => {
+    await queryClient.invalidateQueries({ queryKey: ['APPROVE', 'trainings'] });
+  };
+
+  const deleteMutation = approveTrainingDeleteMutation(
+    session?.accessToken ?? '',
+    invalidateDisplayQueries,
+  );
+  const createMutation = createTrainingMutation(
+    session?.accessToken ?? '',
+    invalidateDisplayQueries,
+  );
+
+  // we refresh after a status has changed.
+  const refreshAfterStatusChange = throttle(
+    3000,
+    () => {
+      // throttle-debounce does not allow for async callbacks.
+      queryClient.invalidateQueries({
+        queryKey: queryKeyForTrainings,
+      });
+      queryClient.invalidateQueries({
+        queryKey: queryKeyForSummaries,
+      });
+    },
+    { noLeading: true },
+  );
+
+  const approveTrainingMutation = updateStatusMutation(
+    session?.accessToken ?? '',
+    setTrainings,
+    refreshAfterStatusChange,
+    'APPROVED',
+    'Fehler beim Freigeben des Trainings',
+  );
+  const revokeTrainingMutation = updateStatusMutation(
+    session?.accessToken ?? '',
+    setTrainings,
+    refreshAfterStatusChange,
+    'NEW',
+    'Fehler bei beim Zurücknehmen der Freigabe',
+  );
 
   if (authenticationStatus !== 'authenticated') {
     return <LoginRequired authenticationStatus={authenticationStatus} />;
   }
 
   return (
-    <ApprovePageContents
+    <ApprovePage
       session={session}
       startDate={queryParamStart}
       endDate={queryParamEnd}
       trainerId={queryParamTrainerId}
+      setSelectedTraining={setSelectedTraining}
+      selectedTraining={selectedTraining}
+      getTrainings={getTrainings}
+      setTrainings={setTrainings}
+      deleteTraining={deleteMutation.mutate}
+      createTraining={createMutation.mutate}
+      approveTraining={approveTrainingMutation.mutate}
+      revokeTraining={revokeTrainingMutation.mutate}
+      getTrainingSummaries={getTrainingSummaries}
     />
   );
 }

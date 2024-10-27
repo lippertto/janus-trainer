@@ -8,7 +8,6 @@ import {
   allowAdminOrSelf,
   allowNoOne,
   allowOnlyAdmins,
-  badRequestResponse,
   emptyResponse,
   handleTopLevelCatch,
   validateOrThrow,
