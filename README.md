@@ -26,17 +26,19 @@ Then, run `yarn jest -c api-tests/jest.config.js`
 
 ## Features
 
+- Make courses disabled. (Also in the UI.)
 - Allow users to choose their own courses (Michael Busch)
 - Auto-Approve
-- Make courses disabled. (Also in the UI.)
 - Playwright test: enter -> approve -> compensate.
 - Playwright test: duplicates
 - Warning if training limits have been reached
 - offerings: make weekday a radio group. Training can have only 1 weekday
+- include tour for new users: https://github.com/elrumordelaluz/reactour
 
 ## Tech update
 
 - Join payments and compensation api routes (and domain objects) into /payments/{id}/compensations
+- Run API tests in CI
 
 # Common tasks
 

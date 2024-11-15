@@ -134,7 +134,7 @@ export async function PUT(
   }
 }
 
-async function selectOneUser(
+export async function selectOneUser(
   id: string,
   includeCognitoProperties: boolean,
   includeCompensationValues: boolean,
