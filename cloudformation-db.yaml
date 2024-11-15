@@ -1,3 +1,5 @@
+# This file describes the postgres database (just the instance)
+# It needs to be executed manually
 AWSTemplateFormatVersion: '2010-09-09'
 
 Parameters:
