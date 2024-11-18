@@ -7,8 +7,8 @@ import 'cross-fetch/polyfill';
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import { selectOneUser } from '@/app/api/users/[userId]/route';
 import { HomePage } from '@/app/HomePage';
+import { selectOneUser } from '@/app/api/users/[userId]/select-one-user';
 
 // https://github.com/remarkjs/react-markdown/issues/635#issuecomment-991137447
 jest.mock('react-markdown', () => (props: { children: React.ReactNode }) => {
