@@ -52,8 +52,9 @@ async function doDELETE(id: string) {
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { userId: string } },
+  props: { params: Promise<{ userId: string }> },
 ) {
+  const params = await props.params;
   try {
     await allowOnlyAdmins(request);
     return await doDELETE(params.userId);
@@ -65,8 +66,9 @@ export async function DELETE(
 // We do a HEAD request to checks if a user exists in the database
 export async function HEAD(
   _nextRequest: NextRequest,
-  { params }: { params: { userId: string } },
+  props: { params: Promise<{ userId: string }> },
 ) {
+  const params = await props.params;
   try {
     const user = await prisma.userInDb.findFirst({
       where: { id: params.userId, deletedAt: null },
@@ -118,8 +120,9 @@ async function doPUT(
 
 export async function PUT(
   nextRequest: NextRequest,
-  { params }: { params: { userId: string } },
+  props: { params: Promise<{ userId: string }> },
 ): Promise<NextResponse<UserDto | ErrorDto>> {
+  const params = await props.params;
   try {
     await allowOnlyAdmins(nextRequest);
     const request = await validateOrThrow(
@@ -184,8 +187,9 @@ export async function selectOneUser(
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { userId: string } },
+  props: { params: Promise<{ userId: string }> },
 ): Promise<NextResponse<UserDto | ErrorDto>> {
+  const params = await props.params;
   try {
     await allowAdminOrSelf(request, params.userId);
 
@@ -213,8 +217,9 @@ export async function GET(
 /** Patch a user. This is intended to be used from the profile page. */
 export async function PATCH(
   nextRequest: NextRequest,
-  { params }: { params: { userId: string } },
+  props: { params: Promise<{ userId: string }> },
 ): Promise<NextResponse<UserDto | ErrorDto>> {
+  const params = await props.params;
   try {
     await allowAdminOrSelf(nextRequest, params.userId);
     const request = await validateOrThrow(

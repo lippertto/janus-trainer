@@ -17,12 +17,11 @@ import prisma from '@/lib/prisma';
 
 export async function GET(
   nextRequest: NextRequest,
-  {
-    params,
-  }: {
-    params: { cvId: number };
+  props: {
+    params: Promise<{ cvId: number }>;
   },
 ): Promise<NextResponse<CompensationValueDto | ErrorDto>> {
+  const params = await props.params;
   try {
     await allowAnyLoggedIn(nextRequest);
     const result = await prisma.compensationValue.findUnique({
@@ -39,12 +38,11 @@ export async function GET(
 
 export async function PUT(
   nextRequest: NextRequest,
-  {
-    params,
-  }: {
-    params: { cvId: number };
+  props: {
+    params: Promise<{ cvId: number }>;
   },
 ): Promise<NextResponse<CompensationValueDto | ErrorDto>> {
+  const params = await props.params;
   try {
     await allowOnlyAdmins(nextRequest);
     const request = await validateOrThrow(
@@ -65,8 +63,9 @@ export async function PUT(
 
 export async function DELETE(
   nextRequest: NextRequest,
-  { params }: { params: { cvId: number } },
+  props: { params: Promise<{ cvId: number }> },
 ): Promise<Response> {
+  const params = await props.params;
   try {
     await allowOnlyAdmins(nextRequest);
     await prisma.compensationValue.delete({
