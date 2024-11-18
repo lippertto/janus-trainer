@@ -57,7 +57,7 @@ describe('sepa generation works', () => {
     // THEN
     const sepaDom = new DOMParser().parseFromString(sepaXml, 'text/xml');
     const select = xpath.useNamespaces({
-      pain: 'urn:iso:std:iso:20022:tech:xsd:pain.001.003.03',
+      pain: 'urn:iso:std:iso:20022:tech:xsd:pain.001.001.09',
     });
     // there should be two transactions
     const transactions = select(TRANSACTIONS, sepaDom, false);

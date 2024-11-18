@@ -8600,7 +8600,7 @@ __metadata:
     react-error-boundary: "npm:^4.1.2"
     react-hook-form: "npm:^7.53.2"
     react-markdown: "npm:^9.0.1"
-    sepa: "npm:^1.1.0"
+    sepa: "npm:2.0.0"
     superagent: "npm:^10.1.1"
     throttle-debounce: "npm:^5.0.2"
     ts-jest: "npm:^29.2.5"
@@ -11393,12 +11393,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sepa@npm:^1.1.0":
-  version: 1.1.0
-  resolution: "sepa@npm:1.1.0"
+"sepa@npm:2.0.0":
+  version: 2.0.0
+  resolution: "sepa@npm:2.0.0"
   dependencies:
     "@xmldom/xmldom": "npm:*"
-  checksum: 10c0/78d5b92a8f0865157a5eb8acb9f90d3c08b5d406546c634e228816755ad86c12d59b55cc348c11ae5437d1b6bdd1e0254e1c1bce49b40ab48fb2627284037361
+  checksum: 10c0/05cedf2e43064dc44ecaebb7c34df5e7de1055ba7808bee12359318d7680f5b503e78e04391401f04d40ed58723f6c287dc702b0e7f9a1a21fe1f0c01afef010
   languageName: node
   linkType: hard
 

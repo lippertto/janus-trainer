@@ -43,7 +43,7 @@ export default [
       '@next/next/no-duplicate-head': 'off',
       '@next/next/no-page-custom-font': 'off',
     },
-    ignores: ['playwright/'],
+    ignores: ['playwright/', 'types/sepa.d.ts'],
   },
   {
     ...playwright.configs['flat/recommended'],
