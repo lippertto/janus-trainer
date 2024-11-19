@@ -1,5 +1,6 @@
 import { UserPatchRequest } from '@/lib/dto';
 import { patchRequestToUpdateData } from './patch';
+import { describe, test, expect } from 'vitest';
 
 describe('user patch', () => {
   test('removes whitespaces when converting request', () => {

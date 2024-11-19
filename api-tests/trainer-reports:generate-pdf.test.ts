@@ -3,9 +3,10 @@ import {
   COURSE_2_ID,
   LocalApi,
   USER_ID_TRAINER,
-} from '@/api-tests/apiTestUtils';
+} from './apiTestUtils';
 import superagent from 'superagent';
 import { TrainingStatus } from '@prisma/client';
+import { describe, expect, test } from 'vitest';
 
 const SERVER = 'http://localhost:3000';
 const api = new LocalApi(SERVER);

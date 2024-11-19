@@ -1,10 +1,9 @@
 /**
- * @jest-environment jsdom
+ * @vitest-environment jsdom
  */
 
 import React from 'react';
 import { fireEvent, render, screen } from '@testing-library/react';
-import '@testing-library/jest-dom';
 import { ReportPage } from '@/app/report/ReportPage';
 import dayjs from 'dayjs';
 import { TrainerReportCourseDto } from '@/lib/dto';
@@ -12,6 +11,8 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import 'dayjs/locale/de';
 import { SnackbarProvider } from 'notistack';
+import { describe, expect, test, vi } from 'vitest';
+import '@testing-library/jest-dom/vitest';
 
 describe('ReportPage', () => {
   test('Does not export more than 5 courses', async () => {
@@ -21,15 +22,16 @@ describe('ReportPage', () => {
       trainings: [],
     }));
 
-    const handleDownloadClick = jest.fn();
+    // @ts-ignore
+    const handleDownloadClick = vi.fn();
     const { unmount } = render(
       <SnackbarProvider>
         <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="de">
           <ReportPage
             startDate={dayjs().startOf('year')}
             endDate={dayjs().endOf('year')}
-            setStartDate={jest.fn()}
-            setEndDate={jest.fn()}
+            setStartDate={vi.fn()}
+            setEndDate={vi.fn()}
             getReportCourses={() => courses}
             handleDownloadClick={handleDownloadClick}
           />
@@ -54,15 +56,15 @@ describe('ReportPage', () => {
       trainings: [],
     }));
 
-    const handleDownloadClick = jest.fn(() => Promise.resolve());
+    const handleDownloadClick = vi.fn(() => Promise.resolve());
     const { unmount } = render(
       <SnackbarProvider>
         <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="de">
           <ReportPage
             startDate={dayjs().startOf('year')}
             endDate={dayjs().endOf('year')}
-            setStartDate={jest.fn()}
-            setEndDate={jest.fn()}
+            setStartDate={vi.fn()}
+            setEndDate={vi.fn()}
             getReportCourses={() => courses}
             handleDownloadClick={handleDownloadClick}
           />

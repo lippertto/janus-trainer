@@ -1,17 +1,18 @@
 /**
- * @jest-environment jsdom
+ * @vitest-environment jsdom
  */
 
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import '@testing-library/jest-dom';
 import React from 'react';
 import CompensationValueDialog from '@/app/configure/compensation-values/CompensationValueDialog';
 import userEvent from '@testing-library/user-event';
+import { describe, expect, test, vi } from 'vitest';
+import '@testing-library/jest-dom/vitest';
 
 describe('compensation value dialog', () => {
   test('Can enter integer values for cents', async () => {
-    const save = jest.fn();
-    const close = jest.fn();
+    const save = vi.fn();
+    const close = vi.fn();
     render(
       <CompensationValueDialog
         open={true}
@@ -51,8 +52,8 @@ describe('compensation value dialog', () => {
   });
 
   test('Can enter floating point values for cents', async () => {
-    const save = jest.fn();
-    const close = jest.fn();
+    const save = vi.fn();
+    const close = vi.fn();
     render(
       <CompensationValueDialog
         open={true}

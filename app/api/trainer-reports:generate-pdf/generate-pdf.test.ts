@@ -1,6 +1,7 @@
 import { generatePdf } from '@/app/api/trainer-reports:generate-pdf/generate-pdf';
 import fs from 'node:fs';
 import dayjs from 'dayjs';
+import { describe, expect, test, vi } from 'vitest';
 
 describe('pdf generation', () => {
   test('generates pdf (happy case)', async () => {

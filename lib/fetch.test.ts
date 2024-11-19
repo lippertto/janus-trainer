@@ -1,4 +1,5 @@
 import { buildQueryString } from '@/lib/fetch';
+import { describe, expect, test } from 'vitest';
 
 describe('fetchSingleEntity', () => {
   test('empty components result in empty string', () => {

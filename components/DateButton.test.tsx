@@ -1,11 +1,12 @@
 /**
- * @jest-environment jsdom
+ * @vitest-environment jsdom
  */
 
 import { render, screen } from '@testing-library/react';
 import React from 'react';
 import DateButton from '@/components/DateButton';
 import dayjs from 'dayjs';
+import { describe, expect, test, vi } from 'vitest';
 
 describe('Date Button', () => {
   test('shows actual dates for other dates', async () => {
@@ -15,9 +16,9 @@ describe('Date Button', () => {
     render(
       <DateButton
         startDate={firstDayOfQuarter}
-        setStartDate={jest.fn()}
+        setStartDate={vi.fn()}
         endDate={lastDayOfQuarter}
-        setEndDate={jest.fn()}
+        setEndDate={vi.fn()}
         options={[]}
       />,
     );

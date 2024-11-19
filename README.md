@@ -12,7 +12,7 @@ yarn start:dev
 To execute the API tests, you have to start the server with the environment variable
 `DISABLE_JWT_CHECKS=1` set.
 
-Then, run `yarn jest -c api-tests/jest.config.js`
+Then, run `yarn vitest -c api-tests/vite.config.js`
 
 # TODO
 

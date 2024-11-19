@@ -1,7 +1,7 @@
 /**
- * @jest-environment jsdom
+ * @vitest-environment jsdom
  */
-
+import React from 'react';
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import { HolidayDialog } from '@/app/configure/holidays/HolidayDialog';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -9,6 +9,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers';
 import 'dayjs/locale/de';
 import dayjs from 'dayjs';
 import userEvent from '@testing-library/user-event';
+import { describe, expect, test, vi } from 'vitest';
 
 async function clickSave() {
   const saveButton = await screen.findByRole('button', {
@@ -28,13 +29,13 @@ async function enterDate(name: string, value: string) {
 
 describe('EnterHolidayDialog', () => {
   test('name must be entered', async () => {
-    const handleSave = jest.fn();
+    const handleSave = vi.fn();
 
     render(
       <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="de">
         <HolidayDialog
           open={true}
-          handleClose={jest.fn()}
+          handleClose={vi.fn()}
           handleSave={handleSave}
           toEdit={null}
         />
@@ -48,7 +49,7 @@ describe('EnterHolidayDialog', () => {
   });
 
   test('happy case', async () => {
-    const handleSave = jest.fn();
+    const handleSave = vi.fn();
     const startDate = '2024-10-22';
     const endDate = '2024-10-29';
     const name = 'any-name';
@@ -57,7 +58,7 @@ describe('EnterHolidayDialog', () => {
       <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="de">
         <HolidayDialog
           open={true}
-          handleClose={jest.fn()}
+          handleClose={vi.fn()}
           handleSave={handleSave}
           toEdit={null}
         />
@@ -83,7 +84,7 @@ describe('EnterHolidayDialog', () => {
   });
 
   test('start cannot be before end', async () => {
-    const handleSave = jest.fn();
+    const handleSave = vi.fn();
     const startDate = '2024-10-29';
     const endDate = '2024-10-22';
     const name = 'any-name';
@@ -92,7 +93,7 @@ describe('EnterHolidayDialog', () => {
       <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="de">
         <HolidayDialog
           open={true}
-          handleClose={jest.fn()}
+          handleClose={vi.fn()}
           handleSave={handleSave}
           toEdit={null}
         />

@@ -1,10 +1,11 @@
 /**
- * @jest-environment jsdom
+ * @vitest-environment jsdom
  */
 
 import React from 'react';
+import { describe, expect, test, vi } from 'vitest';
+import '@testing-library/jest-dom/vitest';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import '@testing-library/jest-dom';
 
 import DateDialog from './DateDialog';
 
@@ -35,27 +36,28 @@ const options = [
 
 describe('DateDialog', () => {
   test('Shows header', async () => {
-    render(
+    const { unmount } = render(
       <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="de">
         <DateDialog
           open={true}
-          onClose={jest.fn()}
+          onClose={vi.fn()}
           startDate={dayjs()}
           endDate={dayjs()}
-          setStartDate={jest.fn()}
-          setEndDate={jest.fn()}
+          setStartDate={vi.fn()}
+          setEndDate={vi.fn()}
           options={options}
         />
       </LocalizationProvider>,
     );
     await screen.findByText('Anzeigezeitraum wählen');
+    unmount();
   });
 
   test('Closes on abbrechen', async () => {
-    const handleClose = jest.fn();
-    const setStartDate = jest.fn();
-    const setEndDate = jest.fn();
-    render(
+    const handleClose = vi.fn();
+    const setStartDate = vi.fn();
+    const setEndDate = vi.fn();
+    const { unmount } = render(
       <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="de">
         <DateDialog
           open={true}
@@ -74,12 +76,13 @@ describe('DateDialog', () => {
     expect(handleClose).toHaveBeenCalled();
     expect(setStartDate).not.toHaveBeenCalled();
     expect(setEndDate).not.toHaveBeenCalled();
+    unmount();
   });
 
   test('Sets date on custom timeframe', async () => {
-    const handleClose = jest.fn();
-    const setStartDate = jest.fn();
-    const setEndDate = jest.fn();
+    const handleClose = vi.fn();
+    const setStartDate = vi.fn();
+    const setEndDate = vi.fn();
 
     const { unmount } = render(
       <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="de">
@@ -128,14 +131,14 @@ describe('DateDialog', () => {
   });
 
   test('Sets to current quarter', async () => {
-    const setStartDate = jest.fn();
-    const setEndDate = jest.fn();
+    const setStartDate = vi.fn();
+    const setEndDate = vi.fn();
 
     const { unmount } = render(
       <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="de">
         <DateDialog
           open={true}
-          onClose={jest.fn()}
+          onClose={vi.fn()}
           startDate={dayjs()}
           endDate={dayjs()}
           setStartDate={setStartDate}
@@ -165,14 +168,14 @@ describe('DateDialog', () => {
   });
 
   test('Sets to previous quarter', async () => {
-    const setStartDate = jest.fn();
-    const setEndDate = jest.fn();
+    const setStartDate = vi.fn();
+    const setEndDate = vi.fn();
 
     const { unmount } = render(
       <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="de">
         <DateDialog
           open={true}
-          onClose={jest.fn()}
+          onClose={vi.fn()}
           startDate={dayjs()}
           endDate={dayjs()}
           setStartDate={setStartDate}
@@ -206,11 +209,11 @@ describe('DateDialog', () => {
       <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="de">
         <DateDialog
           open={true}
-          onClose={jest.fn()}
+          onClose={vi.fn()}
           startDate={dayjs()}
           endDate={dayjs()}
-          setStartDate={jest.fn()}
-          setEndDate={jest.fn()}
+          setStartDate={vi.fn()}
+          setEndDate={vi.fn()}
           options={options}
         />
       </LocalizationProvider>,
@@ -242,11 +245,11 @@ describe('DateDialog', () => {
       <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="de">
         <DateDialog
           open={true}
-          onClose={jest.fn()}
+          onClose={vi.fn()}
           startDate={dayjs()}
           endDate={dayjs()}
-          setStartDate={jest.fn()}
-          setEndDate={jest.fn()}
+          setStartDate={vi.fn()}
+          setEndDate={vi.fn()}
           options={options}
         />
       </LocalizationProvider>,

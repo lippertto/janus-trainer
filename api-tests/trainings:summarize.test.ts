@@ -1,5 +1,6 @@
 import superagent from 'superagent';
 import { TrainingCreateRequest } from '@/lib/dto';
+import { describe, expect, test } from 'vitest';
 
 const SERVER = 'http://localhost:3000';
 

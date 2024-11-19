@@ -1,9 +1,17 @@
 /**
- * @jest-environment jsdom
+ * @vitest-environment jsdom
  */
 
-import '@testing-library/jest-dom';
+import React from 'react';
+import { CourseDto, UserDto } from '@/lib/dto';
+import { EnterTrainingDialogForAdmins } from '@/app/approve/EnterTrainingDialogForAdmins';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { LocalizationProvider } from '@mui/x-date-pickers';
+import dayjs from 'dayjs';
+import 'dayjs/locale/de';
 
+import { describe, expect, test, vi } from 'vitest';
+import '@testing-library/jest-dom/vitest';
 import {
   act,
   fireEvent,
@@ -11,13 +19,7 @@ import {
   screen,
   waitFor,
 } from '@testing-library/react';
-import React from 'react';
-import { CourseDto, UserDto } from '@/lib/dto';
-import 'dayjs/locale/de';
-import { EnterTrainingDialogForAdmins } from '@/app/approve/EnterTrainingDialogForAdmins';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { LocalizationProvider } from '@mui/x-date-pickers';
-import dayjs from 'dayjs';
+
 import userEvent from '@testing-library/user-event';
 
 const TRAINERS: Pick<UserDto, 'id' | 'name'>[] = [
@@ -31,7 +33,7 @@ const COURSES: Pick<CourseDto, 'id' | 'name'>[] = [
   { id: 125, name: 'Course B 1' },
 ];
 
-const getCourses = jest.fn((tid: string | null) => {
+const getCourses = vi.fn((tid: string | null) => {
   if (!tid) return [];
   if (tid === '123') {
     return COURSES.slice(0, 2);
@@ -42,7 +44,7 @@ const getCourses = jest.fn((tid: string | null) => {
 
 describe('EnterTrainingDialogForAdmins', () => {
   test('renders properly', async () => {
-    const getTrainers = jest.fn(() => TRAINERS);
+    const getTrainers = vi.fn(() => TRAINERS);
 
     const { unmount } = render(
       <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="de">
@@ -50,8 +52,8 @@ describe('EnterTrainingDialogForAdmins', () => {
           open={true}
           getTrainers={getTrainers}
           getCourses={getCourses}
-          handleConfirm={jest.fn()}
-          handleClose={jest.fn()}
+          handleConfirm={vi.fn()}
+          handleClose={vi.fn()}
         />
       </LocalizationProvider>,
     );
@@ -79,9 +81,9 @@ describe('EnterTrainingDialogForAdmins', () => {
   });
 
   test('Selection happy case', async () => {
-    const getTrainers = jest.fn(() => TRAINERS);
+    const getTrainers = vi.fn(() => TRAINERS);
 
-    const handleConfirm = jest.fn();
+    const handleConfirm = vi.fn();
 
     const { unmount } = render(
       <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="de">
@@ -90,7 +92,7 @@ describe('EnterTrainingDialogForAdmins', () => {
           getTrainers={getTrainers}
           getCourses={getCourses}
           handleConfirm={handleConfirm}
-          handleClose={jest.fn()}
+          handleClose={vi.fn()}
         />
       </LocalizationProvider>,
     );
@@ -118,16 +120,16 @@ describe('EnterTrainingDialogForAdmins', () => {
   });
 
   test('allows to enter negative values for amount', async () => {
-    const handleConfirm = jest.fn();
+    const handleConfirm = vi.fn();
 
     const { unmount } = render(
       <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="de">
         <EnterTrainingDialogForAdmins
           open={true}
-          getTrainers={jest.fn(() => TRAINERS)}
+          getTrainers={vi.fn(() => TRAINERS)}
           getCourses={getCourses}
           handleConfirm={handleConfirm}
-          handleClose={jest.fn()}
+          handleClose={vi.fn()}
         />
       </LocalizationProvider>,
     );

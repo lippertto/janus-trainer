@@ -1,7 +1,8 @@
-import { LocalApi } from '@/api-tests/apiTestUtils';
+import { LocalApi } from './apiTestUtils';
 import superagent from 'superagent';
 import { TrainingCountPerCourse, TrainingDto } from '@/lib/dto';
 import { TrainingStatus } from '@prisma/client';
+import { expect, test } from 'vitest';
 
 const SERVER = 'http://localhost:3000';
 const api = new LocalApi(SERVER);

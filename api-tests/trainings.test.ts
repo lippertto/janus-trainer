@@ -5,6 +5,7 @@ import {
   TrainingUpdateStatusRequest,
 } from '@/lib/dto';
 import dayjs from 'dayjs';
+import { describe, expect, test } from 'vitest';
 
 const SERVER = 'http://localhost:3000';
 const TRAINER_ID = '502c79bc-e051-70f5-048c-5619e49e2383';

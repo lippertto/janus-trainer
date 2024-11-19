@@ -1,30 +1,32 @@
 /**
- * @jest-environment jsdom
+ * @vitest-environment jsdom
  */
 // this polyfill helps with the following error-message:
 // ReferenceError: Request is not defined
 import 'cross-fetch/polyfill';
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import '@testing-library/jest-dom';
 import { HomePage } from '@/app/HomePage';
 import { selectOneUser } from '@/app/api/users/[userId]/select-one-user';
 
+import { describe, expect, test, vi, Mock } from 'vitest';
+import '@testing-library/jest-dom/vitest';
+
 // https://github.com/remarkjs/react-markdown/issues/635#issuecomment-991137447
-jest.mock('react-markdown', () => (props: { children: React.ReactNode }) => {
-  return <>{props.children}</>;
-});
+vi.mock('react-markdown', () => ({
+  default: (props: { children: React.ReactNode }) => <>{props.children}</>,
+}));
 
-jest.mock('next-auth/jwt', () => () => {});
+vi.mock('next-auth/jwt', () => () => {});
 
-jest.mock('@/app/api/users/[userId]/select-one-user', () => ({
+vi.mock('@/app/api/users/[userId]/select-one-user', () => ({
   __esModule: true,
-  selectOneUser: jest.fn(),
+  selectOneUser: vi.fn(),
 }));
 
 describe('HomePage', () => {
   test('shows warning if trainer and iban is not set', async () => {
-    (selectOneUser as jest.Mock).mockReturnValueOnce(
+    (selectOneUser as Mock).mockReturnValueOnce(
       Promise.resolve({
         groups: ['trainers'],
         iban: null,
@@ -44,7 +46,7 @@ describe('HomePage', () => {
   });
 
   test('shows no warning if admin and iban is not set', async () => {
-    (selectOneUser as jest.Mock).mockReturnValueOnce(
+    (selectOneUser as Mock).mockReturnValueOnce(
       Promise.resolve({
         groups: ['admins'],
         iban: null,
@@ -64,7 +66,7 @@ describe('HomePage', () => {
   });
 
   test('shows no warning if trainer and iban is set', async () => {
-    (selectOneUser as jest.Mock).mockReturnValueOnce(
+    (selectOneUser as Mock).mockReturnValueOnce(
       Promise.resolve({
         groups: ['admins'],
         iban: 'any-iban',
