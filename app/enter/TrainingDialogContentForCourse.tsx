@@ -151,6 +151,11 @@ export function TrainingDialogContentForCourse(props: {
   today: DayOfWeek;
   compensationValues: CompensationValueDto[];
 }) {
+  const enrichedCompensationValues = prepareCompensationValues(
+    props.compensationValues,
+    props.toEdit,
+  );
+
   const {
     register,
     handleSubmit,
@@ -164,7 +169,7 @@ export function TrainingDialogContentForCourse(props: {
     defaultValues: determineDefaultValues(
       props.toEdit,
       props.courses,
-      props.compensationValues,
+      enrichedCompensationValues,
       props.today,
     ),
   });
@@ -208,11 +213,6 @@ export function TrainingDialogContentForCourse(props: {
       ),
     );
   }, [props.toEdit, props.type]);
-
-  const enrichedCompensationValues = prepareCompensationValues(
-    props.compensationValues,
-    props.toEdit,
-  );
 
   const onSubmit = (data: FormData) => {
     if (isValid) {
