@@ -29,6 +29,12 @@ function EnterHelpText() {
         mehr bearbeitet werden.
       </DialogContentText>
       <DialogContentText>
+        <b>Anzeigezeitraum verändern</b> Die Daten, die angezeigt werden, werden
+        im oberen Teil angezeigt. Standardmäßig ist das aktuelle Quartal
+        ausgewählt. Wenn du den angezeigten Zeitraum verändern möchtest, klickst
+        du einfach auf die Daten, und ein Dialog für die Auswahl öffnet sich.
+      </DialogContentText>
+      <DialogContentText>
         <b>Freigabeprozess</b> Wenn du das Training speichert, wird es vom Büro
         freigegeben und die zugehörigen Pauschalen am Ende des Quartals
         gesammelt überwiesen. Du siehst den Status deines Trainings beim

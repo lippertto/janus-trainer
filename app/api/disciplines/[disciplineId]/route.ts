@@ -9,8 +9,9 @@ import prisma from '@/lib/prisma';
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { disciplineId: string } },
+  props: { params: Promise<{ disciplineId: string }> },
 ) {
+  const params = await props.params;
   try {
     await allowOnlyAdmins(request);
     await prisma.discipline.delete({

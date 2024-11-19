@@ -4,7 +4,7 @@ import { CompensationDto } from './dto';
 
 // There are two different formats for the sepa xml files.
 // This is the one used for transfers
-const FORMAT_FOR_TRANSFERS = 'pain.001.003.03';
+const FORMAT_FOR_TRANSFERS = 'pain.001.001.09';
 
 function compensationHash(compensation: CompensationDto): string {
   const hash = md5(

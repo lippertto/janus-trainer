@@ -14,8 +14,9 @@ import {
 
 export async function POST(
   nextRequest: NextRequest,
-  { params }: { params: { userId: string } },
+  props: { params: Promise<{ userId: string }> },
 ): Promise<NextResponse<{ result: 'success' } | ErrorDto>> {
+  const params = await props.params;
   try {
     await allowOnlyAdmins(nextRequest);
     const userId = await getOwnUserId(nextRequest);

@@ -32,7 +32,7 @@ async function createCompensationValue(
 export async function POST(
   nextRequest: NextRequest,
   params: {
-    params: { ccId: number };
+    params: Promise<{ ccId: number }>;
   },
 ): Promise<NextResponse<CompensationValueDto | ErrorDto>> {
   try {
@@ -42,7 +42,7 @@ export async function POST(
       await nextRequest.json(),
     );
     const result = await createCompensationValue(
-      params.params.ccId as unknown as string,
+      (await params.params).ccId as unknown as string,
       request,
     );
     return NextResponse.json(

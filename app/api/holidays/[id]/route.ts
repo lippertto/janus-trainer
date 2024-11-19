@@ -21,8 +21,9 @@ async function doDELETE(id: string) {
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  props: { params: Promise<{ id: string }> },
 ): Promise<Response> {
+  const params = await props.params;
   try {
     await allowOnlyAdmins(request);
     return await doDELETE(params.id);
@@ -33,8 +34,9 @@ export async function DELETE(
 
 export async function PUT(
   nextRequest: NextRequest,
-  { params }: { params: { id: string } },
+  props: { params: Promise<{ id: string }> },
 ): Promise<NextResponse<ErrorDto | HolidayDto>> {
+  const params = await props.params;
   try {
     await allowOnlyAdmins(nextRequest);
 

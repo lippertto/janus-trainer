@@ -37,8 +37,9 @@ async function checkIfTrainingExistsAndIsOwn(
 
 export async function DELETE(
   nextRequest: NextRequest,
-  { params }: { params: { trainingId: string } },
+  props: { params: Promise<{ trainingId: string }> },
 ) {
+  const params = await props.params;
   try {
     await allowAnyLoggedIn(nextRequest);
     const id = idAsNumberOrThrow(params.trainingId);
@@ -71,8 +72,9 @@ async function updateTraining(request: TrainingUpdateRequest, id: number) {
 
 export async function PUT(
   nextRequest: NextRequest,
-  { params }: { params: { trainingId: string } },
+  props: { params: Promise<{ trainingId: string }> },
 ): Promise<NextResponse<TrainingDto | ErrorDto>> {
+  const params = await props.params;
   try {
     // first test that we are logged in. Further down, we do more checks
     await allowAnyLoggedIn(nextRequest);
@@ -99,8 +101,9 @@ export async function PUT(
 
 export async function PATCH(
   nextRequest: NextRequest,
-  { params }: { params: { trainingId: string } },
+  props: { params: Promise<{ trainingId: string }> },
 ): Promise<NextResponse<TrainingDto | ErrorDto>> {
+  const params = await props.params;
   try {
     await allowOnlyAdmins(nextRequest);
     const userId = await getOwnUserId(nextRequest);
@@ -143,8 +146,9 @@ async function returnOneTraining(
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { trainingId: string } },
+  props: { params: Promise<{ trainingId: string }> },
 ): Promise<NextResponse<TrainingDto | ErrorDto>> {
+  const params = await props.params;
   try {
     // first test that we are logged in. Further down, we do more checks
     await allowAnyLoggedIn(request);

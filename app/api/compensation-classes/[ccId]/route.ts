@@ -30,8 +30,9 @@ async function deleteCompensationClass(id: number) {
 
 export async function DELETE(
   nextRequest: NextRequest,
-  { params }: { params: { ccId: number } },
+  props: { params: Promise<{ ccId: number }> },
 ): Promise<Response> {
+  const params = await props.params;
   try {
     await allowOnlyAdmins(nextRequest);
     await deleteCompensationClass(idAsNumberOrThrow(params.ccId));
@@ -53,8 +54,9 @@ async function getCompensationClass(
 
 export async function GET(
   nextRequest: NextRequest,
-  { params }: { params: { ccId: number } },
+  props: { params: Promise<{ ccId: number }> },
 ): Promise<NextResponse<CompensationClassDto | ErrorDto>> {
+  const params = await props.params;
   try {
     const expand = nextRequest.nextUrl.searchParams.get('expand');
     await allowAnyLoggedIn(nextRequest);
@@ -73,8 +75,9 @@ export async function GET(
 
 export async function PUT(
   nextRequest: NextRequest,
-  { params }: { params: { ccId: number } },
+  props: { params: Promise<{ ccId: number }> },
 ): Promise<NextResponse<CompensationClassDto | ErrorDto>> {
+  const params = await props.params;
   try {
     await allowOnlyAdmins(nextRequest);
     const request = await validateOrThrow(

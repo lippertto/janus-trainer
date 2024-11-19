@@ -20,8 +20,9 @@ async function getOneCourse(id: string) {
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  props: { params: Promise<{ id: string }> },
 ) {
+  const params = await props.params;
   try {
     await allowAnyLoggedIn(request);
     return await getOneCourse(params.id);
@@ -38,8 +39,9 @@ async function deleteOneCourse(idString: string) {
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  props: { params: Promise<{ id: string }> },
 ) {
+  const params = await props.params;
   try {
     await allowOnlyAdmins(request);
     return await deleteOneCourse(params.id);
@@ -66,8 +68,9 @@ async function updateOneCourse(idString: string, data: any) {
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  props: { params: Promise<{ id: string }> },
 ): Promise<NextResponse<CourseDto | ErrorDto>> {
+  const params = await props.params;
   try {
     await allowOnlyAdmins(request);
     const data = await request.json();

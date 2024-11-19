@@ -10,8 +10,9 @@ import { cognitoClient } from '@/app/api/users/cognito-client';
 
 export async function GET(
   nextRequest: NextRequest,
-  { params }: { params: { userId: string } },
+  props: { params: Promise<{ userId: string }> },
 ): Promise<NextResponse<LoginInfo | ErrorDto>> {
+  const params = await props.params;
   try {
     await allowAdminOrSelf(nextRequest, params.userId);
     const cognitoUser = await getCognitoUserById(

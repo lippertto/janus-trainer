@@ -138,7 +138,6 @@ export function ReportPage(props: {
             <ReportCourseList courses={courses} />
           </Box>
         </Paper>
-        ;
       </Stack>
     </Box>
   );

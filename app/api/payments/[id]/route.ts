@@ -21,8 +21,9 @@ async function deletePayment(idAsString: string) {
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  props: { params: Promise<{ id: string }> },
 ) {
+  const params = await props.params;
   try {
     await allowNoOne(request);
     return await deletePayment(params.id);

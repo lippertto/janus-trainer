@@ -26,18 +26,19 @@ Then, run `yarn jest -c api-tests/jest.config.js`
 
 ## Features
 
+- Make courses disabled. (Also in the UI.)
 - Allow users to choose their own courses (Michael Busch)
 - Auto-Approve
-- Make courses disabled. (Also in the UI.)
 - Playwright test: enter -> approve -> compensate.
 - Playwright test: duplicates
 - Warning if training limits have been reached
 - offerings: make weekday a radio group. Training can have only 1 weekday
+- include tour for new users: https://github.com/elrumordelaluz/reactour
 
 ## Tech update
 
-- Hide password in POSTGRES_CONNECTION_URL of lambda. --> Use Secret
 - Join payments and compensation api routes (and domain objects) into /payments/{id}/compensations
+- Run API tests in CI
 
 # Common tasks
 
@@ -51,7 +52,8 @@ Make changes to the schema. Push the changes to the local database with `prisma 
 
 After you are done, you can create a migration like so: `prisma migrate dev`
 
-More information can be found in the [Prisma docs](https://www.prisma.io/docs/orm/prisma-migrate/workflows/prototyping-your-schema)
+More information can be found in
+the [Prisma docs](https://www.prisma.io/docs/orm/prisma-migrate/workflows/prototyping-your-schema)
 
 # Architecture & Decisions
 
@@ -120,3 +122,13 @@ You need to take care of the following things:
 
 - Provide a domain for each environment
 - Create a certificate in ACM for that domain
+
+# Notes
+
+## Secrets and Parameters
+
+I do not want to use the AWS Secrets Mechanism, e.g., for the db password.
+In order to get the secrets, one would need to use an SDK (creating an explicit dependency to aws)
+or to use the lambda extension for secrets. The latter would use a http call to localhost to retrieve
+the secret, which is not very so 12-factor compatible.
+From my point of view it is fine to keep the secrets as environment variables for now.
