@@ -1,5 +1,6 @@
 import { validateOrThrow } from '@/lib/helpers-for-api';
 import { PaymentCreateRequest } from '@/lib/dto';
+import { describe, expect, test, vi } from 'vitest';
 
 describe('dto', () => {
   test('rejects empty PaymentCreateRequest', async () => {

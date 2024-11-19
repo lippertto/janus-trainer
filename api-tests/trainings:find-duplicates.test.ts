@@ -6,7 +6,8 @@ import {
   USER_ID_TRAINER,
   USER_NAME_ADMIN,
   USER_NAME_TRAINER,
-} from '@/api-tests/apiTestUtils';
+} from './apiTestUtils';
+import { describe, expect, test } from 'vitest';
 
 const SERVER = 'http://localhost:3000';
 const api = new LocalApi(SERVER);

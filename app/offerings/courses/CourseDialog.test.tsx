@@ -1,13 +1,13 @@
 /**
- * @jest-environment jsdom
+ * @vitest-environment jsdom
  */
 import React from 'react';
 import { act, fireEvent, render, screen } from '@testing-library/react';
-import '@testing-library/jest-dom';
 import { CourseDialog } from '@/app/offerings/courses/CourseDialog';
 import { DisciplineDto, Group, UserDto } from '@/lib/dto';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers';
+import { describe, expect, test, vi } from 'vitest';
 
 import 'dayjs/locale/de';
 import userEvent from '@testing-library/user-event';
@@ -31,12 +31,12 @@ const costCenters: DisciplineDto[] = [
 describe('CourseDialog', () => {
   test('Strips whitespaces from name when submitting', async () => {
     // also: tests happy case
-    const handleSave = jest.fn();
+    const handleSave = vi.fn();
     render(
       <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="de">
         <CourseDialog
           open={true}
-          handleClose={jest.fn()}
+          handleClose={vi.fn()}
           handleSave={handleSave}
           trainers={trainers}
           costCenters={costCenters}

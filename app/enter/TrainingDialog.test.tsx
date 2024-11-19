@@ -1,8 +1,8 @@
 /**
- * @jest-environment jsdom
+ * @vitest-environment jsdom
  */
 
-import '@testing-library/jest-dom';
+import React from 'react';
 
 import {
   act,
@@ -11,15 +11,18 @@ import {
   screen,
   waitFor,
 } from '@testing-library/react';
-import React from 'react';
 import TrainingDialog from '@/app/enter/TrainingDialog';
-import userEvent from '@testing-library/user-event';
 import { DayOfWeek, TrainingStatus } from '@prisma/client';
 import { CompensationValueDto, CourseDto, TrainingDto } from '@/lib/dto';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import dayjs from 'dayjs';
+
 import 'dayjs/locale/de';
 import { LocalizationProvider } from '@mui/x-date-pickers';
-import dayjs from 'dayjs';
+
+import { describe, expect, test, vi } from 'vitest';
+import '@testing-library/jest-dom/vitest';
+import userEvent from '@testing-library/user-event';
 
 const COURSES: CourseDto[] = [
   {
@@ -109,8 +112,8 @@ async function pressSave() {
 
 describe('enter courses', () => {
   test('happy case', async () => {
-    const save = jest.fn();
-    const close = jest.fn();
+    const save = vi.fn();
+    const close = vi.fn();
 
     const userId = 'userId123';
 
@@ -120,7 +123,7 @@ describe('enter courses', () => {
           open={true}
           handleClose={close}
           handleSave={save}
-          handleDelete={jest.fn()}
+          handleDelete={vi.fn()}
           toEdit={null}
           today={DayOfWeek.MONDAY}
           courses={COURSES}
@@ -157,8 +160,8 @@ describe('enter courses', () => {
   });
 
   test('selects matching compensation value when course changes', async () => {
-    const save = jest.fn();
-    const close = jest.fn();
+    const save = vi.fn();
+    const close = vi.fn();
 
     render(
       <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="de">
@@ -166,7 +169,7 @@ describe('enter courses', () => {
           open={true}
           handleClose={close}
           handleSave={save}
-          handleDelete={jest.fn()}
+          handleDelete={vi.fn()}
           toEdit={null}
           today={DayOfWeek.MONDAY}
           courses={COURSES}
@@ -204,8 +207,8 @@ describe('enter courses', () => {
       compensationCents: cents,
       course: COURSES[0],
     } as TrainingDto;
-    const save = jest.fn();
-    const close = jest.fn();
+    const save = vi.fn();
+    const close = vi.fn();
 
     // first render with toEdit=null. This is what happens in the app.
     const { rerender } = render(
@@ -214,7 +217,7 @@ describe('enter courses', () => {
           open={true}
           handleClose={close}
           handleSave={save}
-          handleDelete={jest.fn()}
+          handleDelete={vi.fn()}
           toEdit={null}
           today={DayOfWeek.MONDAY}
           courses={COURSES}
@@ -232,7 +235,7 @@ describe('enter courses', () => {
           open={true}
           handleClose={close}
           handleSave={save}
-          handleDelete={jest.fn()}
+          handleDelete={vi.fn()}
           toEdit={toEdit}
           today={DayOfWeek.MONDAY}
           courses={COURSES}
@@ -265,8 +268,8 @@ describe('enter courses', () => {
   });
 
   test('add new compensation value when no corresponding exists', async () => {
-    const save = jest.fn();
-    const close = jest.fn();
+    const save = vi.fn();
+    const close = vi.fn();
 
     const compensationValues: CompensationValueDto[] = [
       {
@@ -292,7 +295,7 @@ describe('enter courses', () => {
           open={true}
           handleClose={close}
           handleSave={save}
-          handleDelete={jest.fn()}
+          handleDelete={vi.fn()}
           toEdit={null}
           today={DayOfWeek.MONDAY}
           courses={COURSES}
@@ -309,7 +312,7 @@ describe('enter courses', () => {
           open={true}
           handleClose={close}
           handleSave={save}
-          handleDelete={jest.fn()}
+          handleDelete={vi.fn()}
           toEdit={toEdit}
           today={DayOfWeek.MONDAY}
           courses={COURSES}
@@ -340,7 +343,7 @@ describe('enter courses', () => {
 
 describe('enter custom', () => {
   test('happy case', async () => {
-    const save = jest.fn().mockName('handleSave mock');
+    const save = vi.fn().mockName('handleSave mock');
     const userId = 'user-id';
 
     const customCourses = [
@@ -358,9 +361,9 @@ describe('enter custom', () => {
       <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="de">
         <TrainingDialog
           open={true}
-          handleClose={jest.fn()}
+          handleClose={vi.fn()}
           handleSave={save}
-          handleDelete={jest.fn()}
+          handleDelete={vi.fn()}
           toEdit={null}
           today={DayOfWeek.MONDAY}
           courses={COURSES}
@@ -407,7 +410,7 @@ describe('enter custom', () => {
   });
 
   test('happy edit case', async () => {
-    const save = jest.fn().mockName('handleSave mock');
+    const save = vi.fn().mockName('handleSave mock');
     const userId = 'user-id';
 
     const customCourses = [
@@ -440,9 +443,9 @@ describe('enter custom', () => {
       <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="de">
         <TrainingDialog
           open={true}
-          handleClose={jest.fn()}
-          handleSave={jest.fn()}
-          handleDelete={jest.fn()}
+          handleClose={vi.fn()}
+          handleSave={vi.fn()}
+          handleDelete={vi.fn()}
           toEdit={toEdit}
           today={DayOfWeek.MONDAY}
           courses={COURSES}

@@ -1,10 +1,11 @@
 /**
- * @jest-environment jsdom
+ * @vitest-environment jsdom
  */
 import { validateCreditorID, validateIBAN } from 'sepa';
 import { generateSepaXml } from './sepa-generation';
 import { CompensationDto } from '@/lib/dto';
 import xpath from 'xpath';
+import { describe, expect, test, vi } from 'vitest';
 
 describe('Test sepa library', () => {
   test('CID validation', () => {

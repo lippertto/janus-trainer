@@ -1,16 +1,17 @@
 /**
- * @jest-environment jsdom
+ * @vitest-environment jsdom
  */
 
-import { fireEvent, render, screen } from '@testing-library/react';
 import React from 'react';
 import { TosDialog } from '@/components/TosDialog';
-import '@testing-library/jest-dom';
+import { describe, expect, test, vi } from 'vitest';
+import '@testing-library/jest-dom/vitest';
+import { fireEvent, render, screen } from '@testing-library/react';
 
 // https://github.com/remarkjs/react-markdown/issues/635#issuecomment-991137447
-jest.mock('react-markdown', () => (props: { children: React.ReactNode }) => {
-  return <>{props.children}</>;
-});
+vi.mock('react-markdown', () => ({
+  default: (props: { children: React.ReactNode }) => <>{props.children}</>,
+}));
 
 describe('Terms of Service Dialog', () => {
   test('terms need to be accepted (if required)', async () => {

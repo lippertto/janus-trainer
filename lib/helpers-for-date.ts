@@ -1,5 +1,5 @@
 import dayjs from 'dayjs';
-import quarterOfYear from 'dayjs/plugin/quarterOfYear';
+import quarterOfYear from 'dayjs/plugin/quarterOfYear.js';
 
 dayjs.extend(quarterOfYear);
 

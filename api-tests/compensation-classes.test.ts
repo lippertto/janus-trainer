@@ -4,6 +4,7 @@ import {
   CompensationClassDto,
 } from '@/lib/dto';
 import { v4 as uuidv4 } from 'uuid';
+import { describe, expect, test } from 'vitest';
 
 const SERVER = 'http://localhost:3000';
 

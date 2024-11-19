@@ -9,12 +9,7 @@ import tsParser from '@typescript-eslint/parser';
 export default [
   // this is a global pattern
   {
-    ignores: [
-      '.next/',
-      'next.config.mjs',
-      'jest.config.js',
-      'eslint.config.mjs',
-    ],
+    ignores: ['.next/', 'next.config.mjs', 'eslint.config.mjs'],
   },
   { ...eslintConfigPrettier },
   {
