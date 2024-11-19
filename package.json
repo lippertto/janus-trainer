@@ -37,7 +37,7 @@
     "@tanstack/react-query": "^5.60.5",
     "class-validator": "^0.14.1",
     "core-js": "^3.39.0",
-    "dayjs": "^1.11.13",
+    "dayjs": "1.11.13",
     "material-ui-confirm": "^3.0.16",
     "md5": "^2.3.0",
     "next": "15.0.3",
