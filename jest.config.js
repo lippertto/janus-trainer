@@ -12,6 +12,6 @@ module.exports = {
       { configFile: './babel.config.testing.js' },
     ],
   },
-  testMatch: ['**/*.test.tsx', '**/*.test.ts', '!**/api.test.ts'],
+  testMatch: ['**/*.test.tsx', '**/*.test.ts'],
   testPathIgnorePatterns: ['api-tests/.*'],
 };
