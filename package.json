@@ -17,7 +17,7 @@
   },
   "packageManager": "yarn@4.2.2",
   "prisma": {
-    "seed": "esrun  prisma/seed.ts"
+    "seed": "tsx prisma/seed.ts"
   },
   "type": "module",
   "dependencies": {
@@ -52,6 +52,7 @@
     "react-markdown": "^9.0.1",
     "sepa": "2.0.0",
     "throttle-debounce": "^5.0.2",
+    "tsx": "^4.19.2",
     "uuid": "^11.0.3"
   },
   "devDependencies": {

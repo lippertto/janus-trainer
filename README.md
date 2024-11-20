@@ -22,7 +22,6 @@ Then, run `yarn vitest -c api-tests/vite.config.js`
 
 - Current IBAN is used in payments, not the one that was used for the actual
   payment. This should be fixed, e.g., by using historized ibans.
-- Something in the console logs for enter user?
 
 ## Features
 
