@@ -1,5 +1,6 @@
-import { HolidayDto } from '@/lib/dto';
+import { dayOfWeekToHumanReadable, HolidayDto } from '@/lib/dto';
 import { DayOfWeek } from '@prisma/client';
+import { boolean } from 'property-information/lib/util/types';
 
 function dayOfWeekToInt(d: DayOfWeek): number {
   switch (d) {
@@ -41,42 +42,35 @@ export function intToDayOfWeek(day: number): DayOfWeek {
   }
 }
 
-const GERMAN_DAYS: string[] = new Array(7);
-GERMAN_DAYS[0] = 'So';
-GERMAN_DAYS[1] = 'Mo';
-GERMAN_DAYS[2] = 'Di';
-GERMAN_DAYS[3] = 'Mi';
-GERMAN_DAYS[4] = 'Do';
-GERMAN_DAYS[5] = 'Fr';
-GERMAN_DAYS[6] = 'Sa';
+function dateIsInHoliday(
+  dateString: string,
+  holiday: Pick<HolidayDto, 'start' | 'end'>,
+): boolean {
+  return dateString >= holiday.start && dateString <= holiday.end;
+}
 
 export function warningsForDate(
   dateString: string,
   holidays: HolidayDto[],
-  weekdays: DayOfWeek[],
+  weekday: DayOfWeek | null,
 ): string[] {
   let result: string[] = [];
+
   let dayNumber = new Date(dateString).getDay();
   if (dayNumber === 0) {
     result.push('Ist ein Sonntag');
   }
-  for (const h of holidays) {
-    if (dateString >= h.start && dateString <= h.end) {
-      result.push(h.name);
-    }
-  }
-  let isOnValidWeekday = false;
-  for (const wd of weekdays) {
-    if (dayNumber === dayOfWeekToInt(wd)) {
-      isOnValidWeekday = true;
-    }
-  }
-  if (!isOnValidWeekday) {
-    if (weekdays.length > 0) {
-      const allowedDays = weekdays
-        .map((wd) => GERMAN_DAYS.at(dayOfWeekToInt(wd)))
-        .join(', ');
-      result.push(`Nicht an Kurstag (${allowedDays})`);
+
+  holidays
+    .filter((h) => dateIsInHoliday(dateString, h))
+    .map((h) => h.name)
+    .forEach((v) => {
+      result.push(v);
+    });
+
+  if (weekday !== null) {
+    if (dayNumber !== dayOfWeekToInt(weekday)) {
+      result.push(`Nicht am ${dayOfWeekToHumanReadable(weekday, false)}`);
     }
   }
 

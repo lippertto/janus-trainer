@@ -18,6 +18,9 @@ Then, run `yarn vitest -c api-tests/vite.config.js`
 
 ## Next up
 
+- Allow to show next year for holidays
+- Order trainer names in /compensate
+
 ## Bugs
 
 - Current IBAN is used in payments, not the one that was used for the actual

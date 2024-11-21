@@ -38,7 +38,7 @@ function buildGridColumns(
     const dateMessages = warningsForDate(
       row.date,
       holidays,
-      row.course!.weekdays,
+      row.course!.weekday,
     );
     const duplicateMessages = duplicates
       .filter((dup) => dup.queriedId === row.id)

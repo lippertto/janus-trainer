@@ -171,7 +171,7 @@ function OfferingsPageContents({ session }: { session: JanusSession }) {
         }}
         trainers={trainers}
         costCenters={costCenters}
-        courseToEdit={activeCourse}
+        toEdit={activeCourse}
       />
     </React.Fragment>
   );

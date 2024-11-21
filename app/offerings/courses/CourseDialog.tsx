@@ -6,163 +6,86 @@ import DialogContent from '@mui/material/DialogContent';
 import TextField from '@mui/material/TextField';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
-import { Autocomplete, Chip, FormControl } from '@mui/material';
-import FormLabel from '@mui/material/FormLabel';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Checkbox from '@mui/material/Checkbox';
+import { Autocomplete, Chip } from '@mui/material';
 import Stack from '@mui/material/Stack';
 import { TimePicker } from '@mui/x-date-pickers';
-import dayjs, { Dayjs } from 'dayjs';
+import dayjs from 'dayjs';
 import {
   CourseCreateRequest,
   CourseDto,
+  dayOfWeekToHumanReadable,
   DisciplineDto,
-  TrainerLight,
   UserDto,
 } from '@/lib/dto';
+import { Controller, ControllerRenderProps, useForm } from 'react-hook-form';
+import { compareNamed } from '@/lib/sort-and-filter';
 
-type CourseDialogProps = {
-  open: boolean;
-  handleClose: () => void;
-  handleSave: (data: CourseCreateRequest) => void;
-  trainers: UserDto[];
-  costCenters: DisciplineDto[];
-  courseToEdit: CourseDto | null;
-};
+type UserIdAndName = Pick<UserDto, 'id' | 'name'>;
 
-type WeekdaySelection = {
-  mon: boolean;
-  tue: boolean;
-  wed: boolean;
-  thu: boolean;
-  fri: boolean;
-  sat: boolean;
-  sun: boolean;
-};
+const WEEKDAY_OPTIONS = [
+  DayOfWeek.MONDAY,
+  DayOfWeek.TUESDAY,
+  DayOfWeek.WEDNESDAY,
+  DayOfWeek.THURSDAY,
+  DayOfWeek.FRIDAY,
+  DayOfWeek.SATURDAY,
+  DayOfWeek.SUNDAY,
+];
 
-function weekdaySelectionToEnum(v: WeekdaySelection): DayOfWeek[] {
-  let result: DayOfWeek[] = [];
-  if (v.mon) result.push(DayOfWeek.MONDAY);
-  if (v.tue) result.push(DayOfWeek.TUESDAY);
-  if (v.wed) result.push(DayOfWeek.WEDNESDAY);
-  if (v.thu) result.push(DayOfWeek.THURSDAY);
-  if (v.fri) result.push(DayOfWeek.FRIDAY);
-  if (v.sat) result.push(DayOfWeek.SATURDAY);
-  if (v.sun) result.push(DayOfWeek.SUNDAY);
-  return result;
-}
-
-function enumToWeekdaySelection(values: DayOfWeek[]) {
-  let result = { ...EMPTY_DAYS };
-  for (const v of values) {
-    switch (v) {
-      case 'MONDAY':
-        result.mon = true;
-        break;
-      case 'TUESDAY':
-        result.tue = true;
-        break;
-      case 'WEDNESDAY':
-        result.wed = true;
-        break;
-      case 'THURSDAY':
-        result.thu = true;
-        break;
-      case 'FRIDAY':
-        result.fri = true;
-        break;
-      case 'SATURDAY':
-        result.sat = true;
-        break;
-      case 'SUNDAY':
-        result.sun = true;
-        break;
-    }
-  }
-
-  return result;
-}
-
-const EMPTY_DAYS: WeekdaySelection = {
-  mon: false,
-  tue: false,
-  wed: false,
-  thu: false,
-  fri: false,
-  sat: false,
-  sun: false,
-};
-
-const DEFAULT_TIME = '2024-06-03 00:00';
-
-type TrainerDropdownProps = {
-  trainers: UserDto[];
-  selectedTrainers: TrainerLight[];
-  setSelectedTrainers: (v: TrainerLight[]) => void;
-};
-
-function TrainerDropdown({
-  trainers,
-  selectedTrainers,
-  setSelectedTrainers,
-}: TrainerDropdownProps) {
+function TrainerDropdown(props: {
+  allTrainers: UserIdAndName[];
+  currentTrainerSelection: UserIdAndName[];
+  handleTrainerSelectionChange: (v: UserIdAndName[]) => void;
+  controllerProps: ControllerRenderProps<FormData, 'selectedTrainers'>;
+}) {
   return (
-    <React.Fragment>
-      <Autocomplete
-        options={trainers}
-        multiple={true}
-        renderTags={(tagValue, _) => {
-          return tagValue.map((option, _) => (
-            <Chip
-              label={option.name}
-              key={option.id}
-              onDelete={() => {
-                setSelectedTrainers(
-                  selectedTrainers.filter((t) => t.id !== option.id),
-                );
-              }}
-            />
-          ));
-        }}
-        renderOption={(props, option) => {
-          return (
-            <li {...props} key={option.id}>
-              {option.name}
-            </li>
-          );
-        }}
-        getOptionLabel={(t) => t.name}
-        renderInput={(params) => (
-          <TextField {...params} label="Übungsleitung" />
-        )}
-        value={selectedTrainers}
-        onChange={(_, value) => {
-          setSelectedTrainers(value);
-        }}
-        // this method needs to be set to sync the value with the list
-        isOptionEqualToValue={(option: TrainerLight, value: TrainerLight) => {
-          return option.id === value.id;
-        }}
-      />
-    </React.Fragment>
+    <Autocomplete
+      {...props.controllerProps}
+      options={props.allTrainers}
+      multiple={true}
+      renderTags={(tagValue, _) => {
+        return tagValue.map((option: UserIdAndName, _) => (
+          <Chip
+            label={option.name}
+            key={option.id}
+            onDelete={() => {
+              props.handleTrainerSelectionChange(
+                props.currentTrainerSelection.filter((t) => t.id !== option.id),
+              );
+            }}
+          />
+        ));
+      }}
+      renderOption={(props, option) => {
+        return (
+          <li {...props} key={option.id}>
+            {option.name}
+          </li>
+        );
+      }}
+      getOptionLabel={(t: UserIdAndName) => t.name}
+      renderInput={(params) => <TextField {...params} label="Übungsleitung" />}
+      onChange={(_, value: UserIdAndName[]) => {
+        props.handleTrainerSelectionChange(value);
+      }}
+      // this method needs to be set to sync the value with the list
+      isOptionEqualToValue={(option: UserIdAndName, value: UserIdAndName) => {
+        return option.id === value.id;
+      }}
+    />
   );
 }
 
-function DisciplineDropdown(props: {
-  disciplines: DisciplineDto[];
-  selectedDiscipline: DisciplineDto | null;
-  setSelectedDiscipline: (v: DisciplineDto | null) => void;
+function CostCenterDropDown(props: {
+  costCenters: DisciplineDto[];
+  controllerProps: ControllerRenderProps<FormData, 'costCenter'>;
+  handleCostCenterChange: (v: DisciplineDto | null) => void;
 }) {
-  const error = props.selectedDiscipline ? ' ' : 'Muss ausgewählt sein';
   return (
     <Autocomplete
+      {...props.controllerProps}
       renderInput={(params) => (
-        <TextField
-          {...params}
-          label={'Kostenstelle'}
-          error={error !== ' '}
-          helperText={error}
-        />
+        <TextField {...params} required={true} label={'Kostenstelle'} />
       )}
       renderOption={(props, option) => {
         return (
@@ -171,238 +94,215 @@ function DisciplineDropdown(props: {
           </li>
         );
       }}
-      options={props.disciplines}
-      getOptionLabel={(d: DisciplineDto) => d.name}
-      value={props.selectedDiscipline}
+      options={props.costCenters.toSorted(compareNamed)}
       onChange={(_, value) => {
-        props.setSelectedDiscipline(value);
+        props.handleCostCenterChange(value);
       }}
+      getOptionLabel={(d: DisciplineDto) => {
+        return d.name;
+      }}
+      isOptionEqualToValue={(option, value) => option.id === value.id}
     />
   );
 }
 
-export function CourseDialog({
-  open,
-  handleClose,
-  handleSave,
-  trainers,
-  costCenters,
-  courseToEdit,
-}: CourseDialogProps) {
-  const [courseName, setCourseName] = React.useState('');
-  const [days, setDays] = React.useState<WeekdaySelection>(EMPTY_DAYS);
-  const [time, setTime] = React.useState<Dayjs | null>(dayjs(DEFAULT_TIME));
-  const [duration, setDuration] = React.useState<string>('90');
-  const [selectedTrainers, setSelectedTrainers] = React.useState<
-    { name: string; id: string }[]
-  >([]);
-  const [discipline, setDiscipline] = React.useState<DisciplineDto | null>(
-    null,
-  );
-  const [previousCourse, setPreviousCourse] = React.useState<CourseDto | null>(
-    null,
-  );
+type FormData = {
+  courseName: string;
+  dayOfWeek: DayOfWeek | null;
+  time: dayjs.Dayjs | null;
+  duration: number;
+  selectedTrainers: Pick<UserDto, 'name' | 'id'>[];
+  costCenter: DisciplineDto | null;
+};
 
-  const resetFields = React.useCallback(() => {
-    setCourseName('');
-    setTime(dayjs(DEFAULT_TIME));
-    setDuration('60');
-    setSelectedTrainers([]);
-    setDays({ ...EMPTY_DAYS });
-    setDiscipline(null);
-  }, [setCourseName, setTime, setDuration, setSelectedTrainers, setDays]);
-
-  if (previousCourse !== courseToEdit) {
-    setPreviousCourse(courseToEdit);
-    if (courseToEdit) {
-      setCourseName(courseToEdit.name);
-      setTime(
-        dayjs(
-          `2024-06-03 ${courseToEdit.startHour}:${courseToEdit.startMinute}`,
-        ),
-      );
-      setDuration(courseToEdit.durationMinutes?.toString() ?? '');
-      setSelectedTrainers(courseToEdit.trainers ?? []);
-      setDays(enumToWeekdaySelection(courseToEdit.weekdays));
-      setDiscipline(
-        costCenters.find((v) => v.id === courseToEdit.disciplineId) ?? null,
-      );
-    } else {
-      resetFields();
-    }
+function defaultValuesFor(
+  course: CourseDto | null,
+  costCenters: DisciplineDto[],
+): FormData {
+  const costCenter =
+    costCenters.find((cc) => cc.id === course?.disciplineId) ?? null;
+  let time;
+  if (course && course.startHour !== null && course.startMinute !== null) {
+    time = dayjs().hour(course.startHour).minute(course.startMinute);
+  } else {
+    time = dayjs().hour(19).minute(0);
   }
+  return {
+    courseName: course?.name ?? '',
+    dayOfWeek: course?.weekday ?? null,
+    duration: course?.durationMinutes ?? 60,
+    selectedTrainers: course?.trainers ?? [],
+    costCenter,
+    time,
+  };
+}
 
-  let error = false;
-  let nameError = ' ';
-  if (courseName.length === 0) {
-    nameError = 'Darf nicht leer sein';
-    error = true;
-  }
-  error = error || discipline === null;
+export function CourseDialog(props: {
+  open: boolean;
+  handleClose: () => void;
+  handleSave: (data: CourseCreateRequest) => void;
+  trainers: UserDto[];
+  costCenters: DisciplineDto[];
+  toEdit: CourseDto | null;
+}) {
+  const [previous, setPrevious] = React.useState<CourseDto | null>(null);
 
-  const handleDayChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setDays({
-      ...days,
-      [event.target.name]: event.target.checked,
+  const {
+    control,
+    reset,
+    formState: { isValid },
+    getValues,
+    setValue,
+    handleSubmit,
+  } = useForm<FormData>({
+    defaultValues: defaultValuesFor(null, props.costCenters),
+  });
+
+  const onSubmit = (data: FormData) => {
+    if (!isValid) return;
+    setTimeout(reset, 300);
+    props.handleClose();
+    props.handleSave({
+      name: data.courseName.trim(),
+      durationMinutes: data.duration,
+      startHour: data.time!.hour(),
+      startMinute: data.time!.minute(),
+      weekday: data.dayOfWeek,
+      trainerIds: data.selectedTrainers.map((t) => t.id),
+      disciplineId: data.costCenter!.id,
     });
   };
 
+  React.useEffect(() => {
+    if (props.toEdit !== previous) {
+      reset(defaultValuesFor(props.toEdit, props.costCenters));
+      setPrevious(props.toEdit);
+    }
+  }, [props.toEdit]);
+
   return (
-    <Dialog open={open} onClose={handleClose}>
+    <Dialog open={props.open} onClose={props.handleClose}>
       <DialogTitle>
-        {courseToEdit ? 'Kurs bearbeiten' : 'Kurs hinzufügen'}
+        {props.toEdit ? 'Kurs bearbeiten' : 'Kurs hinzufügen'}
       </DialogTitle>
 
-      <DialogContent>
-        <Stack direction={'row'} spacing={2} sx={{ pt: 1 }}>
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <DialogContent>
           <Stack spacing={2}>
-            <TextField
-              label="Name des Kurses"
-              value={courseName}
-              onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-                setCourseName(event.target.value);
-              }}
-              // needs to be set in Dialogs according to https://github.com/mui/material-ui/issues/29892#issuecomment-979745849
-              margin="dense"
-              slotProps={{
-                htmlInput: { 'data-testid': 'enter-course-textfield' },
-              }}
-              error={nameError !== ' '}
-              helperText={nameError}
+            <Controller
+              control={control}
+              name="courseName"
+              render={({ field: fieldProps }) => (
+                <TextField
+                  {...fieldProps}
+                  label="Name des Kurses"
+                  required={true}
+                  slotProps={{
+                    htmlInput: { 'data-testid': 'enter-course-textfield' },
+                  }}
+                />
+              )}
             />
 
-            <TimePicker
-              label="Uhrzeit"
-              value={time}
-              onChange={(v) => setTime(v)}
+            <Controller
+              control={control}
+              name="time"
+              render={({ field: fieldProps }) => (
+                <TimePicker
+                  {...fieldProps}
+                  label="Uhrzeit"
+                  slotProps={{
+                    textField: {
+                      required: true,
+                    },
+                  }}
+                />
+              )}
             />
 
-            <TextField
-              value={duration}
-              onChange={(v) => setDuration(v.target.value)}
-              label="Dauer"
-              type="number"
-              slotProps={{ htmlInput: { step: 15, min: 15 } }}
+            <Controller
+              control={control}
+              name="duration"
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  onChange={(event) => {
+                    if (event.target.value !== '')
+                      field.onChange(parseInt(event.target.value, 10));
+                    else {
+                      field.onChange(0);
+                    }
+                  }}
+                  label="Dauer"
+                  type="number"
+                  slotProps={{ htmlInput: { step: 15, min: 15 } }}
+                />
+              )}
             />
 
-            <TrainerDropdown
-              trainers={trainers}
-              selectedTrainers={selectedTrainers}
-              setSelectedTrainers={setSelectedTrainers}
+            <Controller
+              control={control}
+              name="selectedTrainers"
+              render={({ field: fieldProps }) => (
+                <TrainerDropdown
+                  allTrainers={props.trainers}
+                  currentTrainerSelection={getValues('selectedTrainers')}
+                  handleTrainerSelectionChange={(v) =>
+                    setValue('selectedTrainers', v)
+                  }
+                  controllerProps={fieldProps}
+                />
+              )}
             />
 
-            <DisciplineDropdown
-              disciplines={costCenters}
-              selectedDiscipline={discipline}
-              setSelectedDiscipline={setDiscipline}
+            <Controller
+              control={control}
+              name="costCenter"
+              render={({ field: fieldProps }) => (
+                <CostCenterDropDown
+                  costCenters={props.costCenters}
+                  controllerProps={fieldProps}
+                  handleCostCenterChange={(v) => setValue('costCenter', v)}
+                />
+              )}
+            />
+
+            <Controller
+              control={control}
+              name="dayOfWeek"
+              render={({ field: fieldProps }) => (
+                <Autocomplete
+                  {...fieldProps}
+                  options={WEEKDAY_OPTIONS}
+                  renderInput={(params) => (
+                    <TextField {...params} label={'Wochentag'} />
+                  )}
+                  getOptionLabel={(wd: DayOfWeek) =>
+                    dayOfWeekToHumanReadable(wd)
+                  }
+                  onChange={(_, value) => {
+                    setValue('dayOfWeek', value);
+                  }}
+                />
+              )}
             />
           </Stack>
-          <Stack>
-            <FormControl component={'fieldset'}>
-              <FormLabel>Wochentage</FormLabel>
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={days.mon}
-                    onChange={handleDayChange}
-                    name={'mon'}
-                  />
-                }
-                label={'Montag'}
-              />
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={days.tue}
-                    onChange={handleDayChange}
-                    name={'tue'}
-                  />
-                }
-                label={'Dienstag'}
-              />
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={days.wed}
-                    onChange={handleDayChange}
-                    name={'wed'}
-                  />
-                }
-                label={'Mittwoch'}
-              />
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={days.thu}
-                    onChange={handleDayChange}
-                    name={'thu'}
-                  />
-                }
-                label={'Donnerstag'}
-              />
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={days.fri}
-                    onChange={handleDayChange}
-                    name={'fri'}
-                  />
-                }
-                label={'Freitag'}
-              />
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={days.sat}
-                    onChange={handleDayChange}
-                    name={'sat'}
-                  />
-                }
-                label={'Samstag'}
-              />
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={days.sun}
-                    onChange={handleDayChange}
-                    name={'sun'}
-                  />
-                }
-                label={'Sonntag'}
-              />
-            </FormControl>
-          </Stack>
-        </Stack>
-      </DialogContent>
+        </DialogContent>
 
-      <DialogActions>
-        <Button
-          onClick={() => {
-            setTimeout(resetFields, 300);
-            handleClose();
-          }}
-        >
-          Abbrechen
-        </Button>
-        <Button
-          disabled={error}
-          onClick={() => {
-            setTimeout(resetFields, 300);
-            handleClose();
-            handleSave({
-              name: courseName.trim(),
-              durationMinutes: parseInt(duration),
-              startHour: time!.hour(),
-              startMinute: time!.minute(),
-              weekdays: weekdaySelectionToEnum(days),
-              trainerIds: selectedTrainers.map((t) => t.id),
-              disciplineId: discipline!.id,
-            });
-          }}
-        >
-          Speichern
-        </Button>
-      </DialogActions>
+        <DialogActions>
+          <Button
+            onClick={() => {
+              setTimeout(reset, 300);
+              props.handleClose();
+            }}
+          >
+            Abbrechen
+          </Button>
+          <Button disabled={!isValid} type="submit">
+            Speichern
+          </Button>
+        </DialogActions>
+      </form>
     </Dialog>
   );
 }

@@ -102,7 +102,7 @@ async function main() {
 
   const course1 = {
     name: 'Test-Kurs 1',
-    weekdays: [DayOfWeek.TUESDAY],
+    weekday: DayOfWeek.TUESDAY,
     startHour: 19,
     startMinute: 0,
     durationMinutes: 90,
@@ -111,7 +111,7 @@ async function main() {
 
   const course2 = {
     name: 'Test-Kurs 2',
-    weekdays: [DayOfWeek.WEDNESDAY],
+    weekday: DayOfWeek.WEDNESDAY,
     startHour: 19,
     startMinute: 0,
     durationMinutes: 120,

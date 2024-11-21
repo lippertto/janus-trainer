@@ -28,7 +28,7 @@ const COURSES: CourseDto[] = [
   {
     id: 19,
     name: 'course-1',
-    weekdays: [DayOfWeek.THURSDAY],
+    weekday: DayOfWeek.THURSDAY,
     startMinute: 0,
     startHour: 19,
     durationMinutes: 60,
@@ -36,7 +36,7 @@ const COURSES: CourseDto[] = [
   {
     id: 20,
     name: 'course-2',
-    weekdays: [DayOfWeek.FRIDAY],
+    weekday: DayOfWeek.FRIDAY,
     startMinute: 0,
     startHour: 19,
     durationMinutes: 90,
@@ -44,7 +44,7 @@ const COURSES: CourseDto[] = [
   {
     id: 21,
     name: 'course-3',
-    weekdays: [DayOfWeek.MONDAY],
+    weekday: DayOfWeek.MONDAY,
     startMinute: 0,
     startHour: 19,
     durationMinutes: 120,

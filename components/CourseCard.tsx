@@ -9,9 +9,7 @@ function CourseContents({ course }: { course: CourseDto }) {
     <CardContent>
       <Typography variant={'h6'}>{course.name}</Typography>
       <Typography>
-        {course.weekdays
-          .map((wd) => dayOfWeekToHumanReadable(wd, false))
-          .join(', ')}
+        {course.weekday ? dayOfWeekToHumanReadable(course.weekday) : ''}
       </Typography>
       <Typography>
         {course.startHour?.toString().padStart(2, '0') ?? '00'}:

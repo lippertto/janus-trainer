@@ -17,7 +17,7 @@ describe('TrainingList', () => {
     const trainings = [
       {
         id: 1,
-        course: { name: 'any-name', weekdays: [DayOfWeek.SATURDAY] },
+        course: { name: 'any-name', weekday: DayOfWeek.SATURDAY },
         status: TrainingStatus.NEW,
         comment: 'any-comment',
       } as any as TrainingDto,
@@ -48,7 +48,7 @@ describe('TrainingList', () => {
     const trainings = [
       {
         id: 1,
-        course: { name: 'any-name', weekdays: [DayOfWeek.SATURDAY] },
+        course: { name: 'any-name', weekday: DayOfWeek.SATURDAY },
         status: TrainingStatus.APPROVED,
       } as any as TrainingDto,
     ];

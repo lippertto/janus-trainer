@@ -27,7 +27,7 @@ async function createCourse(nextRequest: NextRequest) {
       startHour: request.startHour,
       startMinute: request.startMinute,
       durationMinutes: request.durationMinutes,
-      weekdays: request.weekdays,
+      weekday: request.weekday,
       trainers: {
         connect: request.trainerIds.map((t) => ({ id: t })),
       },
