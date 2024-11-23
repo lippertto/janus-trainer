@@ -206,7 +206,7 @@ function HolidayPageContents({ session }: { session: JanusSession }) {
               label="Jahr"
               value={dayjs(`${holidayYear}-01-01`)}
               minDate={dayjs(`2023-01-01`)}
-              maxDate={dayjs(`${currentYear}-01-01`)}
+              maxDate={dayjs(`${currentYear + 1}-01-01`)}
               onChange={(value) => {
                 if (!value) return;
                 setHolidayYear(value.year());
