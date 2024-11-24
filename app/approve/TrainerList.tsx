@@ -15,7 +15,6 @@ import ListItemText from '@mui/material/ListItemText';
 import Paper from '@mui/material/Paper';
 
 function TrainerListValues(props: {
-  session: JanusSession;
   filterStart: dayjs.Dayjs;
   filterEnd: dayjs.Dayjs;
   onlyNew: boolean;
@@ -46,7 +45,6 @@ function TrainerListValues(props: {
 }
 
 export default function TrainerList(props: {
-  session: JanusSession;
   filterStart: dayjs.Dayjs;
   filterEnd: dayjs.Dayjs;
   selectedTrainerId: string | null;
@@ -81,7 +79,6 @@ export default function TrainerList(props: {
         <Suspense fallback={<LoadingSpinner />}>
           <Paper>
             <TrainerListValues
-              session={props.session}
               filterStart={props.filterStart}
               filterEnd={props.filterEnd}
               onlyNew={trainerFilter === 'new'}
