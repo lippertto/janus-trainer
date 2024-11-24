@@ -192,7 +192,6 @@ export function ApprovePage(props: {
 
         <Grid size={{ xs: 3 }}>
           <TrainerList
-            session={session}
             filterEnd={datePickerEnd}
             filterStart={datePickerStart}
             selectedTrainerId={selectedTrainerId}

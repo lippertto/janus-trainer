@@ -23,7 +23,11 @@ import { createInApi, fetchListFromApi, patchInApi } from '@/lib/fetch';
 import { API_TRAININGS, API_TRAININGS_SUMMARIZE } from '@/lib/routes';
 import { showError, showSuccess } from '@/lib/notifications';
 import { throttle } from 'throttle-debounce';
-import { compareByField, replaceElementWithId } from '@/lib/sort-and-filter';
+import {
+  compareByField,
+  compareNamed,
+  replaceElementWithId,
+} from '@/lib/sort-and-filter';
 import { TrainingStatus } from '@prisma/client';
 
 dayjs.extend(quarterOfYear);
@@ -180,7 +184,7 @@ export default function ApprovePageContainer() {
           queryParamEnd,
         ),
       staleTime: 10 * 60 * 1000,
-    }).data;
+    }).data.toSorted((a, b) => compareByField(a, b, 'trainerName'));
   };
 
   const setTrainings = (v: TrainingDto[]) =>
