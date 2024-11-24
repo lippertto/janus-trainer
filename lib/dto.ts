@@ -182,12 +182,6 @@ export type CompensationQueryResponse = {
   value: CompensationDto[];
 };
 
-export type AppUser = {
-  name: string;
-  firstname: string;
-  membershipNumber: string;
-};
-
 export type CompensationValueDto = CompensationValue;
 
 export class CompensationValueCreateRequest {
@@ -208,10 +202,6 @@ export class CompensationValueCreateRequest {
 
 export class CompensationValueUpdateRequest extends CompensationValueCreateRequest {}
 
-export type CompensationValueQueryResponse = {
-  value: CompensationValueDto[];
-};
-
 export class CourseCreateRequest {
   constructor(obj: any) {
     Object.assign(this, obj);
@@ -223,9 +213,9 @@ export class CourseCreateRequest {
   @IsInt()
   durationMinutes: number;
 
-  @IsArray()
-  @IsEnum(DayOfWeek, { each: true })
-  weekdays: DayOfWeek[];
+  @IsOptional()
+  @IsEnum(DayOfWeek)
+  weekday: DayOfWeek | null;
 
   @IsInt()
   startHour: number;
@@ -246,7 +236,7 @@ export type CourseQueryResponse = {
 };
 
 export type CourseDto = Course & {
-  trainers?: { name: string; id: string }[];
+  trainers?: Pick<UserDto, 'name' | 'id'>[];
 };
 
 export class CourseUpdateRequest extends CourseCreateRequest {}
@@ -266,7 +256,7 @@ export function dayOfWeekToHumanReadable(w: DayOfWeek, short: boolean = false) {
     case 'SATURDAY':
       return short ? 'Sa' : 'Samstag';
     case 'SUNDAY':
-      return short ? 'So' : 'Sunday';
+      return short ? 'So' : 'Sonntag';
   }
 }
 

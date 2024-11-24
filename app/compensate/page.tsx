@@ -17,6 +17,7 @@ import {
 import Autocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
 import Stack from '@mui/system/Stack';
+import { compareNamed } from '@/lib/sort-and-filter';
 
 function TrainerDropdown(props: {
   trainers: UserDto[];
@@ -39,7 +40,9 @@ function TrainerDropdown(props: {
 function CompensationPageContents(props: { session: JanusSession }) {
   const [trainer, setTrainer] = React.useState<UserDto | null>(null);
 
-  const { data: trainers } = trainersSuspenseQuery(props.session.accessToken);
+  const trainers = trainersSuspenseQuery(
+    props.session.accessToken,
+  ).data.toSorted(compareNamed);
   const { data: payments } = paymentsSuspenseQuery(
     props.session.accessToken,
     trainer?.id,

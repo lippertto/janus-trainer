@@ -11,6 +11,7 @@ import { describe, expect, test, vi } from 'vitest';
 
 import 'dayjs/locale/de';
 import userEvent from '@testing-library/user-event';
+import { DayOfWeek } from '@prisma/client';
 
 const trainers: UserDto[] = [
   {
@@ -22,17 +23,46 @@ const trainers: UserDto[] = [
     termsAcceptedAt: null,
     termsAcceptedVersion: null,
   },
+  {
+    id: 'user-id-02',
+    email: 'user-email-02',
+    iban: 'any-iban-02',
+    name: 'user-name-02',
+    groups: [Group.TRAINERS],
+    termsAcceptedAt: null,
+    termsAcceptedVersion: null,
+  },
 ];
 
 const costCenters: DisciplineDto[] = [
   { id: 1, name: 'cost-center-01', costCenterId: 101 },
 ];
 
+async function fillTextBox(name: string, text: string) {
+  const nameTextBox = await screen.findByRole('textbox', {
+    name: new RegExp(name, 'i'),
+  });
+  await userEvent.type(nameTextBox, text);
+}
+
+async function selectNthComboboxElement(name: string, n: number) {
+  const autocomplete = await screen.findByRole('combobox', {
+    name: new RegExp(name, 'i'),
+  });
+  act(() => {
+    autocomplete.focus();
+  });
+  fireEvent.keyDown(autocomplete, { key: 'ArrowDown' });
+  for (let i = 0; i < n; i++) {
+    fireEvent.keyDown(autocomplete, { key: 'ArrowDown' });
+  }
+  fireEvent.keyDown(autocomplete, { key: 'Enter' });
+}
+
 describe('CourseDialog', () => {
   test('Strips whitespaces from name when submitting', async () => {
-    // also: tests happy case
     const handleSave = vi.fn();
-    render(
+    const { unmount } = render(
       <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="de">
         <CourseDialog
           open={true}
@@ -40,20 +70,12 @@ describe('CourseDialog', () => {
           handleSave={handleSave}
           trainers={trainers}
           costCenters={costCenters}
-          courseToEdit={null}
+          toEdit={null}
         />
       </LocalizationProvider>,
     );
-
-    const nameTextBox = await screen.findByRole('textbox', {
-      name: /Name des Kurses/i,
-    });
-    await userEvent.type(nameTextBox, ' Test Kurs 01  ');
-
-    const timeTextBox = await screen.findByRole('textbox', {
-      name: /Uhrzeit/i,
-    });
-    await userEvent.type(timeTextBox, '19:00');
+    await fillTextBox('Name des Kurses', ' Test Kurs 01  ');
+    await fillTextBox('Uhrzeit', '19:00');
 
     const durationTextBox = await screen.findByRole('spinbutton', {
       name: /Dauer/i,
@@ -61,25 +83,8 @@ describe('CourseDialog', () => {
     await userEvent.clear(durationTextBox);
     await userEvent.type(durationTextBox, '90');
 
-    const trainerAutocomplete = await screen.findByRole('combobox', {
-      name: /Übungsleitung/i,
-    });
-    act(() => {
-      trainerAutocomplete.focus();
-    });
-    fireEvent.keyDown(trainerAutocomplete, { key: 'ArrowDown' });
-    fireEvent.keyDown(trainerAutocomplete, { key: 'ArrowDown' });
-    fireEvent.keyDown(trainerAutocomplete, { key: 'Enter' });
-
-    const costCenterAutocomplete = await screen.findByRole('combobox', {
-      name: /Kostenstelle/i,
-    });
-    act(() => {
-      costCenterAutocomplete.focus();
-    });
-    fireEvent.keyDown(costCenterAutocomplete, { key: 'ArrowDown' });
-    fireEvent.keyDown(costCenterAutocomplete, { key: 'ArrowDown' });
-    fireEvent.keyDown(costCenterAutocomplete, { key: 'Enter' });
+    await selectNthComboboxElement('Übungsleitung', 1);
+    await selectNthComboboxElement('Kostenstelle', 1);
 
     const saveButton = await screen.findByRole('button', {
       name: /Speichern/i,
@@ -92,8 +97,57 @@ describe('CourseDialog', () => {
       startHour: 19,
       startMinute: 0,
       trainerIds: [trainers[0].id],
-      weekdays: [],
+      weekday: null,
       name: 'Test Kurs 01',
     });
+
+    unmount();
+  });
+
+  test('Can select multiple trainers', async () => {
+    const handleSave = vi.fn();
+    const { unmount } = render(
+      <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="de">
+        <CourseDialog
+          open={true}
+          handleClose={vi.fn()}
+          handleSave={handleSave}
+          trainers={trainers}
+          costCenters={costCenters}
+          toEdit={null}
+        />
+      </LocalizationProvider>,
+    );
+
+    await fillTextBox('Name des Kurses', 'any-course');
+    await fillTextBox('Uhrzeit', '20:15');
+
+    const durationTextBox = await screen.findByRole('spinbutton', {
+      name: /Dauer/i,
+    });
+    await userEvent.clear(durationTextBox);
+    await userEvent.type(durationTextBox, '120');
+
+    await selectNthComboboxElement('Übungsleitung', 1);
+    await selectNthComboboxElement('Übungsleitung', 1); // this will select the 2nd trainer
+    await selectNthComboboxElement('Kostenstelle', 1);
+    await selectNthComboboxElement('Wochentag', 3);
+
+    const saveButton = await screen.findByRole('button', {
+      name: /Speichern/i,
+    });
+    await userEvent.click(saveButton);
+
+    expect(handleSave).toHaveBeenCalledWith({
+      disciplineId: costCenters[0].id,
+      durationMinutes: 120,
+      startHour: 20,
+      startMinute: 15,
+      trainerIds: [trainers[0].id, trainers[1].id],
+      weekday: DayOfWeek.WEDNESDAY,
+      name: 'any-course',
+    });
+
+    unmount();
   });
 });

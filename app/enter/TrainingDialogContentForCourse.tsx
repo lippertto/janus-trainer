@@ -35,7 +35,7 @@ function determineDefaultCourse(courses: CourseDto[], today: DayOfWeek) {
   if (courses.length === 1) {
     return courses[0];
   }
-  return courses.find((c) => c.weekdays.indexOf(today) !== -1) ?? courses[0];
+  return courses.find((c) => c.weekday === today) ?? courses[0];
 }
 
 function determineDefaultCompensationValueForCourse(
@@ -81,11 +81,8 @@ function determineDefaultCompensationValue(
 
 function courseDisplayname(c: CourseDto): string {
   let prefix = '';
-  if (!c.isCustomCourse) {
-    prefix = c.weekdays
-      .map((wd) => dayOfWeekToHumanReadable(wd, true))
-      .join(',');
-    prefix = '(' + prefix + '): ';
+  if (!c.isCustomCourse && c.weekday !== null) {
+    prefix = `(${dayOfWeekToHumanReadable(c.weekday, true)}): `;
   }
   return `${prefix}${c.name}`;
 }

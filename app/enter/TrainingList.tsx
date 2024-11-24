@@ -49,7 +49,7 @@ function TrainingListElement(props: {
   const dateWarnings = warningsForDate(
     training.date,
     props.holidays,
-    training.course!.weekdays,
+    training.course!.weekday,
   );
   const duplicateWarnings = props.duplicates
     .filter((d) => d.queriedId === training.id)

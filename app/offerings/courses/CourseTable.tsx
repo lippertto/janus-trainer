@@ -9,12 +9,12 @@ import {
   GridColDef,
   GridEventListener,
   GridRenderCellParams,
-  useGridApiRef,
 } from '@mui/x-data-grid';
 import { DayOfWeek } from '@prisma/client';
 import Box from '@mui/system/Box';
 import React from 'react';
 import LockIcon from '@mui/icons-material/Lock';
+
 function buildColumns(
   disciplines: { id: number; name: string; costCenterId: number }[],
 ): GridColDef[] {
@@ -32,11 +32,9 @@ function buildColumns(
       },
     },
     {
-      field: 'weekdays',
+      field: 'weekday',
       headerName: 'Wochentag',
-      valueGetter: (weekdays: DayOfWeek[]) => {
-        return weekdays.map((wd) => dayOfWeekToHumanReadable(wd, true));
-      },
+      valueGetter: (wd: DayOfWeek) => dayOfWeekToHumanReadable(wd, true),
     },
     {
       field: 'time',
@@ -45,7 +43,7 @@ function buildColumns(
         if (course.isCustomCourse) {
           return '';
         } else {
-          `${course.startHour!.toString().padStart(2, '0')}:${course.startMinute!.toString().padStart(2, '0')}`;
+          return `${course.startHour!.toString().padStart(2, '0')}:${course.startMinute!.toString().padStart(2, '0')}`;
         }
       },
     },
