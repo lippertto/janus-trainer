@@ -22,7 +22,7 @@ setup.describe.serial('Log in with accounts for test users', () => {
 
     await page.waitForURL('/');
     // eslint-disable-next-line playwright/no-standalone-expect
-    await expect(page.getByText('Willkommen')).toBeVisible();
+    await expect(page.getByText('Kurzanleitung')).toBeVisible();
     await page.context().storageState({ path: adminFile });
   });
 
@@ -42,7 +42,7 @@ setup.describe.serial('Log in with accounts for test users', () => {
 
     await page.waitForURL('/');
     // eslint-disable-next-line playwright/no-standalone-expect
-    await expect(page.getByText('Willkommen')).toBeVisible();
+    await expect(page.getByText('Kurzanleitung')).toBeVisible();
     await page.context().storageState({ path: trainerFile });
   });
 });

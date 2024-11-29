@@ -251,7 +251,6 @@ export function TrainingDialogContentForCourse(props: {
               <DatePicker
                 {...fieldProps}
                 label="Datum"
-                maxDate={dayjs()}
                 slotProps={{
                   textField: {
                     required: true,
