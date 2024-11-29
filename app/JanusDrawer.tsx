@@ -30,7 +30,7 @@ function buildLinks(
   const isTrainer = Boolean(groups.indexOf(Group.TRAINERS) !== -1);
   let result = [];
 
-  result.push({ text: 'Home', href: '/', icon: HomeIcon });
+  result.push({ text: 'Start', href: '/', icon: HomeIcon });
   if (isTrainer) {
     result.push({ text: 'Eingeben', href: '/enter', icon: EditCalendarIcon });
   }
