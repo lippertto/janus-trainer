@@ -1,6 +1,7 @@
 import { dayOfWeekToHumanReadable, HolidayDto } from '@/lib/dto';
 import { DayOfWeek } from '@prisma/client';
 import { boolean } from 'property-information/lib/util/types';
+import dayjs from 'dayjs';
 
 function dayOfWeekToInt(d: DayOfWeek): number {
   switch (d) {
@@ -50,27 +51,34 @@ function dateIsInHoliday(
 }
 
 export function warningsForDate(
-  dateString: string,
-  holidays: HolidayDto[],
-  weekday: DayOfWeek | null,
+  trainingDate: string,
+  holidays: Pick<HolidayDto, 'start' | 'end' | 'name'>[],
+  allowedWeekday: DayOfWeek | null,
 ): string[] {
   let result: string[] = [];
 
-  let dayNumber = new Date(dateString).getDay();
+  const date = dayjs(trainingDate);
+  let dayNumber = date.day();
   if (dayNumber === 0) {
     result.push('Ist ein Sonntag');
   }
 
+  if (date.isAfter(dayjs())) {
+    result.push('Ist in der Zukunft');
+  }
+
   holidays
-    .filter((h) => dateIsInHoliday(dateString, h))
+    .filter((h) => dateIsInHoliday(trainingDate, h))
     .map((h) => h.name)
     .forEach((v) => {
       result.push(v);
     });
 
-  if (weekday !== null) {
-    if (dayNumber !== dayOfWeekToInt(weekday)) {
-      result.push(`Nicht am ${dayOfWeekToHumanReadable(weekday, false)}`);
+  if (allowedWeekday !== null) {
+    if (dayNumber !== dayOfWeekToInt(allowedWeekday)) {
+      result.push(
+        `Nicht am ${dayOfWeekToHumanReadable(allowedWeekday, false)}`,
+      );
     }
   }
 
