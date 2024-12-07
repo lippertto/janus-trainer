@@ -6,16 +6,8 @@ on:
 jobs:
   check:
     uses: ./.github/workflows/check.yaml
-
-  build:
-    uses: ./.github/workflows/build.yaml
-    secrets:
-      aws-ecr-key: ${{ secrets.AWS_ECR_KEY }}
-      aws-ecr-secret-access-key: ${{ secrets.AWS_ECR_SECRET_ACCESS_KEY }}
-
   deploy-test:
     needs:
-      - build
       - check
     uses: ./.github/workflows/deploy.yaml
     with:
