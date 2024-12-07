@@ -20,6 +20,7 @@ Then, run `yarn vitest -c api-tests/vite.config.js`
 
 ## Bugs
 
+- Account with name "Luca ​Leppert" could not be created. Need a proper error message.
 - Current IBAN is used in payments, not the one that was used for the actual
   payment. This should be fixed, e.g., by using historized ibans.
 
@@ -31,8 +32,8 @@ Then, run `yarn vitest -c api-tests/vite.config.js`
 - Playwright test: enter -> approve -> compensate.
 - Playwright test: duplicates
 - Warning if training limits have been reached
-- offerings: make weekday a radio group. Training can have only 1 weekday
 - include tour for new users: https://github.com/elrumordelaluz/reactour
+- Rename to JOTA Janus Online Training Abrechnung
 
 ## Tech update
 
