@@ -32,11 +32,13 @@ jobs:
           aws-region: eu-north-1
       - name: Apply cloudformation template
         run: |
-          aws cloudformation update-stack \
+          aws cloudformation deploy \
             --region eu-north-1 \
             --stack-name ${STACK_NAME} \
+            --no-fail-on-empty-changeset \
             --capabilities CAPABILITY_NAMED_IAM \
-            --template-body file://cloudformation.yaml \
-            --parameters ParameterKey=JanusEnvironment,ParameterValue=${{inputs.environment}} \
-                         ParameterKey=JanusDomain,ParameterValue=${{inputs.domain}}
+            --template-file ./cloudformation.yaml \
+            --parameter-overrides \
+                JanusEnvironment=${{inputs.environment}} \
+                JanusDomainParameterValue=${{inputs.domain}}
           aws cloudformation wait stack-update-complete --stack-name ${STACK_NAME}
