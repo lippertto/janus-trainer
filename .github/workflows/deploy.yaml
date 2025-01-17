@@ -1,15 +1,6 @@
 on:
   workflow_call:
     inputs:
-      image-name:
-        required: true
-        type: string
-      postgres-database:
-        required: true
-        type: string
-      postgres-username:
-        required: true
-        type: string
       environment:
         required: true
         type: string
@@ -18,51 +9,19 @@ on:
         required: true
         type: string
         description: The domain from which the deployment will be reachable
-      certificate-arn:
-        required: true
-        type: string
-        description: The arn of the certificate for the domain.
 
     secrets:
       aws-ecr-key:
         required: true
       aws-ecr-secret-access-key:
         required: true
-      postgres-password:
-        required: true
 
 env:
   STACK_NAME: janus-trainer-${{ inputs.environment }}
 
 jobs:
-  migrate-database:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Enable Corepack
-        run: corepack enable
-      - name: Use Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20.x'
-          cache: yarn
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.aws-ecr-key }}
-          aws-secret-access-key: ${{ secrets.aws-ecr-secret-access-key }}
-          aws-region: eu-north-1
-      - name: migrate database
-        run: |
-          export POSTGRES_HOST=$(aws cloudformation --region eu-north-1 describe-stacks --stack-name janus-trainer-db | jq '.Stacks[0].Outputs[] | select(.OutputKey=="JanusDbEndpoint").OutputValue' | tr -d '"')
-          export POSTGRES_CONNECTION_URL=postgres://${{ inputs.postgres-username }}:${{ secrets.postgres-password }}@$POSTGRES_HOST:5432/${{ inputs.postgres-database }}
-          yarn dlx prisma migrate deploy
   deploy:
-    needs: ['migrate-database']
     runs-on: ubuntu-latest
-    env:
-      IMAGE_NAME: ${{ inputs.image-name }}
-      FUNCTION_NAME: ${{ inputs.function-name }}
     steps:
       - uses: actions/checkout@v4
       - name: Configure AWS credentials
@@ -79,16 +38,5 @@ jobs:
             --capabilities CAPABILITY_NAMED_IAM \
             --template-body file://cloudformation.yaml \
             --parameters ParameterKey=JanusEnvironment,ParameterValue=${{inputs.environment}} \
-                         ParameterKey=JanusDomain,ParameterValue=${{inputs.domain}} \
-                         ParameterKey=JanusTrainerAppImage,ParameterValue=${{inputs.image-name}} \
-                         ParameterKey=JanusDomainCertificateArn,ParameterValue=${{inputs.certificate-arn}} \
-                         ParameterKey=PostgresUsername,ParameterValue=${{inputs.postgres-username}} \
-                         ParameterKey=PostgresPassword,ParameterValue=${{secrets.postgres-password}} \
-                         ParameterKey=PostgresDatabase,ParameterValue=${{inputs.postgres-database}}
+                         ParameterKey=JanusDomain,ParameterValue=${{inputs.domain}}
           aws cloudformation wait stack-update-complete --stack-name ${STACK_NAME}
-      - name: Invalidate CloudFront cache
-        run: |
-          distributionId=$(aws cloudformation describe-stacks --stack-name ${STACK_NAME} --query "Stacks[0].Outputs[?OutputKey=='CloudFrontDistributionId'].OutputValue" --output text)
-          invalidationOutput=$(aws cloudfront create-invalidation --distribution-id $distributionId --paths '/*')
-          invalidationId=$(echo $invalidationOutput | jq -r '.Invalidation.Id')
-          aws cloudfront wait invalidation-completed --id ${invalidationId} --distribution-id ${distributionId}

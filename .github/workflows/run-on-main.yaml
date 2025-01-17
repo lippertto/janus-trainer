@@ -9,17 +9,12 @@ jobs:
     uses: ./.github/workflows/check.yaml
 
   deploy-prod:
+    uses: ./.github/workflows/deploy.yaml
     needs:
       - check
-    uses: ./.github/workflows/deploy.yaml
     with:
-      image-name: ${{needs.build.outputs.image-name}}
-      postgres-database: janus-trainer-prod
-      postgres-username: janus-trainer-prod
       environment: prod
-      domain: janus.lippert.dev
-      certificate-arn: arn:aws:acm:us-east-1:930650061532:certificate/4ce7a60c-c98c-41ad-bf37-a9da99974cd9
+      domain: jota.sc-janus.de
     secrets:
       aws-ecr-key: ${{ secrets.AWS_ECR_KEY }}
       aws-ecr-secret-access-key: ${{ secrets.AWS_ECR_SECRET_ACCESS_KEY }}
-      postgres-password: ${{ secrets.POSTGRES_PASSWORD_PROD }}
