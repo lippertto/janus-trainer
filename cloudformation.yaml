@@ -84,7 +84,8 @@ Resources:
       CallbackURLs:
         - !Sub 'https://${JanusDomain}/api/auth/callback/cognito'
         - http://localhost:3000/api/auth/callback/cognito
-        - https://janus-hetzner.lippert.dev/api/auth/callback/cognito
+        # for backwards compatibility
+        - https://janus.lippert.dev/api/auth/callback/cognito
       SupportedIdentityProviders:
         - COGNITO
       AllowedOAuthFlows:
