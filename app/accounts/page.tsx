@@ -6,12 +6,12 @@ import { useSession } from 'next-auth/react';
 
 import UserTable from './UserTable';
 
-import LoginRequired from '../../../components/LoginRequired';
+import LoginRequired from '../../components/LoginRequired';
 import type { JanusSession } from '@/lib/auth';
 import Stack from '@mui/system/Stack';
-import UserButtonGroup from '@/app/configure/users/UserButtonGroup';
+import UserButtonGroup from '@/app/accounts/UserButtonGroup';
 import { UserCreateRequest, UserDto, UserUpdateRequest } from '@/lib/dto';
-import { UserDialog } from '@/app/configure/users/UserDialog';
+import { UserDialog } from '@/app/accounts/UserDialog';
 import { compensationClassesSuspenseQuery } from '@/lib/shared-queries';
 import {
   useMutation,
@@ -27,7 +27,7 @@ import {
 import { API_USERS } from '@/lib/routes';
 import { showError, showSuccess } from '@/lib/notifications';
 import { useConfirm } from 'material-ui-confirm';
-import { queryUsers } from '@/app/configure/users/queries';
+import { queryUsers } from '@/app/accounts/queries';
 import { Typography } from '@mui/material';
 import Paper from '@mui/material/Paper';
 

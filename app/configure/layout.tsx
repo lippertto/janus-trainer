@@ -31,9 +31,6 @@ export default function ConfigureLayout({
     case '/configure/compensation-values':
       value = 1;
       break;
-    case '/configure/users':
-      value = 2;
-      break;
     default:
       value = 0;
   }
@@ -53,12 +50,6 @@ export default function ConfigureLayout({
             value={1}
             component={Link}
             href={'/configure/compensation-values'}
-          />
-          <Tab
-            label="Konten"
-            value={2}
-            component={Link}
-            href={'/configure/users'}
           />
         </Tabs>
         <Box sx={{ p: 1 }}>

@@ -1,15 +1,15 @@
 'use client';
 
 import React, { ErrorInfo, Suspense } from 'react';
-import { ErrorBoundary, FallbackProps } from 'react-error-boundary';
-import PleaseReload from '@/components/PleaseReload';
+import { ErrorBoundary } from 'react-error-boundary';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
+import PleaseReload from '@/components/PleaseReload';
 
 const logError = (error: Error, info: ErrorInfo) => {
   console.log(error);
 };
 
-export default function UsersLayout({
+export default function AccountsLayout({
   children,
 }: {
   children: React.ReactNode;

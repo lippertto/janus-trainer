@@ -21,7 +21,7 @@ import Autocomplete from '@mui/material/Autocomplete';
 import { validateIBAN } from 'sepa';
 import { ibanToHumanReadable } from '@/lib/formatters';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
-import ResendInvitationButton from '@/app/configure/users/ResendInvitationButton';
+import ResendInvitationButton from '@/app/accounts/ResendInvitationButton';
 import { JanusSession } from '@/lib/auth';
 
 type FormData = {

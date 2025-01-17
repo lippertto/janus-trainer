@@ -15,6 +15,7 @@ import AssignmentTurnedInIcon from '@mui/icons-material/AssignmentTurnedIn';
 import EditCalendarIcon from '@mui/icons-material/EditCalendar';
 import HomeIcon from '@mui/icons-material/Home';
 import LeaderboardIcon from '@mui/icons-material/Leaderboard';
+import PeopleIcon from '@mui/icons-material/People';
 import SettingsIcon from '@mui/icons-material/Settings';
 import SportsIcon from '@mui/icons-material/Sports';
 
@@ -53,6 +54,9 @@ function buildLinks(
   }
   if (isAdmin) {
     result.push({ text: 'Verwaltung', href: '/configure', icon: SettingsIcon });
+  }
+  if (isAdmin) {
+    result.push({ text: 'Konten', href: '/accounts', icon: PeopleIcon });
   }
   if (isAdmin) {
     result.push({ text: 'Auswertung', href: '/analyze', icon: AnalyticsIcon });
