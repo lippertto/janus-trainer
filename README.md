@@ -20,7 +20,6 @@ Then, run `yarn vitest -c api-tests/vite.config.js`
 
 ## Bugs
 
-- Account with name "Luca ​Leppert" could not be created. Need a proper error message.
 - Current IBAN is used in payments, not the one that was used for the actual
   payment. This should be fixed, e.g., by using historized ibans.
 

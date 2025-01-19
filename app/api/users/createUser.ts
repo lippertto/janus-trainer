@@ -7,9 +7,13 @@ import {
   setGroupsForUser,
 } from '@/app/api/users/cognito';
 import { createCognitoClient } from '@/app/api/users/cognito-client';
+import { ApiErrorBadRequest } from '@/lib/helpers-for-api';
 
 /** Creates a users in cognito and in the database. */
 export async function createUser(request: UserCreateRequest): Promise<UserDto> {
+  if (/[\u200B\u200C\u200D\u2060\uFEFF]/.test(request.name)) {
+    throw new ApiErrorBadRequest('Zero-width whitespace is not allowed');
+  }
   const client = createCognitoClient();
 
   let cognitoUser = await getUserByEmail(client, request.email);

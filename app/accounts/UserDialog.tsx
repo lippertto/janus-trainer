@@ -2,6 +2,7 @@ import React, { Suspense } from 'react';
 import {
   CompensationClassDto,
   Group,
+  LoginInfo,
   UserCreateRequest,
   UserDto,
 } from '@/lib/dto';
@@ -22,7 +23,6 @@ import { validateIBAN } from 'sepa';
 import { ibanToHumanReadable } from '@/lib/formatters';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import ResendInvitationButton from '@/app/accounts/ResendInvitationButton';
-import { JanusSession } from '@/lib/auth';
 
 type FormData = {
   name: string;
@@ -55,22 +55,24 @@ function determineDefaultValues(toEdit: UserDto | null): FormData {
 }
 
 export function UserDialog(props: {
-  accessToken: string;
   toEdit: UserDto | null;
   compensationClasses: CompensationClassDto[];
   open: boolean;
   handleClose: () => void;
   handleSave: (data: UserCreateRequest) => void;
+  handleResendInvitation: (userId: string) => Promise<void>;
+  queryLoginInfo: (userId: string) => LoginInfo;
 }) {
   const [previous, setPrevious] = React.useState<UserDto | null>(null);
 
   const {
-    register,
     handleSubmit,
     reset,
     control,
     formState: { errors, isValid },
-  } = useForm<FormData>();
+  } = useForm<FormData>({
+    defaultValues: determineDefaultValues(props.toEdit),
+  });
 
   React.useEffect(() => {
     if (props.toEdit !== previous) {
@@ -108,29 +110,50 @@ export function UserDialog(props: {
       <form onSubmit={handleSubmit(onSubmit)}>
         <DialogContent>
           <Stack direction={'column'} spacing={2}>
-            <TextField
-              label="Name"
-              required={true}
-              {...register('name')}
-              error={!!errors.name?.message}
-              helperText={errors.name?.message || ''}
-              inputProps={{
-                'data-testid': 'enter-name-textfield',
+            <Controller
+              control={control}
+              name="name"
+              rules={{
+                validate: (v: string) => {
+                  if (/[\u200B\u200C\u200D\u2060\uFEFF]/.test(v)) {
+                    return 'Unsichtbare Sonderzeichen gefunden. Bitte den Namen manuell eintippen.';
+                  }
+                  return true;
+                },
               }}
+              render={({ field: props }) => (
+                <TextField
+                  {...props}
+                  label="Name"
+                  required={true}
+                  error={!!errors.name?.message}
+                  helperText={errors.name?.message || ''}
+                  slotProps={{
+                    htmlInput: { 'data-testid': 'enter-name-textfield' },
+                  }}
+                />
+              )}
             />
-            <TextField
-              label="E-Mail"
-              type="email"
-              required={true}
-              {...register('email', {
-                setValueAs: (value: string) => value.trim(),
-              })}
-              error={!!errors.email?.message}
-              helperText={errors.email?.message || ''}
-              inputProps={{
-                'data-testid': 'enter-email-textfield',
-              }}
+
+            <Controller
+              control={control}
+              name="email"
+              render={({ field: props }) => (
+                <TextField
+                  {...props}
+                  label="E-Mail"
+                  type="email"
+                  required={true}
+                  onChange={(e) => props.onChange(e.target.value.trim())}
+                  error={!!errors.email?.message}
+                  helperText={errors.email?.message || ''}
+                  slotProps={{
+                    htmlInput: { 'data-testid': 'enter-email-textfield' },
+                  }}
+                />
+              )}
             />
+
             <Controller
               control={control}
               name="iban"
@@ -221,7 +244,8 @@ export function UserDialog(props: {
             {props.toEdit ? (
               <Suspense fallback={<LoadingSpinner />}>
                 <ResendInvitationButton
-                  accessToken={props.accessToken}
+                  resendInvitation={props.handleResendInvitation}
+                  queryLoginInfo={props.queryLoginInfo}
                   userId={props.toEdit.id}
                   email={props.toEdit.email}
                 />

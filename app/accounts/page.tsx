@@ -12,18 +12,13 @@ import Stack from '@mui/system/Stack';
 import UserButtonGroup from '@/app/accounts/UserButtonGroup';
 import { UserCreateRequest, UserDto, UserUpdateRequest } from '@/lib/dto';
 import { UserDialog } from '@/app/accounts/UserDialog';
-import { compensationClassesSuspenseQuery } from '@/lib/shared-queries';
 import {
-  useMutation,
-  useQueryClient,
-  useSuspenseQuery,
-} from '@tanstack/react-query';
-import {
-  createInApi,
-  deleteFromApi,
-  fetchListFromApi,
-  updateInApi,
-} from '@/lib/fetch';
+  compensationClassesSuspenseQuery,
+  loginInfoSuspenseQuery,
+  resendInvitation,
+} from '@/lib/shared-queries';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { createInApi, deleteFromApi, updateInApi } from '@/lib/fetch';
 import { API_USERS } from '@/lib/routes';
 import { showError, showSuccess } from '@/lib/notifications';
 import { useConfirm } from 'material-ui-confirm';
@@ -126,7 +121,6 @@ function UserManagementContents(props: { accessToken: string }) {
           <UserTable users={users} setActiveUser={setActiveUser} />
         </Stack>
         <UserDialog
-          accessToken={props.accessToken}
           toEdit={activeUser}
           compensationClasses={compensationClasses}
           open={showUserDialog}
@@ -144,6 +138,12 @@ function UserManagementContents(props: { accessToken: string }) {
               createUserMutation.mutate(request);
             }
           }}
+          handleResendInvitation={(userId: string) =>
+            resendInvitation(props.accessToken, userId)
+          }
+          queryLoginInfo={(userId: string) =>
+            loginInfoSuspenseQuery(props.accessToken, userId).data
+          }
         />
       </Paper>
     </>
