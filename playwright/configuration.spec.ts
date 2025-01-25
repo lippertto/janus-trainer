@@ -12,8 +12,9 @@ test.describe.serial('Configuration page', () => {
 
     await page.goto('/configure/holidays');
     await expect(page.getByText(holidayName)).toBeHidden();
+    // set the displayed year to the one of the holiday
+    await page.getByPlaceholder('YYYY').fill('2024');
 
-    // add a new holiday
     await page.getByRole('button', { name: /Hinzufügen/i }).click();
 
     await page.getByLabel(/Start.*/i).fill('03.10.2024');
