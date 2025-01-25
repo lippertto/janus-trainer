@@ -31,8 +31,8 @@ Then, run `yarn vitest -c api-tests/vite.config.js`
 - Playwright test: enter -> approve -> compensate.
 - Playwright test: duplicates
 - Warning if training limits have been reached
-- offerings: make weekday a radio group. Training can have only 1 weekday
 - include tour for new users: https://github.com/elrumordelaluz/reactour
+- Rename to JOTA Janus Online Training Abrechnung
 
 ## Tech update
 
