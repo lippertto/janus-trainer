@@ -9,7 +9,7 @@ import { CircularProgress } from '@mui/material';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { createInApi } from '@/lib/fetch';
 import { DisciplineCreateRequest, DisciplineDto } from '@/lib/dto';
-import { API_DISCIPLINES } from '@/lib/routes';
+import { API_COST_CENTERS } from '@/lib/routes';
 import { showError } from '@/lib/notifications';
 import List from '@mui/material/List';
 import ListItemButton from '@mui/material/ListItemButton';
@@ -53,13 +53,13 @@ function DisciplineCardContents(props: { session: JanusSession }) {
   const disciplinesAddMutation = useMutation({
     mutationFn: (data: DisciplineCreateRequest) => {
       return createInApi<DisciplineDto>(
-        API_DISCIPLINES,
+        API_COST_CENTERS,
         data,
         props.session.accessToken,
       );
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: [API_DISCIPLINES] });
+      queryClient.invalidateQueries({ queryKey: [API_COST_CENTERS] });
     },
     onError: () => {
       showError('Konnte Kostenstelle nicht hinzufügen');

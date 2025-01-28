@@ -4,7 +4,7 @@ import { describe, expect, test } from 'vitest';
 
 const SERVER = 'http://localhost:3000';
 
-describe('/disciplines', () => {
+describe('/cost-centers', () => {
   test('smoke test create', async () => {
     let disciplineId;
     try {
@@ -14,7 +14,7 @@ describe('/disciplines', () => {
       };
 
       const createResponse = await superagent
-        .post(`${SERVER}/api/disciplines`)
+        .post(`${SERVER}/api/cost-centers`)
         .send(createRequest);
       const createdDiscipline = createResponse.body as DisciplineDto;
       disciplineId = createdDiscipline.id;
@@ -22,7 +22,7 @@ describe('/disciplines', () => {
       expect(createdDiscipline.costCenterId).toBe(666);
     } finally {
       if (disciplineId) {
-        await superagent.delete(`${SERVER}/api/disciplines/${disciplineId}`);
+        await superagent.delete(`${SERVER}/api/cost-centers/${disciplineId}`);
       }
     }
   });

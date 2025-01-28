@@ -30,13 +30,13 @@ async function createDiscipline(): Promise<DisciplineDto> {
   };
 
   const createResponse = await superagent
-    .post(`${SERVER}/api/disciplines`)
+    .post(`${SERVER}/api/cost-centers`)
     .send(createRequest);
   return createResponse.body as DisciplineDto;
 }
 
 async function deleteDiscipline(id: number) {
-  await superagent.delete(`${SERVER}/api/disciplines/${id}`);
+  await superagent.delete(`${SERVER}/api/cost-centers/${id}`);
 }
 
 async function deleteCourse(id: number) {
