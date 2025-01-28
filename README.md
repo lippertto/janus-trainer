@@ -32,7 +32,6 @@ Then, run `yarn vitest -c api-tests/vite.config.js`
 - Playwright test: duplicates
 - Warning if training limits have been reached
 - include tour for new users: https://github.com/elrumordelaluz/reactour
-- Rename to JOTA Janus Online Training Abrechnung
 
 ## Tech update
 
@@ -104,17 +103,28 @@ aws cloudformation update-stack \
 
 ## Rest of the deployment
 
+Deployment of test environment
+
 ```shell
 aws cloudformation update-stack \
-  --region eu-north-1 \
-  --stack-name janus-trainer-test \
-  --capabilities CAPABILITY_NAMED_IAM \
-  --template-body file://cloudformation.yaml \
-  --parameters ParameterKey=JanusEnvironment,ParameterValue=test \
-               ParameterKey=JanusDomain,ParameterValue=janus-test.lippert.dev \
-               ParameterKey=JanusTrainerAppImage,ParameterValue=9129018580.dkr.ecr.eu-north-1.amazonaws.com/janus-trainer-frontend:9101395816 \
-               ParameterKey=JanusDomainCertificateArn,ParameterValue=arn:aws:acm:us-east-1:930650061532:certificate/5d02e171-7f89-4349-b6bf-2f52414864b5 \
-               ParameterKey=PostgresConnectionUrl,ParameterValue=postgres://${PG_USER}:${PG_PASSWORD}@${PG_HOST}/bwquglhx\?connection_limit=1
+            --region eu-north-1 \
+            --stack-name janus-trainer-test \
+            --capabilities CAPABILITY_NAMED_IAM \
+            --template-body file://cloudformation.yaml \
+            --parameters ParameterKey=JanusEnvironment,ParameterValue=test \
+                         ParameterKey=JanusDomain,ParameterValue=janus-test.lippert.dev
+```
+
+Deployment of prod environment
+
+```shell
+aws cloudformation update-stack \
+            --region eu-north-1 \
+            --stack-name janus-trainer-prod \
+            --capabilities CAPABILITY_NAMED_IAM \
+            --template-body file://cloudformation.yaml \
+            --parameters ParameterKey=JanusEnvironment,ParameterValue=prod \
+                         ParameterKey=JanusDomain,ParameterValue=jota.sc-janus.de
 ```
 
 You need to take care of the following things:
