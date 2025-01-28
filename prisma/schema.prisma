@@ -116,6 +116,9 @@ model Course {
 
   trainers  UserInDb[]
   trainings Training[]
+
+  createdAt DateTime? @default(now())
+  deletedAt DateTime?
 }
 
 model Discipline {

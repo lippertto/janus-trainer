@@ -1,21 +1,26 @@
 import {
   allowAnyLoggedIn,
   allowOnlyAdmins,
+  ApiErrorNotFound,
   emptyResponse,
   handleTopLevelCatch,
   idAsNumberOrThrow,
-  validateOrThrowOld,
+  notFoundResponse,
+  validateOrThrow,
 } from '@/lib/helpers-for-api';
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { CourseDto, CourseUpdateRequest, ErrorDto } from '@/lib/dto';
 
-async function getOneCourse(id: string) {
+async function getOneCourse(id: number): Promise<CourseDto | null> {
   const value = await prisma.course.findUnique({
-    where: { id: parseInt(id) },
+    where: { id, deletedAt: null },
     include: { trainers: true },
   });
-  return NextResponse.json(value);
+  if (!value) {
+    return null;
+  }
+  return value;
 }
 
 export async function GET(
@@ -25,7 +30,10 @@ export async function GET(
   const params = await props.params;
   try {
     await allowAnyLoggedIn(request);
-    return await getOneCourse(params.id);
+    const id = idAsNumberOrThrow(params.id);
+    const course = await getOneCourse(id);
+    if (!course) return notFoundResponse();
+    return NextResponse.json(course);
   } catch (e) {
     return handleTopLevelCatch(e);
   }
@@ -33,7 +41,14 @@ export async function GET(
 
 async function deleteOneCourse(idString: string) {
   const id = idAsNumberOrThrow(idString);
-  await prisma.course.delete({ where: { id } });
+
+  const course = await getOneCourse(id);
+  if (!course) return emptyResponse();
+
+  await prisma.course.update({
+    where: { id },
+    data: { deletedAt: new Date() },
+  });
   return emptyResponse();
 }
 
@@ -52,7 +67,11 @@ export async function DELETE(
 
 async function updateOneCourse(idString: string, data: any) {
   const id = idAsNumberOrThrow(idString);
-  const request = await validateOrThrowOld(new CourseUpdateRequest(data));
+  const course = await getOneCourse(id);
+  if (!course) throw new ApiErrorNotFound('Could not find course');
+
+  const request = await validateOrThrow(CourseUpdateRequest, data);
+
   return prisma.course.update({
     where: { id },
     data: {

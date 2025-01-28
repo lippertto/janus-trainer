@@ -55,12 +55,13 @@ async function getAllCourses(trainerId: string | null): Promise<CourseDto[]> {
   let filter;
   if (trainerId) {
     filter = {
+      deletedAt: null,
       trainers: {
         some: { id: trainerId },
       },
     };
   } else {
-    filter = {};
+    filter = { deletedAt: null };
   }
   return prisma.course.findMany({
     where: filter,
