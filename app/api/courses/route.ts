@@ -51,18 +51,26 @@ export async function POST(
   }
 }
 
-async function getAllCourses(trainerId: string | null): Promise<CourseDto[]> {
+async function getAllCourses(
+  trainerId: string | null,
+  includeDeleted: boolean,
+): Promise<CourseDto[]> {
   let filter;
+  if (includeDeleted) {
+    filter = {};
+  } else {
+    filter = { deletedAt: null };
+  }
+
   if (trainerId) {
     filter = {
-      deletedAt: null,
+      ...filter,
       trainers: {
         some: { id: trainerId },
       },
     };
-  } else {
-    filter = { deletedAt: null };
   }
+
   return prisma.course.findMany({
     where: filter,
     include: { trainers: true },
@@ -88,6 +96,8 @@ export async function GET(
     const trainerId = request.nextUrl.searchParams.get('trainerId');
     const customCourse = request.nextUrl.searchParams.get('custom') === 'true';
     const costCenterIdString = request.nextUrl.searchParams.get('costCenterId');
+    const includeDeleted =
+      request.nextUrl.searchParams.get('includeDeleted') === 'true';
 
     let costCenterId = undefined;
     if (costCenterIdString) {
@@ -101,7 +111,7 @@ export async function GET(
     if (customCourse) {
       result = await getCustomCourses(costCenterId);
     } else {
-      result = await getAllCourses(trainerId);
+      result = await getAllCourses(trainerId, includeDeleted);
     }
 
     return NextResponse.json({ value: result });

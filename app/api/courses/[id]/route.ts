@@ -3,6 +3,7 @@ import {
   allowOnlyAdmins,
   ApiErrorNotFound,
   emptyResponse,
+  getOwnUserId,
   handleTopLevelCatch,
   idAsNumberOrThrow,
   notFoundResponse,
@@ -11,6 +12,7 @@ import {
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { CourseDto, CourseUpdateRequest, ErrorDto } from '@/lib/dto';
+import { logger } from '@/lib/logging';
 
 async function getOneCourse(id: number): Promise<CourseDto | null> {
   const value = await prisma.course.findUnique({
@@ -65,12 +67,10 @@ export async function DELETE(
   }
 }
 
-async function updateOneCourse(idString: string, data: any) {
+async function updateOneCourse(idString: string, request: CourseUpdateRequest) {
   const id = idAsNumberOrThrow(idString);
-  const course = await getOneCourse(id);
+  const course = await prisma.course.findUnique({ where: { id } });
   if (!course) throw new ApiErrorNotFound('Could not find course');
-
-  const request = await validateOrThrow(CourseUpdateRequest, data);
 
   return prisma.course.update({
     where: { id },
@@ -86,14 +86,21 @@ async function updateOneCourse(idString: string, data: any) {
 }
 
 export async function PUT(
-  request: NextRequest,
+  nextRequest: NextRequest,
   props: { params: Promise<{ id: string }> },
 ): Promise<NextResponse<CourseDto | ErrorDto>> {
   const params = await props.params;
   try {
-    await allowOnlyAdmins(request);
-    const data = await request.json();
-    const result = await updateOneCourse(params.id, data);
+    await allowOnlyAdmins(nextRequest);
+    const userId = await getOwnUserId(nextRequest);
+    logger.info({ userId }, `Updating course ${params.id}`);
+
+    const updateRequest = await validateOrThrow(
+      CourseUpdateRequest,
+      await nextRequest.json(),
+    );
+
+    const result = await updateOneCourse(params.id, updateRequest);
     return NextResponse.json(result);
   } catch (e) {
     return handleTopLevelCatch(e);

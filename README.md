@@ -25,6 +25,7 @@ Then, run `yarn vitest -c api-tests/vite.config.js`
 
 ## Features
 
+- Warning if booked time != course time
 - Make courses disabled. (Also in the UI.)
 - Allow users to choose their own courses (Michael Busch)
 - Auto-Approve
