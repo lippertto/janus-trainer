@@ -125,7 +125,6 @@ function OfferingsPageContents({ session }: { session: JanusSession }) {
           <Typography variant={'h5'}>Kurse</Typography>
           <ButtonGroup>
             <Button
-              color={'error'}
               onClick={() => {
                 handleDeleteCourseClick();
               }}

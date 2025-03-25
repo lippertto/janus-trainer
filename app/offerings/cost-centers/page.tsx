@@ -37,6 +37,7 @@ function ConfigurationPageContents({ session }: { session: JanusSession }) {
     confirm({
       title: 'Kostenstelle löschen?',
       description: `Soll die Kostenstelle "${activeCostCenter?.name}" gelöscht werden?`,
+      confirmationButtonProps: { autoFocus: true },
     }).then(() => {
       if (!activeCostCenter) return;
       deleteFromApi(API_COST_CENTERS, activeCostCenter, session.accessToken)
@@ -62,6 +63,7 @@ function ConfigurationPageContents({ session }: { session: JanusSession }) {
       );
     },
     onSuccess: (data) => {
+      showSuccess(`Kostenstelle ${data.name} erstellt`);
       queryClient.invalidateQueries({ queryKey: [API_COST_CENTERS] });
     },
     onError: () => {
@@ -80,6 +82,7 @@ function ConfigurationPageContents({ session }: { session: JanusSession }) {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: [API_COST_CENTERS] });
+      showSuccess(`Kostenstelle ${data.name} aktualisiert`);
     },
     onError: () => {
       showError('Konnte Kostenstelle nicht aktualisieren');
@@ -101,7 +104,10 @@ function ConfigurationPageContents({ session }: { session: JanusSession }) {
           }
         }}
         toEdit={activeCostCenter}
-        assignedNumbers={costCenters.map((cc) => cc.costCenterId)}
+        assignedNumbers={costCenters
+          .filter((cc) => cc.deletedAt === null)
+          .filter((cc) => cc.id !== activeCostCenter?.id)
+          .map((cc) => cc.costCenterId)}
       />
 
       <ButtonGroup>

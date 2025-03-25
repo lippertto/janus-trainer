@@ -35,7 +35,7 @@ const trainers: UserDto[] = [
 ];
 
 const costCenters: CostCenterDto[] = [
-  { id: 1, name: 'cost-center-01', costCenterId: 101 },
+  { id: 1, name: 'cost-center-01', costCenterId: 101, deletedAt: null },
 ];
 
 async function fillTextBox(name: string, text: string) {
