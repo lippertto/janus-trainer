@@ -1,4 +1,4 @@
-import { DisciplineCreateRequest, DisciplineDto } from '@/lib/dto';
+import { CostCenterCreateRequest, CostCenterDto } from '@/lib/dto';
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import Dialog from '@mui/material/Dialog';
@@ -6,25 +6,26 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import Stack from '@mui/system/Stack';
 import TextField from '@mui/material/TextField';
-import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
+import DialogActions from '@mui/material/DialogActions';
 
 type FormData = { name: string; costCenterId: string };
 
-function defaultValuesFor(toEdit: DisciplineDto | null): FormData {
+function defaultValuesFor(toEdit: CostCenterDto | null): FormData {
   return {
     name: toEdit?.name ?? '',
     costCenterId: toEdit?.costCenterId?.toString() ?? '',
   };
 }
 
-export function DisciplineDialog(props: {
+export function CostCenterDialog(props: {
   open: boolean;
-  toEdit: DisciplineDto | null;
+  toEdit: CostCenterDto | null;
   handleClose: () => void;
-  handleSave: (data: DisciplineCreateRequest) => void;
+  handleSave: (data: CostCenterCreateRequest) => void;
+  assignedNumbers: number[];
 }) {
-  const [previous, setPrevious] = React.useState<DisciplineDto | null>();
+  const [previous, setPrevious] = React.useState<CostCenterDto | null>();
 
   const {
     register,
@@ -67,13 +68,26 @@ export function DisciplineDialog(props: {
               helperText={errors.name?.message || ''}
             />
             <TextField
-              label="Kostenstelle"
+              label="Nummer"
               type="number"
               required={true}
-              {...register('costCenterId')}
+              {...register('costCenterId', {
+                validate: (v) => {
+                  const valueAsNumber = parseInt(v);
+                  if (!valueAsNumber) return 'Keine valide Nummer';
+                  if (
+                    props.assignedNumbers.find((i) => i === valueAsNumber) !==
+                    undefined
+                  ) {
+                    return 'Nummer ist schon vergeben';
+                  } else {
+                    return true;
+                  }
+                },
+              })}
               error={!!errors.costCenterId?.message}
               helperText={errors.costCenterId?.message || ''}
-              inputProps={{ min: 0 }}
+              slotProps={{ htmlInput: { min: 0 } }}
             />
           </Stack>
         </DialogContent>

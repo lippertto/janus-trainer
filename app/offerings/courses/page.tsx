@@ -38,7 +38,10 @@ function OfferingsPageContents({ session }: { session: JanusSession }) {
   const { data: courses } = useSuspenseQuery({
     queryKey: [API_COURSES],
     queryFn: () =>
-      fetchListFromApi<CourseDto>(`${API_COURSES}`, session.accessToken),
+      fetchListFromApi<CourseDto>(
+        `${API_COURSES}?${new URLSearchParams({ includeDeleted: 'true' })}`,
+        session.accessToken,
+      ),
     staleTime: 10 * 60 * 1000,
   });
 
@@ -126,12 +129,20 @@ function OfferingsPageContents({ session }: { session: JanusSession }) {
               onClick={() => {
                 handleDeleteCourseClick();
               }}
-              disabled={activeCourse === null || activeCourse.isCustomCourse}
+              disabled={
+                activeCourse === null ||
+                activeCourse.isCustomCourse ||
+                activeCourse.deletedAt !== null
+              }
             >
               löschen
             </Button>
             <Button
-              disabled={activeCourse === null || activeCourse.isCustomCourse}
+              disabled={
+                activeCourse === null ||
+                activeCourse.isCustomCourse ||
+                activeCourse.deletedAt !== null
+              }
               onClick={() => {
                 setCourseDialogOpen(true);
               }}

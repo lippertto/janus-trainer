@@ -1,7 +1,7 @@
 import {
   CourseDto,
   dayOfWeekToHumanReadable,
-  DisciplineDto,
+  CostCenterDto,
   UserDto,
 } from '@/lib/dto';
 import {
@@ -16,7 +16,7 @@ import React from 'react';
 import LockIcon from '@mui/icons-material/Lock';
 
 function buildColumns(
-  disciplines: { id: number; name: string; costCenterId: number }[],
+  costCenters: { id: number; name: string; costCenterId: number }[],
 ): GridColDef[] {
   return [
     { field: 'name', headerName: 'Kurs' },
@@ -51,7 +51,7 @@ function buildColumns(
       field: 'disciplineId',
       headerName: 'Kostenstelle',
       valueGetter: (disciplineId: number) =>
-        disciplines.find((d) => d.id === disciplineId)?.name ??
+        costCenters.find((d) => d.id === disciplineId)?.name ??
         disciplineId.toString(),
     },
     {
@@ -60,6 +60,13 @@ function buildColumns(
       valueGetter: (trainers: UserDto[]) => trainers.map((t) => t.name),
       width: 300,
     },
+    {
+      field: 'deletedAt',
+      headerName: 'gelöscht',
+      type: 'boolean',
+      width: 130,
+      valueGetter: (field: string) => Boolean(field),
+    },
   ];
 }
 
@@ -67,7 +74,7 @@ export default function CourseTable(props: {
   courses: CourseDto[];
   activeCourse: CourseDto | null;
   setActiveCourse: (v: CourseDto) => void;
-  costCenters: DisciplineDto[];
+  costCenters: CostCenterDto[];
 }) {
   const handleRowClick: GridEventListener<'rowClick'> = (params) => {
     props.setActiveCourse(params.row);
@@ -88,6 +95,12 @@ export default function CourseTable(props: {
         initialState={{
           sorting: {
             sortModel: [{ field: 'name', sort: 'asc' }],
+          },
+          filter: {
+            filterModel: {
+              // items: []
+              items: [{ field: 'deletedAt', operator: 'is', value: false }],
+            },
           },
         }}
         autosizeOnMount={true}

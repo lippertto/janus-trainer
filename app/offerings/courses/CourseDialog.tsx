@@ -14,7 +14,7 @@ import {
   CourseCreateRequest,
   CourseDto,
   dayOfWeekToHumanReadable,
-  DisciplineDto,
+  CostCenterDto,
   UserDto,
 } from '@/lib/dto';
 import { Controller, ControllerRenderProps, useForm } from 'react-hook-form';
@@ -77,9 +77,9 @@ function TrainerDropdown(props: {
 }
 
 function CostCenterDropDown(props: {
-  costCenters: DisciplineDto[];
+  costCenters: CostCenterDto[];
   controllerProps: ControllerRenderProps<FormData, 'costCenter'>;
-  handleCostCenterChange: (v: DisciplineDto | null) => void;
+  handleCostCenterChange: (v: CostCenterDto | null) => void;
 }) {
   return (
     <Autocomplete
@@ -98,7 +98,7 @@ function CostCenterDropDown(props: {
       onChange={(_, value) => {
         props.handleCostCenterChange(value);
       }}
-      getOptionLabel={(d: DisciplineDto) => {
+      getOptionLabel={(d: CostCenterDto) => {
         return d.name;
       }}
       isOptionEqualToValue={(option, value) => option.id === value.id}
@@ -112,12 +112,12 @@ type FormData = {
   time: dayjs.Dayjs | null;
   duration: number;
   selectedTrainers: Pick<UserDto, 'name' | 'id'>[];
-  costCenter: DisciplineDto | null;
+  costCenter: CostCenterDto | null;
 };
 
 function defaultValuesFor(
   course: CourseDto | null,
-  costCenters: DisciplineDto[],
+  costCenters: CostCenterDto[],
 ): FormData {
   const costCenter =
     costCenters.find((cc) => cc.id === course?.disciplineId) ?? null;
@@ -142,7 +142,7 @@ export function CourseDialog(props: {
   handleClose: () => void;
   handleSave: (data: CourseCreateRequest) => void;
   trainers: UserDto[];
-  costCenters: DisciplineDto[];
+  costCenters: CostCenterDto[];
   toEdit: CourseDto | null;
 }) {
   const [previous, setPrevious] = React.useState<CourseDto | null>(null);

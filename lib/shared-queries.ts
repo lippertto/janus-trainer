@@ -19,7 +19,7 @@ import {
   CompensationDto,
   CompensationValueDto,
   CourseDto,
-  DisciplineDto,
+  CostCenterDto,
   LoginInfo,
   PaymentDto,
   TrainingStatisticDto,
