@@ -1,6 +1,6 @@
 import React, { Suspense, useState } from 'react';
 
-import Grid from '@mui/material/Grid2';
+import Grid from '@mui/material/Grid';
 import { CircularProgress, Typography } from '@mui/material';
 import IconButton from '@mui/material/IconButton';
 import TextField from '@mui/material/TextField';

@@ -13,7 +13,7 @@ describe('createUser', () => {
       iban: undefined,
     };
 
-    expect(async () => {
+    await expect(async () => {
       await createUser(request);
     }).rejects.toThrow(ApiErrorBadRequest);
   });

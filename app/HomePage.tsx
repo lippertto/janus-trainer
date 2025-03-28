@@ -3,7 +3,7 @@ import Typography from '@mui/material/Typography';
 import { promises as fs } from 'fs';
 import { Group } from '@/lib/dto';
 import { selectOneUser } from '@/app/api/users/[userId]/select-one-user';
-import Grid from '@mui/material/Grid2';
+import Grid from '@mui/material/Grid';
 
 import Stack from '@mui/system/Stack';
 import { Instructions } from '@/app/Instructions';

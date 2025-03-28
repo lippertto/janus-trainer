@@ -19,7 +19,7 @@ test.describe.serial('Offerings page', () => {
     // create cost center
     await page.goto('/offerings/cost-centers');
     await page.getByRole('button', { name: /Hinzufügen/i }).click();
-    await page.getByLabel('Name').fill(costCenterName);
+    await page.getByLabel('Name *').fill(costCenterName);
     await page.getByLabel('Nummer').fill(randomNumber);
     await page.getByRole('button', { name: /Speichern/i }).click();
     await page.getByRole('alert').click();
@@ -30,7 +30,7 @@ test.describe.serial('Offerings page', () => {
     await page
       .getByRole('textbox', { name: 'Name des Kurses' })
       .fill(courseName);
-    await page.getByLabel('Kostenstelle').fill(costCenterName);
+    await page.getByLabel('Kostenstelle *').fill(costCenterName);
     await page.keyboard.press('ArrowDown');
     await page.keyboard.press('Enter');
     await page.getByRole('button', { name: /Speichern/i }).click();
@@ -41,8 +41,7 @@ test.describe.serial('Offerings page', () => {
     await page.getByRole('gridcell', { name: costCenterName }).click();
     await page.getByRole('button', { name: /löschen/i }).click();
     await page.getByRole('button', { name: 'Ok' }).click(); // confirm deletion
-    await page.getByRole('alert').click();
-    await page.getByRole('button', { name: 'Ok' }).click(); // dismiss the error message
+    await page.getByRole('alert').getByRole('button', { name: 'Ok' }).click(); // dismiss the error message
 
     // delete the course
     await page.goto('/offerings/courses');
@@ -50,13 +49,18 @@ test.describe.serial('Offerings page', () => {
     await page.getByRole('button', { name: /löschen/i }).click();
     await page.getByRole('button', { name: 'Ok' }).click(); // confirm deletion
     await page.getByRole('alert').click();
+    await page.waitForSelector(`[role="gridcell"][name="${courseName}"]`, {
+      state: 'detached',
+    });
 
     // try again to delete the cost center
     await page.goto('/offerings/cost-centers');
     await page.getByRole('gridcell', { name: costCenterName }).click();
     await page.getByRole('button', { name: /löschen/i }).click();
     await page.getByRole('button', { name: 'Ok' }).click(); // confirm deletion
-    await page.getByRole('alert').click();
+    await page.waitForSelector(`[role="gridcell"][name="${costCenterName}"]`, {
+      state: 'detached',
+    });
 
     await page.close();
     await browser.close();
