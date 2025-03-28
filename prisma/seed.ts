@@ -82,11 +82,13 @@ async function main() {
     name: 'Sportart 1',
     id: 1,
     costCenterId: 42,
+    deletedAt: null,
   };
   const discipline2: Discipline = {
     name: 'Sportart 2',
     id: 2,
     costCenterId: 84,
+    deletedAt: null,
   };
 
   await Promise.all(
