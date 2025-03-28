@@ -84,7 +84,7 @@
     "prettier": "^3.5.3",
     "prisma": "^5.22.0",
     "superagent": "^10.2.0",
-    "typescript": "^5.7.2",
+    "typescript": "^5.8.2",
     "vitest": "^2.1.9",
     "xpath": "^0.0.34"
   }
