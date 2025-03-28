@@ -73,13 +73,6 @@ approval/deployment rules, and a further differentiation with a dev-environment 
 
 There is a dev-cognito which is used for local development. This instance is managed manually.
 
-## Database
-
-I chose RDS because of the (time-limited) free tier that aws offers.
-
-The database is publicly accessible via 5432 because I did not want to integrate CI with RDS authentication and
-the required VPC connectivity setup.
-
 ## Special view for trainers
 
 I use a different views for the enter-route, because I assume that trainers are much more likely to be on mobile.
@@ -87,22 +80,12 @@ The office will always use a PC, so a table view is better suited for them.
 
 # Deployment
 
-The deployment is handled via cloudformation. This will take care of the infrastructure setup and the deployment
-of the lambda function. (Make sure to update the Parameter JanusTrainerAppImage)
+The software is mainly intended to run on a VM. Additionally, we use the AWS service cognito to manage user logins
+and as an OAuth2 provider.
 
-## Database
+## Deployment on VM
 
-The database is shared by both instances and is created manually. To create it, execute:
-
-```shell
-aws cloudformation update-stack \
-  --region eu-north-1 \
-  --stack-name janus-trainer-db \
-  --template-body file://cloudformation-db.yaml \
-  --parameter ParameterKey=DbPassword,ParameterValue=$DB_PASSWORD
-```
-
-## Rest of the deployment
+## Cloud deployment (cognito)
 
 Deployment of test environment
 
