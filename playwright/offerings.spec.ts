@@ -19,7 +19,7 @@ test.describe.serial('Offerings page', () => {
     // create cost center
     await page.goto('/offerings/cost-centers');
     await page.getByRole('button', { name: /Hinzufügen/i }).click();
-    await page.getByLabel('Name').fill(costCenterName);
+    await page.getByLabel('Name *').fill(costCenterName);
     await page.getByLabel('Nummer').fill(randomNumber);
     await page.getByRole('button', { name: /Speichern/i }).click();
     await page.getByRole('alert').click();
@@ -30,7 +30,7 @@ test.describe.serial('Offerings page', () => {
     await page
       .getByRole('textbox', { name: 'Name des Kurses' })
       .fill(courseName);
-    await page.getByLabel('Kostenstelle').fill(costCenterName);
+    await page.getByLabel('Kostenstelle *').fill(costCenterName);
     await page.keyboard.press('ArrowDown');
     await page.keyboard.press('Enter');
     await page.getByRole('button', { name: /Speichern/i }).click();
