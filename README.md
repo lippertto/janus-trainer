@@ -25,6 +25,7 @@ Then, run `yarn vitest -c api-tests/vite.config.js`
 
 ## Features
 
+- Warning if booked time != course time
 - Make courses disabled. (Also in the UI.)
 - Allow users to choose their own courses (Michael Busch)
 - Auto-Approve
@@ -32,7 +33,6 @@ Then, run `yarn vitest -c api-tests/vite.config.js`
 - Playwright test: duplicates
 - Warning if training limits have been reached
 - include tour for new users: https://github.com/elrumordelaluz/reactour
-- Rename to JOTA Janus Online Training Abrechnung
 
 ## Tech update
 
@@ -73,13 +73,6 @@ approval/deployment rules, and a further differentiation with a dev-environment 
 
 There is a dev-cognito which is used for local development. This instance is managed manually.
 
-## Database
-
-I chose RDS because of the (time-limited) free tier that aws offers.
-
-The database is publicly accessible via 5432 because I did not want to integrate CI with RDS authentication and
-the required VPC connectivity setup.
-
 ## Special view for trainers
 
 I use a different views for the enter-route, because I assume that trainers are much more likely to be on mobile.
@@ -87,34 +80,35 @@ The office will always use a PC, so a table view is better suited for them.
 
 # Deployment
 
-The deployment is handled via cloudformation. This will take care of the infrastructure setup and the deployment
-of the lambda function. (Make sure to update the Parameter JanusTrainerAppImage)
+The software is mainly intended to run on a VM. Additionally, we use the AWS service cognito to manage user logins
+and as an OAuth2 provider.
 
-## Database
+## Deployment on VM
 
-The database is shared by both instances and is created manually. To create it, execute:
+## Cloud deployment (cognito)
+
+Deployment of test environment
 
 ```shell
 aws cloudformation update-stack \
-  --region eu-north-1 \
-  --stack-name janus-trainer-db \
-  --template-body file://cloudformation-db.yaml \
-  --parameter ParameterKey=DbPassword,ParameterValue=$DB_PASSWORD
+            --region eu-north-1 \
+            --stack-name janus-trainer-test \
+            --capabilities CAPABILITY_NAMED_IAM \
+            --template-body file://cloudformation.yaml \
+            --parameters ParameterKey=JanusEnvironment,ParameterValue=test \
+                         ParameterKey=JanusDomain,ParameterValue=janus-test.lippert.dev
 ```
 
-## Rest of the deployment
+Deployment of prod environment
 
 ```shell
 aws cloudformation update-stack \
-  --region eu-north-1 \
-  --stack-name janus-trainer-test \
-  --capabilities CAPABILITY_NAMED_IAM \
-  --template-body file://cloudformation.yaml \
-  --parameters ParameterKey=JanusEnvironment,ParameterValue=test \
-               ParameterKey=JanusDomain,ParameterValue=janus-test.lippert.dev \
-               ParameterKey=JanusTrainerAppImage,ParameterValue=9129018580.dkr.ecr.eu-north-1.amazonaws.com/janus-trainer-frontend:9101395816 \
-               ParameterKey=JanusDomainCertificateArn,ParameterValue=arn:aws:acm:us-east-1:930650061532:certificate/5d02e171-7f89-4349-b6bf-2f52414864b5 \
-               ParameterKey=PostgresConnectionUrl,ParameterValue=postgres://${PG_USER}:${PG_PASSWORD}@${PG_HOST}/bwquglhx\?connection_limit=1
+            --region eu-north-1 \
+            --stack-name janus-trainer-prod \
+            --capabilities CAPABILITY_NAMED_IAM \
+            --template-body file://cloudformation.yaml \
+            --parameters ParameterKey=JanusEnvironment,ParameterValue=prod \
+                         ParameterKey=JanusDomain,ParameterValue=jota.sc-janus.de
 ```
 
 You need to take care of the following things:

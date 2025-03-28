@@ -106,6 +106,16 @@ export function notFoundResponse(): NextResponse<ErrorDto> {
   return NextResponse.json(error, { status: 404 });
 }
 
+export function conflictResponse(
+  message: string,
+  errorCode: string | undefined = undefined,
+): NextResponse<ErrorDto> {
+  const error: ErrorDto = {
+    error: { message: message, code: errorCode ?? 'Conflict' },
+  };
+  return NextResponse.json(error, { status: 409 });
+}
+
 export function errorResponse(
   message: string,
   status: number,

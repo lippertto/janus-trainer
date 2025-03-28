@@ -2,7 +2,6 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import {
-  allowAdminOrSelf,
   allowAnyLoggedIn,
   allowOnlyAdmins,
   ApiErrorBadRequest,

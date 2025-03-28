@@ -294,9 +294,9 @@ export type TrainingSummaryListDto = {
   value: TrainingSummaryDto[];
 };
 
-export type DisciplineDto = Discipline;
+export type CostCenterDto = Discipline;
 
-export class DisciplineCreateRequest {
+export class CostCenterCreateRequest {
   constructor(obj: any) {
     Object.assign(this, obj);
   }
@@ -308,8 +308,10 @@ export class DisciplineCreateRequest {
   costCenterId: number;
 }
 
-export type DisciplineQueryResponseDto = {
-  value: DisciplineDto[];
+export class CostCenterUpdateRequest extends CostCenterCreateRequest {}
+
+export type CostCenterQueryResponseDto = {
+  value: CostCenterDto[];
 };
 
 export class PaymentCreateRequest {

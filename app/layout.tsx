@@ -6,7 +6,7 @@ import JanusProviders from './JanusProviders';
 import TermsAcceptance from '@/app/TermsAcceptance';
 
 export const metadata = {
-  title: 'Janus Abrechnungs-App',
+  title: 'Janus Online Trainings Abrechnungen',
   description: 'Verwaltung von Abrechnungen für den SC Janus',
 };
 
@@ -19,7 +19,7 @@ export default function RootLayout({
     <html lang="de">
       <head>
         {/*<script src="http://localhost:8097"></script>*/}
-        <title>Janus Trainer App</title>
+        <title>Janus Online Trainings Abrechnungen</title>
         <link rel="icon" href="/favicon.ico" sizes="any" />
       </head>
       <body>

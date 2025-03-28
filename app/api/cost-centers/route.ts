@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import {
-  DisciplineCreateRequest,
-  DisciplineDto,
-  DisciplineQueryResponseDto,
+  CostCenterCreateRequest,
+  CostCenterDto,
+  CostCenterQueryResponseDto,
   ErrorDto,
 } from '@/lib/dto';
 import {
@@ -13,17 +13,26 @@ import {
   validateOrThrow,
 } from '@/lib/helpers-for-api';
 
-async function getAllDisciplines() {
-  const result = await prisma.discipline.findMany({ where: {} });
+async function getAllCostCenters(includeDeleted: boolean) {
+  let filter;
+  if (includeDeleted) {
+    filter = {};
+  } else {
+    filter = { deletedAt: null };
+  }
+
+  const result = await prisma.discipline.findMany({ where: filter });
   return NextResponse.json({ value: result });
 }
 
 export async function GET(
   request: NextRequest,
-): Promise<NextResponse<DisciplineQueryResponseDto | ErrorDto>> {
+): Promise<NextResponse<CostCenterQueryResponseDto | ErrorDto>> {
+  const includeDeleted =
+    request.nextUrl.searchParams.get('includeDeleted') === 'true';
   try {
     await allowAnyLoggedIn(request);
-    return await getAllDisciplines();
+    return await getAllCostCenters(includeDeleted);
   } catch (e) {
     return handleTopLevelCatch(e);
   }
@@ -31,11 +40,11 @@ export async function GET(
 
 export async function POST(
   nextRequest: NextRequest,
-): Promise<NextResponse<DisciplineDto | ErrorDto>> {
+): Promise<NextResponse<CostCenterDto | ErrorDto>> {
   try {
     await allowOnlyAdmins(nextRequest);
     const request = await validateOrThrow(
-      DisciplineCreateRequest,
+      CostCenterCreateRequest,
       await nextRequest.json(),
     );
 

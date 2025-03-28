@@ -116,13 +116,18 @@ model Course {
 
   trainers  UserInDb[]
   trainings Training[]
+
+  createdAt DateTime? @default(now())
+  deletedAt DateTime?
 }
 
+// Discipline is the old name of cost center.
 model Discipline {
-  id           Int      @id @default(autoincrement())
+  id           Int       @id @default(autoincrement())
   name         String
-  costCenterId Int
+  costCenterId Int // an id that is assigned by the users. Can be any value.
   Course       Course[]
+  deletedAt    DateTime?
 }
 
 model Payment {

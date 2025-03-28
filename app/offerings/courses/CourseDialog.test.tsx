@@ -4,7 +4,7 @@
 import React from 'react';
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import { CourseDialog } from '@/app/offerings/courses/CourseDialog';
-import { DisciplineDto, Group, UserDto } from '@/lib/dto';
+import { CostCenterDto, Group, UserDto } from '@/lib/dto';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { describe, expect, test, vi } from 'vitest';
@@ -34,8 +34,8 @@ const trainers: UserDto[] = [
   },
 ];
 
-const costCenters: DisciplineDto[] = [
-  { id: 1, name: 'cost-center-01', costCenterId: 101 },
+const costCenters: CostCenterDto[] = [
+  { id: 1, name: 'cost-center-01', costCenterId: 101, deletedAt: null },
 ];
 
 async function fillTextBox(name: string, text: string) {

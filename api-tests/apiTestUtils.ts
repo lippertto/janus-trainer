@@ -1,6 +1,13 @@
-import { PaymentDto, TrainingCreateRequest, TrainingDto } from '@/lib/dto';
+import {
+  CostCenterCreateRequest,
+  CostCenterDto,
+  CourseDto,
+  PaymentDto,
+  TrainingCreateRequest,
+  TrainingDto,
+} from '@/lib/dto';
 import superagent from 'superagent';
-import { TrainingStatus } from '@prisma/client';
+import { DayOfWeek, TrainingStatus } from '@prisma/client';
 
 export const USER_ID_ADMIN = '502c79bc-e051-70f5-048c-5619e49e2383';
 export const USER_ID_TRAINER = '80ac598c-e0b1-7040-5e0e-6fd257a53699';
@@ -83,5 +90,34 @@ export class LocalApi {
       `${this.baseUrl}/api/payments?trainerId=${trainerId}`,
     );
     return result.body.value as PaymentDto[];
+  }
+
+  async createCostCenter(): Promise<CostCenterDto> {
+    const createRequest: CostCenterCreateRequest = {
+      name: 'Name',
+      costCenterId: 666,
+    };
+
+    const createResponse = await superagent
+      .post(`${this.baseUrl}/api/cost-centers`)
+      .send(createRequest);
+    return createResponse.body as CostCenterDto;
+  }
+
+  async createCourse({
+    costCenterId,
+  }: {
+    costCenterId: number;
+  }): Promise<CourseDto> {
+    const result = await superagent.post(`${this.baseUrl}/api/courses`).send({
+      name: 'any-course',
+      durationMinutes: 120,
+      weekday: DayOfWeek.TUESDAY,
+      startHour: 10,
+      startMinute: 0,
+      trainerIds: [],
+      disciplineId: costCenterId,
+    });
+    return result.body as CourseDto;
   }
 }
