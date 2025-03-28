@@ -1,5 +1,5 @@
 'use client';
-import Grid from '@mui/material/Grid2';
+import Grid from '@mui/material/Grid';
 import React, { Suspense } from 'react';
 import { useSession } from 'next-auth/react';
 import LoginRequired from '../../components/LoginRequired';

@@ -13,7 +13,7 @@ import {
   TrainingDuplicateDto,
   TrainingSummaryDto,
 } from '@/lib/dto';
-import Grid from '@mui/material/Grid2';
+import Grid from '@mui/material/Grid';
 import ButtonGroup from '@mui/material/ButtonGroup';
 import Button from '@mui/material/Button';
 import { DatePicker } from '@mui/x-date-pickers';
