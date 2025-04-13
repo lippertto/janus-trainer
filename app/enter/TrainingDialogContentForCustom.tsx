@@ -16,28 +16,66 @@ import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import { compareNamed } from '@/lib/sort-and-filter';
 import InputAdornment from '@mui/material/InputAdornment';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import Select, { SelectChangeEvent } from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
 
 type FormData = {
   date: dayjs.Dayjs;
-  course: CourseDto | null;
+  courseId: string;
   comment: string;
   compensationString: string;
 };
 
-function determineDefaultValues(toEdit: TrainingDto | null): FormData {
+function determineDefaultValues(
+  toEdit: TrainingDto | null,
+  courses: CourseDto[],
+): FormData {
   let compensationString = '';
+  let courseId = courses.length > 0 ? courses[0].id.toString() : '';
   if (toEdit) {
     const euros = Math.floor(toEdit.compensationCents / 100);
     const cents = Math.floor(toEdit.compensationCents % 100);
     compensationString = `${euros},${cents.toString().padStart(2, '0')}`;
+    courseId = toEdit.courseId.toString();
   }
 
   return {
     date: toEdit?.date ? dayjs(toEdit.date) : dayjs(),
-    course: toEdit?.course ?? null,
+    courseId: courseId,
     comment: toEdit?.comment ?? '',
     compensationString: compensationString,
   };
+}
+
+export function SelectForCostCenterCourses(props: {
+  value: string;
+  onChange: (event: SelectChangeEvent<string>, child: React.ReactNode) => void;
+  ref: React.Ref<any>;
+  courses: CourseDto[];
+}) {
+  const menuItems = props.courses
+    .sort(compareNamed)
+    .map((course) => <MenuItem value={course.id}>{course.name}</MenuItem>);
+
+  const labelId = 'enter-training-dialog-course-label';
+  return (
+    <FormControl>
+      <InputLabel id={labelId}>Kostenstelle</InputLabel>
+      <Select
+        labelId={labelId}
+        id="enter-training-dialog-course-select"
+        value={props.value}
+        onChange={props.onChange}
+        required={true}
+        inputRef={props.ref}
+        label="Kostenstelle"
+      >
+        {menuItems}
+      </Select>
+    </FormControl>
+  );
 }
 
 export function TrainingDialogContentForCustom(props: {
@@ -51,17 +89,18 @@ export function TrainingDialogContentForCustom(props: {
   getCourses: () => CourseDto[];
   userId: string;
 }) {
+  const courses = props.getCourses();
   const {
     handleSubmit,
     reset,
     control,
     formState: { errors, isValid },
   } = useForm<FormData>({
-    defaultValues: determineDefaultValues(props.toEdit),
+    defaultValues: determineDefaultValues(props.toEdit, courses),
   });
 
   React.useEffect(() => {
-    reset(determineDefaultValues(props.toEdit));
+    reset(determineDefaultValues(props.toEdit, courses));
   }, [props.toEdit]);
 
   const onSubmit = (data: FormData) => {
@@ -69,7 +108,7 @@ export function TrainingDialogContentForCustom(props: {
 
     props.handleSave({
       date: data.date.format('YYYY-MM-DD'),
-      courseId: data.course!.id,
+      courseId: parseInt(data.courseId!),
       compensationCents: Math.floor(
         parseFloat(data.compensationString.replace(',', '.')) * 100,
       ),
@@ -78,7 +117,7 @@ export function TrainingDialogContentForCustom(props: {
       comment: data.comment,
     });
     props.handleClose();
-    reset(determineDefaultValues(null));
+    reset(determineDefaultValues(null, courses));
   };
 
   return (
@@ -107,28 +146,13 @@ export function TrainingDialogContentForCustom(props: {
             )}
           />
 
-          <Suspense fallback={<LoadingSpinner />}>
-            <Controller
-              control={control}
-              name="course"
-              render={({ field: fieldProps }) => (
-                <Autocomplete
-                  {...fieldProps}
-                  options={props.getCourses().sort(compareNamed)}
-                  getOptionLabel={(c) => c.name}
-                  onChange={(_, data) => fieldProps.onChange(data)}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label="Kostenstelle"
-                      required={true}
-                    />
-                  )}
-                  isOptionEqualToValue={(a, b) => a.id === b.id}
-                />
-              )}
-            />
-          </Suspense>
+          <Controller
+            control={control}
+            name="courseId"
+            render={({ field }) => (
+              <SelectForCostCenterCourses {...field} courses={courses} />
+            )}
+          />
 
           <Controller
             control={control}
