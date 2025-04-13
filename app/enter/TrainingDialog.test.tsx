@@ -187,7 +187,10 @@ describe('enter courses', () => {
     const courseBox = await screen.findByRole('combobox', { name: /Kurs.*/i });
     selectFirstComboboxElement(courseBox);
 
-    await pressSave();
+    // for some reason, getByRole does not work here.
+    const saveButton = await screen.findByTestId('enter-training-save-button');
+    expect(saveButton).toBeEnabled();
+    fireEvent.submit(saveButton);
 
     await waitFor(() =>
       expect(save).toHaveBeenCalledWith(
@@ -470,5 +473,28 @@ describe('enter custom', () => {
       name: 'Betrag',
     });
     expect(valueTextbox).toHaveValue('34,56');
+  });
+
+  test('Shows explanation when no compensation groups have been assigned.', async () => {
+    const userId = 'userId123';
+
+    const { unmount } = render(
+      <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="de">
+        <TrainingDialog
+          open={true}
+          handleClose={vi.fn()}
+          handleSave={vi.fn()}
+          handleDelete={vi.fn()}
+          toEdit={null}
+          today={DayOfWeek.MONDAY}
+          courses={COURSES}
+          compensationValues={[]}
+          userId={userId}
+          getCustomCourses={() => []}
+        />
+      </LocalizationProvider>,
+    );
+
+    unmount();
   });
 });
