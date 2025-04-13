@@ -178,7 +178,7 @@ export function TrainingDialogContentForCustom(props: {
                         <InputAdornment position="start">€</InputAdornment>
                       ),
                     },
-                    htmlInput: { inputMode: 'numeric' },
+                    htmlInput: { inputMode: 'decimal' },
                   }}
                   error={!!errors.compensationString?.message}
                   helperText={errors.compensationString?.message || ''}
