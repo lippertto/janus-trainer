@@ -87,5 +87,8 @@
     "typescript": "^5.8.2",
     "vitest": "^3.1.1",
     "xpath": "^0.0.34"
+  },
+  "resolutions": {
+    "cross-spawn": "^7.0.6"
   }
 }
