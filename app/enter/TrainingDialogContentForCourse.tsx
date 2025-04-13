@@ -379,7 +379,9 @@ export function TrainingDialogContentForCourse(props: {
             required={true}
             type="number"
             {...register('participantCount')}
-            slotProps={{ htmlInput: { min: 0, max: 999 } }}
+            slotProps={{
+              htmlInput: { min: 0, max: 999, inputMode: 'numeric' },
+            }}
           />
 
           <TextField label="Kommentar" {...register('comment')} />
