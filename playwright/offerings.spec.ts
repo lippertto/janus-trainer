@@ -5,6 +5,8 @@ import { newBrowser } from './browser';
 test.describe.serial('Offerings page', () => {
   test.use({ storageState: 'playwright/.auth/admin.json' });
 
+  // the test will throw on the getBy* methods. We do not need separate assertions
+  // eslint-disable-next-line playwright/expect-expect
   test('cost-center cannot be deleted when referenced by a course', async () => {
     test.setTimeout(120_000);
 
@@ -49,6 +51,8 @@ test.describe.serial('Offerings page', () => {
     await page.getByRole('button', { name: /löschen/i }).click();
     await page.getByRole('button', { name: 'Ok' }).click(); // confirm deletion
     await page.getByRole('alert').click();
+    // I have not found another way to do this
+    // eslint-disable-next-line playwright/no-wait-for-selector
     await page.waitForSelector(`[role="gridcell"][name="${courseName}"]`, {
       state: 'detached',
     });
@@ -58,6 +62,8 @@ test.describe.serial('Offerings page', () => {
     await page.getByRole('gridcell', { name: costCenterName }).click();
     await page.getByRole('button', { name: /löschen/i }).click();
     await page.getByRole('button', { name: 'Ok' }).click(); // confirm deletion
+    // I have not found another way to do this
+    // eslint-disable-next-line playwright/no-wait-for-selector
     await page.waitForSelector(`[role="gridcell"][name="${costCenterName}"]`, {
       state: 'detached',
     });
