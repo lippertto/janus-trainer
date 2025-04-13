@@ -178,6 +178,7 @@ export function TrainingDialogContentForCustom(props: {
                         <InputAdornment position="start">€</InputAdornment>
                       ),
                     },
+                    htmlInput: { inputMode: 'numeric' },
                   }}
                   error={!!errors.compensationString?.message}
                   helperText={errors.compensationString?.message || ''}
