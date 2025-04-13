@@ -3,7 +3,6 @@ import Stack from '@mui/material/Stack';
 import { Controller, useForm } from 'react-hook-form';
 import { DatePicker } from '@mui/x-date-pickers';
 import dayjs from 'dayjs';
-import Autocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
@@ -17,18 +16,23 @@ import {
 } from '@/lib/dto';
 import { DayOfWeek } from '@prisma/client';
 import { centsToHumanReadable } from '@/lib/formatters';
-import { compareByField } from '@/lib/sort-and-filter';
+import { compareByField, compareNamed } from '@/lib/sort-and-filter';
 import {
   TrainingDialogToggle,
   TrainingDialogTypes,
 } from '@/app/enter/TrainingDialogToggle';
+import InputLabel from '@mui/material/InputLabel';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
+import FormControl from '@mui/material/FormControl';
+import { SelectChangeEvent } from '@mui/material/Select';
 
 type FormData = {
   comment: string;
-  course: CourseDto | null;
+  courseId: string; // may be ''
   date: dayjs.Dayjs;
   participantCount: string;
-  compensationValue: CompensationValueDto | null;
+  compensationValueId: string; // may be ''
 };
 
 function determineDefaultCourse(courses: CourseDto[], today: DayOfWeek) {
@@ -125,15 +129,96 @@ function determineDefaultValues(
   let course = toEdit?.course ?? determineDefaultCourse(courses, today);
   return {
     comment: toEdit?.comment ?? '',
-    course: course,
+    courseId: course?.id?.toString() ?? '',
     date: toEdit?.date ? dayjs(toEdit.date) : dayjs(),
     participantCount: toEdit?.participantCount?.toString() ?? '',
-    compensationValue: determineDefaultCompensationValue(
-      compensationValues,
-      course,
-      toEdit,
-    ),
+    compensationValueId:
+      determineDefaultCompensationValue(
+        compensationValues,
+        course,
+        toEdit,
+      )?.id?.toString() ?? '',
   };
+}
+
+function SelectForCompensationValues(props: {
+  value: string;
+  onChange: (event: SelectChangeEvent<string>, child: React.ReactNode) => void;
+  inputRef: React.Ref<any>;
+  compensationValues: CompensationValueDto[];
+}) {
+  let menuItems;
+  if (props.compensationValues.length === 0) {
+    menuItems = (
+      <MenuItem value="">
+        Keine Pauschalen hinterlegt. Bitte beim Büro melden.
+      </MenuItem>
+    );
+  } else {
+    menuItems = props.compensationValues.map((compensationValue) => (
+      <MenuItem value={compensationValue.id}>
+        {compensationValueToText(compensationValue)}
+      </MenuItem>
+    ));
+  }
+
+  const labelId = 'enter-training-dialog-compensation-label';
+
+  return (
+    <FormControl>
+      <InputLabel id={labelId}>Vergütung</InputLabel>
+
+      <Select
+        labelId={labelId}
+        id="enter-training-dialog-compensation-select"
+        value={props.value}
+        onChange={props.onChange}
+        required={true}
+        inputRef={props.inputRef}
+        label="Vergütung"
+      >
+        {menuItems}
+      </Select>
+    </FormControl>
+  );
+}
+
+function SelectForCourses(props: {
+  value: string;
+  onChange: (event: SelectChangeEvent<string>, child: React.ReactNode) => void;
+  inputRef: React.Ref<any>;
+  courses: CourseDto[];
+}) {
+  let menuItems;
+  if (props.courses.length === 0) {
+    menuItems = (
+      <MenuItem value="">
+        Keine Kurse hinterlegt. Bitte beim Büro melden.
+      </MenuItem>
+    );
+  } else {
+    menuItems = props.courses.map((course) => (
+      <MenuItem value={course.id}>{courseDisplayname(course)}</MenuItem>
+    ));
+  }
+
+  const labelId = 'enter-training-dialog-course-label';
+  return (
+    <FormControl>
+      <InputLabel id={labelId}>Kurs</InputLabel>
+      <Select
+        labelId={labelId}
+        id="enter-training-dialog-course-select"
+        value={props.value}
+        onChange={props.onChange}
+        required={true}
+        inputRef={props.inputRef}
+        label="Kurs"
+      >
+        {menuItems}
+      </Select>
+    </FormControl>
+  );
 }
 
 export function TrainingDialogContentForCourse(props: {
@@ -171,34 +256,34 @@ export function TrainingDialogContentForCourse(props: {
     ),
   });
 
-  const watchCourse = watch('course');
+  const watchCourseId = watch('courseId');
 
   // when the course has changed, update the compensation value accordingly
   React.useEffect(() => {
-    const courseValue = getValues('course');
+    const courseIdValue = getValues('courseId');
 
     // if we have a 'toEdit' and the currently selected course is the one that is in 'toEdit', we use the
     // compensationValue from 'toEdit'.
-    if (props.toEdit && courseValue) {
-      if (courseValue.id === props.toEdit.course!.id) {
+    if (props.toEdit && courseIdValue) {
+      if (courseIdValue === props.toEdit.course!.id.toString()) {
         setValue(
-          'compensationValue',
-          enrichedCompensationValues.find(
-            (cv) => cv.cents === props.toEdit!.compensationCents,
-          )!,
+          'compensationValueId',
+          enrichedCompensationValues
+            .find((cv) => cv.cents === props.toEdit!.compensationCents)!
+            .id.toString(),
         );
         return;
       }
     }
 
     setValue(
-      'compensationValue',
+      'compensationValueId',
       determineDefaultCompensationValueForCourse(
         enrichedCompensationValues,
-        courseValue,
-      ),
+        props.courses.find((c) => c.id === parseInt(courseIdValue)) ?? null,
+      )?.id?.toString() ?? '',
     );
-  }, [watchCourse]);
+  }, [watchCourseId]);
 
   React.useEffect(() => {
     reset(
@@ -213,10 +298,13 @@ export function TrainingDialogContentForCourse(props: {
 
   const onSubmit = (data: FormData) => {
     if (isValid) {
+      const compensationValue = enrichedCompensationValues.find(
+        (cv) => cv.id === parseInt(data.compensationValueId),
+      );
       props.handleSave({
         comment: data.comment,
-        compensationCents: data.compensationValue!.cents,
-        courseId: data.course!.id!,
+        compensationCents: compensationValue!.cents,
+        courseId: parseInt(data.courseId!),
         date: data.date.format('YYYY-MM-DD'),
         participantCount: parseInt(data.participantCount),
         userId: props.userId,
@@ -262,47 +350,28 @@ export function TrainingDialogContentForCourse(props: {
 
           <Controller
             control={control}
-            name="course"
+            name="courseId"
             render={({ field: fieldProps }) => (
-              <Autocomplete
-                {...fieldProps}
-                options={props.courses}
-                getOptionLabel={courseDisplayname}
-                onChange={(e, data) => fieldProps.onChange(data)}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    label="Kurs"
-                    placeholder={
-                      props.courses.length === 0
-                        ? 'Keine Kurse hinterlegt'
-                        : undefined
-                    }
-                    required={true}
-                  />
-                )}
-                isOptionEqualToValue={(a, b) => a.id === b.id}
+              <SelectForCourses
+                value={fieldProps.value}
+                onChange={fieldProps.onChange}
+                inputRef={fieldProps.ref}
+                courses={props.courses}
               />
             )}
           />
 
           <Controller
             control={control}
-            name="compensationValue"
-            render={({ field: fieldProps }) => {
-              return (
-                <Autocomplete
-                  {...fieldProps}
-                  options={enrichedCompensationValues}
-                  getOptionLabel={compensationValueToText}
-                  onChange={(e, data) => fieldProps.onChange(data)}
-                  renderInput={(params) => (
-                    <TextField {...params} label="Vergütung" required={true} />
-                  )}
-                  isOptionEqualToValue={(a, b) => a.id === b.id}
-                />
-              );
-            }}
+            name="compensationValueId"
+            render={({ field: fieldProps }) => (
+              <SelectForCompensationValues
+                value={fieldProps.value}
+                onChange={fieldProps.onChange}
+                inputRef={fieldProps.ref}
+                compensationValues={enrichedCompensationValues}
+              />
+            )}
           />
 
           <TextField
@@ -328,7 +397,9 @@ export function TrainingDialogContentForCourse(props: {
             löschen
           </Button>
         ) : null}{' '}
-        <Button type="submit">Speichern</Button>
+        <Button type="submit" data-testid="enter-training-save-button">
+          Speichern
+        </Button>
       </DialogActions>
     </form>
   );
