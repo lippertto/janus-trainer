@@ -58,6 +58,7 @@
     "uuid": "^11.1.0"
   },
   "devDependencies": {
+    "@next/eslint-plugin-next": "^15.3.1",
     "@playwright/test": "^1.51.1",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",
@@ -79,6 +80,7 @@
     "eslint-config-prettier": "^10.1.2",
     "eslint-plugin-playwright": "^2.2.0",
     "eslint-plugin-prettier": "^5.2.6",
+    "eslint-plugin-react": "^7.37.5",
     "husky": "^9.1.7",
     "jsdom": "^26.1.0",
     "prettier": "^3.5.3",
