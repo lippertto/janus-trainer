@@ -9,7 +9,13 @@ import tsParser from '@typescript-eslint/parser';
 export default [
   // this is a global pattern
   {
-    ignores: ['.next/', 'next.config.mjs', 'eslint.config.mjs'],
+    ignores: [
+      '.next/',
+      'next.config.mjs',
+      'eslint.config.mjs',
+      '.pnp.cjs',
+      '.pnp.loader.mjs',
+    ],
   },
   { ...eslintConfigPrettier },
   {
@@ -41,6 +47,7 @@ export default [
     ignores: ['playwright/', 'types/sepa.d.ts'],
   },
   {
+    name: 'playwright-rules',
     ...playwright.configs['flat/recommended'],
     files: ['playwright/**/*.ts'],
   },
