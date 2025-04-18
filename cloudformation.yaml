@@ -20,12 +20,13 @@ Resources:
         AllowAdminCreateUserOnly: True
         InviteMessageTemplate:
           EmailMessage: !Sub |
-            Hallo, ein Konto in der Janus Trainer App wurde für dich erstellt.
+            Liebe Übungsleitung, für dich wurde ein Konto für die Janus Online Trainings Abrechnungen (JOTA) erstellt.
             Dein Account hat die email {username}, dein temporäres Passwort ist "{####}" ohne Anführungszeichen.
             Du musst es beim ersten Einloggen ändern.
-            Das Passwort ist für
-            Du findest die App unter https://${JanusDomain} Sportliche Grüße Dein SC Janus.
-          EmailSubject: 'Neues Konto in der Janus Trainer App'
+            Das temporäre Passwort ist für eine Woche gültig.
+            Du findest die App unter https://${JanusDomain}
+            Sportliche Grüße Dein SC Janus.
+          EmailSubject: 'Neues Konto für die Janus Online Trainings Abrechnungen (JOTA)'
       UsernameAttributes:
         - email
       UsernameConfiguration:
