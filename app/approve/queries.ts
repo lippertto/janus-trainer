@@ -25,8 +25,13 @@ export function approveTrainingDeleteMutation(
   invalidateCurrentTrainings: () => void,
 ) {
   return useMutation({
-    mutationFn: (t: TrainingDto) => {
-      return deleteFromApi<TrainingDto>(API_TRAININGS, t, accessToken ?? '');
+    mutationFn: (params: { training: TrainingDto; reason: string }) => {
+      return deleteFromApi<TrainingDto>(
+        API_TRAININGS,
+        params.training,
+        accessToken ?? '',
+        { reason: params.reason },
+      );
     },
     onSuccess: (deleted: TrainingDto) => {
       invalidateCurrentTrainings();

@@ -23,10 +23,8 @@ import { TrainingTable } from '@/app/approve/TrainingTable';
 import { Typography } from '@mui/material';
 import type { JanusSession } from '@/lib/auth';
 import { EnterTrainingDialogForAdmins } from '@/app/approve/EnterTrainingDialogForAdmins';
-import { showError } from '@/lib/notifications';
-import { useConfirm } from 'material-ui-confirm';
-import { dateToHumanReadable } from '@/lib/formatters';
 import { TrainingStatus } from '@prisma/client';
+import DeleteTrainingDialog from '@/app/approve/DeleteTrainingDialog';
 
 function DateQuickSelection(props: {
   setDatePickerStart: (v: dayjs.Dayjs) => void;
@@ -68,7 +66,7 @@ export function ApprovePage(props: {
   selectedTraining: TrainingDto | null;
   setSelectedTraining: (v: TrainingDto | null) => void;
   setTrainings: (v: TrainingDto[]) => void;
-  deleteTraining: (v: TrainingDto) => void;
+  onDelete: (reason: string) => void;
   createTraining: (v: TrainingCreateRequest) => void;
   approveTraining: (v: {
     trainings: TrainingDto[];
@@ -93,6 +91,8 @@ export function ApprovePage(props: {
     string | null
   >(props.trainerId);
 
+  const [deleteDialogIsOpen, setDeleteDialogIsOpen] = React.useState(false);
+
   const { data: holidays } = holidaysSuspenseQuery(session.accessToken, [
     new Date().getFullYear(),
     new Date().getFullYear() - 1,
@@ -115,27 +115,22 @@ export function ApprovePage(props: {
     replace(`${pathname}?${params.toString()}`);
   }, [datePickerStart, datePickerEnd, selectedTrainerId]);
 
-  const confirm = useConfirm();
-  const handleDeleteClick = (training: TrainingDto) => {
-    confirm({
-      title: 'Training löschen?',
-      description: `Soll das Training "${training.course!.name}" vom ${dateToHumanReadable(training.date)} gelöscht werden?`,
-    })
-      .then(() => {
-        props.deleteTraining(training);
-        props.setSelectedTraining(null);
-      })
-      .catch((e: Error) => {
-        showError('Fehler beim Löschen des Trainings', e.message);
-      });
-  };
-
   const getDuplicates = (trainingIds: number[]): TrainingDuplicateDto[] => {
     return queryDuplicates(session.accessToken, trainingIds).data;
   };
 
   return (
     <>
+      <DeleteTrainingDialog
+        open={deleteDialogIsOpen}
+        onConfirm={(reason: string) => {
+          props.onDelete(reason);
+          setDeleteDialogIsOpen(false);
+        }}
+        onClose={() => setDeleteDialogIsOpen(false)}
+        courseName={props.selectedTraining?.course?.name ?? ''}
+        trainingDate={props.selectedTraining?.date ?? ''}
+      />
       <Grid container spacing={2}>
         <Grid size={{ xs: 3 }}></Grid>
         <Grid
@@ -183,7 +178,7 @@ export function ApprovePage(props: {
               props.selectedTraining === null ||
               props.selectedTraining.status !== TrainingStatus.NEW
             }
-            onClick={() => handleDeleteClick(props.selectedTraining!)}
+            onClick={() => setDeleteDialogIsOpen(true)}
           >
             Löschen
           </Button>

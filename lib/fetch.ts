@@ -85,9 +85,15 @@ export async function deleteFromApi<T extends { id: number | string }>(
   route: string,
   entity: T,
   accessToken: string,
+  params: Record<string, string> = {},
 ): Promise<T> {
   try {
-    const response = await fetch(`${route}/${entity.id}`, {
+    let queryParams = '';
+    if (Object.keys(params).length !== 0) {
+      queryParams = '?' + new URLSearchParams(params).toString();
+    }
+
+    const response = await fetch(`${route}/${entity.id}${queryParams}`, {
       headers: { Authorization: `Bearer ${accessToken}` },
       method: 'DELETE',
     });

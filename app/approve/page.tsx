@@ -194,10 +194,17 @@ export default function ApprovePageContainer() {
     await queryClient.invalidateQueries({ queryKey: ['APPROVE', 'trainings'] });
   };
 
-  const deleteMutation = approveTrainingDeleteMutation(
+  const deletionMutation = approveTrainingDeleteMutation(
     session?.accessToken ?? '',
     invalidateDisplayQueries,
   );
+
+  const handleDelete = (reason: string) => {
+    if (!selectedTraining) return;
+    deletionMutation.mutate({ training: selectedTraining, reason: reason });
+    setSelectedTraining(null);
+  };
+
   const createMutation = createTrainingMutation(
     session?.accessToken ?? '',
     invalidateDisplayQueries,
@@ -247,7 +254,7 @@ export default function ApprovePageContainer() {
       selectedTraining={selectedTraining}
       getTrainings={getTrainings}
       setTrainings={setTrainings}
-      deleteTraining={deleteMutation.mutate}
+      onDelete={handleDelete}
       createTraining={createMutation.mutate}
       approveTraining={approveTrainingMutation.mutate}
       revokeTraining={revokeTrainingMutation.mutate}
