@@ -32,8 +32,9 @@ export default function DeleteTrainingDialog(props: {
       <DialogTitle>Training löschen</DialogTitle>
       <DialogContent>
         <DialogContentText>
-          Soll das Training "{props.courseName}" vom{' '}
-          {dateToHumanReadable(props.trainingDate)} gelöscht werden?
+          Training "{props.courseName}" vom{' '}
+          {dateToHumanReadable(props.trainingDate)} löschen. Die Übungsleitung
+          wird mit einer Email über die Löschung benachrichtigt.
         </DialogContentText>
         <TextField
           autoFocus

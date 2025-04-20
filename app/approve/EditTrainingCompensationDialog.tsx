@@ -7,9 +7,9 @@ import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import InputAdornment from '@mui/material/InputAdornment';
-import Typography from '@mui/material/Typography';
 import dayjs from 'dayjs';
 import Stack from '@mui/system/Stack';
+import { DialogContentText } from '@mui/material';
 
 type FormData = {
   compensation: string;
@@ -59,11 +59,12 @@ export default function EditTrainingCompensationDialog(props: {
       <DialogTitle>Pauschale ändern</DialogTitle>
       <form onSubmit={handleSubmit(onSubmit)}>
         <DialogContent>
-          <Stack spacing={2}>
-            <Typography>
-              Pauschale für Training "{props.courseName}" am{' '}
-              {dayjs(props.trainingDate).format('DD.MM.YYYY')} ändern
-            </Typography>
+          <DialogContentText>
+            Pauschale für Training "{props.courseName}" am{' '}
+            {dayjs(props.trainingDate).format('DD.MM.YYYY')} ändern. Die
+            Übungsleitung wird mit einer Email über die Änderung benachrichtigt.
+          </DialogContentText>
+          <Stack spacing={2} sx={{ mt: 3 }}>
             <Controller
               control={control}
               rules={{
