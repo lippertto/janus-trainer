@@ -43,7 +43,7 @@ async function findDuplicatesInDatabase(
 function extractTrainingIds(searchParams: URLSearchParams): number[] {
   const trainingIdString = searchParams.get('trainingIds');
   if (!trainingIdString) {
-    throw new ApiErrorBadRequest('No training Ids provided');
+    return [];
   }
   const trainingIds = trainingIdString.split(',').map((v) => {
     const parsed = parseInt(v);
