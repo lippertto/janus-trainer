@@ -35,7 +35,6 @@ import { createInApi, deleteFromApi, updateInApi } from '@/lib/fetch';
 
 function HolidayList(props: {
   accessToken: string;
-  setHolidays: (v: HolidayDto[]) => void;
   year: number;
   selectedHoliday: HolidayDto | null;
   setSelectedHoliday: (v: HolidayDto) => void;
@@ -43,8 +42,6 @@ function HolidayList(props: {
   const { data: holidays } = holidaysSuspenseQuery(props.accessToken, [
     props.year,
   ]);
-  // we set the state only after the first render is complete.
-  setTimeout(() => props.setHolidays(holidays), 300);
 
   return (
     <List style={{ maxHeight: 500, overflow: 'auto' }}>
@@ -77,7 +74,6 @@ function HolidayPageContents({ session }: { session: JanusSession }) {
   );
   const [dialogOpen, setDialogOpen] = React.useState<boolean>(false);
 
-  const [holidays, setHolidays] = React.useState<HolidayDto[]>([]);
   const [holidayYear, setHolidayYear] = React.useState<number>(currentYear);
   const queryClient = useQueryClient();
 
@@ -94,9 +90,10 @@ function HolidayPageContents({ session }: { session: JanusSession }) {
       } else {
         queryClient.setQueryData(
           [API_HOLIDAYS, year],
-          [...holidays, createdHoliday].sort((a, b) =>
-            compareByField(a, b, 'start'),
-          ),
+          (holidays: HolidayDto[]) =>
+            [...holidays, createdHoliday].sort((a, b) =>
+              compareByField(a, b, 'start'),
+            ),
         );
       }
     },
@@ -124,7 +121,8 @@ function HolidayPageContents({ session }: { session: JanusSession }) {
       } else {
         queryClient.setQueryData(
           [API_HOLIDAYS, year],
-          replaceElementWithId(holidays, updatedHoliday),
+          (holidays: HolidayDto[]) =>
+            replaceElementWithId(holidays, updatedHoliday),
         );
       }
     },
@@ -149,7 +147,8 @@ function HolidayPageContents({ session }: { session: JanusSession }) {
       } else {
         queryClient.setQueryData(
           [API_HOLIDAYS, year],
-          holidays.filter((h) => h.id !== deletedHoliday.id),
+          (holidays: HolidayDto[]) =>
+            holidays.filter((h) => h.id !== deletedHoliday.id),
         );
       }
       showSuccess(`Feiertag ${deletedHoliday?.name ?? ''} gelöscht`);
@@ -219,7 +218,6 @@ function HolidayPageContents({ session }: { session: JanusSession }) {
               <HolidayList
                 accessToken={session.accessToken}
                 year={holidayYear}
-                setHolidays={setHolidays}
                 selectedHoliday={selectedHoliday}
                 setSelectedHoliday={setSelectedHoliday}
               />
