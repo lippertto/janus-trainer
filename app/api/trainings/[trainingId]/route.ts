@@ -8,6 +8,7 @@ import {
   allowAdminOrSelf,
   allowAnyLoggedIn,
   allowOnlyAdmins,
+  ApiErrorForbidden,
   ApiErrorNotFound,
   emptyResponse,
   forbiddenResponse,
@@ -26,6 +27,7 @@ import { logger } from '@/lib/logging';
 import { sendEmail } from '@/lib/email';
 import { User } from 'next-auth';
 import { centsToHumanReadable } from '@/lib/formatters';
+import { Course, Training, UserInDb } from '@prisma/client';
 
 async function checkIfTrainingExistsAndIsOwn(
   id: number,
@@ -41,11 +43,14 @@ async function checkIfTrainingExistsAndIsOwn(
   await allowAdminOrSelf(nextRequest, training.user.id);
 }
 
-function generateEmailSubject(courseName: string, date: string): string {
+function generateDeletionEmailSubject(
+  courseName: string,
+  date: string,
+): string {
   return `JOTA: Training '${courseName}' vom ${date} gelöscht`;
 }
 
-function generateEmailBody(
+function generateDeletionEmailBody(
   courseName: string,
   date: string,
   deleter: User,
@@ -59,62 +64,84 @@ function generateEmailBody(
   return result;
 }
 
+async function sendDeletionEmail(
+  requesterUserId: string,
+  training: Training & { user: UserInDb; course: Course },
+  reason: string,
+) {
+  const deleter = await prisma.userInDb.findUniqueOrThrow({
+    where: { id: requesterUserId },
+  });
+  if (process.env.NODE_ENV === 'production') {
+    await sendEmail(
+      training.user.email!,
+      generateDeletionEmailSubject(training.course.name, training.date),
+      generateDeletionEmailBody(
+        training.course.name,
+        training.date,
+        deleter,
+        reason,
+      ),
+    );
+  } else {
+    logger.info(
+      `Will not send email for training deletion to ${training.user.email} because we are not on prod.`,
+    );
+  }
+}
+
+async function getTrainingOrThrow(
+  id: string,
+): Promise<Training & { user: UserInDb; course: Course }> {
+  const trainingId = idAsNumberOrThrow(id);
+  const training = await prisma.training.findUnique({
+    where: { id: trainingId },
+    include: { user: true, course: true },
+  });
+  if (!training) {
+    throw new ApiErrorNotFound(`Training ${id} not found`);
+  }
+  return training;
+}
+
+async function forbidIfNotAdminAndNotOwnTraining(
+  nextRequest: NextRequest,
+  requestUserId: string,
+  trainingUserId: string,
+) {
+  if (!(await isAdmin(nextRequest)) && requestUserId !== trainingUserId) {
+    throw new ApiErrorForbidden(
+      "You must be admin to delete other people's training.",
+    );
+  }
+}
+
 export async function DELETE(
   nextRequest: NextRequest,
   props: { params: Promise<{ trainingId: string }> },
 ) {
-  const params = await props.params;
   try {
+    const params = await props.params;
     await allowAnyLoggedIn(nextRequest);
 
-    const trainingId = idAsNumberOrThrow(params.trainingId);
-    const training = await prisma.training.findUnique({
-      where: { id: trainingId },
-      include: { user: true, course: true },
-    });
-    if (!training) {
-      return notFoundResponse();
-    }
+    const training = await getTrainingOrThrow(params.trainingId);
 
     const requestUserId = await getOwnUserId(nextRequest);
-    const deletingSomeoneElsesTraining = requestUserId !== training.user.id;
-
-    console.log({ requestUserId, tui: training.user.id });
-    if (deletingSomeoneElsesTraining) {
-      if (!(await isAdmin(nextRequest))) {
-        return forbiddenResponse(
-          "You must be admin to delete other people's training.",
-        );
-      }
-    }
+    await forbidIfNotAdminAndNotOwnTraining(
+      nextRequest,
+      requestUserId,
+      training.user.id,
+    );
 
     logger.info(
       { userId: requestUserId, trainingId: training.id },
-      `Deleting training ${trainingId}`,
+      `Deleting training ${training.id}`,
     );
-    await prisma.training.delete({ where: { id: trainingId } });
+    await prisma.training.delete({ where: { id: training.id } });
 
-    if (deletingSomeoneElsesTraining) {
-      const requester = await prisma.userInDb.findUniqueOrThrow({
-        where: { id: requestUserId },
-      });
-      const reason = nextRequest.nextUrl.searchParams.get('reason');
-      if (process.env.NODE_ENV === 'production') {
-        await sendEmail(
-          training.user.email!,
-          generateEmailSubject(training.course.name, training.date),
-          generateEmailBody(
-            training.course.name,
-            training.date,
-            requester,
-            reason,
-          ),
-        );
-      } else {
-        logger.info(
-          `Will not send email for training deletion to ${training.user.email} because we are not on prod.`,
-        );
-      }
+    const reason = nextRequest.nextUrl.searchParams.get('reason');
+    if (reason && reason !== '') {
+      await sendDeletionEmail(requestUserId, training, reason);
     }
 
     return emptyResponse();

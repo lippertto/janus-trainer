@@ -33,11 +33,6 @@ export async function sendEmail(
 ) {
   const command = buildSendCommand(recipient, subject, body);
   try {
-    console.log({
-      recipient,
-      subject,
-      body,
-    });
     return await sesClient.send(command);
   } catch (caught) {
     if (caught instanceof Error && caught.name === 'MessageRejected') {
