@@ -7,10 +7,7 @@ import {
 } from '@/lib/helpers-for-api';
 import { resendInvitationEmail } from '@/app/api/users/cognito';
 import { logger } from '@/lib/logging';
-import {
-  cognitoClient,
-  createCognitoClient,
-} from '@/app/api/users/cognito-client';
+import { cognitoClient } from '@/app/api/users/cognito-client';
 
 export async function POST(
   nextRequest: NextRequest,

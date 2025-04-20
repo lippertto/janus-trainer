@@ -1,7 +1,7 @@
 import { Group, UserDto } from '@/lib/dto';
 import prisma from '@/lib/prisma';
 import { ApiErrorNotFound } from '@/lib/helpers-for-api';
-import { createCognitoClient } from '@/app/api/users/cognito-client';
+import { cognitoClient } from '@/app/api/users/cognito-client';
 import { getCognitoUserById, listGroupsForUser } from '@/app/api/users/cognito';
 
 export async function selectOneUser(
@@ -27,7 +27,7 @@ export async function selectOneUser(
     throw new ApiErrorNotFound(`User with id ${id} not found`);
   }
 
-  const client = createCognitoClient();
+  const client = cognitoClient();
 
   let email: string = '';
   let groups: Group[] = [];

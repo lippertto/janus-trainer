@@ -2,15 +2,21 @@ import { CognitoIdentityProviderClient } from '@aws-sdk/client-cognito-identity-
 
 let instance: CognitoIdentityProviderClient | undefined;
 
-export function createCognitoClient() {
+function createCognitoClient(region: string) {
   return new CognitoIdentityProviderClient({
-    region: process.env.COGNITO_REGION ?? 'eu-north-1',
+    region,
   });
 }
 
 export function cognitoClient() {
   if (!instance) {
-    instance = createCognitoClient();
+    if (process.env.AWS_REGION) {
+      instance = createCognitoClient(process.env.AWS_REGION);
+    } else if (process.env.COGNITO_REGION) {
+      instance = createCognitoClient(process.env.COGNITO_REGION);
+    } else {
+      throw new Error('AWS region not specified via environment variables');
+    }
   }
   return instance;
 }

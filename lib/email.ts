@@ -2,8 +2,7 @@ import { SendEmailCommand, SESClient } from '@aws-sdk/client-ses';
 
 import { logger } from './logging';
 
-const REGION = 'eu-north-1';
-const sesClient = new SESClient({ region: REGION });
+const sesClient = new SESClient({ region: process.env.COGNITO_REGION });
 
 function buildSendCommand(recipient: string, subject: string, body: string) {
   return new SendEmailCommand({

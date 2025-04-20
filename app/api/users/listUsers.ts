@@ -1,12 +1,12 @@
 import { NextRequest } from 'next/server';
 import { Group, UserDto } from '@/lib/dto';
-import { CognitoIdentityProviderClient } from '@aws-sdk/client-cognito-identity-provider';
 import {
   findUsersForGroup,
   listAllUsers,
   listGroups,
 } from '@/app/api/users/cognito';
 import prisma from '@/lib/prisma';
+import { cognitoClient } from '@/app/api/users/cognito-client';
 
 /** List all users.
  * Only the following users are returned:
@@ -14,9 +14,7 @@ import prisma from '@/lib/prisma';
  * * User exists in cognito as is enabled
  */
 export async function listUsers(request: NextRequest): Promise<UserDto[]> {
-  const client = new CognitoIdentityProviderClient({
-    region: process.env.COGNITO_REGION ?? 'eu-north-1',
-  });
+  const client = cognitoClient();
 
   const allUsers = new Map(
     (await listAllUsers(client)).map((user) => [user.username, user]),
