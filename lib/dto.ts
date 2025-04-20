@@ -94,11 +94,15 @@ export class TrainingUpdateRequest {
   @IsNumber()
   compensationCents: number;
 
+  @IsOptional()
   @IsNumber()
-  participantCount: number;
+  participantCount: number | null;
 
   @IsString()
   comment: string;
+
+  @IsOptional()
+  reason: string;
 }
 
 export class UserCreateRequest {

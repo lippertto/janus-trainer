@@ -13,7 +13,10 @@ import {
   TrainingDto,
   TrainingSummaryDto,
 } from '@/lib/dto';
-import { approveTrainingDeleteMutation } from '@/app/approve/queries';
+import {
+  approveTrainingDeleteMutation,
+  updateCompensationMutation,
+} from '@/app/approve/queries';
 import {
   useMutation,
   useQueryClient,
@@ -145,9 +148,9 @@ export default function ApprovePageContainer() {
   const queryKeyForTrainings = [
     'APPROVE',
     'trainings',
-    queryParamStart,
-    queryParamEnd,
-    queryParamTrainerId,
+    queryParamStart.format('YYYY-MM-DD'),
+    queryParamEnd.format('YYYY-MM-DD'),
+    queryParamTrainerId ?? 'null',
   ];
 
   const queryKeyForSummaries = [
@@ -199,9 +202,28 @@ export default function ApprovePageContainer() {
     invalidateDisplayQueries,
   );
 
+  const updateMutation = updateCompensationMutation(
+    session?.accessToken ?? '',
+    queryClient,
+    queryKeyForTrainings,
+  );
+
   const handleDelete = (reason: string) => {
     if (!selectedTraining) return;
     deletionMutation.mutate({ training: selectedTraining, reason: reason });
+    setSelectedTraining(null);
+  };
+
+  const handleUpdateCompensation = (
+    newCompensation: number,
+    reason: string,
+  ) => {
+    if (!selectedTraining) return;
+    updateMutation.mutate({
+      training: selectedTraining,
+      newCompensation,
+      reason,
+    });
     setSelectedTraining(null);
   };
 
@@ -255,6 +277,7 @@ export default function ApprovePageContainer() {
       getTrainings={getTrainings}
       setTrainings={setTrainings}
       onDelete={handleDelete}
+      onUpdateCompensation={handleUpdateCompensation}
       createTraining={createMutation.mutate}
       approveTraining={approveTrainingMutation.mutate}
       revokeTraining={revokeTrainingMutation.mutate}

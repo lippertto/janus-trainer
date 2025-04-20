@@ -25,6 +25,7 @@ import type { JanusSession } from '@/lib/auth';
 import { EnterTrainingDialogForAdmins } from '@/app/approve/EnterTrainingDialogForAdmins';
 import { TrainingStatus } from '@prisma/client';
 import DeleteTrainingDialog from '@/app/approve/DeleteTrainingDialog';
+import EditTrainingCompensationDialog from '@/app/approve/EditTrainingCompensationDialog';
 
 function DateQuickSelection(props: {
   setDatePickerStart: (v: dayjs.Dayjs) => void;
@@ -67,6 +68,7 @@ export function ApprovePage(props: {
   setSelectedTraining: (v: TrainingDto | null) => void;
   setTrainings: (v: TrainingDto[]) => void;
   onDelete: (reason: string) => void;
+  onUpdateCompensation: (newCompensation: number, reason: string) => void;
   createTraining: (v: TrainingCreateRequest) => void;
   approveTraining: (v: {
     trainings: TrainingDto[];
@@ -86,6 +88,8 @@ export function ApprovePage(props: {
   );
   const [showAddTrainingDialog, setShowAddTrainingDialog] =
     React.useState<boolean>(false);
+  const [showEditCompensationDialog, setShowEditCompensationDialog] =
+    React.useState(false);
 
   const [selectedTrainerId, setSelectedTrainerId] = React.useState<
     string | null
@@ -121,6 +125,20 @@ export function ApprovePage(props: {
 
   return (
     <>
+      <EditTrainingCompensationDialog
+        open={showEditCompensationDialog}
+        onConfirm={(newCompensation: number, reason: string) => {
+          props.onUpdateCompensation(newCompensation, reason);
+        }}
+        onClose={() => {
+          setShowEditCompensationDialog(false);
+        }}
+        currentCompensationCents={
+          props.selectedTraining?.compensationCents ?? 0
+        }
+        courseName={props.selectedTraining?.course?.name ?? ''}
+        trainingDate={props.selectedTraining?.date ?? ''}
+      />
       <DeleteTrainingDialog
         open={deleteDialogIsOpen}
         onConfirm={(reason: string) => {
@@ -183,7 +201,18 @@ export function ApprovePage(props: {
             Löschen
           </Button>
         </Grid>
-        <Grid size={{ xs: 7 }}></Grid>
+        <Grid size={{ xs: 1 }}>
+          <Button
+            disabled={
+              props.selectedTraining === null ||
+              props.selectedTraining.status !== TrainingStatus.NEW
+            }
+            onClick={() => setShowEditCompensationDialog(true)}
+          >
+            Bearbeiten
+          </Button>
+        </Grid>
+        <Grid size={{ xs: 6 }}></Grid>
 
         <Grid size={{ xs: 3 }}>
           <TrainerList
