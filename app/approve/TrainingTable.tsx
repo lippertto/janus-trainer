@@ -74,6 +74,7 @@ function buildGridColumns(
       field: 'warnings',
       headerName: '',
       renderCell: renderWarnings,
+      width: 50,
     },
     {
       field: 'userName',
@@ -86,14 +87,17 @@ function buildGridColumns(
       field: 'course',
       headerName: 'Kurs',
       valueGetter: (_value, row: TrainingDto) => {
+        return `${row.course?.name}`;
+      },
+    },
+    {
+      field: 'duration',
+      headerName: 'Zeit lt. Plan',
+      valueGetter: (_value, row: TrainingDto) => {
         const hour = row.course?.startHour?.toString().padStart(2, '0') ?? '';
         const minute =
           row.course?.startMinute?.toString().padStart(2, '0') ?? '';
-        if (row.course?.isCustomCourse) {
-          return `${row.course?.name}`;
-        } else {
-          return `${row.course?.name} ${hour}:${minute}, ${row.course?.durationMinutes}min`;
-        }
+        return `${hour}:${minute}/${row.course!.durationMinutes}min`;
       },
     },
     {
@@ -218,9 +222,7 @@ export function TrainingTable(props: {
           }
           setRowSelectionModel(newValue);
         }}
-        autosizeOnMount={true}
-        autosizeOptions={{}}
-        {...props}
+        autosizeOnMount
       />
     </>
   );
