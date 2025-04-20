@@ -100,9 +100,6 @@ export class TrainingUpdateRequest {
 
   @IsString()
   comment: string;
-
-  @IsOptional()
-  reason: string;
 }
 
 export class UserCreateRequest {

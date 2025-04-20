@@ -24,10 +24,8 @@ import { transitionStatus } from '@/app/api/trainings/[trainingId]/transitionSta
 import { trainingToDto } from '@/app/api/trainings/trainingUtils';
 import { logger } from '@/lib/logging';
 import { sendEmail } from '@/lib/email';
-import { Training } from '@prisma/client';
 import { User } from 'next-auth';
-import { dateToHumanReadable } from '@/lib/formatters';
-import { isA } from '@vitest/expect';
+import { centsToHumanReadable } from '@/lib/formatters';
 
 async function checkIfTrainingExistsAndIsOwn(
   id: number,
@@ -114,7 +112,7 @@ export async function DELETE(
         );
       } else {
         logger.info(
-          `Will not send email to ${training.user.email} because we are not on prod.`,
+          `Will not send email for training deletion to ${training.user.email} because we are not on prod.`,
         );
       }
     }
@@ -139,6 +137,28 @@ async function updateTraining(request: TrainingUpdateRequest, id: number) {
   });
 }
 
+function generateUpdateEmailSubject(courseName: string, date: string) {
+  return `JOTA: Training "${courseName}" vom ${date} wurde aktualisiert`;
+}
+
+function generateUpdateEmailBody(
+  courseName: string,
+  date: string,
+  deleter: User,
+  reason: string | null,
+  oldCents: number,
+  newCents: number,
+) {
+  let result = `Die Vergütung deines Trainings "${courseName}" vom ${date} wurde von ${deleter.name} angepasst.
+Du hattest ${centsToHumanReadable(oldCents)} eingetragen. Der neue Wert ist ${centsToHumanReadable(newCents)}.
+`;
+  if (reason) {
+    result += `Die Begründung ist: ${reason}\n`;
+  }
+  result += `Bei Fragen schreibe bitte eine Email an ${deleter.email}.\n`;
+  return result;
+}
+
 export async function PUT(
   nextRequest: NextRequest,
   props: { params: Promise<{ trainingId: string }> },
@@ -148,8 +168,19 @@ export async function PUT(
     // first test that we are logged in. Further down, we do more checks
     await allowAnyLoggedIn(nextRequest);
     const id = idAsNumberOrThrow(params.trainingId);
-    const userId = await getOwnUserId(nextRequest);
-    await checkIfTrainingExistsAndIsOwn(id, nextRequest);
+    const ownUserId = await getOwnUserId(nextRequest);
+
+    const training = await prisma.training.findUnique({
+      where: { id },
+      include: { course: true },
+    });
+    if (!training) {
+      return notFoundResponse();
+    }
+
+    if (!(await isAdmin(nextRequest)) && training.userId !== ownUserId) {
+      return forbiddenResponse("Must be admin to update others' trainings.");
+    }
 
     const request = await validateOrThrow(
       TrainingUpdateRequest,
@@ -158,9 +189,37 @@ export async function PUT(
 
     const result = await updateTraining(request, id);
     logger.info(
-      { userId, trainingId: id },
-      `User ${userId} updated training ${id}`,
+      { userId: ownUserId, trainingId: id },
+      `User ${ownUserId} updated training ${id}`,
     );
+
+    const reason = nextRequest.nextUrl.searchParams.get('reason');
+    if (reason && reason !== '') {
+      const trainingUser = await prisma.userInDb.findUniqueOrThrow({
+        where: { id: training.userId },
+      });
+      const requestingUser = await prisma.userInDb.findUniqueOrThrow({
+        where: { id: ownUserId },
+      });
+      if (process.env.NODE_ENV === 'production') {
+        await sendEmail(
+          trainingUser.email!,
+          generateUpdateEmailSubject(training.course.name, training.date),
+          generateUpdateEmailBody(
+            training.course.name,
+            training.date,
+            requestingUser,
+            reason,
+            training.compensationCents,
+            request.compensationCents,
+          ),
+        );
+      } else {
+        logger.info(
+          `Will not send email for training update to ${trainingUser.email} because we are not on prod.`,
+        );
+      }
+    }
 
     return NextResponse.json(trainingToDto(result));
   } catch (e) {

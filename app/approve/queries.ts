@@ -57,13 +57,13 @@ export function updateCompensationMutation(
       const data: TrainingUpdateRequest = {
         ...params.training,
         compensationCents: params.newCompensation,
-        reason: params.reason,
       };
       return updateInApi<TrainingDto>(
         API_TRAININGS,
         params.training.id,
         data,
         accessToken,
+        { reason: params.reason },
       );
     },
     onSuccess: (updated: TrainingDto) => {
