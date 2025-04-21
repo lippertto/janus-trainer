@@ -18,6 +18,8 @@ Then, run `yarn vitest -c api-tests/vite.config.js`
 
 ## Next up
 
+- Activate database backup
+
 ## Bugs
 
 - Current IBAN is used in payments, not the one that was used for the actual

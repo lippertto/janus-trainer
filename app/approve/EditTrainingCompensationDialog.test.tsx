@@ -36,12 +36,15 @@ describe('EditTrainingCompensationDialog', () => {
     expect(compensationTextBox).toHaveValue('12,34');
 
     await fillTextBox('Pauschale', '45,67');
+    await fillTextBox('Begründung', 'Eine Begründung');
 
     const saveButton = await screen.findByRole('button', { name: 'Speichern' });
     expect(saveButton).toBeEnabled();
     fireEvent.submit(saveButton);
 
-    await waitFor(() => expect(handleConfirm).toHaveBeenCalledWith(4567));
+    await waitFor(() =>
+      expect(handleConfirm).toHaveBeenCalledWith(4567, 'Eine Begründung'),
+    );
 
     unmount();
   });
