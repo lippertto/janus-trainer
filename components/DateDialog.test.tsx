@@ -20,6 +20,7 @@ import {
   LAST_DAY_OF_PREVIOUS_QUARTER,
   LAST_DAY_OF_THIS_QUARTER,
 } from '@/lib/helpers-for-date';
+import { fillDatePicker, verifyDatePickerValue } from '@/lib/testHelpers';
 
 const options = [
   {
@@ -101,15 +102,8 @@ describe('DateDialog', () => {
     const customTimeframeRadio = await screen.findByLabelText('Start / Ende');
     await userEvent.click(customTimeframeRadio);
 
-    const startDatepickerTextBox = await screen.findByRole('textbox', {
-      name: 'Start',
-    });
-    const endDatepickerTextBox = await screen.findByRole('textbox', {
-      name: 'Ende',
-    });
-
-    await userEvent.type(startDatepickerTextBox, '04.05.2023');
-    await userEvent.type(endDatepickerTextBox, '05.06.2024');
+    await fillDatePicker('Start', dayjs('2023-05-04'));
+    await fillDatePicker('Ende', dayjs('2024-06-05'));
 
     const saveButton = await screen.findByRole('button', {
       name: /Bestätigen/i,
@@ -224,18 +218,8 @@ describe('DateDialog', () => {
       await screen.findByLabelText('Letztes Quartal');
     await userEvent.click(previousQuarterRadio);
 
-    const startDatepickerTextBox = await screen.findByRole('textbox', {
-      name: 'Start',
-    });
-    expect(startDatepickerTextBox).toHaveValue(
-      FIRST_DAY_OF_PREVIOUS_QUARTER.format('DD.MM.YYYY'),
-    );
-    const endDatepickerTextBox = await screen.findByRole('textbox', {
-      name: 'Ende',
-    });
-    expect(endDatepickerTextBox).toHaveValue(
-      LAST_DAY_OF_PREVIOUS_QUARTER.format('DD.MM.YYYY'),
-    );
+    await verifyDatePickerValue('Start', FIRST_DAY_OF_PREVIOUS_QUARTER);
+    await verifyDatePickerValue('Ende', LAST_DAY_OF_PREVIOUS_QUARTER);
 
     unmount();
   });
@@ -263,18 +247,8 @@ describe('DateDialog', () => {
       await screen.findByLabelText('Aktuelles Quartal');
     await userEvent.click(currentQuarterRadio);
 
-    const startDatepickerTextBox = await screen.findByRole('textbox', {
-      name: 'Start',
-    });
-    expect(startDatepickerTextBox).toHaveValue(
-      FIRST_DAY_OF_THIS_QUARTER.format('DD.MM.YYYY'),
-    );
-    const endDatepickerTextBox = await screen.findByRole('textbox', {
-      name: 'Ende',
-    });
-    expect(endDatepickerTextBox).toHaveValue(
-      LAST_DAY_OF_THIS_QUARTER.format('DD.MM.YYYY'),
-    );
+    await verifyDatePickerValue('Start', FIRST_DAY_OF_THIS_QUARTER);
+    await verifyDatePickerValue('Ende', LAST_DAY_OF_THIS_QUARTER);
 
     unmount();
   });

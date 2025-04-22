@@ -2,7 +2,7 @@
  * @vitest-environment jsdom
  */
 import React from 'react';
-import { act, fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { HolidayDialog } from '@/app/configure/holidays/HolidayDialog';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers';
@@ -10,6 +10,7 @@ import 'dayjs/locale/de';
 import dayjs from 'dayjs';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, test, vi } from 'vitest';
+import { fillDatePicker } from '@/lib/testHelpers';
 
 async function clickSave() {
   const saveButton = await screen.findByRole('button', {
@@ -20,18 +21,11 @@ async function clickSave() {
   });
 }
 
-async function enterDate(name: string, value: string) {
-  const startTextBox = await screen.findByRole('textbox', {
-    name,
-  });
-  await userEvent.type(startTextBox, dayjs(value).format('DD.MM.YYYY'));
-}
-
 describe('EnterHolidayDialog', () => {
   test('name must be entered', async () => {
     const handleSave = vi.fn();
 
-    render(
+    const { unmount } = render(
       <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="de">
         <HolidayDialog
           open={true}
@@ -46,6 +40,7 @@ describe('EnterHolidayDialog', () => {
     await clickSave();
 
     expect(handleSave).not.toHaveBeenCalled();
+    unmount();
   });
 
   test('happy case', async () => {
@@ -54,7 +49,7 @@ describe('EnterHolidayDialog', () => {
     const endDate = '2024-10-29';
     const name = 'any-name';
 
-    render(
+    const { unmount } = render(
       <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="de">
         <HolidayDialog
           open={true}
@@ -66,8 +61,8 @@ describe('EnterHolidayDialog', () => {
       </LocalizationProvider>,
     );
 
-    await enterDate('Start', startDate);
-    await enterDate('Ende', endDate);
+    await fillDatePicker('Start', dayjs(startDate));
+    await fillDatePicker('Ende', dayjs(endDate));
 
     const nameTextBox = await screen.findByRole('textbox', {
       name: 'Beschreibung',
@@ -81,6 +76,7 @@ describe('EnterHolidayDialog', () => {
       end: endDate,
       name,
     });
+    unmount();
   });
 
   test('start cannot be before end', async () => {
@@ -89,7 +85,7 @@ describe('EnterHolidayDialog', () => {
     const endDate = '2024-10-22';
     const name = 'any-name';
 
-    render(
+    const { unmount } = render(
       <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="de">
         <HolidayDialog
           open={true}
@@ -101,8 +97,8 @@ describe('EnterHolidayDialog', () => {
       </LocalizationProvider>,
     );
 
-    await enterDate('Start', startDate);
-    await enterDate('Ende', endDate);
+    await fillDatePicker('Start', dayjs(startDate));
+    await fillDatePicker('Ende', dayjs(endDate));
 
     const nameTextBox = await screen.findByRole('textbox', {
       name: 'Beschreibung',
@@ -114,5 +110,6 @@ describe('EnterHolidayDialog', () => {
     });
 
     expect(handleSave).not.toHaveBeenCalled();
+    unmount();
   });
 });

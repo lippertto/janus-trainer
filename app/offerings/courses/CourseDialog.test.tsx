@@ -75,7 +75,12 @@ describe('CourseDialog', () => {
       </LocalizationProvider>,
     );
     await fillTextBox('Name des Kurses', ' Test Kurs 01  ');
-    await fillTextBox('Uhrzeit', '19:00');
+
+    const hours = screen.getByRole('spinbutton', { name: /Hours/i });
+    await userEvent.type(hours, '19');
+
+    const minutes = screen.getByRole('spinbutton', { name: /Minutes/i });
+    await userEvent.type(minutes, '00');
 
     const durationTextBox = await screen.findByRole('spinbutton', {
       name: /Dauer/i,
@@ -120,7 +125,12 @@ describe('CourseDialog', () => {
     );
 
     await fillTextBox('Name des Kurses', 'any-course');
-    await fillTextBox('Uhrzeit', '20:15');
+
+    const hours = screen.getByRole('spinbutton', { name: /Hours/i });
+    await userEvent.type(hours, '20');
+
+    const minutes = screen.getByRole('spinbutton', { name: /Minutes/i });
+    await userEvent.type(minutes, '15');
 
     const durationTextBox = await screen.findByRole('spinbutton', {
       name: /Dauer/i,

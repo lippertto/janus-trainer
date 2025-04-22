@@ -7,8 +7,6 @@ test.describe.serial('Offerings page', () => {
   // the test will throw on the getBy* methods. We do not need separate assertions
   // eslint-disable-next-line playwright/expect-expect
   test('cost-center cannot be deleted when referenced by a course', async () => {
-    test.setTimeout(120_000);
-
     const randomSuffix = Math.random().toString(36).substring(2, 7);
     const costCenterName = `test-cc-${randomSuffix}`;
     const courseName = `test-course-${randomSuffix}`;
@@ -47,7 +45,7 @@ test.describe.serial('Offerings page', () => {
 
     // delete cost center (this should fail)
     await page.goto('/offerings/cost-centers');
-    await page.getByRole('gridcell', { name: costCenterName }).click();
+    await page.getByText(costCenterName).click();
     await page.getByRole('button', { name: /löschen/i }).click();
 
     const failedDeleteCostCenterPromise = page.waitForResponse((response) =>

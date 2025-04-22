@@ -87,17 +87,19 @@ export function HolidayDialog(props: {
                 },
               }}
               render={({ field: fieldProps }) => (
-                <DatePicker
-                  {...fieldProps}
-                  label="Start"
-                  slotProps={{
-                    textField: {
-                      required: true,
-                      helperText: errors.start?.message || '',
-                      error: Boolean(errors.start),
-                    },
-                  }}
-                />
+                <div data-testid="holiday-dialog-start-field">
+                  <DatePicker
+                    {...fieldProps}
+                    label="Start"
+                    slotProps={{
+                      textField: {
+                        required: true,
+                        helperText: errors.start?.message || '',
+                        error: Boolean(errors.start),
+                      },
+                    }}
+                  />
+                </div>
               )}
             />
             <Controller
@@ -112,17 +114,19 @@ export function HolidayDialog(props: {
                 },
               }}
               render={({ field: fieldProps }) => (
-                <DatePicker
-                  {...fieldProps}
-                  label="Ende"
-                  slotProps={{
-                    textField: {
-                      required: true,
-                      helperText: errors.end?.message || '',
-                      error: Boolean(errors.end),
-                    },
-                  }}
-                />
+                <div data-testid="holiday-dialog-end-field">
+                  <DatePicker
+                    {...fieldProps}
+                    label="Ende"
+                    slotProps={{
+                      textField: {
+                        required: true,
+                        helperText: errors.end?.message || '',
+                        error: Boolean(errors.end),
+                      },
+                    }}
+                  />
+                </div>
               )}
             />
 

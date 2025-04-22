@@ -23,6 +23,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers';
 import { describe, expect, test, vi } from 'vitest';
 import '@testing-library/jest-dom/vitest';
 import userEvent from '@testing-library/user-event';
+import { fillDatePicker } from '@/lib/testHelpers';
 
 const COURSES: CourseDto[] = [
   {
@@ -84,17 +85,6 @@ function selectFirstComboboxElement(element: HTMLElement) {
   fireEvent.keyDown(element, { key: 'Enter' });
 }
 
-// set date to a value in 'DD.MM.YYYY' format. If not set, will use today
-async function setDate(value: string | null = null) {
-  const datepickerTextBox = await screen.findByRole('textbox', {
-    name: 'Datum',
-  });
-  const valueOrToday = value ? dayjs(value, 'DD.MM.YYYY') : dayjs();
-  let valueToEnter = valueOrToday.format('DD.MM.YYYY');
-  await userEvent.type(datepickerTextBox!, valueToEnter);
-  expect(datepickerTextBox).toHaveValue(valueToEnter);
-}
-
 async function setParticipantCount(value: number | null = null) {
   const valueToType = value !== null ? value : 100;
   const participantCountTextBox = await screen.findByRole('spinbutton', {
@@ -141,7 +131,7 @@ describe('enter courses', () => {
     await userEvent.type(commentTextBox!, comment);
     expect(commentTextBox).toHaveValue(comment);
 
-    await setDate('03.10.2024');
+    await fillDatePicker('Datum', dayjs('2024-10-03'));
     const participantCount = 12;
     await setParticipantCount(participantCount);
 
@@ -182,7 +172,7 @@ describe('enter courses', () => {
       </LocalizationProvider>,
     );
 
-    await setDate();
+    await fillDatePicker('Datum', dayjs());
     await setParticipantCount();
 
     // move one value down in the combobox

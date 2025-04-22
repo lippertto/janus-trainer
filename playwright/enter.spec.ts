@@ -4,6 +4,7 @@ import {
   FIRST_DAY_OF_PREVIOUS_QUARTER,
   FIRST_DAY_OF_THIS_QUARTER,
 } from '@/lib/helpers-for-date';
+import { fillOutDatePicker } from '@/playwright/playwrightTestHelpers';
 
 test.describe.serial('Enter page', () => {
   test.use({ storageState: 'playwright/.auth/trainer.json' });
@@ -71,9 +72,7 @@ test.describe.serial('Enter page', () => {
       .getByLabel(/.*Anzahl Personen.*/i)
       .fill(participantCount.toString());
 
-    await page
-      .getByPlaceholder('DD.MM.YYYY')
-      .fill(dateInLastQuarter.format('DD.MM.YYYY'));
+    await fillOutDatePicker(page, 'Datum', dateInLastQuarter);
 
     await page.getByRole('button', { name: 'Speichern' }).click();
     await expect(page.getByText('Vergütung beantragen')).toBeHidden();
