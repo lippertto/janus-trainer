@@ -180,7 +180,10 @@ export function TrainingTable(props: {
   revokeTraining: (v: { trainings: TrainingDto[]; trainingId: number }) => void;
 }) {
   const [rowSelectionModel, setRowSelectionModel] =
-    React.useState<GridRowSelectionModel>([]);
+    React.useState<GridRowSelectionModel>({
+      type: 'include',
+      ids: new Set([]),
+    });
   const apiRef = useGridApiRef();
 
   const trainings = props.getTrainings();
@@ -203,7 +206,7 @@ export function TrainingTable(props: {
   );
 
   React.useEffect(() => {
-    apiRef.current.autosizeColumns({});
+    apiRef.current!.autosizeColumns({});
   }, [trainings]);
 
   return (
@@ -220,11 +223,13 @@ export function TrainingTable(props: {
         rows={trainings}
         rowSelectionModel={rowSelectionModel}
         onRowSelectionModelChange={(newValue) => {
-          if (newValue.length === 0) {
+          if (newValue.ids.size === 0) {
             props.setSelectedTraining(null);
           } else {
             props.setSelectedTraining(
-              trainings.find((t) => t?.id === (newValue[0] as number)) ?? null,
+              trainings.find(
+                (t) => t?.id === (newValue.ids.values().next().value as number),
+              ) ?? null,
             );
           }
           setRowSelectionModel(newValue);

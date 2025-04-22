@@ -84,6 +84,7 @@ export default function CompensationTable({
       columns={columns}
       rows={compensations}
       getRowId={(c: CompensationDto) => `${c.user.id}_${c.courseName}`}
+      showToolbar
     />
   );
 }

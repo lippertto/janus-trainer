@@ -15,7 +15,10 @@ export default function UserTable(props: {
   ];
 
   const [rowSelectionModel, setRowSelectionModel] =
-    React.useState<GridRowSelectionModel>([]);
+    React.useState<GridRowSelectionModel>({
+      type: 'include',
+      ids: new Set([]),
+    });
 
   return (
     <Box component="div" overflow="auto" sx={{ height: 'calc(100vh - 320px)' }}>
@@ -29,12 +32,13 @@ export default function UserTable(props: {
         }}
         rowSelectionModel={rowSelectionModel}
         onRowSelectionModelChange={(newValue) => {
-          if (newValue.length === 0) {
+          if (newValue.ids.size === 0) {
             props.setActiveUser(null);
           } else {
             props.setActiveUser(
-              props.users.find((u) => u?.id === (newValue[0] as string)) ??
-                null,
+              props.users.find(
+                (u) => u?.id === (newValue.ids.values().next().value as string),
+              ) ?? null,
             );
           }
           setRowSelectionModel(newValue);

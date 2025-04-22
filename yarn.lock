@@ -1596,22 +1596,22 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mui/x-data-grid@npm:^7.28.3":
-  version: 7.28.3
-  resolution: "@mui/x-data-grid@npm:7.28.3"
+"@mui/x-data-grid@npm:^8.0.0":
+  version: 8.0.0
+  resolution: "@mui/x-data-grid@npm:8.0.0"
   dependencies:
-    "@babel/runtime": "npm:^7.25.7"
-    "@mui/utils": "npm:^5.16.6 || ^6.0.0 || ^7.0.0 || ^7.0.0-beta"
-    "@mui/x-internals": "npm:7.28.0"
+    "@babel/runtime": "npm:^7.27.0"
+    "@mui/utils": "npm:^7.0.2"
+    "@mui/x-internals": "npm:8.0.0"
     clsx: "npm:^2.1.1"
     prop-types: "npm:^15.8.1"
     reselect: "npm:^5.1.1"
-    use-sync-external-store: "npm:^1.0.0"
+    use-sync-external-store: "npm:^1.5.0"
   peerDependencies:
     "@emotion/react": ^11.9.0
     "@emotion/styled": ^11.8.1
-    "@mui/material": ^5.15.14 || ^6.0.0 || ^7.0.0 || ^7.0.0-beta
-    "@mui/system": ^5.15.14 || ^6.0.0 || ^7.0.0 || ^7.0.0-beta
+    "@mui/material": ^5.15.14 || ^6.0.0 || ^7.0.0
+    "@mui/system": ^5.15.14 || ^6.0.0 || ^7.0.0
     react: ^17.0.0 || ^18.0.0 || ^19.0.0
     react-dom: ^17.0.0 || ^18.0.0 || ^19.0.0
   peerDependenciesMeta:
@@ -1619,7 +1619,7 @@ __metadata:
       optional: true
     "@emotion/styled":
       optional: true
-  checksum: 10c0/8c915b6cad815f275d06d0ecaa859ef4c94fce8134637663365b4f57bfa18aea6aadf90dd4048ef471533264a35cab943c8e3fa416ea774ece10db266e09c27f
+  checksum: 10c0/421e35733ca4d10c65bfe895b052d8238c7ae25d32fe76b067e6d90cac827fa3131673e11dfc018928383f8588a8ee8d1407a32be07ab29d178f08a63e33506f
   languageName: node
   linkType: hard
 
@@ -1680,6 +1680,18 @@ __metadata:
   peerDependencies:
     react: ^17.0.0 || ^18.0.0 || ^19.0.0
   checksum: 10c0/50950953fa5566890c424a8a69e935b389d810cde93cb4bf0c223331bdcae593089fe4051261033626a25df1d7fe5f61aa9e9403a76dbe75933c2f53c2b0a279
+  languageName: node
+  linkType: hard
+
+"@mui/x-internals@npm:8.0.0":
+  version: 8.0.0
+  resolution: "@mui/x-internals@npm:8.0.0"
+  dependencies:
+    "@babel/runtime": "npm:^7.27.0"
+    "@mui/utils": "npm:^7.0.2"
+  peerDependencies:
+    react: ^17.0.0 || ^18.0.0 || ^19.0.0
+  checksum: 10c0/9b389adcb38b2dd21070f7c797bf09e8ae499dccc555112f9082094d939e083755cee869658a019eac60d56ba2942700d48bdf297c36458c9dddd3555190e7d0
   languageName: node
   linkType: hard
 
@@ -6471,7 +6483,7 @@ __metadata:
     "@mui/material": "npm:^7.0.2"
     "@mui/material-nextjs": "npm:^7.0.2"
     "@mui/system": "npm:^7.0.2"
-    "@mui/x-data-grid": "npm:^7.28.3"
+    "@mui/x-data-grid": "npm:^8.0.0"
     "@mui/x-date-pickers": "npm:^7.28.3"
     "@next/eslint-plugin-next": "npm:^15.3.1"
     "@pdf-lib/fontkit": "npm:^1.1.1"
@@ -9775,12 +9787,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"use-sync-external-store@npm:^1.0.0":
-  version: 1.4.0
-  resolution: "use-sync-external-store@npm:1.4.0"
+"use-sync-external-store@npm:^1.5.0":
+  version: 1.5.0
+  resolution: "use-sync-external-store@npm:1.5.0"
   peerDependencies:
     react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
-  checksum: 10c0/ec011a5055962c0f6b509d6e78c0b143f8cd069890ae370528753053c55e3b360d3648e76cfaa854faa7a59eb08d6c5fb1015e60ffde9046d32f5b2a295acea5
+  checksum: 10c0/1b8663515c0be34fa653feb724fdcce3984037c78dd4a18f68b2c8be55cc1a1084c578d5b75f158d41b5ddffc2bf5600766d1af3c19c8e329bb20af2ec6f52f4
   languageName: node
   linkType: hard
 
