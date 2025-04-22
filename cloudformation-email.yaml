@@ -1,0 +1,42 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Resources:
+  JotaConfigurationSet:
+    Type: AWS::SES::ConfigurationSet
+    Properties:
+      Name: 'JotaConfigurationSet'
+      ReputationOptions:
+        ReputationMetricsEnabled: true
+      SendingOptions:
+        SendingEnabled: true
+      DeliveryOptions:
+        TlsPolicy: 'REQUIRE'
+        SendingPoolName: 'ses-shared-pool'
+
+  EventDestination:
+    Type: 'AWS::SES::ConfigurationSetEventDestination'
+    Properties:
+      ConfigurationSetName: !Ref JotaConfigurationSet
+      EventDestination:
+        Name: 'CloudWatchDestination'
+        Enabled: true
+        MatchingEventTypes:
+          - 'SEND'
+          - 'REJECT'
+          - 'BOUNCE'
+          - 'COMPLAINT'
+          - 'DELIVERY'
+        CloudWatchDestination:
+          DimensionConfigurations:
+            - DimensionName: 'CONFIGURATION_SET'
+              DimensionValueSource: 'MESSAGE_TAG'
+              DefaultDimensionValue: 'JotaConfigurationSet'
+
+  JanusEmailServer:
+    Type: 'AWS::SES::EmailIdentity'
+    Properties:
+      ConfigurationSetAttributes:
+        ConfigurationSetName: !Ref JotaConfigurationSet
+      EmailIdentity: lippert.dev
+      DkimAttributes:
+        SigningEnabled: true

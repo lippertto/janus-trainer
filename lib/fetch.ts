@@ -2,6 +2,13 @@ type JanusList<T> = {
   value: T[];
 };
 
+function paramsToQueryString(params: Record<string, string>): string {
+  if (Object.keys(params).length === 0) {
+    return '';
+  }
+  return '?' + new URLSearchParams(params).toString();
+}
+
 /**
  * Use this function to query the API for anything that returns a list of
  * entities. This method will return a rejected promise on error.
@@ -85,12 +92,16 @@ export async function deleteFromApi<T extends { id: number | string }>(
   route: string,
   entity: T,
   accessToken: string,
+  params: Record<string, string> = {},
 ): Promise<T> {
   try {
-    const response = await fetch(`${route}/${entity.id}`, {
-      headers: { Authorization: `Bearer ${accessToken}` },
-      method: 'DELETE',
-    });
+    const response = await fetch(
+      `${route}/${entity.id}${paramsToQueryString(params)}`,
+      {
+        headers: { Authorization: `Bearer ${accessToken}` },
+        method: 'DELETE',
+      },
+    );
     if (response.status !== 204) {
       return Promise.reject(
         new Error(
@@ -153,9 +164,10 @@ export async function updateInApi<T>(
   id: string | number,
   data: any,
   accessToken: string,
+  params: Record<string, string> = {},
 ) {
   const response = await callApiWithMethod(
-    `${route}/${id}`,
+    `${route}/${id}${paramsToQueryString(params)}`,
     accessToken,
     'PUT',
     data,

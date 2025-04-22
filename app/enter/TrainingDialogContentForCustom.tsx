@@ -71,6 +71,7 @@ export function SelectForCostCenterCourses(props: {
         required={true}
         inputRef={props.ref}
         label="Kostenstelle"
+        data-testid="enter-training-dialog-costcenter-select"
       >
         {menuItems}
       </Select>
@@ -178,7 +179,10 @@ export function TrainingDialogContentForCustom(props: {
                         <InputAdornment position="start">€</InputAdornment>
                       ),
                     },
-                    htmlInput: { inputMode: 'decimal' },
+                    htmlInput: {
+                      inputMode: 'decimal',
+                      'data-testid': 'training-dialog-custom-amount-field',
+                    },
                   }}
                   error={!!errors.compensationString?.message}
                   helperText={errors.compensationString?.message || ''}
@@ -191,7 +195,16 @@ export function TrainingDialogContentForCustom(props: {
             control={control}
             name="comment"
             render={({ field: fieldProps }) => (
-              <TextField {...fieldProps} label="Kommentar" required={true} />
+              <TextField
+                {...fieldProps}
+                label="Kommentar"
+                required={true}
+                slotProps={{
+                  htmlInput: {
+                    'data-testid': 'training-dialog-custom-comment-field',
+                  },
+                }}
+              />
             )}
           />
 
@@ -207,7 +220,9 @@ export function TrainingDialogContentForCustom(props: {
                 löschen
               </Button>
             ) : null}{' '}
-            <Button type="submit">Speichern</Button>
+            <Button type="submit" data-testid="enter-training-save-button">
+              Speichern
+            </Button>
           </DialogActions>
         </Stack>
       </DialogContent>

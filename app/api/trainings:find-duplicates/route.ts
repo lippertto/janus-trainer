@@ -43,7 +43,7 @@ async function findDuplicatesInDatabase(
 function extractTrainingIds(searchParams: URLSearchParams): number[] {
   const trainingIdString = searchParams.get('trainingIds');
   if (!trainingIdString) {
-    throw new ApiErrorBadRequest('No training Ids provided');
+    return [];
   }
   const trainingIds = trainingIdString.split(',').map((v) => {
     const parsed = parseInt(v);
@@ -60,6 +60,9 @@ export async function POST(
 ): Promise<NextResponse<TrainingDuplicatResponse | ErrorDto>> {
   try {
     const trainingIds = extractTrainingIds(nextRequest.nextUrl.searchParams);
+    if (trainingIds.length === 0) {
+      return NextResponse.json({ value: [] });
+    }
 
     // if we are not admin, we check if all queried trainings are your own
     if (!(await isAdmin(nextRequest))) {

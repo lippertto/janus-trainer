@@ -1,20 +1,23 @@
-import eslintConfigPrettier from 'eslint-config-prettier';
+import eslintConfigPrettier from 'eslint-config-prettier/flat';
 import reactPlugin from 'eslint-plugin-react';
 import playwright from 'eslint-plugin-playwright';
+
+import { defineConfig } from 'eslint/config';
+import { includeIgnoreFile } from '@eslint/compat';
 
 import nextPlugin from '@next/eslint-plugin-next';
 import ts from '@typescript-eslint/eslint-plugin';
 import tsParser from '@typescript-eslint/parser';
+import { fileURLToPath } from 'url';
 
-export default [
-  // this is a global pattern
-  {
-    ignores: ['.next/', 'next.config.mjs', 'eslint.config.mjs'],
-  },
-  { ...eslintConfigPrettier },
+const gitignorePath = fileURLToPath(new URL('.gitignore', import.meta.url));
+
+export default defineConfig([
+  includeIgnoreFile(gitignorePath),
   {
     name: 'app-rules',
     files: ['**/*.ts', '**/*.tsx'],
+    ignores: ['playwright/', 'types/'],
     plugins: {
       react: reactPlugin,
       '@next/next': nextPlugin,
@@ -38,10 +41,11 @@ export default [
       '@next/next/no-duplicate-head': 'off',
       '@next/next/no-page-custom-font': 'off',
     },
-    ignores: ['playwright/', 'types/sepa.d.ts'],
   },
   {
-    ...playwright.configs['flat/recommended'],
+    name: 'playwright-rules',
     files: ['playwright/**/*.ts'],
+    ...playwright.configs['flat/recommended'],
   },
-];
+  { ...eslintConfigPrettier },
+]);

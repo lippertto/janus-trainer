@@ -56,7 +56,15 @@ async function refreshAccessToken(token: JWT) {
   }
 }
 
-const COGNITO_ISSUER = `https://cognito-idp.${process.env.COGNITO_REGION}.amazonaws.com/${process.env.COGNITO_USER_POOL_ID}`;
+function getIssuer() {
+  if (process.env.COGNITO_REGION) {
+    return `https://cognito-idp.${process.env.COGNITO_REGION}.amazonaws.com/${process.env.COGNITO_USER_POOL_ID}`;
+  } else if (process.env.AWS_REGION) {
+    return `https://cognito-idp.${process.env.AWS_REGION}.amazonaws.com/${process.env.COGNITO_USER_POOL_ID}`;
+  } else {
+    return 'NO ISSUER SET! CHECK ENVIRONMENT VARIABLES!';
+  }
+}
 
 async function doCheckIfUserExists(userId: string) {
   try {
@@ -79,73 +87,75 @@ async function checkIfUserExists(userId: string) {
   return retry(() => doCheckIfUserExists(userId));
 }
 
-// configuration according to https://github.com/nextauthjs/next-auth/issues/4707
-export const config: AuthOptions = {
-  providers: [
-    CognitoProvider({
-      clientId: process.env.COGNITO_CLIENT_ID!,
-      // @ts-expect-error: we actually have to pass null in here.
-      clientSecret: null,
-      issuer: COGNITO_ISSUER!,
-      checks: process.env.DISABLE_JWT_CHECKS ? 'none' : undefined,
-      client: {
-        token_endpoint_auth_method: 'none',
+export function buildAuthConfig(): AuthOptions {
+  // configuration according to https://github.com/nextauthjs/next-auth/issues/4707
+  return {
+    providers: [
+      CognitoProvider({
+        clientId: process.env.COGNITO_CLIENT_ID!,
+        // @ts-expect-error: we actually have to pass null in here.
+        clientSecret: null,
+        issuer: getIssuer(),
+        checks: process.env.DISABLE_JWT_CHECKS ? 'none' : undefined,
+        client: {
+          token_endpoint_auth_method: 'none',
+        },
+        profile(profile) {
+          return {
+            id: profile.sub,
+            name: profile.name,
+            email: profile.email,
+            image: profile.picture,
+          };
+        },
+      }),
+    ],
+    callbacks: {
+      async signIn({ account }) {
+        const ok = await checkIfUserExists(account?.providerAccountId ?? '');
+        if (!ok) {
+          console.log(`Cognito knows user, but the backend does not like it`);
+        }
+        return ok;
       },
-      profile(profile) {
-        return {
-          id: profile.sub,
-          name: profile.name,
-          email: profile.email,
-          image: profile.picture,
-        };
-      },
-    }),
-  ],
-  callbacks: {
-    async signIn({ account }) {
-      const ok = await checkIfUserExists(account?.providerAccountId ?? '');
-      if (!ok) {
-        console.log(`Cognito knows user, but the backend does not like it`);
-      }
-      return ok;
-    },
-    async session({ session, token }: { session: Session; token: JWT }) {
-      const janusSession = session as JanusSession;
-      janusSession.accessToken = token.accessToken as string;
-      janusSession.name = token.name as string;
-      janusSession.userId = token.sub!;
-      janusSession.groups = (token.groups || []) as Group[];
+      async session({ session, token }: { session: Session; token: JWT }) {
+        const janusSession = session as JanusSession;
+        janusSession.accessToken = token.accessToken as string;
+        janusSession.name = token.name as string;
+        janusSession.userId = token.sub!;
+        janusSession.groups = (token.groups || []) as Group[];
 
-      return session;
-    },
-    // store the access token to the session
-    async jwt({ token, user, account, profile }) {
-      // initial login
-      if (account && user) {
-        if (!profile) {
-          console.log('No profile provided. This should not happen.');
+        return session;
+      },
+      // store the access token to the session
+      async jwt({ token, user, account, profile }) {
+        // initial login
+        if (account && user) {
+          if (!profile) {
+            console.log('No profile provided. This should not happen.');
+            return token;
+          }
+          token.accessToken = account.access_token;
+          token.refreshToken = account.refresh_token;
+          token.accessTokenExpires = Date.now() + account.expires_at! * 1000;
+          // Cognito always provides the groups in the profile
+          token.groups = profile[
+            'cognito:groups' as keyof Profile
+          ] as any as Group[];
           return token;
         }
-        token.accessToken = account.access_token;
-        token.refreshToken = account.refresh_token;
-        token.accessTokenExpires = Date.now() + account.expires_at! * 1000;
-        // Cognito always provides the groups in the profile
-        token.groups = profile[
-          'cognito:groups' as keyof Profile
-        ] as any as Group[];
-        return token;
-      }
 
-      // Return previous token if the access token has not expired yet
-      if (Date.now() < (token.accessTokenExpires as number)) {
-        return token;
-      }
+        // Return previous token if the access token has not expired yet
+        if (Date.now() < (token.accessTokenExpires as number)) {
+          return token;
+        }
 
-      // Access token has expired, try to update it
-      return refreshAccessToken(token);
+        // Access token has expired, try to update it
+        return refreshAccessToken(token);
+      },
     },
-  },
-} satisfies NextAuthOptions;
+  } satisfies NextAuthOptions;
+}
 
 // Use it in server contexts
 export async function auth(
@@ -154,7 +164,10 @@ export async function auth(
     | [NextApiRequest, NextApiResponse]
     | []
 ): Promise<JanusSession> {
-  return getServerSession(...args, config) as any as JanusSession;
+  return (await getServerSession(
+    ...args,
+    buildAuthConfig(),
+  )) as any as JanusSession;
 }
 
 export interface JanusSession extends Session {

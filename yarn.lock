@@ -118,6 +118,54 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@aws-sdk/client-ses@npm:^3.787.0":
+  version: 3.787.0
+  resolution: "@aws-sdk/client-ses@npm:3.787.0"
+  dependencies:
+    "@aws-crypto/sha256-browser": "npm:5.2.0"
+    "@aws-crypto/sha256-js": "npm:5.2.0"
+    "@aws-sdk/core": "npm:3.775.0"
+    "@aws-sdk/credential-provider-node": "npm:3.787.0"
+    "@aws-sdk/middleware-host-header": "npm:3.775.0"
+    "@aws-sdk/middleware-logger": "npm:3.775.0"
+    "@aws-sdk/middleware-recursion-detection": "npm:3.775.0"
+    "@aws-sdk/middleware-user-agent": "npm:3.787.0"
+    "@aws-sdk/region-config-resolver": "npm:3.775.0"
+    "@aws-sdk/types": "npm:3.775.0"
+    "@aws-sdk/util-endpoints": "npm:3.787.0"
+    "@aws-sdk/util-user-agent-browser": "npm:3.775.0"
+    "@aws-sdk/util-user-agent-node": "npm:3.787.0"
+    "@smithy/config-resolver": "npm:^4.1.0"
+    "@smithy/core": "npm:^3.2.0"
+    "@smithy/fetch-http-handler": "npm:^5.0.2"
+    "@smithy/hash-node": "npm:^4.0.2"
+    "@smithy/invalid-dependency": "npm:^4.0.2"
+    "@smithy/middleware-content-length": "npm:^4.0.2"
+    "@smithy/middleware-endpoint": "npm:^4.1.0"
+    "@smithy/middleware-retry": "npm:^4.1.0"
+    "@smithy/middleware-serde": "npm:^4.0.3"
+    "@smithy/middleware-stack": "npm:^4.0.2"
+    "@smithy/node-config-provider": "npm:^4.0.2"
+    "@smithy/node-http-handler": "npm:^4.0.4"
+    "@smithy/protocol-http": "npm:^5.1.0"
+    "@smithy/smithy-client": "npm:^4.2.0"
+    "@smithy/types": "npm:^4.2.0"
+    "@smithy/url-parser": "npm:^4.0.2"
+    "@smithy/util-base64": "npm:^4.0.0"
+    "@smithy/util-body-length-browser": "npm:^4.0.0"
+    "@smithy/util-body-length-node": "npm:^4.0.0"
+    "@smithy/util-defaults-mode-browser": "npm:^4.0.8"
+    "@smithy/util-defaults-mode-node": "npm:^4.0.8"
+    "@smithy/util-endpoints": "npm:^3.0.2"
+    "@smithy/util-middleware": "npm:^4.0.2"
+    "@smithy/util-retry": "npm:^4.0.2"
+    "@smithy/util-utf8": "npm:^4.0.0"
+    "@smithy/util-waiter": "npm:^4.0.3"
+    tslib: "npm:^2.6.2"
+  checksum: 10c0/63747111acf25a146550895b0b98d9d6b21d685e73bff39850ef488e9236563836e15cef74dac544250f400c2062e9d27f040019c3dac686f0c6acf57050d690
+  languageName: node
+  linkType: hard
+
 "@aws-sdk/client-sso@npm:3.787.0":
   version: 3.787.0
   resolution: "@aws-sdk/client-sso@npm:3.787.0"
@@ -1020,6 +1068,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@eslint/compat@npm:^1.2.8":
+  version: 1.2.8
+  resolution: "@eslint/compat@npm:1.2.8"
+  peerDependencies:
+    eslint: ^9.10.0
+  peerDependenciesMeta:
+    eslint:
+      optional: true
+  checksum: 10c0/1e004c6917220ff1731fdc562ada9ddcbcecc6f3ba2e4b0433fb6d8eddf2a443e009f1f9796b78128b78a0a588c723b78021319055ac6e5dda55c0ace346496b
+  languageName: node
+  linkType: hard
+
 "@eslint/config-array@npm:^0.20.0":
   version: 0.20.0
   resolution: "@eslint/config-array@npm:0.20.0"
@@ -1654,6 +1714,15 @@ __metadata:
   dependencies:
     fast-glob: "npm:3.3.1"
   checksum: 10c0/d4f4350461ed9aad3649b8be1dfb1bbe9fd55c4f80e94635fc2c4dbd664563bc426634eccb543d5fa14d788914ff1d34bcb36d1969506d58a2e8c05c567b9ab7
+  languageName: node
+  linkType: hard
+
+"@next/eslint-plugin-next@npm:^15.3.1":
+  version: 15.3.1
+  resolution: "@next/eslint-plugin-next@npm:15.3.1"
+  dependencies:
+    fast-glob: "npm:3.3.1"
+  checksum: 10c0/b25938a2a8ff7d5a4267f39cf8dd686026ce853e2cb73e2b3e2b398d135a4913a97f773f7d3f3382dc2f6287772ea0728af9935735a95f52d9f6d2beba7b8201
   languageName: node
   linkType: hard
 
@@ -2536,6 +2605,17 @@ __metadata:
     "@smithy/util-buffer-from": "npm:^4.0.0"
     tslib: "npm:^2.6.2"
   checksum: 10c0/28a5a5372cbf0b3d2e32dd16f79b04c2aec6f704cf13789db922e9686fde38dde0171491cfa4c2c201595d54752a319faaeeed3c325329610887694431e28c98
+  languageName: node
+  linkType: hard
+
+"@smithy/util-waiter@npm:^4.0.3":
+  version: 4.0.3
+  resolution: "@smithy/util-waiter@npm:4.0.3"
+  dependencies:
+    "@smithy/abort-controller": "npm:^4.0.2"
+    "@smithy/types": "npm:^4.2.0"
+    tslib: "npm:^2.6.2"
+  checksum: 10c0/0ca992cd85719b367655943df08e8f7f0dd0f4ffe335809de7ed4c133ee2db5b58a2661cfc43040cf91512ef21783c8302fc2352f95910ecf3f0a50b0e32c2ff
   languageName: node
   linkType: hard
 
@@ -4979,6 +5059,34 @@ __metadata:
   languageName: node
   linkType: hard
 
+"eslint-plugin-react@npm:^7.37.5":
+  version: 7.37.5
+  resolution: "eslint-plugin-react@npm:7.37.5"
+  dependencies:
+    array-includes: "npm:^3.1.8"
+    array.prototype.findlast: "npm:^1.2.5"
+    array.prototype.flatmap: "npm:^1.3.3"
+    array.prototype.tosorted: "npm:^1.1.4"
+    doctrine: "npm:^2.1.0"
+    es-iterator-helpers: "npm:^1.2.1"
+    estraverse: "npm:^5.3.0"
+    hasown: "npm:^2.0.2"
+    jsx-ast-utils: "npm:^2.4.1 || ^3.0.0"
+    minimatch: "npm:^3.1.2"
+    object.entries: "npm:^1.1.9"
+    object.fromentries: "npm:^2.0.8"
+    object.values: "npm:^1.2.1"
+    prop-types: "npm:^15.8.1"
+    resolve: "npm:^2.0.0-next.5"
+    semver: "npm:^6.3.1"
+    string.prototype.matchall: "npm:^4.0.12"
+    string.prototype.repeat: "npm:^1.0.0"
+  peerDependencies:
+    eslint: ^3 || ^4 || ^5 || ^6 || ^7 || ^8 || ^9.7
+  checksum: 10c0/c850bfd556291d4d9234f5ca38db1436924a1013627c8ab1853f77cac73ec19b020e861e6c7b783436a48b6ffcdfba4547598235a37ad4611b6739f65fd8ad57
+  languageName: node
+  linkType: hard
+
 "eslint-scope@npm:^8.3.0":
   version: 8.3.0
   resolution: "eslint-scope@npm:8.3.0"
@@ -6361,9 +6469,11 @@ __metadata:
   resolution: "janus-trainer@workspace:."
   dependencies:
     "@aws-sdk/client-cognito-identity-provider": "npm:^3.787.0"
+    "@aws-sdk/client-ses": "npm:^3.787.0"
     "@emotion/cache": "npm:^11.14.0"
     "@emotion/react": "npm:^11.14.0"
     "@emotion/styled": "npm:^11.14.0"
+    "@eslint/compat": "npm:^1.2.8"
     "@lifeomic/attempt": "npm:^3.1.0"
     "@mui/icons-material": "npm:^7.0.2"
     "@mui/material": "npm:^7.0.2"
@@ -6371,6 +6481,7 @@ __metadata:
     "@mui/system": "npm:^7.0.2"
     "@mui/x-data-grid": "npm:^7.28.3"
     "@mui/x-date-pickers": "npm:^7.28.3"
+    "@next/eslint-plugin-next": "npm:^15.3.1"
     "@pdf-lib/fontkit": "npm:^1.1.1"
     "@playwright/test": "npm:^1.51.1"
     "@prisma/client": "npm:^6.6.0"
@@ -6398,6 +6509,7 @@ __metadata:
     eslint-config-prettier: "npm:^10.1.2"
     eslint-plugin-playwright: "npm:^2.2.0"
     eslint-plugin-prettier: "npm:^5.2.6"
+    eslint-plugin-react: "npm:^7.37.5"
     husky: "npm:^9.1.7"
     jsdom: "npm:^26.1.0"
     material-ui-confirm: "npm:^4.0.0"
@@ -7542,6 +7654,18 @@ __metadata:
     define-properties: "npm:^1.2.1"
     es-object-atoms: "npm:^1.0.0"
   checksum: 10c0/db9ea979d2956a3bc26c262da4a4d212d36f374652cc4c13efdd069c1a519c16571c137e2893d1c46e1cb0e15c88fd6419eaf410c945f329f09835487d7e65d3
+  languageName: node
+  linkType: hard
+
+"object.entries@npm:^1.1.9":
+  version: 1.1.9
+  resolution: "object.entries@npm:1.1.9"
+  dependencies:
+    call-bind: "npm:^1.0.8"
+    call-bound: "npm:^1.0.4"
+    define-properties: "npm:^1.2.1"
+    es-object-atoms: "npm:^1.1.1"
+  checksum: 10c0/d4b8c1e586650407da03370845f029aa14076caca4e4d4afadbc69cfb5b78035fd3ee7be417141abdb0258fa142e59b11923b4c44d8b1255b28f5ffcc50da7db
   languageName: node
   linkType: hard
 

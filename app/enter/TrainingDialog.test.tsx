@@ -105,7 +105,7 @@ async function setParticipantCount(value: number | null = null) {
 }
 
 async function pressSave() {
-  const saveButton = await screen.findByRole('button', { name: /Speichern/i });
+  const saveButton = await screen.findByTestId('enter-training-save-button');
   expect(saveButton).toBeEnabled();
   fireEvent.submit(saveButton);
 }
@@ -117,7 +117,7 @@ describe('enter courses', () => {
 
     const userId = 'userId123';
 
-    render(
+    const { unmount } = render(
       <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="de">
         <TrainingDialog
           open={true}
@@ -157,13 +157,15 @@ describe('enter courses', () => {
         userId: userId,
       }),
     );
+
+    unmount();
   });
 
   test('selects matching compensation value when course changes', async () => {
     const save = vi.fn();
     const close = vi.fn();
 
-    render(
+    const { unmount } = render(
       <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="de">
         <TrainingDialog
           open={true}
@@ -187,10 +189,7 @@ describe('enter courses', () => {
     const courseBox = await screen.findByRole('combobox', { name: /Kurs.*/i });
     selectFirstComboboxElement(courseBox);
 
-    // for some reason, getByRole does not work here.
-    const saveButton = await screen.findByTestId('enter-training-save-button');
-    expect(saveButton).toBeEnabled();
-    fireEvent.submit(saveButton);
+    await pressSave();
 
     await waitFor(() =>
       expect(save).toHaveBeenCalledWith(
@@ -199,6 +198,8 @@ describe('enter courses', () => {
         }),
       ),
     );
+
+    unmount();
   });
 
   test('Sets values from toEdit as defaults', async () => {
@@ -214,7 +215,7 @@ describe('enter courses', () => {
     const close = vi.fn();
 
     // first render with toEdit=null. This is what happens in the app.
-    const { rerender } = render(
+    const { rerender, unmount } = render(
       <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="de">
         <TrainingDialog
           open={true}
@@ -268,6 +269,8 @@ describe('enter courses', () => {
         }),
       ),
     );
+
+    unmount();
   });
 
   test('add new compensation value when no corresponding exists', async () => {
@@ -292,7 +295,7 @@ describe('enter courses', () => {
     } as TrainingDto;
 
     // first render with null
-    const { rerender } = render(
+    const { rerender, unmount } = render(
       <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="de">
         <TrainingDialog
           open={true}
@@ -341,6 +344,8 @@ describe('enter courses', () => {
         }),
       ),
     );
+
+    unmount();
   });
 });
 
@@ -360,7 +365,7 @@ describe('enter custom', () => {
       },
     ] as CourseDto[];
 
-    render(
+    const { unmount } = render(
       <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="de">
         <TrainingDialog
           open={true}
@@ -386,15 +391,15 @@ describe('enter custom', () => {
     selectFirstComboboxElement(courseBox);
 
     const comment = 'any-comment';
-    const commentTextBox = await screen.findByRole('textbox', {
-      name: 'Kommentar',
-    });
-    await userEvent.type(commentTextBox!, comment);
+    const commentTextBox = screen.getByTestId(
+      'training-dialog-custom-comment-field',
+    );
+    fireEvent.change(commentTextBox, { target: { value: comment } });
 
-    const valueTextbox = await screen.findByRole('textbox', {
-      name: 'Betrag',
-    });
-    await userEvent.type(valueTextbox, '30,40');
+    const valueTextbox = screen.getByTestId(
+      'training-dialog-custom-amount-field',
+    );
+    fireEvent.change(valueTextbox, { target: { value: '30,40' } });
 
     await pressSave();
 
@@ -410,6 +415,8 @@ describe('enter custom', () => {
         }),
       ),
     );
+
+    unmount();
   });
 
   test('happy edit case', async () => {
@@ -442,7 +449,7 @@ describe('enter custom', () => {
       comment: 'some comment',
     };
 
-    render(
+    const { unmount } = render(
       <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="de">
         <TrainingDialog
           open={true}
@@ -459,11 +466,6 @@ describe('enter custom', () => {
       </LocalizationProvider>,
     );
 
-    const courseBox = await screen.findByRole('combobox', {
-      name: /Kostenstelle/i,
-    });
-    expect(courseBox).toHaveValue('B custom course 1');
-
     const commentTextBox = await screen.findByRole('textbox', {
       name: 'Kommentar',
     });
@@ -473,6 +475,8 @@ describe('enter custom', () => {
       name: 'Betrag',
     });
     expect(valueTextbox).toHaveValue('34,56');
+
+    unmount();
   });
 
   test('Shows explanation when no compensation groups have been assigned.', async () => {

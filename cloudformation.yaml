@@ -11,14 +11,6 @@ Parameters:
     Type: String
     Description: Under which domain the app will be hosted.
 
-Mappings:
-  Constants:
-    ManagedPolicyIds:
-      CachingDisabled: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad
-      CachingOptimized: 658327ea-f89d-4fab-a63d-7e88639e58f6
-      AllViewer: 216adef6-5c7f-47e4-b989-5492eafa07d3
-      AllViewerExceptHostHeader: b689b0a8-53d0-40ab-baf2-68738e2966ac
-
 Resources:
   JanusUserPool:
     Type: AWS::Cognito::UserPool
@@ -28,11 +20,13 @@ Resources:
         AllowAdminCreateUserOnly: True
         InviteMessageTemplate:
           EmailMessage: !Sub |
-            Hallo, ein Konto in der Janus Trainer App wurde für dich erstellt.
+            Liebe Übungsleitung, für dich wurde ein Konto für die Janus Online Trainings Abrechnungen (JOTA) erstellt.
             Dein Account hat die email {username}, dein temporäres Passwort ist "{####}" ohne Anführungszeichen.
             Du musst es beim ersten Einloggen ändern.
-            Du findest die App unter https://${JanusDomain} Sportliche Grüße Dein SC Janus.
-          EmailSubject: 'Neues Konto in der Janus Trainer App'
+            Das temporäre Passwort ist für eine Woche gültig.
+            Du findest die App unter https://${JanusDomain}
+            Sportliche Grüße Dein SC Janus.
+          EmailSubject: 'Neues Konto für die Janus Online Trainings Abrechnungen (JOTA)'
       UsernameAttributes:
         - email
       UsernameConfiguration:
@@ -105,46 +99,3 @@ Resources:
         - email
         - name
       PreventUserExistenceErrors: ENABLED
-
-  JanusTrainerAppRole:
-    Type: AWS::IAM::Role
-    Properties:
-      RoleName: !Sub 'JanusTrainerAppRole-${JanusEnvironment}'
-      AssumeRolePolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service:
-                - lambda.amazonaws.com
-            Action:
-              - 'sts:AssumeRole'
-      ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
-
-  JanusTrainerAppRolePolicy:
-    Type: AWS::IAM::RolePolicy
-    Properties:
-      RoleName: !Ref JanusTrainerAppRole
-      PolicyName: !Sub 'JanusTrainerAppPolicy-${JanusEnvironment}'
-      PolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-          - Sid: Statement01
-            Effect: Allow
-            Action:
-              - cognito-idp:AdminCreateUser
-              - cognito-idp:AdminDisableUser
-              - cognito-idp:AdminEnableUser
-              - cognito-idp:AdminGetUser
-              - cognito-idp:AdminAddUserToGroup
-              - cognito-idp:AdminRemoveUserFromGroup
-              - cognito-idp:AdminDeleteUserAttributes
-              - cognito-idp:AdminUpdateUserAttributes
-              - cognito-idp:AdminListGroupsForUser
-              - cognito-idp:ListGroups
-              - cognito-idp:GetGroup
-              - cognito-idp:ListUsersInGroup
-              - cognito-idp:ListUsers
-              - cognito-idp:GetUser
-            Resource: !GetAtt JanusUserPool.Arn
