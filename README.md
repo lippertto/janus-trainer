@@ -40,6 +40,9 @@ Then, run `yarn vitest -c api-tests/vite.config.js`
 
 - Join payments and compensation api routes (and domain objects) into /payments/{id}/compensations
 - Run API tests in CI
+- Clean up database entities. Make email in user non-nullable. Rename Discipline.
+- Send logs to AWS
+- Think about auditing table
 
 # Common tasks
 
