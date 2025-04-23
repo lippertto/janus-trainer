@@ -9,6 +9,7 @@ import {
   GridRowId,
   GridRowParams,
   GridRowSelectionModel,
+  useGridApiRef,
 } from '@mui/x-data-grid';
 import FastRewindIcon from '@mui/icons-material/FastRewind';
 import FastForwardIcon from '@mui/icons-material/FastForward';
@@ -180,6 +181,7 @@ export function TrainingTable(props: {
 }) {
   const [rowSelectionModel, setRowSelectionModel] =
     React.useState<GridRowSelectionModel>([]);
+  const apiRef = useGridApiRef();
 
   const trainings = props.getTrainings();
   const duplicates = props.getDuplicates(trainings.map((t) => t.id));
@@ -200,9 +202,14 @@ export function TrainingTable(props: {
     [props.holidays, duplicates],
   );
 
+  React.useEffect(() => {
+    apiRef.current.autosizeColumns({});
+  }, [trainings]);
+
   return (
     <>
       <DataGrid
+        apiRef={apiRef}
         initialState={{
           sorting: {
             sortModel: [{ field: 'date', sort: 'asc' }],
