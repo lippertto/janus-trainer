@@ -166,7 +166,8 @@ function HolidayPageContents({ session }: { session: JanusSession }) {
     confirm({
       title: 'Feiertag löschen?',
       description: `Soll der Feiertag ${selectedHoliday.name} wirklich gelöscht werden?`,
-    }).then(() => {
+    }).then(({ confirmed }) => {
+      if (!confirmed) return;
       deleteHolidayMutation.mutate(selectedHoliday!);
     });
   };
