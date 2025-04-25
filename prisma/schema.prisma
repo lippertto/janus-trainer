@@ -62,7 +62,7 @@ model UserInDb {
   deletedAt DateTime?
   trainings Training[]
   courses   Course[]
-  email     String? // remove as soon as all accounts have an email.
+  email     String
 
   compensationClasses CompensationClass[]
 
@@ -111,8 +111,8 @@ model Course {
 
   isCustomCourse Boolean @default(false)
 
-  discipline   Discipline? @relation(fields: [disciplineId], references: [id])
-  disciplineId Int?
+  costCenter   CostCenter? @relation(fields: [costCenterId], references: [id])
+  costCenterId Int?        @map("disciplineId")
 
   trainers  UserInDb[]
   trainings Training[]
@@ -121,13 +121,15 @@ model Course {
   deletedAt DateTime?
 }
 
-// Discipline is the old name of cost center.
-model Discipline {
+model CostCenter {
   id           Int       @id @default(autoincrement())
   name         String
   costCenterId Int // an id that is assigned by the users. Can be any value.
   Course       Course[]
   deletedAt    DateTime?
+
+  // Discipline is the old name of cost center.
+  @@map("Discipline")
 }
 
 model Payment {

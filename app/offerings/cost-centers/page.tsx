@@ -38,8 +38,9 @@ function ConfigurationPageContents({ session }: { session: JanusSession }) {
       title: 'Kostenstelle löschen?',
       description: `Soll die Kostenstelle "${activeCostCenter?.name}" gelöscht werden?`,
       confirmationButtonProps: { autoFocus: true },
-    }).then(() => {
+    }).then(({ confirmed }) => {
       if (!activeCostCenter) return;
+      if (!confirmed) return;
       deleteFromApi(API_COST_CENTERS, activeCostCenter, session.accessToken)
         .then((deleted) => {
           queryClient.invalidateQueries({ queryKey: [API_COST_CENTERS] });

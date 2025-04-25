@@ -21,7 +21,7 @@ async function getAllCostCenters(includeDeleted: boolean) {
     filter = { deletedAt: null };
   }
 
-  const result = await prisma.discipline.findMany({ where: filter });
+  const result = await prisma.costCenter.findMany({ where: filter });
   return NextResponse.json({ value: result });
 }
 
@@ -48,7 +48,7 @@ export async function POST(
       await nextRequest.json(),
     );
 
-    const result = await prisma.discipline.create({ data: request });
+    const result = await prisma.costCenter.create({ data: request });
 
     return NextResponse.json(result, { status: 201 });
   } catch (e) {

@@ -48,11 +48,11 @@ function buildColumns(
       },
     },
     {
-      field: 'disciplineId',
+      field: 'costCenterId',
       headerName: 'Kostenstelle',
-      valueGetter: (disciplineId: number) =>
-        costCenters.find((d) => d.id === disciplineId)?.name ??
-        disciplineId.toString(),
+      valueGetter: (costCenterId: number) =>
+        costCenters.find((d) => d.id === costCenterId)?.name ??
+        costCenterId.toString(),
     },
     {
       field: 'trainers',

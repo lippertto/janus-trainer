@@ -120,7 +120,7 @@ function defaultValuesFor(
   costCenters: CostCenterDto[],
 ): FormData {
   const costCenter =
-    costCenters.find((cc) => cc.id === course?.disciplineId) ?? null;
+    costCenters.find((cc) => cc.id === course?.costCenterId) ?? null;
   let time;
   if (course && course.startHour !== null && course.startMinute !== null) {
     time = dayjs().hour(course.startHour).minute(course.startMinute);
@@ -169,7 +169,7 @@ export function CourseDialog(props: {
       startMinute: data.time!.minute(),
       weekday: data.dayOfWeek,
       trainerIds: data.selectedTrainers.map((t) => t.id),
-      disciplineId: data.costCenter!.id,
+      costCenterId: data.costCenter!.id,
     });
   };
 

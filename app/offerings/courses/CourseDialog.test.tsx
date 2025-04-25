@@ -97,7 +97,7 @@ describe('CourseDialog', () => {
     await userEvent.click(saveButton);
 
     expect(handleSave).toHaveBeenCalledWith({
-      disciplineId: costCenters[0].id,
+      costCenterId: costCenters[0].id,
       durationMinutes: 90,
       startHour: 19,
       startMinute: 0,
@@ -149,7 +149,7 @@ describe('CourseDialog', () => {
     await userEvent.click(saveButton);
 
     expect(handleSave).toHaveBeenCalledWith({
-      disciplineId: costCenters[0].id,
+      costCenterId: costCenters[0].id,
       durationMinutes: 120,
       startHour: 20,
       startMinute: 15,

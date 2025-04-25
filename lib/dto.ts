@@ -1,9 +1,9 @@
 import {
   CompensationClass,
   CompensationValue,
+  CostCenter,
   Course,
   DayOfWeek,
-  Discipline,
   Holiday,
   Training,
   TrainingStatus,
@@ -229,7 +229,7 @@ export class CourseCreateRequest {
   trainerIds: string[];
 
   @IsInt()
-  disciplineId: number;
+  costCenterId: number;
 }
 
 export type CourseQueryResponse = {
@@ -295,7 +295,7 @@ export type TrainingSummaryListDto = {
   value: TrainingSummaryDto[];
 };
 
-export type CostCenterDto = Discipline;
+export type CostCenterDto = CostCenter;
 
 export class CostCenterCreateRequest {
   constructor(obj: any) {
