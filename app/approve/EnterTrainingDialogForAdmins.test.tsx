@@ -21,6 +21,7 @@ import {
 } from '@testing-library/react';
 
 import userEvent from '@testing-library/user-event';
+import { fillDatePicker, verifyDatePickerValue } from '@/lib/testHelpers';
 
 const TRAINERS: Pick<UserDto, 'id' | 'name'>[] = [
   { id: '123', name: 'Trainer A' },
@@ -60,8 +61,7 @@ describe('EnterTrainingDialogForAdmins', () => {
 
     await screen.findByText('Training hinzufügen');
 
-    const dateBox = await screen.findByRole('textbox', { name: 'Datum' });
-    expect(dateBox).toHaveValue(dayjs().format('DD.MM.YYYY'));
+    await verifyDatePickerValue('Datum', dayjs());
 
     await screen.findByRole('combobox', { name: 'Übungsleitung' });
     await screen.findByRole('combobox', { name: /Kurs.*/i });
@@ -98,7 +98,7 @@ describe('EnterTrainingDialogForAdmins', () => {
     );
 
     await fillOutForm({
-      date: '03.10.2024',
+      date: dayjs('2024-10-03'),
       comment: 'comment',
       amount: '49,99',
     });
@@ -135,7 +135,7 @@ describe('EnterTrainingDialogForAdmins', () => {
     );
 
     await fillOutForm({
-      date: '03.10.2024',
+      date: dayjs('2024-10-03'),
       comment: 'some-comment',
       amount: '-10',
     });
@@ -168,12 +168,11 @@ async function fillOutForm({
   comment,
   amount,
 }: {
-  date: string;
+  date: dayjs.Dayjs;
   comment: string;
   amount: string;
 }) {
-  const dateBox = await screen.findByRole('textbox', { name: 'Datum' });
-  await userEvent.type(dateBox, '03.10.2024');
+  await fillDatePicker('Datum', dayjs(date));
 
   const trainerInput = await screen.findByText('Übungsleitung');
   selectFirstComboboxElement(trainerInput);

@@ -1,6 +1,8 @@
 import { expect, test } from '@playwright/test';
 import { v4 as uuidv4 } from 'uuid';
 import { newBrowser } from './browser';
+import { fillOutDatePicker } from '@/playwright/playwrightTestHelpers';
+import dayjs from 'dayjs';
 
 test.describe.serial('Configuration page', () => {
   test.use({ storageState: 'playwright/.auth/admin.json' });
@@ -13,16 +15,16 @@ test.describe.serial('Configuration page', () => {
     await page.goto('/configure/holidays');
     await expect(page.getByText(holidayName)).toBeHidden();
     // set the displayed year to the one of the holiday
-    await page.getByPlaceholder('YYYY').fill('2024');
+    const yearInput = page
+      .getByRole('group', { name: 'Jahr' })
+      .getByRole('spinbutton', { name: 'Year' });
+    await yearInput.fill('2024');
 
     await page.getByRole('button', { name: /Hinzufügen/i }).click();
 
-    await page.getByLabel(/Start.*/i).fill('03.10.2024');
-
-    await page.getByLabel(/Ende.*/i).fill('03.10.2024');
-
+    await fillOutDatePicker(page, 'Start', dayjs('2024-10-03'));
+    await fillOutDatePicker(page, 'Ende', dayjs('2024-10-03'));
     await page.getByLabel('Beschreibung').fill(holidayName);
-
     await page.getByRole('button', { name: /Speichern/i }).click();
     await expect(page.getByText(holidayName)).toBeVisible();
 
