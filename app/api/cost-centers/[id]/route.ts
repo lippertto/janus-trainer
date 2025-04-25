@@ -20,13 +20,13 @@ export async function DELETE(
 
     const idAsNumber = idAsNumberOrThrow(params.id);
 
-    const costCenter = await prisma.discipline.findUnique({
+    const costCenter = await prisma.costCenter.findUnique({
       where: { id: idAsNumber },
     });
     if (!costCenter) return emptyResponse();
 
     const course = await prisma.course.findFirst({
-      where: { disciplineId: idAsNumber, deletedAt: null },
+      where: { costCenterId: idAsNumber, deletedAt: null },
     });
     if (course) {
       return conflictResponse(
@@ -35,7 +35,7 @@ export async function DELETE(
       );
     }
 
-    await prisma.discipline.update({
+    await prisma.costCenter.update({
       where: { id: idAsNumber },
       data: { deletedAt: new Date() },
     });
@@ -58,7 +58,7 @@ export async function PUT(
       await nextRequest.json(),
     );
 
-    const result = await prisma.discipline.update({
+    const result = await prisma.costCenter.update({
       where: { id: idAsNumberOrThrow(params.id) },
       data: request,
     });

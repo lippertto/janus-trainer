@@ -116,7 +116,7 @@ export class LocalApi {
       startHour: 10,
       startMinute: 0,
       trainerIds: [],
-      disciplineId: costCenterId,
+      costCenterId,
     });
     return result.body as CourseDto;
   }

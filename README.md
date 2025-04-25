@@ -28,9 +28,6 @@ Then, run `yarn vitest -c api-tests/vite.config.js`
 ## Features
 
 - Warning if booked time != course time
-- Make courses disabled. (Also in the UI.)
-- Allow users to choose their own courses (Michael Busch)
-- Auto-Approve
 - Playwright test: enter -> approve -> compensate.
 - Playwright test: duplicates
 - Warning if training limits have been reached
@@ -40,7 +37,6 @@ Then, run `yarn vitest -c api-tests/vite.config.js`
 
 - Join payments and compensation api routes (and domain objects) into /payments/{id}/compensations
 - Run API tests in CI
-- Clean up database entities. Make email in user non-nullable. Rename Discipline.
 - Send logs to AWS
 - Think about auditing table
 

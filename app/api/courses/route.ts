@@ -31,7 +31,7 @@ async function createCourse(nextRequest: NextRequest) {
       trainers: {
         connect: request.trainerIds.map((t) => ({ id: t })),
       },
-      disciplineId: request.disciplineId,
+      costCenterId: request.costCenterId,
     },
     include: { trainers: true },
   });
@@ -81,7 +81,7 @@ async function getCustomCourses(costCenterId?: number): Promise<CourseDto[]> {
   const value = await prisma.course.findMany({
     where: {
       isCustomCourse: true,
-      disciplineId: costCenterId,
+      costCenterId,
     },
   });
   return value.map((c) => ({ ...c, trainers: [] }));

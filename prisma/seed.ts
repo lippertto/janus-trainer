@@ -1,5 +1,5 @@
 import prisma from '../lib/prisma';
-import { DayOfWeek, Discipline } from '@prisma/client';
+import { DayOfWeek, CostCenter } from '@prisma/client';
 
 async function resetIdCounter(tableName: string) {
   return prisma.$queryRawUnsafe(`
@@ -56,6 +56,7 @@ async function main() {
     {
       id: '502c79bc-e051-70f5-048c-5619e49e2383',
       name: 'Test-User Admin',
+      email: 'test-user-admin@example.com',
       termsAcceptedVersion: '2024-08-03',
       compensationClasses: { connect: { id: 1 } },
     },
@@ -63,6 +64,7 @@ async function main() {
       id: '80ac598c-e0b1-7040-5e0e-6fd257a53699',
       name: 'Test-User Trainer',
       iban: 'DE53500105175739486428',
+      email: 'test-user-trainer@example.com',
       termsAcceptedVersion: '2024-08-03',
       compensationClasses: { connect: { id: 1 } },
     },
@@ -78,13 +80,13 @@ async function main() {
     ),
   );
 
-  const discipline1: Discipline = {
+  const costCenter1: CostCenter = {
     name: 'Sportart 1',
     id: 1,
     costCenterId: 42,
     deletedAt: null,
   };
-  const discipline2: Discipline = {
+  const costCenter2: CostCenter = {
     name: 'Sportart 2',
     id: 2,
     costCenterId: 84,
@@ -92,8 +94,8 @@ async function main() {
   };
 
   await Promise.all(
-    [discipline1, discipline2].map((d) =>
-      prisma.discipline.upsert({
+    [costCenter1, costCenter2].map((d) =>
+      prisma.costCenter.upsert({
         where: { id: d.id },
         create: d,
         update: d,
@@ -108,7 +110,7 @@ async function main() {
     startHour: 19,
     startMinute: 0,
     durationMinutes: 90,
-    disciplineId: discipline1.id,
+    costCenterId: costCenter1.id,
   };
 
   const course2 = {
@@ -117,7 +119,7 @@ async function main() {
     startHour: 19,
     startMinute: 0,
     durationMinutes: 120,
-    disciplineId: discipline2.id,
+    costCenterId: costCenter2.id,
   };
 
   await prisma.course.upsert({
