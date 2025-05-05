@@ -116,9 +116,10 @@ export function CompensationValueCard(props: {
     confirm({
       title: 'Pauschale löschen?',
       description: `Soll die Pauschale "${activeCompensationValue?.description}" gelöscht werden?`,
-    }).then(() =>
-      deleteCompensationValueMutation.mutate(activeCompensationValue!),
-    );
+    }).then(({ confirmed }) => {
+      if (!confirmed) return;
+      deleteCompensationValueMutation.mutate(activeCompensationValue!);
+    });
   };
 
   const createCompensationValueMutation = useMutation({

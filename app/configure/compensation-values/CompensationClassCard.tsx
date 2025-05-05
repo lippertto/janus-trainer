@@ -117,7 +117,10 @@ export default function CompensationClassCard(props: {
     confirm({
       title: 'Pauschale löschen?',
       description: `Soll die Pauschalen-Gruppe "${activeCompensationClass?.name}" gelöscht werden?`,
-    }).then(() => deleteMutation.mutate(activeCompensationClass!));
+    }).then(({ confirmed }) => {
+      if (!confirmed) return;
+      deleteMutation.mutate(activeCompensationClass!);
+    });
   };
 
   return (

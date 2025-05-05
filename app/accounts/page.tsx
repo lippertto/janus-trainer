@@ -81,8 +81,9 @@ function UserManagementContents(props: { accessToken: string }) {
     confirm({
       title: 'Konto löschen?',
       description: `Soll der Konto "${user?.email}" gelöscht werden?`,
-    }).then(() => {
+    }).then(({ confirmed }) => {
       if (!user) return;
+      if (!confirmed) return;
       deleteFromApi(API_USERS, user, props.accessToken)
         .then((deleted) => {
           queryClient.setQueryData(

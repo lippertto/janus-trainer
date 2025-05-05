@@ -111,7 +111,8 @@ function OfferingsPageContents({ session }: { session: JanusSession }) {
     confirm({
       title: 'Kurs löschen?',
       description: `Soll der Kurs "${activeCourse?.name}" gelöscht werden?`,
-    }).then(() => {
+    }).then(({ confirmed }) => {
+      if (!confirmed) return;
       if (activeCourse) {
         deleteCourseMutation.mutate(activeCourse);
       }

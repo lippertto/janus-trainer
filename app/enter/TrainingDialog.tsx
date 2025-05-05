@@ -39,7 +39,8 @@ export default function TrainingDialog(props: {
       title: 'Training löschen?',
       description: `Soll das Training "${props.toEdit?.course?.name}" vom ${dateToHumanReadable(props.toEdit?.date!)} gelöscht werden?`,
     })
-      .then(() => {
+      .then(({ confirmed }) => {
+        if (!confirmed) return;
         props.handleDelete(props.toEdit!);
         props.handleClose();
       })
