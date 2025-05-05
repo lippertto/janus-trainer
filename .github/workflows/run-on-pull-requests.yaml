@@ -6,10 +6,17 @@ on:
 jobs:
   check:
     uses: ./.github/workflows/check.yaml
+
+  build:
+    uses: ./.github/workflows/docker-build.yaml
+    secrets:
+      aws-ecr-key: ${{ secrets.AWS_ECR_KEY }}
+      aws-ecr-secret-access-key: ${{ secrets.AWS_ECR_SECRET_ACCESS_KEY }}
+
   deploy-test:
     needs:
       - check
-    uses: ./.github/workflows/deploy.yaml
+    uses: ./.github/workflows/deploy-cloudformation.yaml
     with:
       environment: test
       domain: janus-test.lippert.dev

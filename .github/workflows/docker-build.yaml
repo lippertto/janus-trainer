@@ -1,0 +1,36 @@
+on:
+  workflow_call:
+    secrets:
+      aws-ecr-key:
+        required: true
+      aws-ecr-secret-access-key:
+        required: true
+    outputs:
+      image-name:
+        value: ${{ jobs.build.outputs.image-name }}
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      image-name: ${{ steps.push.outputs.image-name }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.aws-ecr-key }}
+          aws-secret-access-key: ${{ secrets.aws-ecr-secret-access-key }}
+          aws-region: eu-north-1
+      - name: Log in to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+      - name: Build, tag, and push image to Amazon ECR
+        id: push
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: janus/janus-trainer
+        run: |
+          export IMAGE_TAG="$GITHUB_RUN_ID"
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          echo image-name=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG >> $GITHUB_OUTPUT
