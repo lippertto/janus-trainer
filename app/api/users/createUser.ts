@@ -8,6 +8,7 @@ import {
 } from '@/app/api/users/cognito';
 import { cognitoClient } from '@/app/api/users/cognito-client';
 import { ApiErrorBadRequest } from '@/lib/helpers-for-api';
+import { logger } from '@/lib/logging';
 
 /** Creates a users in cognito and in the database. */
 export async function createUser(request: UserCreateRequest): Promise<UserDto> {
@@ -37,18 +38,28 @@ export async function createUser(request: UserCreateRequest): Promise<UserDto> {
       cognitoUser.username,
       request.groups,
     );
+  } else {
+    logger.warn(
+      `Creating a user. Cognito user with email ${request.email} exists in cognito and has not been disabled.`,
+    );
   }
 
   let dbUser = await prisma.userInDb.findFirst({
     where: { id: cognitoUser.username },
   });
-  if (dbUser && dbUser.deletedAt) {
-    await prisma.userInDb.update({
-      where: { id: dbUser.id },
-      data: {
-        deletedAt: null,
-      },
-    });
+  if (dbUser) {
+    if (dbUser.deletedAt) {
+      await prisma.userInDb.update({
+        where: { id: dbUser.id },
+        data: {
+          deletedAt: null,
+        },
+      });
+    } else {
+      logger.warn(
+        `Creating a user, but user with ${request.email} exists in db and has not been disabled.`,
+      );
+    }
   } else {
     dbUser = await prisma.userInDb.create({
       data: {
