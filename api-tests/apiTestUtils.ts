@@ -92,10 +92,34 @@ export class LocalApi {
     return result.body.value as PaymentDto[];
   }
 
+  async deleteCourse(id: number): Promise<void> {
+    await superagent.delete(`${this.baseUrl}/api/courses/${id}`);
+  }
+
   async createCostCenter(): Promise<CostCenterDto> {
+    const costCenterId = 666;
+    const costCenterResponse = await superagent.get(
+      `${this.baseUrl}/api/cost-centers?costCenterId=${costCenterId}`,
+    );
+    const existing = costCenterResponse.body.value as CostCenterDto[];
+    if (existing.length > 0) {
+      const courses = await superagent.get(
+        `${this.baseUrl}/api/courses?costCenterId=${existing[0].id}`,
+      );
+      const linkedCourses = courses.body.value as CourseDto[];
+      await Promise.all(
+        linkedCourses.map((course) => this.deleteCourse(course.id)),
+      );
+
+      // api logic ensures that only one cost-center with the number exists
+      await superagent.delete(
+        `${this.baseUrl}/api/cost-centers/${existing[0].id}`,
+      );
+    }
+
     const createRequest: CostCenterCreateRequest = {
       name: 'Name',
-      costCenterId: 666,
+      costCenterId,
     };
 
     const createResponse = await superagent
