@@ -27,11 +27,11 @@ export async function selectOneUser(
     throw new ApiErrorNotFound(`User with id ${id} not found`);
   }
 
-  const client = cognitoClient();
-
   let email: string = '';
   let groups: Group[] = [];
   if (includeCognitoProperties) {
+    const client = cognitoClient();
+
     const cognitoUser = await getCognitoUserById(client, id);
 
     if (!cognitoUser) {

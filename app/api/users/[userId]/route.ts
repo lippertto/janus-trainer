@@ -32,9 +32,12 @@ async function doDELETE(id: string) {
   await disableCognitoUser(cognitoClient(), id);
 
   await prisma.userInDb.update({
-    where: { id, deletedAt: null },
+    where: { id },
     data: {
       deletedAt: new Date(),
+      courses: {
+        set: [],
+      },
     },
   });
   return new Response(null, { status: 204 });
