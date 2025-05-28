@@ -54,12 +54,16 @@ export async function POST(
 async function getAllCourses(
   trainerId: string | null,
   includeDeleted: boolean,
+  costCenterId: number | null,
 ): Promise<CourseDto[]> {
   let filter;
   if (includeDeleted) {
     filter = {};
   } else {
     filter = { deletedAt: null };
+  }
+  if (costCenterId) {
+    filter = { ...filter, costCenterId };
   }
 
   if (trainerId) {
@@ -111,7 +115,11 @@ export async function GET(
     if (customCourse) {
       result = await getCustomCourses(costCenterId);
     } else {
-      result = await getAllCourses(trainerId, includeDeleted);
+      result = await getAllCourses(
+        trainerId,
+        includeDeleted,
+        costCenterId ?? null,
+      );
     }
 
     return NextResponse.json({ value: result });
