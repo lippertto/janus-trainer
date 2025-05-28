@@ -9,6 +9,7 @@ import {
 } from '@/lib/helpers-for-api';
 import prisma from '@/lib/prisma';
 import { CostCenterDto, CostCenterUpdateRequest, ErrorDto } from '@/lib/dto';
+import { logger } from '@/lib/logging';
 
 export async function DELETE(
   request: NextRequest,
@@ -29,6 +30,9 @@ export async function DELETE(
       where: { costCenterId: idAsNumber, deletedAt: null },
     });
     if (course) {
+      logger.info(
+        `Not deleting cost center ${idAsNumber} because ${course.id} still references it.`,
+      );
       return conflictResponse(
         `Course ${course.name} ${course.deletedAt ? '(deleted)' : ''} still references cost-center. Will not delete it.`,
         'CostCenterIsStillReferenced',
