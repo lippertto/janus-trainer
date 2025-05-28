@@ -82,18 +82,22 @@ describe('/trainings:find-duplicates', () => {
   test('returns bad request on bad request', async () => {
     let receivedStatus = 0;
     await superagent
-      .post(`${SERVER}/api/trainings:find-duplicates`)
-      .catch((e) => {
-        receivedStatus = e.response.status;
-      });
-    expect(receivedStatus).toBe(400);
-
-    receivedStatus = 0;
-    await superagent
       .post(`${SERVER}/api/trainings:find-duplicates?trainingIds=123,abc`)
       .catch((e) => {
         receivedStatus = e.response.status;
       });
     expect(receivedStatus).toBe(400);
+  });
+
+  test('returns empty array on empty trainingIds', async () => {
+    let result = await superagent.post(
+      `${SERVER}/api/trainings:find-duplicates`,
+    );
+    expect(result.body.value).toHaveLength(0);
+
+    result = await superagent.post(
+      `${SERVER}/api/trainings:find-duplicates?trainingIds=`,
+    );
+    expect(result.body.value).toHaveLength(0);
   });
 });
