@@ -13,12 +13,18 @@ import {
   validateOrThrow,
 } from '@/lib/helpers-for-api';
 
-async function getAllCostCenters(includeDeleted: boolean) {
+async function getAllCostCenters(
+  includeDeleted: boolean,
+  costCenterId: number | null,
+) {
   let filter;
   if (includeDeleted) {
     filter = {};
   } else {
     filter = { deletedAt: null };
+  }
+  if (costCenterId) {
+    filter = { ...filter, costCenterId };
   }
 
   const result = await prisma.costCenter.findMany({ where: filter });
@@ -30,9 +36,14 @@ export async function GET(
 ): Promise<NextResponse<CostCenterQueryResponseDto | ErrorDto>> {
   const includeDeleted =
     request.nextUrl.searchParams.get('includeDeleted') === 'true';
+  const costCenterIdString = request.nextUrl.searchParams.get('costCenterId');
+  let costCenterId = null;
+  if (costCenterIdString) {
+    costCenterId = parseInt(costCenterIdString);
+  }
   try {
     await allowAnyLoggedIn(request);
-    return await getAllCostCenters(includeDeleted);
+    return await getAllCostCenters(includeDeleted, costCenterId);
   } catch (e) {
     return handleTopLevelCatch(e);
   }
