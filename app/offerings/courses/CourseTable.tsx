@@ -50,9 +50,16 @@ function buildColumns(
     {
       field: 'costCenterId',
       headerName: 'Kostenstelle',
-      valueGetter: (costCenterId: number) =>
-        costCenters.find((d) => d.id === costCenterId)?.name ??
-        costCenterId.toString(),
+      valueGetter: (costCenterId: number) => {
+        const existingCostCenter = costCenters.find(
+          (d) => d.id === costCenterId,
+        );
+        if (existingCostCenter) {
+          return existingCostCenter.name;
+        } else {
+          return costCenterId?.toString() ?? '[leer]';
+        }
+      },
     },
     {
       field: 'trainers',
