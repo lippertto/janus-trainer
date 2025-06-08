@@ -2,7 +2,7 @@ import { NextRequest } from 'next/server';
 import { Group, UserDto } from '@/lib/dto';
 import {
   findUsersForGroup,
-  listAllUsers,
+  listAllCognitoUsers,
   listGroups,
 } from '@/app/api/users/cognito';
 import prisma from '@/lib/prisma';
@@ -17,7 +17,7 @@ export async function listUsers(request: NextRequest): Promise<UserDto[]> {
   const client = cognitoClient();
 
   const allUsers = new Map(
-    (await listAllUsers(client)).map((user) => [user.username, user]),
+    (await listAllCognitoUsers(client)).map((user) => [user.username, user]),
   );
 
   let groupsToAnnotate: string[];

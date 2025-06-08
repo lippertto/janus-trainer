@@ -116,7 +116,7 @@ async function listCognitoUsers(
 }
 
 /** Returns all users in cognito. Note, the groups will be empty . */
-export async function listAllUsers(
+export async function listAllCognitoUsers(
   client: CognitoIdentityProviderClient,
 ): Promise<ParsedCognitoUser[]> {
   return listCognitoUsers(client, '');
