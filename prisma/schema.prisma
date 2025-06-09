@@ -111,8 +111,8 @@ model Course {
 
   isCustomCourse Boolean @default(false)
 
-  costCenter   CostCenter? @relation(fields: [costCenterId], references: [id])
-  costCenterId Int?        @map("disciplineId")
+  costCenter   CostCenter @relation(fields: [costCenterId], references: [id])
+  costCenterId Int        @map("disciplineId")
 
   trainers  UserInDb[]
   trainings Training[]

@@ -41,13 +41,16 @@ RUN \
   else echo "Lockfile not found." && exit 1; \
   fi
 
-# TLT: added prisma steps. They will put the files into the node_modules directory
+# TLT: 'prisma generate' will generate files into node_modules
 COPY prisma ./prisma
 RUN yarn prisma generate
 
 # Production image, copy all the files and run next
 FROM base AS runner
 WORKDIR /app
+
+# TLT: The prisma directory is needed for the migrations.
+COPY prisma ./prisma
 
 ENV NODE_ENV=production
 # Uncomment the following line in case you want to disable telemetry during runtime.

@@ -1,10 +1,5 @@
 import superagent from 'superagent';
-import {
-  CostCenterCreateRequest,
-  CostCenterDto,
-  CostCenterUpdateRequest,
-  CourseUpdateRequest,
-} from '@/lib/dto';
+import { CostCenterDto, CostCenterUpdateRequest } from '@/lib/dto';
 import { describe, expect, test } from 'vitest';
 import { LocalApi } from './apiTestUtils';
 

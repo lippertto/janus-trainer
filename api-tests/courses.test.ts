@@ -19,7 +19,7 @@ async function getAllCourses(): Promise<CourseDto[]> {
 }
 
 describe('/courses', () => {
-  test('courses are not in returned when deleted', async () => {
+  test('courses are not returned when deleted', async () => {
     const courseCountBefore = (await getAllCourses()).length;
 
     let costCenter;
@@ -31,22 +31,22 @@ describe('/courses', () => {
       course1 = await api.createCourse({ costCenterId: costCenter.id });
       course2 = await api.createCourse({ costCenterId: costCenter.id });
 
-      const courseCountPlus2 = (await getAllCourses()).length;
-      expect(courseCountPlus2).toBe(courseCountBefore + 2);
+      const courseCountAfterAdding = (await getAllCourses()).length;
+      expect(courseCountAfterAdding).toBe(courseCountBefore + 2);
 
       await deleteCourse(course1.id);
       course1 = null;
       const courseCountAfterDeletion = (await getAllCourses()).length;
-      expect(courseCountAfterDeletion).toBe(courseCountPlus2 - 1);
+      expect(courseCountAfterDeletion).toBe(courseCountAfterAdding - 1);
     } finally {
-      if (costCenter) {
-        await deleteCostCenter(costCenter.id);
-      }
       if (course1) {
         await deleteCourse(course1.id);
       }
       if (course2) {
         await deleteCourse(course2.id);
+      }
+      if (costCenter) {
+        await deleteCostCenter(costCenter.id);
       }
     }
   });
