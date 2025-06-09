@@ -118,11 +118,3 @@ You need to take care of the following things:
 - Create a certificate in ACM for that domain
 
 # Notes
-
-## Secrets and Parameters
-
-I do not want to use the AWS Secrets Mechanism, e.g., for the db password.
-In order to get the secrets, one would need to use an SDK (creating an explicit dependency to aws)
-or to use the lambda extension for secrets. The latter would use a http call to localhost to retrieve
-the secret, which is not very so 12-factor compatible.
-From my point of view it is fine to keep the secrets as environment variables for now.
