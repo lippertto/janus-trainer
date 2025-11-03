@@ -18,14 +18,14 @@ import prisma from '@/lib/prisma';
 export async function GET(
   nextRequest: NextRequest,
   props: {
-    params: Promise<{ cvId: number }>;
+    params: Promise<{ ccId: string; cvId: string }>;
   },
 ): Promise<NextResponse<CompensationValueDto | ErrorDto>> {
   const params = await props.params;
   try {
     await allowAnyLoggedIn(nextRequest);
     const result = await prisma.compensationValue.findUnique({
-      where: { id: idAsNumberOrThrow(params.cvId as unknown as string) },
+      where: { id: idAsNumberOrThrow(params.cvId) },
     });
     if (!result) {
       return notFoundResponse();
@@ -39,7 +39,7 @@ export async function GET(
 export async function PUT(
   nextRequest: NextRequest,
   props: {
-    params: Promise<{ cvId: number }>;
+    params: Promise<{ ccId: string; cvId: string }>;
   },
 ): Promise<NextResponse<CompensationValueDto | ErrorDto>> {
   const params = await props.params;
@@ -50,7 +50,7 @@ export async function PUT(
       await nextRequest.json(),
     );
     const result = await prisma.compensationValue.update({
-      where: { id: idAsNumberOrThrow(params.cvId as unknown as string) },
+      where: { id: idAsNumberOrThrow(params.cvId) },
       data: {
         ...request,
       },
@@ -63,13 +63,13 @@ export async function PUT(
 
 export async function DELETE(
   nextRequest: NextRequest,
-  props: { params: Promise<{ cvId: number }> },
+  props: { params: Promise<{ ccId: string; cvId: string }> },
 ): Promise<Response> {
   const params = await props.params;
   try {
     await allowOnlyAdmins(nextRequest);
     await prisma.compensationValue.delete({
-      where: { id: idAsNumberOrThrow(params.cvId as unknown as string) },
+      where: { id: idAsNumberOrThrow(params.cvId) },
     });
     return emptyResponse();
   } catch (e) {

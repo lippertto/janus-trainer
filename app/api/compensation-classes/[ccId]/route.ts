@@ -30,7 +30,7 @@ async function deleteCompensationClass(id: number) {
 
 export async function DELETE(
   nextRequest: NextRequest,
-  props: { params: Promise<{ ccId: number }> },
+  props: { params: Promise<{ ccId: string }> },
 ): Promise<Response> {
   const params = await props.params;
   try {
@@ -54,7 +54,7 @@ async function getCompensationClass(
 
 export async function GET(
   nextRequest: NextRequest,
-  props: { params: Promise<{ ccId: number }> },
+  props: { params: Promise<{ ccId: string }> },
 ): Promise<NextResponse<CompensationClassDto | ErrorDto>> {
   const params = await props.params;
   try {
@@ -75,7 +75,7 @@ export async function GET(
 
 export async function PUT(
   nextRequest: NextRequest,
-  props: { params: Promise<{ ccId: number }> },
+  props: { params: Promise<{ ccId: string }> },
 ): Promise<NextResponse<CompensationClassDto | ErrorDto>> {
   const params = await props.params;
   try {

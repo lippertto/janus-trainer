@@ -34,7 +34,7 @@ export async function POST(nextRequest: NextRequest) {
     const data = await generatePdf(dayjs(), reportInput);
 
     logger.info(`Pdf for user ${trainerId}: was successfully created.`);
-    return new Response(data, {
+    return new Response(new Blob([data as BlobPart]), {
       headers: {
         'Content-Type': 'application/pdf',
         'Content-Disposition': `attachment, filename="Janus-Trainings-${dayjs().format('YYYY-MM-DD')}.xlsx"`,
