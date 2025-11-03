@@ -7,10 +7,15 @@ import {
   TrainerReportInput,
 } from '@/app/api/trainer-reports:generate-pdf/generate-pdf';
 import dayjs from 'dayjs';
+import { logger } from '@/lib/logging';
 
 export async function POST(nextRequest: NextRequest) {
   try {
     const { trainerId, startDate, endDate } = exportReportParams(nextRequest);
+    logger.info(
+      `Requesting pdf for: ${trainerId}, start=${startDate.format('YYYY-MM-DD')}, ` +
+        `end=${endDate.format('YYYY-MM-DD')}`,
+    );
 
     await allowAdminOrSelf(nextRequest, trainerId);
 
@@ -28,6 +33,7 @@ export async function POST(nextRequest: NextRequest) {
 
     const data = await generatePdf(dayjs(), reportInput);
 
+    logger.info(`Pdf for user ${trainerId}: was successfully created.`);
     return new Response(data, {
       headers: {
         'Content-Type': 'application/pdf',
