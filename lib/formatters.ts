@@ -1,5 +1,5 @@
 import dayjs from 'dayjs';
-import { TrainingStatus } from '@prisma/client';
+import { TrainingStatus } from '@/generated/prisma/enums';
 import { Group } from '@/lib/dto';
 
 require('dayjs/locale/de');

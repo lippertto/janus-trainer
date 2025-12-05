@@ -6,7 +6,7 @@ import React from 'react';
 import { TrainingDto } from '@/lib/dto';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { TrainingList } from './TrainingList';
-import { DayOfWeek, TrainingStatus } from '@prisma/client';
+import { DayOfWeek, TrainingStatus } from '@/generated/prisma/enums';
 import { describe, expect, test, vi } from 'vitest';
 import '@testing-library/jest-dom/vitest';
 

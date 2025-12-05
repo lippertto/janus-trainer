@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import dayjs from 'dayjs';
 import { warningsForDate } from '@/lib/warnings-for-date';
-import { DayOfWeek } from '@prisma/client';
+import { DayOfWeek } from '@/generated/prisma/enums';
 
 describe('warnings-for-date', () => {
   test('Warns about future if after today', () => {

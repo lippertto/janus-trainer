@@ -14,7 +14,7 @@ import {
   ErrorDto,
 } from '@/lib/dto';
 import prisma from '@/lib/prisma';
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/client';
 
 async function deleteCompensationClass(id: number) {
   try {

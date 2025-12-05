@@ -11,7 +11,7 @@ import { describe, expect, test, vi } from 'vitest';
 
 import 'dayjs/locale/de';
 import userEvent from '@testing-library/user-event';
-import { DayOfWeek } from '@prisma/client';
+import { DayOfWeek } from '@/generated/prisma/enums';
 
 const trainers: UserDto[] = [
   {

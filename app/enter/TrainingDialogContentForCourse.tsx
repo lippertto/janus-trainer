@@ -14,7 +14,7 @@ import {
   TrainingCreateRequest,
   TrainingDto,
 } from '@/lib/dto';
-import { DayOfWeek } from '@prisma/client';
+import { DayOfWeek } from '@/generated/prisma/enums';
 import { centsToHumanReadable } from '@/lib/formatters';
 import { compareByField, compareNamed } from '@/lib/sort-and-filter';
 import {

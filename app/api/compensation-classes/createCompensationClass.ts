@@ -3,7 +3,6 @@ import {
   CompensationClassDto,
 } from '@/lib/dto';
 import prisma from '@/lib/prisma';
-import { CompensationClass } from '@prisma/client';
 
 export async function createCompensationClass(
   request: CompensationClassCreateRequest,

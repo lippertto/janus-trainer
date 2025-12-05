@@ -23,7 +23,7 @@ import { TrainingTable } from '@/app/approve/TrainingTable';
 import { Typography } from '@mui/material';
 import type { JanusSession } from '@/lib/auth';
 import { EnterTrainingDialogForAdmins } from '@/app/approve/EnterTrainingDialogForAdmins';
-import { TrainingStatus } from '@prisma/client';
+import { TrainingStatus } from '@/generated/prisma/enums';
 import DeleteTrainingDialog from '@/app/approve/DeleteTrainingDialog';
 import EditTrainingCompensationDialog from '@/app/approve/EditTrainingCompensationDialog';
 

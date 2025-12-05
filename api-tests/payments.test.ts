@@ -1,6 +1,6 @@
 import superagent from 'superagent';
 import { PaymentDto, TrainingCreateRequest, TrainingDto } from '@/lib/dto';
-import { TrainingStatus } from '@prisma/client';
+import { TrainingStatus } from '@/generated/prisma/client';
 import dayjs from 'dayjs';
 import { LocalApi, USER_ID_ADMIN, USER_ID_TRAINER } from './apiTestUtils';
 import { describe, expect, test } from 'vitest';

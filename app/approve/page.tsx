@@ -31,7 +31,7 @@ import {
   compareNamed,
   replaceElementWithId,
 } from '@/lib/sort-and-filter';
-import { TrainingStatus } from '@prisma/client';
+import { TrainingStatus } from '@/generated/prisma/enums';
 
 dayjs.extend(quarterOfYear);
 

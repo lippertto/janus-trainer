@@ -9,7 +9,7 @@ import {
 } from './apiTestUtils';
 import superagent from 'superagent';
 import { TrainerReportDto } from '@/lib/dto';
-import { TrainingStatus } from '@prisma/client';
+import { TrainingStatus } from '@/generated/prisma/client';
 import { describe, expect, test } from 'vitest';
 
 const SERVER = 'http://localhost:3000';

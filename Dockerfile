@@ -26,6 +26,7 @@ RUN \
 FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
+
 COPY . .
 
 # Next.js collects completely anonymous telemetry data about general usage.
@@ -33,17 +34,13 @@ COPY . .
 # Uncomment the following line in case you want to disable telemetry during the build.
 # ENV NEXT_TELEMETRY_DISABLED=1
 
-# TLT - added corepack commands
-RUN \
-  if [ -f yarn.lock ]; then corepack yarn install && corepack enable && yarn run build; \
-  elif [ -f package-lock.json ]; then npm run build; \
-  elif [ -f pnpm-lock.yaml ]; then corepack enable pnpm && pnpm run build; \
-  else echo "Lockfile not found." && exit 1; \
-  fi
+# TLT: 'prisma generate' will generate files into ./generated
 
-# TLT: 'prisma generate' will generate files into node_modules
-COPY prisma ./prisma
+# TLT - added corepack and prisma commands. Removed non-yarn commands
+RUN corepack yarn install
+RUN corepack enable
 RUN yarn prisma generate
+RUN yarn run build
 
 # Production image, copy all the files and run next
 FROM base AS runner
@@ -60,6 +57,7 @@ RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
 COPY --from=builder /app/public ./public
+COPY --from=builder /app/generated ./generated
 
 # Automatically leverage output traces to reduce image size
 # https://nextjs.org/docs/advanced-features/output-file-tracing

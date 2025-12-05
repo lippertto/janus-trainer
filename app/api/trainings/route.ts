@@ -13,7 +13,7 @@ import {
   validateOrThrow,
 } from '@/lib/helpers-for-api';
 import prisma from '@/lib/prisma';
-import { Prisma, Training, TrainingStatus } from '@prisma/client';
+import { Prisma, Training, TrainingStatus } from '@/generated/prisma/client';
 import { NextRequest, NextResponse } from 'next/server';
 import { trainingToDto } from '@/app/api/trainings/trainingUtils';
 

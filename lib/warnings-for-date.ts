@@ -1,6 +1,5 @@
 import { dayOfWeekToHumanReadable, HolidayDto } from '@/lib/dto';
-import { DayOfWeek } from '@prisma/client';
-import { boolean } from 'property-information/lib/util/types';
+import { DayOfWeek } from '@/generated/prisma/enums';
 import dayjs from 'dayjs';
 
 function dayOfWeekToInt(d: DayOfWeek): number {

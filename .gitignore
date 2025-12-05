@@ -308,3 +308,4 @@ dist
 playwright/test-report/
 playwright/.auth/
 playwright/test-results/
+generated/*

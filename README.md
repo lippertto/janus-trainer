@@ -12,6 +12,8 @@ yarn start:dev
 To execute the API tests, you have to start the server with the environment variable
 `DISABLE_JWT_CHECKS=1` set.
 
+Also, you need to start the database in the background with `docker compose up -d`.
+
 Then, run `yarn vitest -c api-tests/vite.config.js`
 
 # TODO
@@ -51,6 +53,9 @@ Update the generated code: `prisma generate`
 Make changes to the schema. Push the changes to the local database with `prisma db push`.
 
 After you are done, you can create a migration like so: `prisma migrate dev`
+
+If you want to run the playwright tests locally, you need to set initial data in your local database.
+Do this with `prisma db seed`.
 
 More information can be found in
 the [Prisma docs](https://www.prisma.io/docs/orm/prisma-migrate/workflows/prototyping-your-schema)

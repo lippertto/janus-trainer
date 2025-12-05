@@ -9,7 +9,7 @@ export default defineConfig({
     alias: [
       {
         find: '@/',
-        replacement: fileURLToPath(new URL('./', import.meta.url)),
+        replacement: fileURLToPath(new URL('../', import.meta.url)),
       },
     ],
   },

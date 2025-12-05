@@ -10,7 +10,7 @@ import {
   trainingStatusToHumanReadable,
 } from '@/lib/formatters';
 import { warningsForDate } from '@/lib/warnings-for-date';
-import { TrainingStatus } from '@prisma/client';
+import { TrainingStatus } from '@/generated/prisma/enums';
 import ListItemButton from '@mui/material/ListItemButton';
 import Box from '@mui/system/Box';
 import dayjs from 'dayjs';
