@@ -43,33 +43,33 @@ RUN yarn build
 
 # Production image, copy all the files and run next
 FROM base AS runner
-WORKDIR /app
-
-# TLT: The prisma directory contains the migrations. prisma.config.ts contains the configuration of the db source
-# TLT: Since we execute them on the VM via the docker images, the files need to be there
-COPY package.json ./
-COPY prisma ./prisma
-COPY prisma.config.ts ./
-
-ENV NODE_ENV=production
-# Uncomment the following line in case you want to disable telemetry during runtime.
-# ENV NEXT_TELEMETRY_DISABLED=1
-
-RUN corepack enable && corepack install
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
+USER nextjs
 
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/generated ./generated
+WORKDIR /app
+RUN chown nextjs:nodejs /app
+
+ENV NODE_ENV=production
+
+# TLT: The prisma directory contains the migrations. prisma.config.ts contains the configuration of the db source
+# TLT: Since we execute them on the VM via the docker images, the files need to be there
+COPY --chown=nextjs:nodejs  .yarnrc.yml yarn.lock package.json ./
+COPY --chown=nextjs:nodejs prisma ./prisma
+COPY --chown=nextjs:nodejs prisma.config.ts ./
+
+RUN corepack enable
+
+COPY --from=builder  --chown=nextjs:nodejs /app/public ./public
+COPY --from=builder  --chown=nextjs:nodejs /app/generated ./generated
 
 # Automatically leverage output traces to reduce image size
 # https://nextjs.org/docs/advanced-features/output-file-tracing
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
-USER nextjs
 
 EXPOSE 3000
 
