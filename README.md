@@ -54,6 +54,9 @@ Make changes to the schema. Push the changes to the local database with `prisma 
 
 After you are done, you can create a migration like so: `prisma migrate dev`
 
+If you want to run the playwright tests locally, you need to set initial data in your local database.
+Do this with `prisma db seed`.
+
 More information can be found in
 the [Prisma docs](https://www.prisma.io/docs/orm/prisma-migrate/workflows/prototyping-your-schema)
 
