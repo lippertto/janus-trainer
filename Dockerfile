@@ -39,15 +39,19 @@ COPY . .
 # TLT - added corepack and prisma commands. Removed non-yarn commands
 RUN corepack yarn install
 RUN corepack enable
+# TLT: 'prisma generate' will generate files into node_modules
+COPY prisma ./prisma
 RUN yarn prisma generate
-RUN yarn run build
+RUN yarn build
 
 # Production image, copy all the files and run next
 FROM base AS runner
 WORKDIR /app
 
-# TLT: The prisma directory is needed for the migrations.
+# TLT: The prisma directory contains the migrations. prisma.config.ts contains the configuration of the db source
+# TLT: Since we execute them on the VM via the docker images, the files need to be there
 COPY prisma ./prisma
+COPY prisma.config.ts ./
 
 ENV NODE_ENV=production
 # Uncomment the following line in case you want to disable telemetry during runtime.
