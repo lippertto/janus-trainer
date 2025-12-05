@@ -14,12 +14,9 @@ WORKDIR /app
 # TLT - added .yarnrc.yml
 COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* .npmrc* .yarnrc.yml ./
 # TLT: added corepack yarn install and changed --frozen-lockfile to --immutable
-RUN \
-  if [ -f yarn.lock ]; then corepack yarn install && corepack enable && yarn --immutable; \
-  elif [ -f package-lock.json ]; then npm ci; \
-  elif [ -f pnpm-lock.yaml ]; then corepack enable pnpm && pnpm i --frozen-lockfile; \
-  else echo "Lockfile not found." && exit 1; \
-  fi
+RUN corepack enable && corepack install
+
+RUN yarn --immutable
 
 
 # Rebuild the source code only when needed
@@ -37,8 +34,8 @@ COPY . .
 # TLT: 'prisma generate' will generate files into ./generated
 
 # TLT - added corepack and prisma commands. Removed non-yarn commands
-RUN corepack yarn install
-RUN corepack enable
+RUN corepack enable && corepack install
+
 # TLT: 'prisma generate' will generate files into node_modules
 COPY prisma ./prisma
 RUN yarn prisma generate
@@ -57,8 +54,11 @@ ENV NODE_ENV=production
 # Uncomment the following line in case you want to disable telemetry during runtime.
 # ENV NEXT_TELEMETRY_DISABLED=1
 
+RUN corepack enable && corepack install
+
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
+
 
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/generated ./generated

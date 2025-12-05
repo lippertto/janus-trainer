@@ -2,8 +2,12 @@
 .github
 .husky
 .next
-.vscode
+.yarn
+api-tests
+generated
 node_modules
+playwright
+Dockerfile
+.vscode
 .env*
-playwright/.env
-generated/
+.idea
