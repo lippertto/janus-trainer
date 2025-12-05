@@ -47,6 +47,7 @@ WORKDIR /app
 
 # TLT: The prisma directory contains the migrations. prisma.config.ts contains the configuration of the db source
 # TLT: Since we execute them on the VM via the docker images, the files need to be there
+COPY package.json ./
 COPY prisma ./prisma
 COPY prisma.config.ts ./
 
