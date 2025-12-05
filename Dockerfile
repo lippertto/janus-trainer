@@ -47,10 +47,12 @@ FROM base AS runner
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-USER nextjs
+RUN corepack enable
 
 WORKDIR /app
-RUN chown nextjs:nodejs /app
+RUN chown -R nextjs:nodejs /app
+
+USER nextjs
 
 ENV NODE_ENV=production
 
@@ -60,7 +62,6 @@ COPY --chown=nextjs:nodejs  .yarnrc.yml yarn.lock package.json ./
 COPY --chown=nextjs:nodejs prisma ./prisma
 COPY --chown=nextjs:nodejs prisma.config.ts ./
 
-RUN corepack enable
 
 COPY --from=builder  --chown=nextjs:nodejs /app/public ./public
 COPY --from=builder  --chown=nextjs:nodejs /app/generated ./generated
