@@ -12,7 +12,7 @@ import {
   waitFor,
 } from '@testing-library/react';
 import TrainingDialog from '@/app/enter/TrainingDialog';
-import { DayOfWeek, TrainingStatus } from '@prisma/client';
+import { DayOfWeek, TrainingStatus } from '@/generated/prisma/enums';
 import { CompensationValueDto, CourseDto, TrainingDto } from '@/lib/dto';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';

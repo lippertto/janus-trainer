@@ -1,13 +1,5 @@
-import {
-  CompensationClass,
-  CompensationValue,
-  CostCenter,
-  Course,
-  DayOfWeek,
-  Holiday,
-  Training,
-  TrainingStatus,
-} from '@prisma/client';
+import { Course, Training } from '@/generated/prisma/browser';
+import { DayOfWeek, TrainingStatus } from '@/generated/prisma/enums';
 import {
   IsArray,
   IsEmail,
@@ -183,7 +175,13 @@ export type CompensationQueryResponse = {
   value: CompensationDto[];
 };
 
-export type CompensationValueDto = CompensationValue;
+export type CompensationValueDto = {
+  id: number;
+  cents: number;
+  description: string;
+  durationMinutes: number | null;
+  compensationClassId: number | null;
+};
 
 export class CompensationValueCreateRequest {
   constructor(obj: any) {
@@ -261,13 +259,27 @@ export function dayOfWeekToHumanReadable(w: DayOfWeek, short: boolean = false) {
   }
 }
 
-export type HolidayDto = Holiday;
-
-export type HolidayCreateRequest = {
+export type HolidayDto = {
+  id: number;
   name: string;
   start: string;
   end: string;
 };
+
+export class HolidayCreateRequest {
+  constructor(obj: any) {
+    Object.assign(this, obj);
+  }
+
+  @IsString()
+  name: string;
+
+  @IsISO8601()
+  start: string;
+
+  @IsISO8601()
+  end: string;
+}
 
 export class HolidayUpdateRequest {
   constructor(obj: any) {
@@ -295,7 +307,12 @@ export type TrainingSummaryListDto = {
   value: TrainingSummaryDto[];
 };
 
-export type CostCenterDto = CostCenter;
+export type CostCenterDto = {
+  id: number;
+  name: string;
+  costCenterId: number;
+  deletedAt: Date | null;
+};
 
 export class CostCenterCreateRequest {
   constructor(obj: any) {
@@ -354,7 +371,9 @@ export type TrainingStatisticsResponse = {
   value: TrainingStatisticDto[];
 };
 
-export type CompensationClassDto = CompensationClass & {
+export type CompensationClassDto = {
+  id: number;
+  name: string;
   compensationValues?: CompensationValueDto[];
 };
 

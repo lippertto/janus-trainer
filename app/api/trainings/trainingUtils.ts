@@ -1,4 +1,4 @@
-import { Course, Training, UserInDb } from '@prisma/client';
+import { Course, Training, UserInDb } from '@/generated/prisma/client';
 import { TrainingDto } from '@/lib/dto';
 
 export function trainingToDto(

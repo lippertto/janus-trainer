@@ -1,9 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { Holiday, Prisma } from '@prisma/client';
-import { ErrorDto } from '@/lib/dto';
-import { handleTopLevelCatch, errorResponse } from '@/lib/helpers-for-api';
-import { allowAnyLoggedIn, allowOnlyAdmins } from '@/lib/helpers-for-api';
+import { Holiday, Prisma } from '@/generated/prisma/client';
+import { ErrorDto, HolidayCreateRequest } from '@/lib/dto';
+import {
+  handleTopLevelCatch,
+  errorResponse,
+  allowAnyLoggedIn,
+  allowOnlyAdmins,
+  validateOrThrow,
+} from '@/lib/helpers-for-api';
 
 export type HolidayQueryResult = {
   value: Holiday[];
@@ -61,9 +66,10 @@ export async function GET(
 async function doPOST(request: NextRequest) {
   await allowOnlyAdmins(request);
 
-  const body = await request.json();
-  const createInput: Prisma.HolidayCreateInput =
-    Prisma.validator<Prisma.HolidayCreateInput>()(body);
+  const createInput: Prisma.HolidayCreateInput = await validateOrThrow(
+    HolidayCreateRequest,
+    await request.json(),
+  );
 
   const holiday = await prisma.holiday.create({ data: createInput });
 

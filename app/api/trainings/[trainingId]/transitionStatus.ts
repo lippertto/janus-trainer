@@ -1,6 +1,11 @@
 import prisma from '@/lib/prisma';
 import { ApiErrorConflict, ApiErrorNotFound } from '@/lib/helpers-for-api';
-import { Course, Training, TrainingStatus, UserInDb } from '@prisma/client';
+import {
+  Course,
+  Training,
+  TrainingStatus,
+  UserInDb,
+} from '@/generated/prisma/client';
 
 export async function transitionStatus(
   id: number,

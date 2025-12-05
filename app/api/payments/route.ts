@@ -11,7 +11,7 @@ import {
 } from '@/lib/helpers-for-api';
 import prisma from '@/lib/prisma';
 import dayjs from 'dayjs';
-import { Payment, UserInDb } from '@prisma/client';
+import { Payment, UserInDb } from '@/generated/prisma/client';
 import { logger } from '@/lib/logging';
 
 async function createPayment(

@@ -1,5 +1,5 @@
 import prisma from '../lib/prisma';
-import { DayOfWeek, CostCenter } from '@prisma/client';
+import { DayOfWeek, CostCenter } from '../generated/prisma/client';
 
 async function resetIdCounter(tableName: string) {
   return prisma.$queryRawUnsafe(`

@@ -16,8 +16,8 @@ import FastForwardIcon from '@mui/icons-material/FastForward';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 
 import Tooltip from '@mui/material/Tooltip';
-import { Holiday, TrainingStatus } from '@prisma/client';
-import { TrainingDto, TrainingDuplicateDto } from '@/lib/dto';
+import { TrainingStatus } from '@/generated/prisma/enums';
+import { HolidayDto, TrainingDto, TrainingDuplicateDto } from '@/lib/dto';
 import {
   centsToHumanReadable,
   dateToHumanReadable,
@@ -30,7 +30,7 @@ require('dayjs/locale/de');
 dayjs.locale('de');
 
 function buildGridColumns(
-  holidays: Holiday[],
+  holidays: HolidayDto[],
   duplicates: TrainingDuplicateDto[],
   handleApproveClick: { (id: GridRowId): () => void },
   handleRevokeClick: { (id: GridRowId): () => void },
@@ -169,7 +169,7 @@ function buildGridColumns(
  */
 export function TrainingTable(props: {
   /** List of holidays used to highlight collisions */
-  holidays: Holiday[];
+  holidays: HolidayDto[];
   getTrainings: () => TrainingDto[];
   getDuplicates: (trainingIds: number[]) => TrainingDuplicateDto[];
   setSelectedTraining: (v: TrainingDto | null) => void;

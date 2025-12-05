@@ -10,7 +10,7 @@ import {
   GridEventListener,
   GridRenderCellParams,
 } from '@mui/x-data-grid';
-import { DayOfWeek } from '@prisma/client';
+import { DayOfWeek } from '@/generated/prisma/enums';
 import Box from '@mui/system/Box';
 import React from 'react';
 import LockIcon from '@mui/icons-material/Lock';

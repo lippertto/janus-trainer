@@ -7,7 +7,7 @@ import {
   TrainingDto,
 } from '@/lib/dto';
 import superagent from 'superagent';
-import { DayOfWeek, TrainingStatus } from '@prisma/client';
+import { DayOfWeek, TrainingStatus } from '@/generated/prisma/enums';
 
 export const USER_ID_ADMIN = '502c79bc-e051-70f5-048c-5619e49e2383';
 export const USER_ID_TRAINER = '80ac598c-e0b1-7040-5e0e-6fd257a53699';

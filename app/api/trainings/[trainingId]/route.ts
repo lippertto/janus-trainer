@@ -27,7 +27,7 @@ import { logger } from '@/lib/logging';
 import { sendEmail } from '@/lib/email';
 import { User } from 'next-auth';
 import { centsToHumanReadable } from '@/lib/formatters';
-import { Course, Training, UserInDb } from '@prisma/client';
+import { Course, Training, UserInDb } from '@/generated/prisma/client';
 
 async function checkIfTrainingExistsAndIsOwn(
   id: number,

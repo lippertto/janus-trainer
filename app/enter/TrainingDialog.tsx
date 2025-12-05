@@ -5,7 +5,7 @@ import {
   TrainingCreateRequest,
   TrainingDto,
 } from '@/lib/dto';
-import { DayOfWeek } from '@prisma/client';
+import { DayOfWeek } from '@/generated/prisma/enums';
 import { dateToHumanReadable } from '@/lib/formatters';
 import { useConfirm } from 'material-ui-confirm';
 import { TrainingDialogContentForCourse } from '@/app/enter/TrainingDialogContentForCourse';

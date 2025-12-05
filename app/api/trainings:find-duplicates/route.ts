@@ -13,7 +13,7 @@ import {
   TrainingDuplicatResponse,
 } from '@/lib/dto';
 import prisma from '@/lib/prisma';
-import { Prisma } from '@prisma/client';
+import { Prisma } from '@/generated/prisma/client';
 
 async function findDuplicatesInDatabase(
   ids: number[],

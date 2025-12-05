@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { Course } from '@prisma/client';
+import { Course } from '@/generated/prisma/client';
 import {
   CourseCreateRequest,
   CourseDto,

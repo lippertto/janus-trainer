@@ -19,20 +19,19 @@ import {
   CompensationDto,
   CompensationValueDto,
   CourseDto,
-  CostCenterDto,
+  HolidayDto,
   LoginInfo,
   PaymentDto,
   TrainingStatisticDto,
   UserDto,
 } from '@/lib/dto';
-import { Holiday } from '@prisma/client';
 import { CURRENT_PAYMENT_ID } from '@/app/compensate/PaymentSelection';
 
 const ONE_MINUTE = 60 * 1000;
 const TEN_MINUTES = 10 * 60 * 1000;
 
 function holidaysQueryFunction(accessToken: string, years: number[]) {
-  return fetchListFromApi<Holiday>(
+  return fetchListFromApi<HolidayDto>(
     `${API_HOLIDAYS}?year=${years.map((y) => y.toString()).join(',')}`,
     accessToken,
   );
