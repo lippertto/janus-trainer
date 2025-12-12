@@ -1,8 +1,8 @@
 # File from https://github.com/vercel/next.js/blob/canary/examples/with-docker/Dockerfile
 # Changes are marked with TLT
 
-# TLT - changed node version to 22
-FROM node:22-alpine AS base
+# TLT - changed node version to 24
+FROM node:24-alpine AS base
 
 # Install dependencies only when needed
 FROM base AS deps
