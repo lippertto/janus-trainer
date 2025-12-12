@@ -14,7 +14,7 @@ jobs:
       aws-ecr-key: ${{ secrets.AWS_ECR_KEY }}
       aws-ecr-secret-access-key: ${{ secrets.AWS_ECR_SECRET_ACCESS_KEY }}
 
-  deploy-prod:
+  deploy-cloudformation-prod:
     uses: ./.github/workflows/deploy-cloudformation.yaml
     needs:
       - check
