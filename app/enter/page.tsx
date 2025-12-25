@@ -40,6 +40,11 @@ import {
   trainingQueryForEnterScreen,
   trainingUpdateQuery,
 } from '@/app/enter/queries';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import Button from '@mui/material/Button';
 
 function EnterPageContents(props: { session: JanusSession }) {
   const { session } = props;
@@ -60,6 +65,8 @@ function EnterPageContents(props: { session: JanusSession }) {
   const [endDate, setEndDate] = React.useState<dayjs.Dayjs>(
     LAST_DAY_OF_THIS_QUARTER,
   );
+
+  const [showAlert, setShowAlert] = React.useState<boolean>(false);
 
   const { data: courses } = coursesForTrainerSuspenseQuery(
     session.userId,
@@ -159,13 +166,32 @@ function EnterPageContents(props: { session: JanusSession }) {
           right: 16,
         }}
         onClick={() => {
-          setTrainingToEdit(null);
-          setShowTrainingDialog(true);
+          // setTrainingToEdit(null);
+          // setShowTrainingDialog(true);
+          setShowAlert(true);
         }}
         data-testid="enter-training-button"
       >
         <AddIcon />
       </Fab>
+
+      <Dialog
+        open={showAlert}
+        onClose={() => {
+          setShowAlert(false);
+        }}
+      >
+        <DialogContent>
+          <DialogContentText>
+            Du kannst aktuell keine neuen Stunden buchen, da die Pauschalen
+            umgestellt werden. Voraussichtlich kannst du ab 16. Januar wieder
+            Stunden eintragen.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setShowAlert(false)}>Okay</Button>
+        </DialogActions>
+      </Dialog>
 
       <TrainingDialog
         open={showTrainingDialog}
