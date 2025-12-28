@@ -28,7 +28,7 @@ export default function ConfigureLayout({
     case '/analyze/yearly-totals':
       value = 0;
       break;
-    case '/analyze/count-per-course':
+    case '/analyze/count-per-cost-center':
       value = 1;
       break;
     default:
@@ -49,7 +49,7 @@ export default function ConfigureLayout({
             label="Nach Kostenstelle"
             value={1}
             component={Link}
-            href={'/analyze/count-per-course'}
+            href={'/analyze/count-per-cost-center'}
           />
         </Tabs>
         <Box sx={{ m: 2 }}>
