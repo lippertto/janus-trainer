@@ -10,7 +10,7 @@ import {
 import {
   ErrorDto,
   TrainingDuplicateDto,
-  TrainingDuplicatResponse,
+  TrainingDuplicateResponse,
 } from '@/lib/dto';
 import prisma from '@/lib/prisma';
 import { Prisma } from '@/generated/prisma/client';
@@ -57,7 +57,7 @@ function extractTrainingIds(searchParams: URLSearchParams): number[] {
 
 export async function POST(
   nextRequest: NextRequest,
-): Promise<NextResponse<TrainingDuplicatResponse | ErrorDto>> {
+): Promise<NextResponse<TrainingDuplicateResponse | ErrorDto>> {
   try {
     const trainingIds = extractTrainingIds(nextRequest.nextUrl.searchParams);
     if (trainingIds.length === 0) {

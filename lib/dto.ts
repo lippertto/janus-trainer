@@ -411,7 +411,7 @@ export type TrainingDuplicateDto = {
   duplicateCourseName: string;
 };
 
-export type TrainingDuplicatResponse = {
+export type TrainingDuplicateResponse = {
   value: TrainingDuplicateDto[];
 };
 
