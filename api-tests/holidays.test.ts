@@ -1,8 +1,7 @@
 import superagent from 'superagent';
 import { HolidayCreateRequest, HolidayDto } from '@/lib/dto';
 import { describe, expect, test } from 'vitest';
-
-const SERVER = 'http://localhost:3000';
+import { SERVER } from '@/api-tests/apiTestUtils';
 
 describe('/holidays', () => {
   test('create update delete', async () => {

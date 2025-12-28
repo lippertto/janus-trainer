@@ -1,9 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import superagent from 'superagent';
 import { CourseDto } from '@/lib/dto';
-import { LocalApi } from './apiTestUtils';
-
-const SERVER = 'http://localhost:3000';
+import { LocalApi, SERVER } from './apiTestUtils';
 
 async function deleteCostCenter(id: number) {
   await superagent.delete(`${SERVER}/api/cost-centers/${id}`);

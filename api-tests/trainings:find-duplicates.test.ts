@@ -2,6 +2,7 @@ import superagent from 'superagent';
 import {
   COURSE_1_NAME,
   LocalApi,
+  SERVER,
   USER_ID_ADMIN,
   USER_ID_TRAINER,
   USER_NAME_ADMIN,
@@ -9,7 +10,6 @@ import {
 } from './apiTestUtils';
 import { describe, expect, test } from 'vitest';
 
-const SERVER = 'http://localhost:3000';
 const api = new LocalApi(SERVER);
 
 describe('/trainings:find-duplicates', () => {

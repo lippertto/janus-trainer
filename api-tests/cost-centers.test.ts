@@ -2,8 +2,7 @@ import superagent from 'superagent';
 import { CostCenterDto, CostCenterUpdateRequest } from '@/lib/dto';
 import { describe, expect, test } from 'vitest';
 import { LocalApi } from './apiTestUtils';
-
-const SERVER = 'http://localhost:3000';
+import { SERVER } from './apiTestUtils';
 
 describe('/cost-centers', () => {
   test('CRUD roundtrip', async () => {

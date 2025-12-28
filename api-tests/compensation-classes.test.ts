@@ -5,8 +5,7 @@ import {
 } from '@/lib/dto';
 import { v4 as uuidv4 } from 'uuid';
 import { describe, expect, test } from 'vitest';
-
-const SERVER = 'http://localhost:3000';
+import { SERVER } from './apiTestUtils';
 
 describe('/compensation-classes', () => {
   test('created entities can be retrieved', async () => {

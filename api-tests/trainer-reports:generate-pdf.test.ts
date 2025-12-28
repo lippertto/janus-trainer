@@ -2,14 +2,13 @@ import {
   COURSE_1_ID,
   COURSE_2_ID,
   LocalApi,
+  SERVER,
   USER_ID_TRAINER,
 } from './apiTestUtils';
 import superagent from 'superagent';
 import { TrainingStatus } from '@/generated/prisma/client';
 import { describe, expect, test } from 'vitest';
-
-const SERVER = 'http://localhost:3000';
-const api = new LocalApi(SERVER);
+const api = new LocalApi();
 
 describe('/trainer-reports:generate-pdf', () => {
   test('happy case', async () => {
