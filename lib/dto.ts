@@ -427,3 +427,21 @@ export type TrainerReportDto = {
   periodStart: string;
   periodEnd: string;
 };
+
+export type ConfigurationValueDto = {
+  key: string;
+  value: string;
+};
+
+export type ConfigurationValueListResponse = {
+  value: ConfigurationValueDto[];
+};
+
+export class ConfigurationValueUpdateRequest {
+  @IsString()
+  value: string;
+
+  constructor(obj: any) {
+    Object.assign(this, obj);
+  }
+}
