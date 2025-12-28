@@ -12,6 +12,10 @@ import {
   CompensationClassUpdateRequest,
 } from '@/lib/dto';
 
+type FormData = {
+  name: string;
+};
+
 export default function CompensationClassDialog(props: {
   open: boolean;
   toEdit: CompensationClassDto | null;
@@ -21,9 +25,6 @@ export default function CompensationClassDialog(props: {
   const [previousValue, setPreviousValue] =
     React.useState<CompensationClassDto | null>();
 
-  type FormData = {
-    name: string;
-  };
   const {
     register,
     handleSubmit,
