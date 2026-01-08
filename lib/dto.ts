@@ -354,6 +354,8 @@ export type TrainingStatisticDto = {
   trainerId?: string;
   trainerName?: string;
   costCenterName?: string;
+  courseId?: number;
+  courseName?: string;
 
   trainingCountQ1: number;
   trainingCountQ2: number;
