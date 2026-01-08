@@ -31,6 +31,9 @@ export default function ConfigureLayout({
     case '/analyze/count-per-cost-center':
       value = 1;
       break;
+    case '/analyze/per-course':
+      value = 2;
+      break;
     default:
       value = 0;
   }
@@ -50,6 +53,12 @@ export default function ConfigureLayout({
             value={1}
             component={Link}
             href={'/analyze/count-per-cost-center'}
+          />
+          <Tab
+            label="Nach Kurs"
+            value={2}
+            component={Link}
+            href={'/analyze/per-course'}
           />
         </Tabs>
         <Box sx={{ m: 2 }}>
