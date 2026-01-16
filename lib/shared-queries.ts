@@ -8,6 +8,7 @@ import {
   API_COMPENSATION_CLASSES,
   API_COMPENSATION_VALUES,
   API_COMPENSATIONS,
+  API_CONFIGURATION,
   API_COURSES,
   API_HOLIDAYS,
   API_PAYMENTS,
@@ -18,6 +19,7 @@ import {
   CompensationClassDto,
   CompensationDto,
   CompensationValueDto,
+  ConfigurationValueDto,
   CourseDto,
   HolidayDto,
   LoginInfo,
@@ -26,6 +28,7 @@ import {
   UserDto,
 } from '@/lib/dto';
 import { CURRENT_PAYMENT_ID } from '@/app/compensate/PaymentSelection';
+import { ConfigKey } from '@/app/api/configuration/configuration';
 
 const ONE_MINUTE = 60 * 1000;
 const TEN_MINUTES = 10 * 60 * 1000;
@@ -134,14 +137,14 @@ export function userSuspenseQuery(
 export function trainingStatisticsSuspenseQuery(
   accessToken: string,
   year: number,
-  groupBy: 'trainer' | 'cost-center',
+  groupBy: 'trainer' | 'cost-center' | 'course',
 ) {
   const params = new URLSearchParams();
   params.append('year', year.toString());
   params.append('groupBy', groupBy);
 
   return useSuspenseQuery({
-    queryKey: [API_TRAINING_STATISTICS, year],
+    queryKey: [API_TRAINING_STATISTICS, `year=${year}`, `groupBy=${groupBy}`],
     queryFn: () =>
       fetchListFromApi<TrainingStatisticDto>(
         `${API_TRAINING_STATISTICS}?${params.toString()}`,
@@ -250,6 +253,36 @@ export function loginInfoSuspenseQuery(accessToken: string, userId: string) {
         );
       }
       return (await response.json()) as LoginInfo;
+    },
+    staleTime: TEN_MINUTES,
+  });
+}
+
+export function getMaxCentsPerYearQuery(accessToken: string | null) {
+  return useSuspenseQuery({
+    queryKey: [API_CONFIGURATION, ConfigKey.MAX_COMPENSATION_CENTS_PER_YEAR],
+    queryFn: async () => {
+      const ck = await fetchSingleEntity<ConfigurationValueDto>(
+        API_CONFIGURATION,
+        ConfigKey.MAX_COMPENSATION_CENTS_PER_YEAR,
+        accessToken!,
+      );
+      return parseInt(ck.value);
+    },
+    staleTime: TEN_MINUTES,
+  });
+}
+
+export function getMaxTrainingsPerCourseQuery(accessToken: string | null) {
+  return useSuspenseQuery({
+    queryKey: [API_CONFIGURATION, ConfigKey.MAX_TRAININGS_PER_COURSE],
+    queryFn: async () => {
+      const ck = await fetchSingleEntity<ConfigurationValueDto>(
+        API_CONFIGURATION,
+        ConfigKey.MAX_TRAININGS_PER_COURSE,
+        accessToken!,
+      );
+      return parseInt(ck.value);
     },
     staleTime: TEN_MINUTES,
   });

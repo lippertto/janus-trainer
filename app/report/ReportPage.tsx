@@ -14,7 +14,13 @@ import List from '@mui/material/List';
 import ListItemText from '@mui/material/ListItemText';
 import { CircularProgress } from '@mui/material';
 
-function ReportCourseList(props: { courses: TrainerReportCourseDto[] }) {
+function ReportCourseList(props: {
+  courses: TrainerReportCourseDto[];
+  getMaxTrainingsPerCourse: () => number;
+}) {
+  const maxTrainings = props.getMaxTrainingsPerCourse();
+  const moreThanAllowed = props.courses.length > maxTrainings;
+
   return (
     <List>
       {props.courses.map((c) => {
@@ -28,7 +34,10 @@ function ReportCourseList(props: { courses: TrainerReportCourseDto[] }) {
           <ListItemText
             primary={c.courseName}
             key={c.courseId}
-            secondary={`${trainingCount} Einheiten, ${compensationValueText}`}
+            secondary={`${trainingCount} / ${maxTrainings} Einheiten, ${compensationValueText}`}
+            slotProps={{
+              secondary: { color: moreThanAllowed ? 'orange' : undefined },
+            }}
           />
         );
       })}
@@ -43,6 +52,8 @@ export function ReportPage(props: {
   setEndDate: (v: dayjs.Dayjs) => void;
   getReportCourses: () => TrainerReportCourseDto[];
   handleDownloadClick: () => Promise<void>;
+  getMaxCentsPerYear: () => number;
+  getMaxTrainingsPerCourse: () => number;
 }) {
   const { startDate, endDate } = { ...props };
 
@@ -64,11 +75,12 @@ export function ReportPage(props: {
     endDate.isSame(startDate.endOf('year'));
 
   let maxValue = '';
+  let moreThanAllowed = false;
   if (isOneYear) {
-    maxValue = ' / ' + currencyFormatter(3000);
+    const maxCents = props.getMaxCentsPerYear();
+    maxValue = ' / ' + currencyFormatter(maxCents / 100.0);
+    moreThanAllowed = totalCompensation >= maxCents;
   }
-
-  const moreThan3000 = totalCompensation >= 3000 * 100;
 
   return (
     <Box padding={2}>
@@ -125,7 +137,7 @@ export function ReportPage(props: {
             <Typography variant="h6">Gesamt</Typography>
 
             <Typography>Gesamtanzahl Trainings: {trainingCount}</Typography>
-            <Typography sx={{ color: moreThan3000 ? 'orange' : undefined }}>
+            <Typography sx={{ color: moreThanAllowed ? 'orange' : undefined }}>
               Gesamtvergütung: {value}
               {maxValue}
             </Typography>
@@ -135,7 +147,10 @@ export function ReportPage(props: {
           <Box padding={2}>
             <Typography variant="h6">Pro Kurs</Typography>
 
-            <ReportCourseList courses={courses} />
+            <ReportCourseList
+              courses={courses}
+              getMaxTrainingsPerCourse={props.getMaxTrainingsPerCourse}
+            />
           </Box>
         </Paper>
       </Stack>

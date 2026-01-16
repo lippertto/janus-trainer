@@ -18,13 +18,7 @@ function Table(props: { totals: TrainingStatisticDto[] }) {
   const trainingCountWidth = 50;
 
   return (
-    <Box
-      sx={{
-        '.training-count-warning': {
-          backgroundColor: '#ff943975',
-        },
-      }}
-    >
+    <Box>
       <DataGrid
         rows={props.totals}
         getRowId={(row) => row.costCenterName!}

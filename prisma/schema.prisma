@@ -1,6 +1,6 @@
 generator client {
   provider = "prisma-client"
-  output = "../generated/prisma"
+  output   = "../generated/prisma"
 }
 
 datasource db {
@@ -69,7 +69,8 @@ model UserInDb {
   termsAcceptedAt      DateTime? @db.Timestamptz()
   termsAcceptedVersion String?
 
-  payments Payment[]
+  payments   Payment[]
+  appConfigs AppConfig[]
 
   // We want the table to be called User
   @@map("User")
@@ -141,4 +142,14 @@ model Payment {
   createdById String
 
   trainings Training[]
+}
+
+model AppConfig {
+  id          Int      @id @default(autoincrement())
+  key         String   @unique
+  value       String
+  updatedAt   DateTime @updatedAt
+
+  updatedBy   UserInDb @relation(fields: [updatedById], references: [id])
+  updatedById String
 }

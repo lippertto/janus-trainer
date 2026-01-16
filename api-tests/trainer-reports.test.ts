@@ -4,6 +4,7 @@ import {
   COURSE_2_ID,
   COURSE_2_NAME,
   LocalApi,
+  SERVER,
   USER_ID_TRAINER,
   USER_NAME_TRAINER,
 } from './apiTestUtils';
@@ -12,8 +13,7 @@ import { TrainerReportDto } from '@/lib/dto';
 import { TrainingStatus } from '@/generated/prisma/client';
 import { describe, expect, test } from 'vitest';
 
-const SERVER = 'http://localhost:3000';
-const api = new LocalApi(SERVER);
+const api = new LocalApi();
 
 describe('/trainer-reports', () => {
   test('no trainings in period', async () => {

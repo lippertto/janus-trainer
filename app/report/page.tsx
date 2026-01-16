@@ -10,6 +10,10 @@ import {
   downloadTrainerReport,
   queryTrainerReport,
 } from '@/app/report/queries';
+import {
+  getMaxCentsPerYearQuery,
+  getMaxTrainingsPerCourseQuery,
+} from '@/lib/shared-queries';
 
 export default function ReportPageContainer() {
   const [startDate, setStartDate] = React.useState(dayjs().startOf('year'));
@@ -17,13 +21,6 @@ export default function ReportPageContainer() {
 
   const { data, status: authenticationStatus } = useSession();
   const session = data as JanusSession;
-
-  if (authenticationStatus !== 'authenticated') {
-    return <LoginRequired authenticationStatus={authenticationStatus} />;
-  }
-  if (!session) {
-    return <LoadingSpinner />;
-  }
 
   const getReportCourses = () => {
     return queryTrainerReport(
@@ -49,14 +46,26 @@ export default function ReportPageContainer() {
     window.URL.revokeObjectURL(objectUrl);
   };
 
-  return (
-    <ReportPage
-      startDate={startDate}
-      setStartDate={setStartDate}
-      endDate={endDate}
-      setEndDate={setEndDate}
-      getReportCourses={getReportCourses}
-      handleDownloadClick={handleDownloadClick}
-    />
-  );
+  if (authenticationStatus !== 'authenticated') {
+    return <LoginRequired authenticationStatus={authenticationStatus} />;
+  } else if (!session) {
+    return <LoadingSpinner />;
+  } else {
+    return (
+      <ReportPage
+        startDate={startDate}
+        setStartDate={setStartDate}
+        endDate={endDate}
+        setEndDate={setEndDate}
+        getReportCourses={getReportCourses}
+        handleDownloadClick={handleDownloadClick}
+        getMaxCentsPerYear={() =>
+          getMaxCentsPerYearQuery(session.accessToken).data
+        }
+        getMaxTrainingsPerCourse={() =>
+          getMaxTrainingsPerCourseQuery(session.accessToken).data
+        }
+      />
+    );
+  }
 }

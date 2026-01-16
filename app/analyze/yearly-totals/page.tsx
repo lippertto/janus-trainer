@@ -4,7 +4,10 @@ import { useSession } from 'next-auth/react';
 import type { JanusSession } from '@/lib/auth';
 import LoginRequired from '@/components/LoginRequired';
 import React, { useState } from 'react';
-import { trainingStatisticsSuspenseQuery } from '@/lib/shared-queries';
+import {
+  getMaxCentsPerYearQuery,
+  trainingStatisticsSuspenseQuery,
+} from '@/lib/shared-queries';
 import YearlyTotalsTable from '@/app/analyze/yearly-totals/YearlyTotalsTable';
 import Stack from '@mui/material/Stack';
 import { DatePicker } from '@mui/x-date-pickers';
@@ -20,6 +23,8 @@ function AnalyzePageContents(props: { accessToken: string }) {
     'trainer',
   );
 
+  const { data: maxCentsPerYear } = getMaxCentsPerYearQuery(props.accessToken);
+
   return (
     <Stack>
       <DatePicker
@@ -34,7 +39,10 @@ function AnalyzePageContents(props: { accessToken: string }) {
         }}
         sx={{ mb: 3, width: 140 }}
       />
-      <YearlyTotalsTable totals={yearlySummaries} />
+      <YearlyTotalsTable
+        totals={yearlySummaries}
+        maxCentsPerYear={maxCentsPerYear}
+      />
     </Stack>
   );
 }

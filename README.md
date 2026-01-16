@@ -41,6 +41,7 @@ Then, run `yarn vitest -c api-tests/vite.config.js`
 - Run API tests in CI
 - Send logs to AWS
 - Think about auditing table
+- Use Number Field for numbers: https://mui.com/material-ui/react-number-field/
 
 # Common tasks
 

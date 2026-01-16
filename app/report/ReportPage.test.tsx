@@ -34,6 +34,8 @@ describe('ReportPage', () => {
             setEndDate={vi.fn()}
             getReportCourses={() => courses}
             handleDownloadClick={handleDownloadClick}
+            getMaxTrainingsPerCourse={() => 42}
+            getMaxCentsPerYear={() => 300000}
           />
         </LocalizationProvider>
       </SnackbarProvider>,
@@ -67,6 +69,8 @@ describe('ReportPage', () => {
             setEndDate={vi.fn()}
             getReportCourses={() => courses}
             handleDownloadClick={handleDownloadClick}
+            getMaxTrainingsPerCourse={() => 42}
+            getMaxCentsPerYear={() => 300000}
           />
         </LocalizationProvider>
       </SnackbarProvider>,

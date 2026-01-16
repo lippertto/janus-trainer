@@ -354,6 +354,8 @@ export type TrainingStatisticDto = {
   trainerId?: string;
   trainerName?: string;
   costCenterName?: string;
+  courseId?: number;
+  courseName?: string;
 
   trainingCountQ1: number;
   trainingCountQ2: number;
@@ -411,7 +413,7 @@ export type TrainingDuplicateDto = {
   duplicateCourseName: string;
 };
 
-export type TrainingDuplicatResponse = {
+export type TrainingDuplicateResponse = {
   value: TrainingDuplicateDto[];
 };
 
@@ -427,3 +429,21 @@ export type TrainerReportDto = {
   periodStart: string;
   periodEnd: string;
 };
+
+export type ConfigurationValueDto = {
+  key: string;
+  value: string;
+};
+
+export type ConfigurationValueListResponse = {
+  value: ConfigurationValueDto[];
+};
+
+export class ConfigurationValueUpdateRequest {
+  @IsString()
+  value: string;
+
+  constructor(obj: any) {
+    Object.assign(this, obj);
+  }
+}

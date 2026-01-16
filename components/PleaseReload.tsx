@@ -13,7 +13,8 @@ export default function PleaseReload({
         Etwas ist beim Laden der Seite schiefgelaufen. Bitte neu laden.
       </Typography>
       <Typography>
-        Technische Fehlermeldung: {error.message ?? 'nicht verfügbar'}
+        Technische Fehlermeldung:{' '}
+        {error instanceof Error ? error.message : 'nicht verfügbar'}
       </Typography>
       <Button onClick={resetErrorBoundary}>Neu versuchen</Button>
     </React.Fragment>

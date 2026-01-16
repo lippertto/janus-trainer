@@ -1,4 +1,4 @@
-import { useQuery, useSuspenseQuery } from '@tanstack/react-query';
+import { useSuspenseQuery } from '@tanstack/react-query';
 import {
   API_TRAINER_REPORTS,
   API_TRAINER_REPORTS_GENERATE_PDF,

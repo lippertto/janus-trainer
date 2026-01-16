@@ -17,7 +17,7 @@ import {
 
 async function calculateYearlyTotals(
   year: number,
-  groupBy: 'trainer' | 'cost-center',
+  groupBy: 'trainer' | 'cost-center' | 'course',
 ): Promise<TrainingStatisticDto[]> {
   const startDate = `'${year}-01-01'`;
   const endDate = `'${year}-12-31'`;
@@ -27,9 +27,12 @@ async function calculateYearlyTotals(
   if (groupBy === 'trainer') {
     selectSql = `SELECT "User"."name" AS "trainerName", \n`;
     groupBySql = `GROUP BY "User"."name" \n`;
-  } else {
+  } else if (groupBy === 'cost-center') {
     selectSql = `SELECT "Discipline"."name" AS "costCenterName", \n`;
     groupBySql = `GROUP BY "Discipline"."name" \n`;
+  } else if (groupBy === 'course') {
+    selectSql = `SELECT "Course"."name" AS "courseName", "Course"."id" as "courseId", \n`;
+    groupBySql = `GROUP BY "Course"."id", "Course"."name" \n`;
   }
 
   let query = `
@@ -84,6 +87,8 @@ async function calculateYearlyTotals(
     trainerId: r.trainerName,
     trainerName: r.trainerName,
     costCenterName: r.costCenterName,
+    courseId: r.courseId,
+    courseName: r.courseName,
     trainingCountQ1: Number(r.trainingCountQ1),
     trainingCountQ2: Number(r.trainingCountQ2),
     trainingCountQ3: Number(r.trainingCountQ3),
@@ -108,22 +113,22 @@ export async function POST(
   request: NextRequest,
 ): Promise<NextResponse<TrainingStatisticsResponse | ErrorDto>> {
   try {
-    await allowAnyLoggedIn(request);
+    await allowOnlyAdmins(request);
 
     const groupByParam = request.nextUrl.searchParams.get('groupBy');
     if (!groupByParam) {
       return badRequestResponse('Must provide groupBy parameter');
     }
-    let groupBy: 'trainer' | 'cost-center';
+    let groupBy: 'trainer' | 'cost-center' | 'course';
     if (groupByParam === 'trainer') {
       groupBy = 'trainer';
     } else if (groupByParam === 'cost-center') {
       groupBy = 'cost-center';
+    } else if (groupByParam === 'course') {
+      groupBy = 'course';
     } else {
       return badRequestResponse('Unknown groupBy parameter');
     }
-
-    await allowOnlyAdmins(request);
 
     const yearAsString = request.nextUrl.searchParams.get('year');
     if (!yearAsString) {

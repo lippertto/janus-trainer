@@ -1,6 +1,7 @@
 export const API_COMPENSATIONS = '/api/compensations';
 export const API_COMPENSATION_CLASSES = '/api/compensation-classes';
 export const API_COMPENSATION_VALUES = '/api/compensation-values';
+export const API_CONFIGURATION = '/api/configuration';
 export const API_COURSES = '/api/courses';
 export const API_COST_CENTERS = '/api/cost-centers';
 export const API_HOLIDAYS = '/api/holidays';

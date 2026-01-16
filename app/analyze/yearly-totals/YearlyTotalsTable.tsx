@@ -3,7 +3,7 @@ import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import Box from '@mui/material/Box';
 import { currencyFormatter } from '@/lib/formatters';
 
-function buildColumns(): GridColDef[] {
+function buildColumns(maxCentsPerYear: number): GridColDef[] {
   const compensationCentsWidth = 100; // allows to show 1000,00 €
   const trainingCountWidth = 50;
   return [
@@ -53,7 +53,7 @@ function buildColumns(): GridColDef[] {
       valueGetter: (value) => value / 100,
       valueFormatter: currencyFormatter,
       cellClassName: (params) => {
-        if (params.row.compensationCentsTotal < 3000 * 100) {
+        if (params.row.compensationCentsTotal < maxCentsPerYear) {
           return '';
         } else {
           return 'yearly-total-warning';
@@ -65,6 +65,7 @@ function buildColumns(): GridColDef[] {
 
 export default function YearlyTotalsTable(props: {
   totals: TrainingStatisticDto[];
+  maxCentsPerYear: number;
 }) {
   return (
     <Box
@@ -78,7 +79,7 @@ export default function YearlyTotalsTable(props: {
         rows={props.totals}
         getRowId={(row) => row.trainerId}
         disableRowSelectionOnClick
-        columns={buildColumns()}
+        columns={buildColumns(props.maxCentsPerYear)}
       />
     </Box>
   );
