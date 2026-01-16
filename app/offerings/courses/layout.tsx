@@ -4,7 +4,7 @@ import React, { ErrorInfo } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import PleaseReload from '@/components/PleaseReload';
 
-const logError = (error: Error, info: ErrorInfo) => {
+const logError = (error: unknown, info: ErrorInfo) => {
   console.log(error);
 };
 

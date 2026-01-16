@@ -5,7 +5,7 @@ import { ErrorBoundary, FallbackProps } from 'react-error-boundary';
 import PleaseReload from '@/components/PleaseReload';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 
-const logError = (error: Error, info: ErrorInfo) => {
+const logError = (error: unknown, info: ErrorInfo) => {
   console.log(error);
 };
 

@@ -5,22 +5,9 @@ import { ErrorBoundary, FallbackProps } from 'react-error-boundary';
 import { Typography } from '@mui/material';
 import Button from '@mui/material/Button';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
+import PleaseReload from '@/components/PleaseReload';
 
-function pleaseReload({ error, resetErrorBoundary }: FallbackProps) {
-  return (
-    <React.Fragment>
-      <Typography>
-        Etwas ist beim Laden der Seite schiefgelaufen. Bitte neu laden.
-      </Typography>
-      <Typography>
-        Technische Fehlermeldung: {error.message ?? 'nicht verfügbar'}
-      </Typography>
-      <Button onClick={resetErrorBoundary}>Neu versuchen</Button>
-    </React.Fragment>
-  );
-}
-
-const logError = (error: Error, info: ErrorInfo) => {
+const logError = (error: unknown, info: ErrorInfo) => {
   console.log(error);
 };
 
@@ -31,7 +18,7 @@ export default function ApproveLayout({
 }) {
   return (
     <React.Fragment>
-      <ErrorBoundary fallbackRender={pleaseReload} onError={logError}>
+      <ErrorBoundary fallbackRender={PleaseReload} onError={logError}>
         <Suspense fallback={<LoadingSpinner />}>{children}</Suspense>
       </ErrorBoundary>
     </React.Fragment>

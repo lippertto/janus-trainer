@@ -9,7 +9,7 @@ import { Tab, Tabs } from '@mui/material';
 import Link from '@mui/material/Link';
 import Box from '@mui/system/Box';
 
-const logError = (error: Error, info: ErrorInfo) => {
+const logError = (error: unknown, info: ErrorInfo) => {
   console.log(error);
 };
 
