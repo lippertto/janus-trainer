@@ -1,5 +1,5 @@
 import React from 'react';
-import { HomePage } from '@/app/HomePage';
+import HomePage from './HomePage';
 import { auth } from '@/lib/auth';
 import LoginRequired from '@/components/LoginRequired';
 
@@ -9,7 +9,7 @@ export default async function StartPage() {
   return (
     <div>
       {session ? (
-        <HomePage userId={session.userId} />
+        <HomePage />
       ) : (
         <LoginRequired authenticationStatus={'unauthenticated'} />
       )}
