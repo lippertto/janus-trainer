@@ -29,19 +29,19 @@ Then, run `yarn vitest -c api-tests/vite.config.js`
 
 ## Features
 
-- Warning if booked time != course time
 - Playwright test: enter -> approve -> compensate.
 - Playwright test: duplicates
 - Warning if training limits have been reached
 - include tour for new users: https://github.com/elrumordelaluz/reactour
+- /compensate: Auswahl nach Jahr
 
 ## Tech update
 
 - Join payments and compensation api routes (and domain objects) into /payments/{id}/compensations
 - Run API tests in CI
-- Send logs to AWS
 - Think about auditing table
 - Use Number Field for numbers: https://mui.com/material-ui/react-number-field/
+- Rotate logs (VM)
 
 # Common tasks
 
