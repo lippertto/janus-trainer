@@ -14,6 +14,62 @@ import dayjs from 'dayjs';
 import { Payment, UserInDb } from '@/generated/prisma/client';
 import { logger } from '@/lib/logging';
 
+async function validateAndFetchTrainersWithIban(trainingIds: number[]) {
+  const trainings = await prisma.training.findMany({
+    where: { id: { in: trainingIds } },
+    select: { userId: true },
+  });
+
+  const uniqueTrainerIds = [...new Set(trainings.map((t) => t.userId))];
+
+  const trainers = await prisma.userInDb.findMany({
+    where: { id: { in: uniqueTrainerIds } },
+    select: { id: true, email: true, iban: true },
+  });
+
+  const trainersWithoutIban = trainers.filter((t) => !t.iban);
+  if (trainersWithoutIban.length > 0) {
+    const trainerEmails = trainersWithoutIban.map((t) => t.email).join(', ');
+    throw new ApiErrorBadRequest(
+      `Cannot create payment: The following trainers do not have an IBAN set: ${trainerEmails}`,
+    );
+  }
+
+  return trainers;
+}
+
+async function captureTrainerIbansForPayment(
+  paymentId: number,
+  trainers: Array<{ id: string; iban: string | null }>,
+) {
+  await prisma.paymentUserIban.createMany({
+    data: trainers.map((trainer) => ({
+      paymentId,
+      userId: trainer.id,
+      iban: trainer.iban!,
+    })),
+  });
+}
+
+async function markTrainingsAsCompensated(
+  trainingIds: number[],
+  paymentId: number,
+  compensatedAt: Date,
+) {
+  await prisma.$transaction(
+    trainingIds.map((tid) =>
+      prisma.training.update({
+        where: { id: tid },
+        data: {
+          status: 'COMPENSATED',
+          compensatedAt,
+          paymentId,
+        },
+      }),
+    ),
+  );
+}
+
 async function createPayment(
   userId: string,
   request: PaymentCreateRequest,
@@ -22,25 +78,19 @@ async function createPayment(
   if (!user) {
     throw new ApiErrorBadRequest(`User ${userId} does not exist`);
   }
-  const now = new Date();
-  const paymentData = {
-    createdById: userId,
-    createdAt: now,
-  };
-  const payment = await prisma.payment.create({ data: paymentData });
 
-  await prisma.$transaction(
-    request.trainingIds.map((tid) =>
-      prisma.training.update({
-        where: { id: tid },
-        data: {
-          status: 'COMPENSATED',
-          compensatedAt: new Date(),
-          paymentId: payment.id,
-        },
-      }),
-    ),
-  );
+  const trainers = await validateAndFetchTrainersWithIban(request.trainingIds);
+
+  const now = new Date();
+  const payment = await prisma.payment.create({
+    data: {
+      createdById: userId,
+      createdAt: now,
+    },
+  });
+
+  await captureTrainerIbansForPayment(payment.id, trainers);
+  await markTrainingsAsCompensated(request.trainingIds, payment.id, now);
 
   return {
     id: payment.id,

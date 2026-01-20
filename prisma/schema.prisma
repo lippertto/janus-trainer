@@ -69,8 +69,9 @@ model UserInDb {
   termsAcceptedAt      DateTime? @db.Timestamptz()
   termsAcceptedVersion String?
 
-  payments   Payment[]
-  appConfigs AppConfig[]
+  payments          Payment[]
+  appConfigs        AppConfig[]
+  paymentUserIbans  PaymentUserIban[]
 
   // We want the table to be called User
   @@map("User")
@@ -141,7 +142,23 @@ model Payment {
   createdBy   UserInDb @relation(fields: [createdById], references: [id])
   createdById String
 
-  trainings Training[]
+  trainings         Training[]
+  paymentUserIbans  PaymentUserIban[]
+}
+
+model PaymentUserIban {
+  id Int @id @default(autoincrement())
+
+  paymentId Int
+  payment   Payment @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   UserInDb @relation(fields: [userId], references: [id])
+
+  iban String
+
+  @@unique([paymentId, userId])
+  @@index([paymentId])
 }
 
 model AppConfig {

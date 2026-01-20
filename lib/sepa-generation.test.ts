@@ -20,6 +20,21 @@ describe('Test sepa library', () => {
 
 const TRANSACTIONS =
   '/pain:Document/pain:CstmrCdtTrfInitn/pain:PmtInf/pain:CdtTrfTxInf';
+
+// Helper function to extract creditor IBANs from SEPA XML
+function getCreditorIbansFromSepaXml(sepaXml: string): string[] {
+  const sepaDom = new DOMParser().parseFromString(sepaXml, 'text/xml');
+  const select = xpath.useNamespaces({
+    pain: 'urn:iso:std:iso:20022:tech:xsd:pain.001.001.09',
+  });
+  const creditorAccounts = select(
+    `${TRANSACTIONS}/pain:CdtrAcct/pain:Id/pain:IBAN/text()`,
+    sepaDom,
+    false,
+  ) as any as Node[];
+  return creditorAccounts.map((node) => node.textContent || '');
+}
+
 describe('sepa generation works', () => {
   test('Test sepa generation', () => {
     // GIVEN
@@ -27,8 +42,8 @@ describe('sepa generation works', () => {
       user: {
         id: '4',
         name: 'trainer 1',
-        iban: 'DE11500105171658347596',
       },
+      iban: 'DE11500105171658347596',
       correspondingIds: [1, 2],
       periodStart: '2023-04-01',
       periodEnd: '2023-04-30',
@@ -42,8 +57,8 @@ describe('sepa generation works', () => {
       user: {
         id: '5',
         name: 'trainer 2',
-        iban: 'DE78500105172112588369',
       },
+      iban: 'DE78500105172112588369',
       correspondingIds: [3, 5],
       periodStart: '2023-04-01',
       periodEnd: '2023-04-30',
@@ -89,13 +104,9 @@ describe('sepa generation works', () => {
     expect(creditorNames[0].textContent).toBe('trainer 1');
     expect(creditorNames[1].textContent).toBe('trainer 2');
     // test the IBANs
-    const creditorAccounts = select(
-      `${TRANSACTIONS}/pain:CdtrAcct/pain:Id/pain:IBAN/text()`,
-      sepaDom,
-      false,
-    ) as any as Node[];
-    expect(creditorAccounts).toHaveLength(2);
-    expect(creditorAccounts[0].textContent).toBe('DE11500105171658347596');
-    expect(creditorAccounts[1].textContent).toBe('DE78500105172112588369');
+    const creditorIbans = getCreditorIbansFromSepaXml(sepaXml);
+    expect(creditorIbans).toHaveLength(2);
+    expect(creditorIbans[0]).toBe('DE11500105171658347596');
+    expect(creditorIbans[1]).toBe('DE78500105172112588369');
   });
 });

@@ -155,12 +155,18 @@ export type ErrorDto = {
   error: ErrorDetail;
 };
 
+/**
+ * Represents compensation data for a trainer.
+ * IBAN is at the top level (not in user object) because it represents
+ * the historical IBAN value at the time of payment creation, captured
+ * from PaymentUserIban table. This may differ from the user's current IBAN.
+ */
 export type CompensationDto = {
   user: {
     id: string;
     name: string;
-    iban: string;
   };
+  iban: string;
   totalCompensationCents: number;
   totalTrainings: number;
   correspondingIds: number[];

@@ -24,9 +24,6 @@ Then, run `yarn vitest -c api-tests/vite.config.js`
 
 ## Bugs
 
-- Current IBAN is used in payments, not the one that was used for the actual
-  payment. This should be fixed, e.g., by using historized ibans.
-
 ## Features
 
 - Playwright test: enter -> approve -> compensate.
