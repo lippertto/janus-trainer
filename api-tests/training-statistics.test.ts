@@ -1,4 +1,4 @@
-import { LocalApi, SERVER } from './apiTestUtils';
+import { LocalApi, SERVER, USER_ID_TRAINER } from './apiTestUtils';
 import superagent from 'superagent';
 import { TrainingCountPerCourse, TrainingDto } from '@/lib/dto';
 import { TrainingStatus } from '@/generated/prisma/client';
@@ -50,4 +50,58 @@ test('happy case: group by cost-center', async () => {
       }),
     ]),
   );
+});
+
+test('deduplicates trainings when multiple trainers work on the same day for the same course', async () => {
+  await api.clearTrainings();
+
+  // Scenario: Two trainers both work on course 1 on the same dates (co-teaching)
+  // Trainer 1 (default admin trainer)
+  const trainer1Trainings = [
+    await api.createTraining({ date: '2024-01-15', courseId: 1 }), // Q1
+    await api.createTraining({ date: '2024-05-10', courseId: 1 }), // Q2
+    await api.createTraining({ date: '2024-09-20', courseId: 1 }), // Q3
+  ];
+
+  // Trainer 2 works on the SAME dates (uses predefined trainer user ID)
+  const trainer2Trainings = [
+    await api.createTraining({
+      date: '2024-01-15',
+      courseId: 1,
+      userId: USER_ID_TRAINER,
+    }), // Q1 - same date as trainer1
+    await api.createTraining({
+      date: '2024-05-10',
+      courseId: 1,
+      userId: USER_ID_TRAINER,
+    }), // Q2 - same date as trainer1
+    await api.createTraining({
+      date: '2024-09-20',
+      courseId: 1,
+      userId: USER_ID_TRAINER,
+    }), // Q3 - same date as trainer1
+  ];
+
+  await compensateTrainings([...trainer1Trainings, ...trainer2Trainings]);
+
+  // Test grouping by course - should count 3 unique dates, not 6 trainings
+  const resultByCourse = await superagent.post(
+    `${SERVER}/api/training-statistics?year=2024&groupBy=course`,
+  );
+  expect(resultByCourse.statusCode).toBe(200);
+
+  const dataByCourse = resultByCourse.body as { value: TrainingCountPerCourse };
+  expect(dataByCourse.value).toHaveLength(1);
+  expect(dataByCourse.value[0]).toMatchObject({
+    courseId: 1,
+    trainingCountQ1: 1, // Only 1 unique date in Q1 (2024-01-15)
+    trainingCountQ2: 1, // Only 1 unique date in Q2 (2024-05-10)
+    trainingCountQ3: 1, // Only 1 unique date in Q3 (2024-09-20)
+    trainingCountQ4: 0,
+    trainingCountTotal: 3, // Total of 3 unique training sessions
+  });
+
+  // Compensation should still count both trainers (6 total compensations)
+  // This ensures we're only deduplicating the training count, not the compensation
+  expect(dataByCourse.value[0].compensationCentsTotal).toBeGreaterThan(0);
 });

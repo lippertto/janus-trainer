@@ -89,7 +89,11 @@ export function TrainerStatistics({
             </Box>
             <List dense>
               {data.courses.map((course) => {
-                const trainingCount = course.trainings.length;
+                // Count distinct dates to handle cases where multiple trainers work on the same day
+                const uniqueDates = new Set(
+                  course.trainings.map((t) => t.date),
+                );
+                const trainingCount = uniqueDates.size;
                 return (
                   <ListItemText
                     key={course.courseId}

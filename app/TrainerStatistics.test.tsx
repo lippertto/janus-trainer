@@ -181,4 +181,53 @@ describe('TrainerStatistics', () => {
       expect(container).toHaveTextContent(`Statistiken ${currentYear}`);
     });
   });
+
+  test('deduplicates trainings when multiple trainers work on the same day', async () => {
+    // Scenario: Two trainers (A and B) both worked on the same course on the same dates
+    // The trainer report for Trainer A includes their trainings, but some dates overlap
+    // with when Trainer B also worked (co-teaching scenario)
+    const mockReport: TrainerReportDto = {
+      trainerName: 'Trainer A',
+      periodStart: '2026-01-01',
+      periodEnd: '2026-12-31',
+      courses: [
+        {
+          courseId: 1,
+          courseName: 'Co-taught Course',
+          trainings: [
+            // Same date appears multiple times (e.g., if this trainer and another trainer both taught)
+            { date: '2026-01-15', compensationCents: 5000 },
+            { date: '2026-01-15', compensationCents: 5000 }, // Duplicate date - same lesson, different trainer
+            { date: '2026-01-22', compensationCents: 5000 },
+            { date: '2026-01-29', compensationCents: 5000 },
+            { date: '2026-01-29', compensationCents: 5000 }, // Duplicate date - same lesson, different trainer
+          ],
+        },
+      ],
+    };
+
+    const { container } = render(
+      <Suspense fallback={<div>Loading...</div>}>
+        <TrainerStatistics
+          trainerReportQueryFn={async () => mockReport}
+          configurationQueryFn={async () => mockConfiguration}
+          userId="test-user-id"
+          year={2026}
+        />
+      </Suspense>,
+      { wrapper: createWrapper() },
+    );
+
+    // Total compensation should count all entries: 5 * 5000 = 25000 cents = 250.00 EUR
+    await waitFor(() => {
+      expect(container).toHaveTextContent(
+        'Gesamtvergütung: 250,00 € / 3.000,00 €',
+      );
+    });
+
+    // Training count should only show 3 unique dates (2026-01-15, 2026-01-22, 2026-01-29)
+    // not 5 trainings
+    expect(screen.getByText('Co-taught Course')).toBeInTheDocument();
+    expect(screen.getByText('3 / 44 Einheiten')).toBeInTheDocument();
+  });
 });
