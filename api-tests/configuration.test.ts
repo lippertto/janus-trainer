@@ -3,7 +3,7 @@ import superagent from 'superagent';
 import { SERVER } from './apiTestUtils';
 import { ConfigurationValueDto } from '@/lib/dto';
 
-const SOME_CONFIG_KEY = 'max-courses-per-year';
+const SOME_CONFIG_KEY = 'max-trainings-per-course';
 
 describe('/configuration', () => {
   test('Gets all configuration values', async () => {
