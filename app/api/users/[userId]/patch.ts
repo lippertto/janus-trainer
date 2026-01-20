@@ -6,6 +6,8 @@ export function patchRequestToUpdateData(request: UserPatchRequest) {
   let data: any = {};
   if (request.iban) {
     data['iban'] = request.iban.replace(/\s/g, '');
+  } else {
+    data['iban'] = null;
   }
   if (request.termsAcceptedVersion) {
     data['termsAcceptedVersion'] = request.termsAcceptedVersion;
