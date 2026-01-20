@@ -47,7 +47,7 @@ Then, run `yarn vitest -c api-tests/vite.config.js`
 
 ## Evolving the database schema
 
-All commands should be prefixed with `yarn run dotenv -e .env.development -- ` to load the database connection values
+All commands should be prefixed with `yarn run dotenv -e .env.development.local -- ` to load the database connection values
 
 Update the generated code: `prisma generate`
 
