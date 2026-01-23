@@ -200,19 +200,6 @@ export function compensationClassesQuery(accessToken: string) {
   });
 }
 
-export function paymentsSuspenseQuery(accessToken: string, trainerId?: string) {
-  const params = new URLSearchParams();
-  if (trainerId) {
-    params.append('trainerId', trainerId);
-  }
-  return useSuspenseQuery({
-    queryKey: [API_PAYMENTS, trainerId],
-    queryFn: () =>
-      fetchListFromApi<PaymentDto>(`${API_PAYMENTS}?${params}`, accessToken),
-    staleTime: TEN_MINUTES,
-  });
-}
-
 export function queryCompensations(accessToken: string, paymentId: number) {
   const params = new URLSearchParams();
 
