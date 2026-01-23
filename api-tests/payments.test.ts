@@ -9,6 +9,7 @@ import {
   USER_ID_TRAINER,
 } from './apiTestUtils';
 import { describe, expect, test } from 'vitest';
+import prisma from '@/lib/prisma';
 
 const api = new LocalApi();
 
@@ -194,5 +195,96 @@ describe('/payments?trainerid', () => {
       (p) => p.trainingIds.indexOf(training1ToBeIncludedInPayment1.id) !== -1,
     );
     expect(payment).not.toBeNull();
+  });
+});
+
+describe('/payments with date filtering', () => {
+  test('filters payments by start and end date', async () => {
+    await api.clearTrainings();
+
+    // Create trainings
+    const training1 = await api.createTraining({
+      userId: USER_ID_ADMIN,
+      compensationCents: 1000,
+    });
+    const training2 = await api.createTraining({
+      userId: USER_ID_ADMIN,
+      compensationCents: 2000,
+    });
+
+    // Approve trainings
+    await Promise.all([
+      api.transitionTraining(training1.id, TrainingStatus.APPROVED),
+      api.transitionTraining(training2.id, TrainingStatus.APPROVED),
+    ]);
+
+    // Create payments
+    const payment2024 = await api.createPayment({
+      userId: USER_ID_ADMIN,
+      trainingIds: [training1.id],
+    });
+    const payment2025 = await api.createPayment({
+      userId: USER_ID_ADMIN,
+      trainingIds: [training2.id],
+    });
+
+    try {
+      // Directly update createdAt timestamps in database for testing
+      await prisma.payment.update({
+        where: { id: payment2024.id },
+        data: { createdAt: new Date('2024-06-15T10:00:00.000Z') },
+      });
+      await prisma.payment.update({
+        where: { id: payment2025.id },
+        data: { createdAt: new Date('2025-03-20T15:30:00.000Z') },
+      });
+
+      // Test: Get payments for 2024 only
+      const payments2024Response = await superagent.get(
+        `${SERVER}/api/payments?start=2024-01-01&end=2024-12-31`,
+      );
+      expect(payments2024Response.statusCode).toBe(200);
+      const payments2024List = payments2024Response.body.value as PaymentDto[];
+      const found2024 = payments2024List.find((p) => p.id === payment2024.id);
+      const found2025In2024 = payments2024List.find(
+        (p) => p.id === payment2025.id,
+      );
+      expect(found2024).toBeDefined();
+      expect(found2025In2024).toBeUndefined();
+
+      // Test: Get payments for 2025 only
+      const payments2025Response = await superagent.get(
+        `${SERVER}/api/payments?start=2025-01-01&end=2025-12-31`,
+      );
+      expect(payments2025Response.statusCode).toBe(200);
+      const payments2025List = payments2025Response.body.value as PaymentDto[];
+      const found2025 = payments2025List.find((p) => p.id === payment2025.id);
+      const found2024In2025 = payments2025List.find(
+        (p) => p.id === payment2024.id,
+      );
+      expect(found2025).toBeDefined();
+      expect(found2024In2025).toBeUndefined();
+
+      // Test: Get all payments (no filter)
+      const allPaymentsResponse = await superagent.get(
+        `${SERVER}/api/payments`,
+      );
+      expect(allPaymentsResponse.statusCode).toBe(200);
+      const allPaymentsList = allPaymentsResponse.body.value as PaymentDto[];
+      expect(
+        allPaymentsList.find((p) => p.id === payment2024.id),
+      ).toBeDefined();
+      expect(
+        allPaymentsList.find((p) => p.id === payment2025.id),
+      ).toBeDefined();
+    } finally {
+      // Clean up
+      await Promise.all([
+        superagent.delete(`${SERVER}/api/trainings/${training1.id}`),
+        superagent.delete(`${SERVER}/api/trainings/${training2.id}`),
+        superagent.delete(`${SERVER}/api/payments/${payment2024.id}`),
+        superagent.delete(`${SERVER}/api/payments/${payment2025.id}`),
+      ]);
+    }
   });
 });

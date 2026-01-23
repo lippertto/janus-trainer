@@ -1,5 +1,9 @@
 import { fileURLToPath, URL } from 'url';
 import { defineConfig } from 'vitest/config';
+import { config } from 'dotenv';
+
+// Load environment variables from .env.development.local
+config({ path: '.env.development.local' });
 
 export default defineConfig({
   test: {

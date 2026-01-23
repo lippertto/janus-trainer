@@ -158,17 +158,35 @@ async function onePaymentToDto(
   };
 }
 
-async function listPayments(trainerId?: string): Promise<PaymentDto[]> {
-  const allPayments = await prisma.payment.findMany({
-    where: {
-      trainings: {
-        some: {
-          user: {
-            id: trainerId,
-          },
+async function listPayments(
+  trainerId?: string,
+  startDate?: string,
+  endDate?: string,
+): Promise<PaymentDto[]> {
+  const where: any = {};
+
+  if (trainerId) {
+    where.trainings = {
+      some: {
+        user: {
+          id: trainerId,
         },
       },
-    },
+    };
+  }
+
+  if (startDate || endDate) {
+    where.createdAt = {};
+    if (startDate) {
+      where.createdAt.gte = new Date(startDate);
+    }
+    if (endDate) {
+      where.createdAt.lte = new Date(endDate);
+    }
+  }
+
+  const allPayments = await prisma.payment.findMany({
+    where,
     include: { createdBy: true },
   });
   return Promise.all(allPayments.map((p) => onePaymentToDto(p, trainerId)));
@@ -181,8 +199,14 @@ export async function GET(
     await allowOnlyAdmins(request);
 
     const trainerId = request.nextUrl.searchParams.get('trainerId');
+    const start = request.nextUrl.searchParams.get('start');
+    const end = request.nextUrl.searchParams.get('end');
 
-    const value = await listPayments(trainerId ?? undefined);
+    const value = await listPayments(
+      trainerId ?? undefined,
+      start ?? undefined,
+      end ?? undefined,
+    );
     return NextResponse.json({ value });
   } catch (e) {
     return handleTopLevelCatch(e);
