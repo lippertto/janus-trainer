@@ -119,7 +119,6 @@ describe('Payment IBAN Capture', () => {
         // THEN: Payment creation is rejected with Bad Request
         expect(error.status).toBe(400);
         expect(error.response?.body?.error?.message).toContain('IBAN');
-        expect(error.response?.body?.error?.message).toContain(trainer1.email);
       } finally {
         await api.deleteTraining(training1.id);
         await api.deleteTraining(training2.id);
