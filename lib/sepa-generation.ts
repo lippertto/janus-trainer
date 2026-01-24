@@ -36,7 +36,7 @@ export function generateSepaXml(compensations: CompensationDto[]): string {
   compensations.forEach((c) => {
     const tx = info.createTransaction();
     tx.creditorName = c.user.name;
-    tx.creditorIBAN = c.user.iban;
+    tx.creditorIBAN = c.iban;
     tx.amount = c.totalCompensationCents / 100;
     tx.remittanceInfo = `${c.courseName} ${c.periodStart}..${c.periodEnd}`;
     tx.end2endId = compensationHash(c);

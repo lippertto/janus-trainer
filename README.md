@@ -24,9 +24,6 @@ Then, run `yarn vitest -c api-tests/vite.config.js`
 
 ## Bugs
 
-- Current IBAN is used in payments, not the one that was used for the actual
-  payment. This should be fixed, e.g., by using historized ibans.
-
 ## Features
 
 - Playwright test: enter -> approve -> compensate.
@@ -47,7 +44,7 @@ Then, run `yarn vitest -c api-tests/vite.config.js`
 
 ## Evolving the database schema
 
-All commands should be prefixed with `yarn run dotenv -e .env.development -- ` to load the database connection values
+All commands should be prefixed with `yarn run dotenv -e .env.development.local -- ` to load the database connection values
 
 Update the generated code: `prisma generate`
 

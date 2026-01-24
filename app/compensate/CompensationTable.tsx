@@ -50,7 +50,7 @@ export default function CompensationTable({
       headerName: 'IBAN',
       flex: 1.5,
       valueGetter: (_value, row) =>
-        row.user.iban ? ibanToHumanReadable(row.user.iban) : 'Keine IBAN',
+        row.iban ? ibanToHumanReadable(row.iban) : 'Keine IBAN',
     },
     {
       field: 'actions',

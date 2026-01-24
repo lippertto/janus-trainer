@@ -75,6 +75,7 @@ export default function Profile(props: {
             InputProps={{
               endAdornment: (
                 <IconButton
+                  aria-label="edit-iban"
                   onClick={() => {
                     props.handleEditIbanClick();
                   }}

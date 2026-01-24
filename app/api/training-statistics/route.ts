@@ -37,23 +37,23 @@ async function calculateYearlyTotals(
 
   let query = `
       ${selectSql}
-             SUM(CASE
-                     WHEN TO_NUMBER(SPLIT_PART("date", '-', 2), '09') BETWEEN 1 AND 3 THEN 1
-                     ELSE 0
+             COUNT(DISTINCT CASE
+                     WHEN TO_NUMBER(SPLIT_PART("date", '-', 2), '09') BETWEEN 1 AND 3 THEN "date"
+                     ELSE NULL
                  END)                 AS "trainingCountQ1",
-             SUM(CASE
-                     WHEN TO_NUMBER(SPLIT_PART("date", '-', 2), '09') BETWEEN 4 AND 6 THEN 1
-                     ELSE 0
+             COUNT(DISTINCT CASE
+                     WHEN TO_NUMBER(SPLIT_PART("date", '-', 2), '09') BETWEEN 4 AND 6 THEN "date"
+                     ELSE NULL
                  END)                 AS "trainingCountQ2",
-             SUM(CASE
-                     WHEN TO_NUMBER(SPLIT_PART("date", '-', 2), '09') BETWEEN 7 AND 9 THEN 1
-                     ELSE 0
+             COUNT(DISTINCT CASE
+                     WHEN TO_NUMBER(SPLIT_PART("date", '-', 2), '09') BETWEEN 7 AND 9 THEN "date"
+                     ELSE NULL
                  END)                 AS "trainingCountQ3",
-             SUM(CASE
-                     WHEN TO_NUMBER(SPLIT_PART("date", '-', 2), '09') BETWEEN 10 AND 12 THEN 1
-                     ELSE 0
+             COUNT(DISTINCT CASE
+                     WHEN TO_NUMBER(SPLIT_PART("date", '-', 2), '09') BETWEEN 10 AND 12 THEN "date"
+                     ELSE NULL
                  END)                 AS "trainingCountQ4",
-             COUNT(*)                 AS "trainingCountTotal",
+             COUNT(DISTINCT "date")   AS "trainingCountTotal",
              SUM(CASE
                      WHEN TO_NUMBER(SPLIT_PART("date", '-', 2), '09') BETWEEN 1 AND 3 THEN "compensationCents"
                      ELSE 0

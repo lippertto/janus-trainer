@@ -17,8 +17,8 @@ function sqlResultToQueryResponse(sqlResult: any): CompensationQueryResponse {
       user: {
         id: r.userId,
         name: r.userName,
-        iban: r.userIban,
       },
+      iban: r.userIban,
       totalCompensationCents: Number(r.totalCompensationCents),
       totalTrainings: Number(r.totalTrainings),
       correspondingIds: r.correspondingIds
@@ -67,7 +67,7 @@ async function compensationsForPayments(
   const sqlResult: any[] = await prisma.$queryRaw`
       SELECT CAST(u."id" AS TEXT)           AS "userId",
              u.name                         as "userName",
-             u.iban                         as "userIban",
+             paymentIban.iban               as "userIban",
              COUNT(*)                       as "totalTrainings",
              SUM(t."compensationCents")     as "totalCompensationCents",
              string_agg(t.id::varchar, ',') as "correspondingIds",
@@ -78,11 +78,12 @@ async function compensationsForPayments(
              "d"."costCenterId"             as "costCenterId"
       FROM "Training" AS t
                INNER JOIN "User" AS u ON t."userId" = u."id"
+               INNER JOIN "PaymentUserIban" AS paymentIban ON paymentIban."paymentId" = t."paymentId" AND paymentIban."userId" = u."id"
                INNER JOIN "Course" AS "course" ON "t"."courseId" = "course".id
                INNER JOIN "Discipline" as "d" ON "course"."disciplineId" = "d".id
       WHERE "t"."paymentId" = ${paymentId}
         AND "u"."deletedAt" IS NULL
-      GROUP BY ("u"."id", "u"."name", "u"."iban", "d"."costCenterId", "d"."name", "course"."name");
+      GROUP BY ("u"."id", "u"."name", paymentIban.iban, "d"."costCenterId", "d"."name", "course"."name");
   `;
   return sqlResultToQueryResponse(sqlResult);
 }
