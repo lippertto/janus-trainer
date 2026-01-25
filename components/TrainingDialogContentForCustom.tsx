@@ -4,7 +4,7 @@ import DialogContent from '@mui/material/DialogContent';
 import {
   TrainingDialogToggle,
   TrainingDialogTypes,
-} from '@/app/enter/TrainingDialogToggle';
+} from '@/components/TrainingDialogToggle';
 import Stack from '@mui/system/Stack';
 import dayjs from 'dayjs';
 import { Controller, useForm } from 'react-hook-form';

@@ -2,14 +2,14 @@
 
 import React, { useCallback } from 'react';
 import Typography from '@mui/material/Typography';
-import { Group, TrainerReportDto, UserDto } from '@/lib/dto';
+import { Group, TrainerReportDto, UserDto, TrainingDto } from '@/lib/dto';
 import Stack from '@mui/system/Stack';
 import { Instructions } from '@/app/Instructions';
 import { TrainerStatistics } from '@/app/TrainerStatistics';
 import { useSession } from 'next-auth/react';
 import { JanusSession } from '@/lib/auth';
 import LoginRequired from '@/components/LoginRequired';
-import { useSuspenseQuery } from '@tanstack/react-query';
+import { useQueryClient, useSuspenseQuery } from '@tanstack/react-query';
 import {
   API_CONFIGURATION,
   API_TRAINER_REPORTS,
@@ -17,6 +17,18 @@ import {
 } from '@/lib/routes';
 import dayjs from 'dayjs';
 import { ConfigurationValueListResponse } from '@/lib/dto';
+import Card from '@mui/material/Card';
+import CardActionArea from '@mui/material/CardActionArea';
+import CardContent from '@mui/material/CardContent';
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import Box from '@mui/material/Box';
+import TrainingDialog from '@/components/TrainingDialog';
+import {
+  coursesForTrainerSuspenseQuery,
+  userSuspenseQuery,
+} from '@/lib/shared-queries';
+import { intToDayOfWeek } from '@/lib/warnings-for-date';
+import { customCostsQuery, trainingCreateQuery } from '@/app/enter/queries';
 
 interface HomePageContentsProps {
   session: JanusSession;
@@ -31,6 +43,10 @@ export function HomePageContents({
   trainerReportQueryFn,
   configurationQueryFn,
 }: HomePageContentsProps) {
+  const queryClient = useQueryClient();
+  const [showTrainingDialog, setShowTrainingDialog] =
+    React.useState<boolean>(false);
+
   const { data: userInfo } = useSuspenseQuery({
     queryKey: ['user', session.userId],
     queryFn: userInfoQueryFn,
@@ -40,6 +56,19 @@ export function HomePageContents({
   const isTrainer = userInfo.groups.includes(Group.TRAINERS);
   const showIbanWarning = isTrainer && !userInfo.iban;
 
+  // Fetch required data for training dialog (only for trainers)
+  const { data: courses } = isTrainer
+    ? coursesForTrainerSuspenseQuery(session.userId, session.accessToken)
+    : { data: [] };
+
+  const { data: user } = isTrainer
+    ? userSuspenseQuery(session.userId, session.accessToken, false, true, true)
+    : { data: null };
+
+  const createTrainingMutation = isTrainer
+    ? trainingCreateQuery(session.accessToken, [], queryClient)
+    : null;
+
   return (
     <React.Fragment>
       <Stack spacing={2}>
@@ -47,6 +76,29 @@ export function HomePageContents({
           <Typography color="error">
             Bitte die IBAN im Profil eintragen.
           </Typography>
+        )}
+
+        {isTrainer && (
+          <Card>
+            <CardActionArea
+              onClick={() => setShowTrainingDialog(true)}
+              data-testid="enter-training-card"
+            >
+              <CardContent>
+                <Box display="flex" alignItems="center" gap={2}>
+                  <AddCircleOutlineIcon color="primary" fontSize="large" />
+                  <Box>
+                    <Typography variant="h6" component="div">
+                      Training eingeben
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Erfasse ein neues Training
+                    </Typography>
+                  </Box>
+                </Box>
+              </CardContent>
+            </CardActionArea>
+          </Card>
         )}
 
         {isTrainer && (
@@ -60,6 +112,30 @@ export function HomePageContents({
 
         <Instructions />
       </Stack>
+
+      {isTrainer && user && (
+        <TrainingDialog
+          open={showTrainingDialog}
+          toEdit={null}
+          courses={courses}
+          compensationValues={user.compensationClasses!.flatMap(
+            (cc) => cc.compensationValues!,
+          )}
+          today={intToDayOfWeek(new Date().getDay())}
+          userId={session.userId}
+          handleClose={() => setShowTrainingDialog(false)}
+          handleSave={(data) => {
+            createTrainingMutation?.mutate(data);
+            setShowTrainingDialog(false);
+          }}
+          handleDelete={(v: TrainingDto) => {
+            // Not applicable for new trainings
+          }}
+          getCustomCourses={() => {
+            return customCostsQuery(session.accessToken).data;
+          }}
+        />
+      )}
     </React.Fragment>
   );
 }
