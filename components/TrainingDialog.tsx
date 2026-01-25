@@ -8,8 +8,8 @@ import {
 import { DayOfWeek } from '@/generated/prisma/enums';
 import { dateToHumanReadable } from '@/lib/formatters';
 import { useConfirm } from 'material-ui-confirm';
-import { TrainingDialogContentForCourse } from '@/app/enter/TrainingDialogContentForCourse';
-import { TrainingDialogContentForCustom } from '@/app/enter/TrainingDialogContentForCustom';
+import { TrainingDialogContentForCourse } from '@/components/TrainingDialogContentForCourse';
+import { TrainingDialogContentForCustom } from '@/components/TrainingDialogContentForCustom';
 import DialogTitle from '@mui/material/DialogTitle';
 import Dialog from '@mui/material/Dialog';
 

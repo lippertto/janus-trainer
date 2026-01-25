@@ -20,7 +20,7 @@ import { compareByField, compareNamed } from '@/lib/sort-and-filter';
 import {
   TrainingDialogToggle,
   TrainingDialogTypes,
-} from '@/app/enter/TrainingDialogToggle';
+} from '@/components/TrainingDialogToggle';
 import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';

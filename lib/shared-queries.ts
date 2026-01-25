@@ -109,16 +109,6 @@ export function userSuspenseQuery(
   expandCompensationClasses: boolean = false,
   expandCompensationValues: boolean = false,
 ) {
-  let expand = [];
-  if (includeCognitoProperties) {
-    expand.push('cognito');
-  }
-  if (expandCompensationClasses) {
-    expand.push('compensationClasses');
-  }
-  if (expandCompensationValues) {
-    expand.push('compensationValues');
-  }
   return useSuspenseQuery({
     queryKey: [
       API_USERS,
@@ -128,10 +118,40 @@ export function userSuspenseQuery(
       expandCompensationValues,
     ],
     queryFn: () =>
-      fetchSingleEntity<UserDto>(API_USERS, userId, accessToken, [
-        `expand=${expand.join(',')}`,
-      ]),
+      fetchUser(accessToken, userId, {
+        includeCognitoProperties,
+        expandCompensationClasses,
+        expandCompensationValues,
+      }),
   });
+}
+
+export function fetchUser(
+  accessToken: string,
+  userId: string,
+  options: {
+    includeCognitoProperties: boolean;
+    expandCompensationClasses: boolean;
+    expandCompensationValues: boolean;
+  } = {
+    includeCognitoProperties: false,
+    expandCompensationClasses: false,
+    expandCompensationValues: false,
+  },
+): Promise<UserDto> {
+  let expand = [];
+  if (options.includeCognitoProperties) {
+    expand.push('cognito');
+  }
+  if (options.expandCompensationClasses) {
+    expand.push('compensationClasses');
+  }
+  if (options.expandCompensationValues) {
+    expand.push('compensationValues');
+  }
+  return fetchSingleEntity<UserDto>(API_USERS, userId, accessToken, [
+    `expand=${expand.join(',')}`,
+  ]);
 }
 
 export function trainingStatisticsSuspenseQuery(

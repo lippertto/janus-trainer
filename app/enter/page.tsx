@@ -21,7 +21,7 @@ import { TrainingList } from '@/app/enter/TrainingList';
 import Fab from '@mui/material/Fab';
 import AddIcon from '@mui/icons-material/Add';
 import { compareByField } from '@/lib/sort-and-filter';
-import TrainingDialog from '@/app/enter/TrainingDialog';
+import TrainingDialog from '@/components/TrainingDialog';
 import { intToDayOfWeek } from '@/lib/warnings-for-date';
 import dayjs from 'dayjs';
 import Stack from '@mui/system/Stack';
