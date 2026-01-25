@@ -5,14 +5,14 @@
 // ReferenceError: Request is not defined
 import 'cross-fetch/polyfill';
 import React from 'react';
-import { render, screen, cleanup } from '@testing-library/react';
+import { cleanup, render, screen } from '@testing-library/react';
 import { HomePageContents } from '@/app/HomePage';
-import { selectOneUser } from '@/app/api/users/[userId]/select-one-user';
 
-import { describe, expect, test, vi, Mock, afterEach } from 'vitest';
+import { afterEach, describe, expect, test, vi } from 'vitest';
 import '@testing-library/jest-dom/vitest';
 import { JanusSession } from '@/lib/auth';
 import {
+  CompensationClassDto,
   ConfigurationValueListResponse,
   Group,
   TrainerReportDto,
@@ -73,6 +73,7 @@ describe('HomePage', () => {
     const mockUserInfo: UserDto = {
       groups: [Group.TRAINERS],
       iban: null,
+      compensationClasses: [] as CompensationClassDto[],
     } as UserDto;
 
     render(
@@ -81,12 +82,13 @@ describe('HomePage', () => {
         userInfoQueryFn={async () => mockUserInfo}
         trainerReportQueryFn={async () => mockTrainerReport}
         configurationQueryFn={async () => mockConfiguration}
+        fetchCoursesForTrainerQueryFn={async () => []}
       />,
       { wrapper: createWrapper() },
     );
 
     expect(
-      await screen.findByText('Bitte die IBAN im Profil eintragen.'),
+      await screen.findByText('Hier klicken um deine IBAN einzutragen.'),
     ).toBeVisible();
   });
 
@@ -102,6 +104,7 @@ describe('HomePage', () => {
         userInfoQueryFn={async () => mockUserInfo}
         trainerReportQueryFn={async () => mockTrainerReport}
         configurationQueryFn={async () => mockConfiguration}
+        fetchCoursesForTrainerQueryFn={async () => []}
       />,
       { wrapper: createWrapper() },
     );
@@ -115,6 +118,7 @@ describe('HomePage', () => {
     const mockUserInfo: UserDto = {
       groups: [Group.TRAINERS],
       iban: 'DE89370400440532013000',
+      compensationClasses: [] as CompensationClassDto[],
     } as UserDto;
 
     render(
@@ -123,6 +127,7 @@ describe('HomePage', () => {
         userInfoQueryFn={async () => mockUserInfo}
         trainerReportQueryFn={async () => mockTrainerReport}
         configurationQueryFn={async () => mockConfiguration}
+        fetchCoursesForTrainerQueryFn={async () => []}
       />,
       { wrapper: createWrapper() },
     );

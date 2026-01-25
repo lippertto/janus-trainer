@@ -9,7 +9,7 @@ import {
   coursesForTrainerSuspenseQuery,
   userSuspenseQuery,
 } from '@/lib/shared-queries';
-import { EditIbanDialog } from '@/app/profile/EditIbanDialog';
+import { EditIbanDialog } from '@/components/EditIbanDialog';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { UserDto } from '@/lib/dto';
 import { patchInApi } from '@/lib/fetch';
