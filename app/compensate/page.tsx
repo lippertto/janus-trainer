@@ -16,7 +16,7 @@ import TextField from '@mui/material/TextField';
 import Stack from '@mui/system/Stack';
 import { compareNamed } from '@/lib/sort-and-filter';
 import { useSuspenseQuery } from '@tanstack/react-query';
-import { API_PAYMENTS } from '@/lib/routes';
+import { API_PAYMENTS, API_USERS } from '@/lib/routes';
 import { fetchListFromApi } from '@/lib/fetch';
 
 async function paymentsQueryFn(
@@ -40,13 +40,20 @@ async function paymentsQueryFn(
 }
 
 function TrainerDropdown(props: {
-  trainers: UserDto[];
+  fetchTrainers: () => Promise<UserDto[]>;
   trainer: UserDto | null;
   setTrainer: (v: UserDto | null) => void;
 }) {
+  const { data: trainers } = useSuspenseQuery({
+    queryKey: [API_USERS, 'group=trainers'],
+    queryFn: async () =>
+      props.fetchTrainers().then((trainers) => trainers.toSorted(compareNamed)),
+    staleTime: 10 * 60 * 1000,
+  });
+
   return (
     <Autocomplete
-      options={props.trainers}
+      options={trainers}
       getOptionLabel={(t) => t.name}
       value={props.trainer}
       onChange={(_, value) => {
@@ -63,12 +70,19 @@ function CompensationPageContents(props: { session: JanusSession }) {
     new Date().getFullYear(),
   );
 
-  const trainers = trainersSuspenseQuery(
-    props.session.accessToken,
-  ).data.toSorted(compareNamed);
-
   const start = `${selectedYear}-01-01`;
   const end = `${selectedYear}-12-31`;
+
+  const fetchTrainers = React.useCallback(async () => {
+    if (!props.session.accessToken) {
+      return [];
+    } else {
+      return fetchListFromApi<UserDto>(
+        `${API_USERS}?group=trainers`,
+        props.session.accessToken!,
+      );
+    }
+  }, [props.session.accessToken]);
 
   const { data: payments } = useSuspenseQuery({
     queryKey: [API_PAYMENTS, trainer?.id, start, end],
@@ -99,11 +113,13 @@ function CompensationPageContents(props: { session: JanusSession }) {
             }}
             renderInput={(params) => <TextField {...params} label="Jahr" />}
           />
-          <TrainerDropdown
-            trainers={trainers}
-            trainer={trainer}
-            setTrainer={setTrainer}
-          />
+          <Suspense fallback={<LoadingSpinner />}>
+            <TrainerDropdown
+              fetchTrainers={fetchTrainers}
+              trainer={trainer}
+              setTrainer={setTrainer}
+            />
+          </Suspense>
           <PaymentSelection
             session={props.session}
             payments={payments}
