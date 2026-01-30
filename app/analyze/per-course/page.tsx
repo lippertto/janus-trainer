@@ -11,7 +11,7 @@ import {
 import Stack from '@mui/material/Stack';
 import { DatePicker } from '@mui/x-date-pickers';
 import dayjs from 'dayjs';
-import { CourseDto, TrainingDto, TrainingStatisticDto } from '@/lib/dto';
+import { TrainingDto, TrainingStatisticDto } from '@/lib/dto';
 import Box from '@mui/material/Box';
 import { DataGrid, GridRowId, GridRowSelectionModel } from '@mui/x-data-grid';
 import { currencyFormatter } from '@/lib/formatters';
@@ -23,6 +23,11 @@ import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { fetchListFromApi } from '@/lib/fetch';
 import DialogContentText from '@mui/material/DialogContentText';
+import Accordion from '@mui/material/Accordion';
+import AccordionDetails from '@mui/material/AccordionDetails';
+import AccordionSummary from '@mui/material/AccordionSummary';
+import Typography from '@mui/material/Typography';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 type SelectedCourse = {
   name: string;
@@ -252,6 +257,35 @@ function Contents(props: { accessToken: string }) {
         onClose={() => setShowDetails(false)}
       />
       <Stack direction="column" spacing={2} sx={{ alignItems: 'flex-start' }}>
+        <Accordion sx={{ width: '100%' }}>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography>Wie werden diese Werte berechnet?</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Typography variant="body2">
+              Auf dieser Seite werden die gebuchten Trainings pro Kurs
+              zusammengefasst.
+            </Typography>
+            <Typography variant="body2">
+              Berücksichtigt werden nur Trainings, die ausbezahlt wurden.
+            </Typography>
+            <Typography variant="body2">
+              Die Spalten mit "T" zeigen die Anzahl der Trainings in den
+              Quartalen "Q1"-"Q4" und im ganzen Jahr ("Σ"). Dabei werden alle
+              Trainings, die für an einem Tag stattgefunden haben,
+              zusammengefasst, um abzubilden, dass manche Kurse von zwei ÜL
+              gleichzeitig gegeben werden.
+            </Typography>
+            <Typography variant="body2">
+              Die Spalten mit "€" beinhalten die tatsächlich ausgezahlten
+              Beträge, ebenfalls nach Quartalen und dem Jahr gruppiert.
+            </Typography>
+            <Typography variant="body2">
+              Um Details zu einer bestimmten Zeile zu sehen, wähle eine Zeile
+              aus und klicke auf "Details".
+            </Typography>
+          </AccordionDetails>
+        </Accordion>
         <Stack direction="row" spacing={2}>
           <DatePicker
             views={['year']}
