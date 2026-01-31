@@ -75,10 +75,6 @@ export function Instructions() {
             Trainings benötigst, kannst du hier ein pdf exportieren. Für das
             Finanzamt benötigst du das Dokument in der Regel nicht.
           </Typography>
-          <Typography>
-            Achtung: Du darfst pro Kalenderjahr nur 3.000€ steuerfrei bekommen.
-            Außerdem darf jeder Kurs nur max. 44 Mal im Jahr stattfinden.
-          </Typography>
         </AccordionDetails>
       </Accordion>
       <Accordion>
