@@ -63,7 +63,7 @@ export function HomePageContents({
   const [showIbanDialog, setShowIbanDialog] = React.useState<boolean>(false);
 
   const { data: userInfo } = useSuspenseQuery({
-    queryKey: ['user', session.userId],
+    queryKey: ['user', session.userId, 'compensation-classes'],
     queryFn: userInfoQueryFn,
     staleTime: 10 * 60 * 1000,
   });
@@ -211,7 +211,7 @@ export default function HomePage() {
     return fetchUser(session.accessToken, session.userId, {
       includeCognitoProperties: true,
       expandCompensationClasses: true,
-      expandCompensationValues: false,
+      expandCompensationValues: true,
     });
   }, [session]);
 
