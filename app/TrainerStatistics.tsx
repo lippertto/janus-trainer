@@ -86,6 +86,9 @@ export function TrainerStatistics({
               sx={{ marginTop: 2 }}
             >
               <Typography variant="subtitle1">Pro Kurs</Typography>
+              <Tooltip title="Laut Sportordnung ist die Anzahl an Einheiten pro Kurs begrenzt.">
+                <InfoOutlinedIcon fontSize="small" color="action" />
+              </Tooltip>
             </Box>
             <List dense>
               {data.courses.map((course) => {
