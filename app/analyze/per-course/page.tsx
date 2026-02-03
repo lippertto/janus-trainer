@@ -272,9 +272,9 @@ function Contents(props: { accessToken: string }) {
             <Typography variant="body2">
               Die Spalten mit "T" zeigen die Anzahl der Trainings in den
               Quartalen "Q1"-"Q4" und im ganzen Jahr ("Σ"). Dabei werden alle
-              Trainings, die für an einem Tag stattgefunden haben,
-              zusammengefasst, um abzubilden, dass manche Kurse von zwei ÜL
-              gleichzeitig gegeben werden.
+              Trainings, die an einem Tag stattgefunden haben, zusammengefasst,
+              um abzubilden, dass manche Kurse von zwei ÜL gleichzeitig gegeben
+              werden.
             </Typography>
             <Typography variant="body2">
               Die Spalten mit "€" beinhalten die tatsächlich ausgezahlten

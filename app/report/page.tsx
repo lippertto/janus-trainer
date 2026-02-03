@@ -38,12 +38,21 @@ export default function ReportPageContainer() {
       startDate,
       endDate,
     );
+
+    const filename = `Janus-Statistik-${dayjs().format('YYYY-MM-DD')}.pdf`;
+
     const objectUrl = window.URL.createObjectURL(pdfData);
     const link = document.createElement('a');
-    link.download = `Janus-Statistik-${dayjs().format('YYYY-MM-DD')}.pdf`;
+    link.download = filename;
     link.href = objectUrl;
+    link.target = '_blank';
+    document.body.appendChild(link);
     link.click();
-    window.URL.revokeObjectURL(objectUrl);
+    document.body.removeChild(link);
+
+    setTimeout(() => {
+      window.URL.revokeObjectURL(objectUrl);
+    }, 100);
   };
 
   if (authenticationStatus !== 'authenticated') {
