@@ -37,7 +37,7 @@ export async function POST(nextRequest: NextRequest) {
     return new Response(new Blob([data as BlobPart]), {
       headers: {
         'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment, filename="Janus-Trainings-${dayjs().format('YYYY-MM-DD')}.xlsx"`,
+        'Content-Disposition': `attachment; filename="Janus-Statistik-${dayjs().format('YYYY-MM-DD')}.pdf"`,
       },
     });
   } catch (e) {
