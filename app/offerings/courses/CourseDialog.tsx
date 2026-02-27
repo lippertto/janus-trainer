@@ -43,9 +43,10 @@ function TrainerDropdown(props: {
       {...props.controllerProps}
       options={props.allTrainers}
       multiple={true}
-      renderTags={(tagValue, _) => {
-        return tagValue.map((option: UserIdAndName, _) => (
+      renderValue={(tagValue, getItemProps) => {
+        return tagValue.map((option: UserIdAndName, index) => (
           <Chip
+            {...getItemProps({ index })}
             label={option.name}
             key={option.id}
             onDelete={() => {
