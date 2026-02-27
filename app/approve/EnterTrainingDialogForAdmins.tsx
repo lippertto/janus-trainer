@@ -100,6 +100,7 @@ export function EnterTrainingDialogForAdmins(props: {
               <Controller
                 control={control}
                 name="trainer"
+                rules={{ required: true }}
                 render={({ field: fieldProps }) => (
                   <Autocomplete
                     {...fieldProps}
