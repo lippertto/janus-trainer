@@ -54,9 +54,11 @@ async function selectNthComboboxElement(name: string, n: number) {
   });
   fireEvent.keyDown(autocomplete, { key: 'ArrowDown' });
   for (let i = 0; i < n; i++) {
-    fireEvent.keyDown(autocomplete, { key: 'ArrowDown' });
+    await userEvent.keyboard('{ArrowDown}');
   }
-  fireEvent.keyDown(autocomplete, { key: 'Enter' });
+
+  // Select the item
+  await userEvent.keyboard('{Enter}');
 }
 
 describe('CourseDialog', () => {
