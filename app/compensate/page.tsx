@@ -9,15 +9,19 @@ import PaymentSelection, {
 } from '@/app/compensate/PaymentSelection';
 import CompensationBox from '@/app/compensate/CompensationBox';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
-import { PaymentDto, UserDto } from '@/lib/dto';
-import { trainersSuspenseQuery } from '@/lib/shared-queries';
+import { CompensationDto, PaymentDto, UserDto } from '@/lib/dto';
+import {
+  queryCompensations,
+  trainersSuspenseQuery,
+} from '@/lib/shared-queries';
 import Autocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
 import Stack from '@mui/system/Stack';
 import { compareNamed } from '@/lib/sort-and-filter';
-import { useSuspenseQuery } from '@tanstack/react-query';
-import { API_PAYMENTS, API_USERS } from '@/lib/routes';
+import { useSuspenseQuery, useQueryClient } from '@tanstack/react-query';
+import { API_COMPENSATIONS, API_PAYMENTS, API_USERS } from '@/lib/routes';
 import { fetchListFromApi } from '@/lib/fetch';
+import { generateSepaXml } from '@/lib/sepa-generation';
 
 async function paymentsQueryFn(
   accessToken: string,
@@ -65,6 +69,7 @@ function TrainerDropdown(props: {
 }
 
 function CompensationPageContents(props: { session: JanusSession }) {
+  const queryClient = useQueryClient();
   const [trainer, setTrainer] = React.useState<UserDto | null>(null);
   const [selectedYear, setSelectedYear] = React.useState<number>(
     new Date().getFullYear(),
@@ -93,6 +98,38 @@ function CompensationPageContents(props: { session: JanusSession }) {
 
   const [selectedPaymentId, setSelectedPaymentId] =
     React.useState<number>(CURRENT_PAYMENT_ID);
+
+  const compensations = queryCompensations(
+    props.session.accessToken,
+    selectedPaymentId,
+  );
+
+  const handleMarkAsCompensated = async (trainingIds: number[]) => {
+    const body = JSON.stringify({ trainingIds });
+    const response = await fetch('/api/payments', {
+      method: 'POST',
+      body,
+    });
+    if (!response.ok) {
+      throw new Error(await response.text());
+    }
+    queryClient.invalidateQueries({
+      queryKey: [API_COMPENSATIONS, selectedPaymentId],
+    });
+    queryClient.invalidateQueries({ queryKey: [API_PAYMENTS] });
+  };
+
+  const handleGenerateSepa = (compensations: CompensationDto[]) => {
+    const sepaXml = generateSepaXml(compensations);
+    const blob = new Blob([sepaXml], { type: 'text/xml' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.download = `trainer-vergütung-${new Date()
+      .toISOString()
+      .substring(0, 10)}.xml`;
+    link.href = url;
+    link.click();
+  };
 
   // Generate year options (current year and past 5 years)
   const yearOptions = Array.from(
@@ -131,9 +168,11 @@ function CompensationPageContents(props: { session: JanusSession }) {
       <Grid size={{ xs: 9 }}>
         <Suspense fallback={<LoadingSpinner />}>
           <CompensationBox
-            session={props.session}
+            compensations={compensations}
             selectedPaymentId={selectedPaymentId}
             trainer={trainer}
+            onMarkAsCompensated={handleMarkAsCompensated}
+            onGenerateSepa={handleGenerateSepa}
           />
         </Suspense>
       </Grid>

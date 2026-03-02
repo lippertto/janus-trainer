@@ -154,13 +154,10 @@ describe('EnterTrainingDialogForAdmins', () => {
   });
 });
 
-function selectFirstComboboxElement(element: HTMLElement) {
-  act(() => {
-    element.focus();
-  });
-  fireEvent.keyDown(element, { key: 'ArrowDown' });
-  fireEvent.keyDown(element, { key: 'ArrowDown' });
-  fireEvent.keyDown(element, { key: 'Enter' });
+async function selectFirstComboboxElement(element: HTMLElement) {
+  await userEvent.click(element);
+  await userEvent.keyboard('{ArrowDown}');
+  await userEvent.keyboard('{Enter}');
 }
 
 async function fillOutForm({
@@ -174,13 +171,15 @@ async function fillOutForm({
 }) {
   await fillDatePicker('Datum', dayjs(date));
 
-  const trainerInput = await screen.findByText('Übungsleitung');
-  selectFirstComboboxElement(trainerInput);
+  const trainerInput = await screen.findByRole('combobox', {
+    name: 'Übungsleitung',
+  });
+  await selectFirstComboboxElement(trainerInput);
 
   const courseInput = await screen.findByRole('combobox', {
     name: /Kurs.*/i,
   });
-  selectFirstComboboxElement(courseInput);
+  await selectFirstComboboxElement(courseInput);
 
   const commentBox = await screen.findByRole('textbox', {
     name: 'Kommentar',
