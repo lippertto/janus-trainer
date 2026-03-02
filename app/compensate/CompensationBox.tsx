@@ -1,71 +1,46 @@
 import React from 'react';
-import { JanusSession } from '@/lib/auth';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { CompensationDto, UserDto } from '@/lib/dto';
-import { API_COMPENSATIONS, API_PAYMENTS } from '@/lib/routes';
 import { CURRENT_PAYMENT_ID } from '@/app/compensate/PaymentSelection';
 import CompensationTable from '@/app/compensate/CompensationTable';
-import { generateSepaXml } from '@/lib/sepa-generation';
 import Stack from '@mui/system/Stack';
 import Button from '@mui/material/Button';
 import { showError } from '@/lib/notifications';
-import { queryCompensations } from '@/lib/shared-queries';
 
-function handleSepaGeneration(compensations: CompensationDto[]) {
-  const sepaXml = generateSepaXml(compensations);
-  const blob = new Blob([sepaXml], { type: 'text/xml' });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.download = `trainer-vergütung-${new Date()
-    .toISOString()
-    .substring(0, 10)}.xml`;
-  link.href = url;
-  link.click();
+export function findInvalidCompensations(
+  compensations: CompensationDto[],
+): CompensationDto[] {
+  return compensations.filter((c) => c.totalCompensationCents <= 0);
+}
+
+export function formatInvalidCompensationError(
+  compensations: CompensationDto[],
+): string {
+  const invalidLines = compensations
+    .map(
+      (c) =>
+        `${c.user.name} / ${c.courseName} (${(c.totalCompensationCents / 100).toFixed(2)} €)`,
+    )
+    .join(', ');
+  return `Ungültige Beträge (negativ oder 0,00 €): ${invalidLines}`;
 }
 
 export default function CompensationBox(props: {
-  session: JanusSession;
+  compensations: CompensationDto[];
   selectedPaymentId: number;
   /** A trainer id to filter. If filtering is active, no sepa xml files can be generated because the logic is currently undefined. */
-  trainer: UserDto | null;
+  trainer: Pick<UserDto, 'id'> | null;
+  onMarkAsCompensated: (trainingIds: number[]) => Promise<void>;
+  onGenerateSepa: (compensations: CompensationDto[]) => void;
 }) {
-  const queryClient = useQueryClient();
-  let compensations = queryCompensations(
-    props.session.accessToken,
-    props.selectedPaymentId,
-  );
   // if we have a filter on the trainer id, look only at those
+  let compensations = props.compensations;
   if (props.trainer?.id) {
-    compensations = compensations.filter(
+    compensations = props.compensations.filter(
       (c) => c.user.id === props.trainer!.id,
     );
   }
 
-  const negativeCompensations = compensations.filter(
-    (c) => c.totalCompensationCents < 0,
-  );
-
-  const markAsCompensated = useMutation({
-    mutationFn: () => {
-      const allIds = compensations.flatMap((c) => c.correspondingIds);
-      let body = JSON.stringify({
-        trainingIds: allIds,
-      });
-      return fetch('/api/payments', { method: 'POST', body: body });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: [API_COMPENSATIONS, props.selectedPaymentId],
-      });
-      queryClient.invalidateQueries({ queryKey: [API_PAYMENTS] });
-    },
-    onError: (error) => {
-      showError(
-        'Konnte Zahlungen nicht als überwiesen markieren',
-        error.message,
-      );
-    },
-  });
+  const invalidCompensations = findInvalidCompensations(compensations);
 
   return (
     <Stack>
@@ -73,13 +48,10 @@ export default function CompensationBox(props: {
       <Stack direction={'row'}>
         <Button
           onClick={() => {
-            if (negativeCompensations.length > 0) {
-              const userNames = negativeCompensations
-                .map((c) => c.user.name)
-                .join(', ');
-              showError(`Negative Beträge für ${userNames}`);
+            if (invalidCompensations.length > 0) {
+              showError(formatInvalidCompensationError(invalidCompensations));
             } else {
-              handleSepaGeneration(compensations);
+              props.onGenerateSepa(compensations);
             }
           }}
           disabled={Boolean(props.trainer)}
@@ -91,14 +63,19 @@ export default function CompensationBox(props: {
             props.selectedPaymentId !== CURRENT_PAYMENT_ID ||
             Boolean(props.trainer)
           }
-          onClick={() => {
-            if (negativeCompensations.length > 0) {
-              const userNames = negativeCompensations
-                .map((c) => c.user.name)
-                .join(', ');
-              showError(`Negative Beträge für ${userNames}`);
+          onClick={async () => {
+            if (invalidCompensations.length > 0) {
+              showError(formatInvalidCompensationError(invalidCompensations));
             } else {
-              markAsCompensated.mutate();
+              const allIds = compensations.flatMap((c) => c.correspondingIds);
+              try {
+                await props.onMarkAsCompensated(allIds);
+              } catch (error) {
+                showError(
+                  'Konnte Zahlungen nicht als überwiesen markieren',
+                  error instanceof Error ? error.message : null,
+                );
+              }
             }
           }}
         >
