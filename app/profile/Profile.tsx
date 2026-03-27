@@ -9,7 +9,7 @@ import { groupToHumanReadable, ibanToHumanReadable } from '@/lib/formatters';
 import { CourseCard } from '@/components/CourseCard';
 import Button from '@mui/material/Button';
 import { signOut } from 'next-auth/react';
-import { CourseDto, UserDto } from '@/lib/dto';
+import { CourseDto, Group, UserDto } from '@/lib/dto';
 
 import 'core-js/modules/es.array.to-sorted';
 import { termsOfServiceSuspenseQuery } from '@/lib/shared-queries';
@@ -18,6 +18,7 @@ import Stack from '@mui/material/Stack';
 
 export default function Profile(props: {
   accessToken: string;
+  groups: string[];
   user: UserDto;
   courses: CourseDto[];
   handleEditIbanClick: () => void;
@@ -28,9 +29,15 @@ export default function Profile(props: {
   const { data: tosData } = termsOfServiceSuspenseQuery();
 
   // Beate Kubny reported an empty groups array.
-  const groupsDisplayString = user.groups
-    ? user.groups.map(groupToHumanReadable).toSorted().join(', ')
-    : 'Keine Gruppen';
+  let groupsDisplayString;
+  if (props.groups === undefined || props.groups.length == 0) {
+    groupsDisplayString = 'Keine Gruppen';
+  } else {
+    groupsDisplayString = props.groups
+      .map((g) => groupToHumanReadable(g as Group))
+      .toSorted()
+      .join(', ');
+  }
 
   return (
     <>

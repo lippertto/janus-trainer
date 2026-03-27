@@ -32,7 +32,7 @@ describe('Profile', () => {
       name: 'any-name',
       iban: 'any-iban',
       email: 'any-email',
-      groups: [Group.ADMINS],
+      groups: [],
       compensationClasses: [],
       termsAcceptedAt: null,
       termsAcceptedVersion: null,
@@ -40,6 +40,7 @@ describe('Profile', () => {
     const { unmount } = render(
       <Profile
         user={user}
+        groups={[Group.ADMINS]}
         courses={[]}
         handleEditIbanClick={() => {}}
         accessToken="123"
@@ -65,6 +66,7 @@ describe('Profile', () => {
       <Profile
         user={user}
         courses={[]}
+        groups={[]}
         handleEditIbanClick={() => {}}
         accessToken={'123'}
       />,

@@ -23,7 +23,7 @@ function ProfilePageContents({ session }: { session: JanusSession }) {
   const { data: user } = userSuspenseQuery(
     session.userId,
     session.accessToken,
-    true,
+    false,
     true,
     false,
   );
@@ -54,6 +54,7 @@ function ProfilePageContents({ session }: { session: JanusSession }) {
     <React.Fragment>
       <Profile
         user={user}
+        groups={session.groups}
         courses={courses}
         handleEditIbanClick={() => setShowIbanDialog(true)}
         accessToken={session.accessToken}
