@@ -30,7 +30,7 @@ export default function Profile(props: {
 
   // Beate Kubny reported an empty groups array.
   let groupsDisplayString;
-  if (props.groups === undefined || props.groups.length == 0) {
+  if (props.groups === undefined || props.groups.length === 0) {
     groupsDisplayString = 'Keine Gruppen';
   } else {
     groupsDisplayString = props.groups

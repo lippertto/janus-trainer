@@ -23,7 +23,6 @@ function ProfilePageContents({ session }: { session: JanusSession }) {
   const { data: user } = userSuspenseQuery(
     session.userId,
     session.accessToken,
-    false,
     true,
     false,
   );

@@ -1,12 +1,9 @@
 import { Group, UserDto } from '@/lib/dto';
 import prisma from '@/lib/prisma';
 import { ApiErrorNotFound } from '@/lib/helpers-for-api';
-import { cognitoClient } from '@/app/api/users/cognito-client';
-import { getCognitoUserById, listGroupsForUser } from '@/app/api/users/cognito';
 
 export async function selectOneUser(
   id: string,
-  includeCognitoProperties: boolean,
   includeCompensationValues: boolean,
   includeCompensationClasses: boolean,
 ): Promise<UserDto> {
@@ -28,25 +25,12 @@ export async function selectOneUser(
   }
 
   let email: string = '';
-  let groups: Group[] = [];
-  if (includeCognitoProperties) {
-    const client = cognitoClient();
-
-    const cognitoUser = await getCognitoUserById(client, id);
-
-    if (!cognitoUser) {
-      throw new ApiErrorNotFound(`User ${id} does not exist in cognito`);
-    }
-
-    email = cognitoUser.email;
-    groups = await listGroupsForUser(client, id);
-  }
 
   return {
     ...dbUser,
     email: email,
-    groups: groups,
     termsAcceptedAt: dbUser.termsAcceptedAt?.toLocaleDateString() ?? null,
+    groups: [],
     // @ts-ignore
     compensationClasses: dbUser.compensationClasses ?? [],
   };

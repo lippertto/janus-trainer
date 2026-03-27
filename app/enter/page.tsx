@@ -68,7 +68,6 @@ function EnterPageContents(props: { session: JanusSession }) {
   const { data: user } = userSuspenseQuery(
     session.userId,
     session.accessToken,
-    false,
     true,
     true,
   );
