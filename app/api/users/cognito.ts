@@ -5,6 +5,8 @@ import {
   AdminDisableUserCommand,
   AdminEnableUserCommand,
   AdminGetUserCommand,
+  AdminListGroupsForUserCommand,
+  AdminListGroupsForUserResponse,
   AdminRemoveUserFromGroupCommand,
   AdminUpdateUserAttributesCommand,
   AttributeType,
@@ -27,6 +29,7 @@ import {
   notFoundResponse,
 } from '@/lib/helpers-for-api';
 import { cognitoClient } from '@/app/api/users/cognito-client';
+import { logger } from '@/lib/logging';
 
 const USER_POOL_ID = process.env.COGNITO_USER_POOL_ID;
 
@@ -374,15 +377,26 @@ export async function listGroupsForUser(
   client: CognitoIdentityProviderClient,
   username: string,
 ): Promise<Group[]> {
-  const result = [];
-  const groups = await listGroups(client);
-  for (const thisGroup of groups) {
-    const usernamesOfThisGroup = await findUsersForGroup(client, thisGroup);
-    if (usernamesOfThisGroup.indexOf(username) !== -1) {
-      result.push(thisGroup);
-    }
+  let response: AdminListGroupsForUserResponse;
+  try {
+    response = await client.send(
+      new AdminListGroupsForUserCommand({
+        UserPoolId: USER_POOL_ID,
+        Username: username,
+      }),
+    );
+  } catch (e) {
+    const msg = `Failed to list cognito groups for user ${username}`;
+    logger.info(msg + ` Reported error is: ${e}`);
+    throw new ApiErrorInternalServerError(msg);
   }
-  return result as Group[];
+  if (!response.Groups) {
+    return [];
+  } else {
+    return response.Groups.map((g) => g.GroupName).filter(
+      (g) => g !== undefined,
+    ) as Group[];
+  }
 }
 
 // implements solution from https://stackoverflow.com/questions/63449499/cognito-user-is-unable-to-reset-his-password-or-ask-for-resent-if-his-is-in-fo
