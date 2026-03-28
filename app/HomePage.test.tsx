@@ -40,6 +40,7 @@ describe('HomePage', () => {
   const mockSession: JanusSession = {
     userId: 'any-user-id',
     accessToken: 'test-token',
+    groups: [Group.TRAINERS],
   } as JanusSession;
 
   const mockTrainerReport: TrainerReportDto = {

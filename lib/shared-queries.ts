@@ -105,7 +105,6 @@ export function compensationValuesSuspenseQuery(accessToken: string) {
 export function userSuspenseQuery(
   userId: string,
   accessToken: string,
-  includeCognitoProperties: boolean = false,
   expandCompensationClasses: boolean = false,
   expandCompensationValues: boolean = false,
 ) {
@@ -113,13 +112,11 @@ export function userSuspenseQuery(
     queryKey: [
       API_USERS,
       userId,
-      includeCognitoProperties,
       expandCompensationClasses,
       expandCompensationValues,
     ],
     queryFn: () =>
       fetchUser(accessToken, userId, {
-        includeCognitoProperties,
         expandCompensationClasses,
         expandCompensationValues,
       }),
@@ -130,19 +127,14 @@ export function fetchUser(
   accessToken: string,
   userId: string,
   options: {
-    includeCognitoProperties: boolean;
     expandCompensationClasses: boolean;
     expandCompensationValues: boolean;
   } = {
-    includeCognitoProperties: false,
     expandCompensationClasses: false,
     expandCompensationValues: false,
   },
 ): Promise<UserDto> {
   let expand = [];
-  if (options.includeCognitoProperties) {
-    expand.push('cognito');
-  }
   if (options.expandCompensationClasses) {
     expand.push('compensationClasses');
   }

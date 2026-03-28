@@ -68,16 +68,14 @@ export function HomePageContents({
     staleTime: 10 * 60 * 1000,
   });
 
-  const isTrainer = userInfo.groups.includes(Group.TRAINERS);
+  const isTrainer = session.groups.includes(Group.TRAINERS);
   const showIbanWarning = isTrainer && !userInfo.iban;
 
-  const { data: courses } = isTrainer
-    ? useSuspenseQuery({
-        queryKey: ['courses-for-trainer', session.userId],
-        queryFn: () => fetchCoursesForTrainerQueryFn(),
-        staleTime: 10 * 60 * 1000,
-      })
-    : { data: [] };
+  const { data: courses } = useSuspenseQuery({
+    queryKey: ['courses-for-trainer', session.userId],
+    queryFn: () => fetchCoursesForTrainerQueryFn(),
+    staleTime: 10 * 60 * 1000,
+  });
 
   const createTrainingMutation = isTrainer
     ? trainingCreateQuery(session.accessToken, [], queryClient)
@@ -209,7 +207,6 @@ export default function HomePage() {
       return Promise.reject(new Error('No session'));
     }
     return fetchUser(session.accessToken, session.userId, {
-      includeCognitoProperties: true,
       expandCompensationClasses: true,
       expandCompensationValues: true,
     });
@@ -264,6 +261,10 @@ export default function HomePage() {
   const fetchCoursesForTrainerQueryFn = useCallback(() => {
     if (!session) {
       return Promise.reject(new Error('No session'));
+    }
+
+    if (!session.groups.includes(Group.TRAINERS)) {
+      return Promise.resolve([]);
     }
 
     return fetchListFromApi<CourseDto>(

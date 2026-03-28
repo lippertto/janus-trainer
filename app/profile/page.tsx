@@ -24,7 +24,6 @@ function ProfilePageContents({ session }: { session: JanusSession }) {
     session.userId,
     session.accessToken,
     true,
-    true,
     false,
   );
 
@@ -54,6 +53,7 @@ function ProfilePageContents({ session }: { session: JanusSession }) {
     <React.Fragment>
       <Profile
         user={user}
+        groups={session.groups}
         courses={courses}
         handleEditIbanClick={() => setShowIbanDialog(true)}
         accessToken={session.accessToken}

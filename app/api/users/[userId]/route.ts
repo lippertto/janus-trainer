@@ -149,7 +149,6 @@ export async function GET(
 
     const user = await selectOneUser(
       params.userId,
-      includeCognitoProperties,
       includeCompensationValues,
       includeCompensationClasses,
     );
@@ -172,7 +171,7 @@ export async function PATCH(
       await nextRequest.json(),
     );
     await patchOneUser(params.userId, request);
-    const result = await selectOneUser(params.userId, true, false, false);
+    const result = await selectOneUser(params.userId, true, true);
     return NextResponse.json(result);
   } catch (e) {
     return handleTopLevelCatch(e);
