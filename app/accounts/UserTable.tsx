@@ -21,7 +21,10 @@ export default function UserTable(props: {
     });
 
   return (
-    <Box component="div" overflow="auto" sx={{ height: 'calc(100vh - 320px)' }}>
+    <Box
+      component="div"
+      sx={{ overflow: 'auto', height: 'calc(100vh - 320px)' }}
+    >
       <DataGrid
         columns={columns}
         rows={props.users}

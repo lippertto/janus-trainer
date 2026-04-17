@@ -190,11 +190,11 @@ export function UserDialog(props: {
                       <Checkbox
                         {...props}
                         checked={props.value}
-                        inputProps={
-                          {
+                        slotProps={{
+                          input: {
                             'data-testid': 'is-trainer-checkbox',
-                          } as React.InputHTMLAttributes<HTMLInputElement>
-                        }
+                          } as React.InputHTMLAttributes<HTMLInputElement>,
+                        }}
                       />
                     )}
                   />
@@ -210,11 +210,11 @@ export function UserDialog(props: {
                       <Checkbox
                         {...props}
                         checked={props.value}
-                        inputProps={
-                          {
+                        slotProps={{
+                          input: {
                             'data-testid': 'is-admin-checkbox',
-                          } as React.InputHTMLAttributes<HTMLInputElement>
-                        }
+                          } as React.InputHTMLAttributes<HTMLInputElement>,
+                        }}
                       />
                     )}
                   />

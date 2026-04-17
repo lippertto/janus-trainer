@@ -41,7 +41,7 @@ export default function Profile(props: {
 
   return (
     <>
-      <Grid container display={'flex'} spacing={2} sx={{ pl: 2, pr: 2 }}>
+      <Grid container spacing={2} sx={{ display: 'flex', pl: 2, pr: 2 }}>
         <Grid size={{ xs: 12 }}>
           <Typography variant={'h5'}>Stammdaten</Typography>
         </Grid>
@@ -64,8 +64,10 @@ export default function Profile(props: {
             disabled={true}
             label="Gruppen"
             value={groupsDisplayString}
-            inputProps={{
-              'data-testid': 'profile-groups-textfield',
+            slotProps={{
+              htmlInput: {
+                'data-testid': 'profile-groups-textfield',
+              },
             }}
           />
         </Grid>
@@ -79,17 +81,19 @@ export default function Profile(props: {
                 ? ibanToHumanReadable(user.iban)
                 : 'keine IBAN angegeben'
             }
-            InputProps={{
-              endAdornment: (
-                <IconButton
-                  aria-label="edit-iban"
-                  onClick={() => {
-                    props.handleEditIbanClick();
-                  }}
-                >
-                  <EditIcon />
-                </IconButton>
-              ),
+            slotProps={{
+              input: {
+                endAdornment: (
+                  <IconButton
+                    aria-label="edit-iban"
+                    onClick={() => {
+                      props.handleEditIbanClick();
+                    }}
+                  >
+                    <EditIcon />
+                  </IconButton>
+                ),
+              },
             }}
           />
         </Grid>

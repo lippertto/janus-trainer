@@ -66,9 +66,9 @@ export function TrainerStatistics({
 
   return (
     <Paper>
-      <Box padding={2}>
+      <Box sx={{ padding: 2 }}>
         <Typography variant="h6">Statistiken {year}</Typography>
-        <Box display="flex" alignItems="center" gap={1}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Typography>
             Gesamtvergütung: {totalCompensation} / {maxCompensation}
           </Typography>
@@ -80,10 +80,12 @@ export function TrainerStatistics({
         {data.courses.length > 0 && (
           <>
             <Box
-              display="flex"
-              alignItems="center"
-              gap={1}
-              sx={{ marginTop: 2 }}
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1,
+                marginTop: 2,
+              }}
             >
               <Typography variant="subtitle1">Pro Kurs</Typography>
               <Tooltip title="Laut Sportordnung ist die Anzahl an Einheiten pro Kurs begrenzt.">

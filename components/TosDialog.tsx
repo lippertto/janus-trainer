@@ -26,7 +26,7 @@ export function TosDialog(props: {
     <Dialog open={props.open} fullWidth maxWidth={'md'}>
       <DialogTitle>Allgemeine Geschäftsbedingungen</DialogTitle>
       <DialogContent>
-        <Box maxHeight={'80%'}>
+        <Box sx={{ maxHeight: '80%' }}>
           <Stack>
             <JanusMarkdown children={props.tosData} />
             {needsToAccept ? (
