@@ -49,16 +49,24 @@ async function selectNthComboboxElement(name: string, n: number) {
   const autocomplete = await screen.findByRole('combobox', {
     name: new RegExp(name, 'i'),
   });
-  act(() => {
-    autocomplete.focus();
-  });
-  fireEvent.keyDown(autocomplete, { key: 'ArrowDown' });
+
+  // Click to open the dropdown
+  await userEvent.click(autocomplete);
+
+  // Wait for the listbox to appear
+  await screen.findByRole('listbox');
+
   for (let i = 0; i < n; i++) {
     await userEvent.keyboard('{ArrowDown}');
   }
 
   // Select the item
   await userEvent.keyboard('{Enter}');
+
+  // Wait for the listbox to close (important for multiple selections)
+  await act(async () => {
+    await new Promise((resolve) => setTimeout(resolve, 100));
+  });
 }
 
 describe('CourseDialog', () => {
