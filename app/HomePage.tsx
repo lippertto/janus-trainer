@@ -31,7 +31,7 @@ import dayjs from 'dayjs';
 import Card from '@mui/material/Card';
 import CardActionArea from '@mui/material/CardActionArea';
 import CardContent from '@mui/material/CardContent';
-import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import AddCircleOutlinedIcon from '@mui/icons-material/AddCircleOutlined';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import Box from '@mui/material/Box';
 import TrainingDialog from '@/components/TrainingDialog';
@@ -108,7 +108,7 @@ export function HomePageContents({
               data-testid="iban-warning-card"
             >
               <CardContent>
-                <Box display="flex" alignItems="center" gap={2}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                   <WarningAmberIcon color="warning" fontSize="large" />
                   <Box>
                     <Typography variant="h6" component="div">
@@ -131,8 +131,8 @@ export function HomePageContents({
               data-testid="enter-training-card"
             >
               <CardContent>
-                <Box display="flex" alignItems="center" gap={2}>
-                  <AddCircleOutlineIcon color="primary" fontSize="large" />
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                  <AddCircleOutlinedIcon color="primary" fontSize="large" />
                   <Box>
                     <Typography variant="h6" component="div">
                       Training eingeben

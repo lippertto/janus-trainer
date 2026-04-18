@@ -93,7 +93,10 @@ export default function CourseTable(props: {
   );
 
   return (
-    <Box component="div" overflow="auto" sx={{ height: 'calc(100vh - 320px)' }}>
+    <Box
+      component="div"
+      sx={{ overflow: 'auto', height: 'calc(100vh - 320px)' }}
+    >
       <DataGrid
         rows={props.courses}
         getRowId={(row) => row.id}

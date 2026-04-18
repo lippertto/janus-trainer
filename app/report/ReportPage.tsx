@@ -83,10 +83,10 @@ export function ReportPage(props: {
   }
 
   return (
-    <Box padding={2}>
+    <Box sx={{ padding: 2 }}>
       <Stack spacing={2}>
         <Typography variant="h4">Statistiken</Typography>
-        <Stack direction="row" justifyContent="space-between">
+        <Stack direction="row" sx={{ justifyContent: 'space-between' }}>
           <DateButton
             startDate={startDate}
             setStartDate={props.setStartDate}
@@ -133,7 +133,7 @@ export function ReportPage(props: {
           )}
         </Stack>
         <Paper>
-          <Box padding={2}>
+          <Box sx={{ padding: 2 }}>
             <Typography variant="h6">Gesamt</Typography>
 
             <Typography>Gesamtanzahl Trainings: {trainingCount}</Typography>
@@ -144,7 +144,7 @@ export function ReportPage(props: {
           </Box>
         </Paper>
         <Paper>
-          <Box padding={2}>
+          <Box sx={{ padding: 2 }}>
             <Typography variant="h6">Pro Kurs</Typography>
 
             <ReportCourseList

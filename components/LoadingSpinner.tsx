@@ -4,7 +4,7 @@ import React from 'react';
 
 export function LoadingSpinner() {
   return (
-    <Stack alignItems="center">
+    <Stack sx={{ alignItems: 'center' }}>
       <CircularProgress />{' '}
     </Stack>
   );

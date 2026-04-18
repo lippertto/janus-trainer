@@ -58,7 +58,7 @@ export default function PaymentSelection(props: {
 }) {
   return (
     <Paper>
-      <Stack padding={3}>
+      <Stack sx={{ padding: 3 }}>
         <Typography variant="h5">Auszahlungen</Typography>
 
         <Suspense fallback={<CircularProgress />}>

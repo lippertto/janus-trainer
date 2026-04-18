@@ -73,7 +73,7 @@ function TrainingListElement(props: {
           ) : null}
         </>
       }
-      secondaryTypographyProps={{ component: 'span' }}
+      slotProps={{ secondary: { component: 'span' } }}
     />
   );
 

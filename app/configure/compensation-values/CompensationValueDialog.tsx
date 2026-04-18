@@ -81,11 +81,13 @@ export default function CompensationValueDialog(props: {
               })}
               error={!!errors.cents?.message}
               helperText={errors.cents?.message || ''}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">€</InputAdornment>
-                ),
-                name: 'cents',
+              slotProps={{
+                input: {
+                  startAdornment: (
+                    <InputAdornment position="start">€</InputAdornment>
+                  ),
+                  name: 'cents',
+                },
               }}
               data-testid="cents-input"
             />
@@ -102,7 +104,7 @@ export default function CompensationValueDialog(props: {
               label="Dauer (optional)"
               type="number"
               {...register('durationMinutes')}
-              inputProps={{ min: 0 }}
+              slotProps={{ htmlInput: { min: 0 } }}
               error={!!errors.durationMinutes?.message}
               helperText={errors.durationMinutes?.message || ''}
               data-testid="durationMinutes-input"

@@ -8,7 +8,7 @@ import { LoadingSpinner } from '@/components/LoadingSpinner';
 
 function PleaseLogIn() {
   return (
-    <Stack alignItems={'center'}>
+    <Stack sx={{ alignItems: 'center' }}>
       <Typography>
         Melde dich mit einem Klick auf &quot;anmelden&quot; unten ein.
       </Typography>
