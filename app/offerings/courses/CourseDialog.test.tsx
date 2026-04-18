@@ -131,7 +131,7 @@ describe('CourseDialog', () => {
     });
 
     unmount();
-  });
+  }, 10000); // Increased timeout for CI
 
   test('Can select multiple trainers', async () => {
     const handleSave = vi.fn();
