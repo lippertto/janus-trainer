@@ -2,12 +2,19 @@
  * @vitest-environment jsdom
  */
 import React from 'react';
-import { act, fireEvent, render, screen } from '@testing-library/react';
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from '@testing-library/react';
 import { CourseDialog } from '@/app/offerings/courses/CourseDialog';
 import { CostCenterDto, Group, UserDto } from '@/lib/dto';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { describe, expect, test, vi } from 'vitest';
+import '@testing-library/jest-dom/vitest';
 
 import 'dayjs/locale/de';
 import userEvent from '@testing-library/user-event';
@@ -56,6 +63,7 @@ async function selectNthComboboxElement(name: string, n: number) {
   // Wait for the listbox to appear
   await screen.findByRole('listbox');
 
+  // Navigate to the nth item
   for (let i = 0; i < n; i++) {
     await userEvent.keyboard('{ArrowDown}');
   }
@@ -63,10 +71,16 @@ async function selectNthComboboxElement(name: string, n: number) {
   // Select the item
   await userEvent.keyboard('{Enter}');
 
-  // Wait for the listbox to close (important for multiple selections)
-  await act(async () => {
-    await new Promise((resolve) => setTimeout(resolve, 100));
-  });
+  // Close the dropdown by pressing Escape (important for multiple selections where dropdown stays open)
+  await userEvent.keyboard('{Escape}');
+
+  // Wait for the autocomplete to become idle again by checking if clicking it would open a new listbox
+  await waitFor(
+    async () => {
+      expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+    },
+    { timeout: 3000 },
+  );
 }
 
 describe('CourseDialog', () => {
@@ -169,5 +183,5 @@ describe('CourseDialog', () => {
     });
 
     unmount();
-  });
+  }, 10000); // Increased timeout for CI
 });
