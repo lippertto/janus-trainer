@@ -56,6 +56,7 @@ async function main() {
     {
       id: '502c79bc-e051-70f5-048c-5619e49e2383',
       name: 'Test-User Admin',
+      iban: 'DE17500211001822499419',
       email: 'test-user-admin@example.com',
       termsAcceptedVersion: '2024-08-03',
       compensationClasses: { connect: { id: 1 } },
