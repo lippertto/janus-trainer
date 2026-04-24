@@ -143,8 +143,13 @@ test.describe.serial('Historical IBAN Capture', () => {
 
     await page.goto('/compensate');
 
-    // Click on the second ListItemButton (1st button is hamburger, then help)
-    await page.getByRole('button').nth(4).click();
+    // Click on the first payment in the list (skip "Offen" which is the current/unpaid item)
+    await page
+      .getByRole('button')
+      .filter({ hasText: /€/ })
+      .filter({ hasNotText: /^Offen$/ })
+      .first()
+      .click();
 
     // Find the trainer row by name (Test-User Trainer)
     const trainerRow = page
