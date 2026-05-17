@@ -2,6 +2,7 @@ import superagent from 'superagent';
 import { HolidayCreateRequest, HolidayDto } from '@/lib/dto';
 import { describe, expect, test } from 'vitest';
 import { SERVER } from '@/api-tests/apiTestUtils';
+import { withAdminAuth } from './test-auth';
 
 describe('/holidays', () => {
   test('create update delete', async () => {
@@ -13,25 +14,27 @@ describe('/holidays', () => {
         end: '2024-04-05',
       };
 
-      const createResponse = await superagent
-        .post(`${SERVER}/api/holidays`)
-        .send(createRequest);
+      const createResponse = await withAdminAuth(
+        superagent.post(`${SERVER}/api/holidays`),
+      ).send(createRequest);
       const holiday = createResponse.body as HolidayDto;
       holidayId = holiday.id;
       expect(holiday.name).toBe('Name');
       expect(holiday.start).toBe('2024-03-02');
       expect(holiday.end).toBe('2024-04-05');
 
-      const updateResponse = await superagent
-        .put(`${SERVER}/api/holidays/${holidayId}`)
-        .send({ name: 'new-name', start: '2025-03-02', end: '2025-04-08' });
+      const updateResponse = await withAdminAuth(
+        superagent.put(`${SERVER}/api/holidays/${holidayId}`),
+      ).send({ name: 'new-name', start: '2025-03-02', end: '2025-04-08' });
       const updatedHoliday = updateResponse.body as HolidayDto;
       expect(updatedHoliday.name).toBe('new-name');
       expect(updatedHoliday.start).toBe('2025-03-02');
       expect(updatedHoliday.end).toBe('2025-04-08');
     } finally {
       if (holidayId) {
-        await superagent.delete(`${SERVER}/api/holidays/${holidayId}`);
+        await withAdminAuth(
+          superagent.delete(`${SERVER}/api/holidays/${holidayId}`),
+        );
       }
     }
   });

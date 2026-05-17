@@ -1,6 +1,7 @@
 import { spawn, type ChildProcess } from 'child_process';
 import superagent from 'superagent';
 import { SERVER } from './apiTestUtils';
+import { getTestJwtSecret } from './test-auth';
 
 let serverProcess: ChildProcess | null = null;
 
@@ -29,8 +30,9 @@ export async function setup() {
   serverProcess = spawn('yarn', ['start:dev'], {
     env: {
       ...process.env,
-      DISABLE_JWT_CHECKS: '1',
       NODE_ENV: 'development',
+      NEXTAUTH_SECRET: getTestJwtSecret(),
+      NEXTAUTH_URL: SERVER,
     },
     stdio: 'pipe', // Capture output
   });

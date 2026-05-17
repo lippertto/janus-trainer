@@ -8,10 +8,12 @@ import {
 import superagent from 'superagent';
 import { TrainingStatus } from '@/generated/prisma/client';
 import { describe, expect, test } from 'vitest';
+import { withAdminAuth } from './test-auth';
 const api = new LocalApi();
 
 describe('/trainer-reports:generate-pdf', () => {
   test('happy case', async () => {
+    await api.authenticate();
     await api.clearTrainings();
 
     await api
@@ -44,11 +46,11 @@ describe('/trainer-reports:generate-pdf', () => {
       .then((c) => api.transitionTraining(c.id, TrainingStatus.APPROVED))
       .then((c) => api.transitionTraining(c.id, TrainingStatus.COMPENSATED));
 
-    const response = await superagent
-      .post(
+    const response = await withAdminAuth(
+      superagent.post(
         `${SERVER}/api/trainer-reports:generate-pdf?trainerId=${USER_ID_TRAINER}&start=2024-01-01&end=2024-12-31`,
-      )
-      .responseType('blob');
+      ),
+    ).responseType('blob');
     expect(response.status).toBe(200);
 
     expect(response.headers['content-type']).toBe('application/pdf');

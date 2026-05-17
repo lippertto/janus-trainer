@@ -2,6 +2,7 @@ import superagent from 'superagent';
 import { TrainingCreateRequest } from '@/lib/dto';
 import { describe, expect, test } from 'vitest';
 import { SERVER } from '@/api-tests/apiTestUtils';
+import { withAdminAuth } from './test-auth';
 
 describe('/trainings:summarize', () => {
   test('happy case', async () => {
@@ -53,15 +54,19 @@ describe('/trainings:summarize', () => {
     ];
     const trainingIds = await Promise.all(
       trainings.map(async (t) => {
-        const result = await superagent.post(`${SERVER}/api/trainings`).send(t);
+        const result = await withAdminAuth(
+          superagent.post(`${SERVER}/api/trainings`),
+        ).send(t);
         return result.body.id as number;
       }),
     );
 
     try {
       // WHEN
-      const result = await superagent.post(
-        `${SERVER}/api/trainings:summarize?startDate=2001-01-01&endDate=2001-03-31`,
+      const result = await withAdminAuth(
+        superagent.post(
+          `${SERVER}/api/trainings:summarize?startDate=2001-01-01&endDate=2001-03-31`,
+        ),
       );
 
       // THEN
@@ -83,7 +88,7 @@ describe('/trainings:summarize', () => {
       // clean up
       await Promise.all(
         trainingIds.map((t) =>
-          superagent.delete(`${SERVER}/api/trainings/${t}`),
+          withAdminAuth(superagent.delete(`${SERVER}/api/trainings/${t}`)),
         ),
       );
     }
@@ -92,11 +97,11 @@ describe('/trainings:summarize', () => {
   test('start and end dates have to be provided', async () => {
     let caught = false;
     // WHEN
-    await superagent
-      .post(`${SERVER}/api/trainings:summarize?startDate=2001-01-01`)
-      .catch((e) => {
-        caught = true;
-      });
+    await withAdminAuth(
+      superagent.post(`${SERVER}/api/trainings:summarize?startDate=2001-01-01`),
+    ).catch((e) => {
+      caught = true;
+    });
     // THEN
     expect(caught).toBe(true);
   });
@@ -104,11 +109,11 @@ describe('/trainings:summarize', () => {
   test('end date has to be set', async () => {
     let caught = false;
     // WHEN
-    await superagent
-      .post(`${SERVER}/api/trainings:summarize?endDate=2001-01-01`)
-      .catch((e) => {
-        caught = true;
-      });
+    await withAdminAuth(
+      superagent.post(`${SERVER}/api/trainings:summarize?endDate=2001-01-01`),
+    ).catch((e) => {
+      caught = true;
+    });
     // THEN
     expect(caught).toBe(true);
   });

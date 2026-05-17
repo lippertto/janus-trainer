@@ -3,12 +3,14 @@ import { CostCenterDto, CostCenterUpdateRequest } from '@/lib/dto';
 import { describe, expect, test } from 'vitest';
 import { LocalApi } from './apiTestUtils';
 import { SERVER } from './apiTestUtils';
+import { withAdminAuth } from './test-auth';
 
 describe('/cost-centers', () => {
   test('CRUD roundtrip', async () => {
     let costCenter;
     try {
       const api = new LocalApi(SERVER);
+      await api.authenticate();
       costCenter = await api.createCostCenter();
 
       expect(costCenter.name).toBe('Name');
@@ -19,9 +21,9 @@ describe('/cost-centers', () => {
         name: 'new-name',
         costCenterId: 777,
       };
-      const updateResponse = await superagent
-        .put(`${SERVER}/api/cost-centers/${costCenter.id}`)
-        .send(updateRequest);
+      const updateResponse = await withAdminAuth(
+        superagent.put(`${SERVER}/api/cost-centers/${costCenter.id}`),
+      ).send(updateRequest);
 
       expect(updateResponse.statusCode).toBe(200);
       const updatedCostCenter = updateResponse.body as CostCenterDto;
@@ -29,11 +31,15 @@ describe('/cost-centers', () => {
       expect(updatedCostCenter.costCenterId).toBe(777);
 
       // delete
-      await superagent.delete(`${SERVER}/api/cost-centers/${costCenter.id}`);
+      await withAdminAuth(
+        superagent.delete(`${SERVER}/api/cost-centers/${costCenter.id}`),
+      );
       costCenter = null;
     } finally {
       if (costCenter) {
-        await superagent.delete(`${SERVER}/api/cost-centers/${costCenter.id}`);
+        await withAdminAuth(
+          superagent.delete(`${SERVER}/api/cost-centers/${costCenter.id}`),
+        );
       }
     }
   });
@@ -44,31 +50,40 @@ describe('/cost-centers', () => {
     try {
       // GIVEN a cost center with an assigned course
       const api = new LocalApi(SERVER);
+      await api.authenticate();
       costCenter = await api.createCostCenter();
       course = await api.createCourse({ costCenterId: costCenter.id });
 
       // WHEN we try to delete the cost center
-      let response = await superagent
-        .delete(`${SERVER}/api/cost-centers/${costCenter.id}`)
-        .ok((res) => res.status === 409);
+      let response = await withAdminAuth(
+        superagent.delete(`${SERVER}/api/cost-centers/${costCenter.id}`),
+      ).ok((res) => res.status === 409);
 
       // THEN we get a 409 to indicate that the cost center cannot be deleted
       expect(response.statusCode).toBe(409);
 
       // WHEN we delete that course
-      await superagent.delete(`${SERVER}/api/courses/${course.id}`);
+      await withAdminAuth(
+        superagent.delete(`${SERVER}/api/courses/${course.id}`),
+      );
       course = null;
 
       // THEN we are able to delete the cost center
-      await superagent.delete(`${SERVER}/api/cost-centers/${costCenter.id}`);
+      await withAdminAuth(
+        superagent.delete(`${SERVER}/api/cost-centers/${costCenter.id}`),
+      );
       costCenter = null;
     } finally {
       if (costCenter) {
-        await superagent.delete(`${SERVER}/api/cost-centers/${costCenter.id}`);
+        await withAdminAuth(
+          superagent.delete(`${SERVER}/api/cost-centers/${costCenter.id}`),
+        );
       }
 
       if (course) {
-        await superagent.delete(`${SERVER}/api/courses/${course.id}`);
+        await withAdminAuth(
+          superagent.delete(`${SERVER}/api/courses/${course.id}`),
+        );
       }
     }
   });

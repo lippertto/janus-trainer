@@ -15,6 +15,7 @@ import {
 } from '@/api-tests/apiTestUtils';
 import { TrainingStatus } from '@/generated/prisma/enums';
 import { StatusCodes } from 'http-status-codes';
+import { withAdminAuth } from './test-auth';
 
 const TRAINER_ID = '502c79bc-e051-70f5-048c-5619e49e2383';
 const COURSE_ID = 1;
@@ -40,9 +41,9 @@ describe('/trainings', () => {
         courseId: COURSE_ID,
         comment: 'comment',
       };
-      const resultPost = await superagent
-        .post(`${SERVER}/api/trainings`)
-        .send(training);
+      const resultPost = await withAdminAuth(
+        superagent.post(`${SERVER}/api/trainings`),
+      ).send(training);
 
       const createdTraining = resultPost.body as TrainingDto;
       trainingId = createdTraining.id;
@@ -55,8 +56,8 @@ describe('/trainings', () => {
       expect(createdTraining.courseId).toBe(training.courseId);
       expect(createdTraining.comment).toBe(training.comment);
 
-      const resultGet = await superagent.get(
-        `${SERVER}/api/trainings/${trainingId}`,
+      const resultGet = await withAdminAuth(
+        superagent.get(`${SERVER}/api/trainings/${trainingId}`),
       );
       const retrievedTraining = resultGet.body as TrainingDto;
       expect(retrievedTraining.date).toBe(training.date);
@@ -71,7 +72,9 @@ describe('/trainings', () => {
       expect(retrievedTraining.comment).toBe(training.comment);
     } finally {
       if (trainingId) {
-        await superagent.delete(`${SERVER}/api/trainings/${trainingId}`);
+        await withAdminAuth(
+          superagent.delete(`${SERVER}/api/trainings/${trainingId}`),
+        );
       }
     }
   });
@@ -79,9 +82,9 @@ describe('/trainings', () => {
   test('time of status transitions if recorded', async () => {
     let trainingId;
     try {
-      const resultPost = await superagent
-        .post(`${SERVER}/api/trainings`)
-        .send(VALID_TRAINING_CREATE_REQUEST);
+      const resultPost = await withAdminAuth(
+        superagent.post(`${SERVER}/api/trainings`),
+      ).send(VALID_TRAINING_CREATE_REQUEST);
 
       const createdTraining = resultPost.body as TrainingDto;
       trainingId = createdTraining.id;
@@ -91,9 +94,9 @@ describe('/trainings', () => {
       const approveRequest: TrainingUpdateStatusRequest = {
         status: 'APPROVED',
       };
-      const resultApprove = await superagent
-        .patch(`${SERVER}/api/trainings/${trainingId}`)
-        .send(approveRequest);
+      const resultApprove = await withAdminAuth(
+        superagent.patch(`${SERVER}/api/trainings/${trainingId}`),
+      ).send(approveRequest);
       const approvedTraining = resultApprove.body as TrainingDto;
       expect(approvedTraining.status).toBe('APPROVED');
       const approvedTime = dayjs(approvedTraining.approvedAt!);
@@ -102,16 +105,18 @@ describe('/trainings', () => {
       const compensateRequest: TrainingUpdateStatusRequest = {
         status: 'COMPENSATED',
       };
-      const resultCompensated = await superagent
-        .patch(`${SERVER}/api/trainings/${trainingId}`)
-        .send(compensateRequest);
+      const resultCompensated = await withAdminAuth(
+        superagent.patch(`${SERVER}/api/trainings/${trainingId}`),
+      ).send(compensateRequest);
       const compensatedTraining = resultCompensated.body as TrainingDto;
       expect(compensatedTraining.status).toBe('COMPENSATED');
       const compensationTime = dayjs(compensatedTraining.compensatedAt!);
       expect(compensationTime.diff(dayjs())).toBeLessThan(1000);
     } finally {
       if (trainingId) {
-        await superagent.delete(`${SERVER}/api/trainings/${trainingId}`);
+        await withAdminAuth(
+          superagent.delete(`${SERVER}/api/trainings/${trainingId}`),
+        );
       }
     }
   });
@@ -119,6 +124,7 @@ describe('/trainings', () => {
   test('allows to query by courseId', async () => {
     const courseId = 1;
     const api = new LocalApi();
+    await api.authenticate();
 
     const createdTrainings = [];
     try {
@@ -169,8 +175,10 @@ describe('/trainings', () => {
       await api.transitionTraining(t2.id, TrainingStatus.APPROVED);
 
       // WHEN we request all trainings for 1999 and course 1
-      const response = await superagent.get(
-        `${SERVER}/api/trainings?courseId=${courseId}&start=1999-01-01&end=1999-12-31&status=COMPENSATED&expand=user`,
+      const response = await withAdminAuth(
+        superagent.get(
+          `${SERVER}/api/trainings?courseId=${courseId}&start=1999-01-01&end=1999-12-31&status=COMPENSATED&expand=user`,
+        ),
       );
       expect(response.statusCode).toBe(StatusCodes.OK);
       const returnedTrainings = response.body as TrainingQueryResponse;

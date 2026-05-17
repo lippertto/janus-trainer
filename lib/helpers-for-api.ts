@@ -6,8 +6,6 @@ import { logger } from '@/lib/logging';
 
 /** Will throw if the token does not have the admin role. */
 export async function allowOnlyAdmins(req: NextRequest) {
-  if (process.env.DISABLE_JWT_CHECKS) return;
-
   const token = await getToken({ req });
   if (!token) throw new ApiErrorUnauthorized('Token is missing');
 
@@ -20,8 +18,19 @@ export async function allowOnlyAdmins(req: NextRequest) {
   }
 }
 
-export async function allowNoOne(_: NextRequest) {
-  if (process.env.DISABLE_JWT_CHECKS) return;
+/**
+ * Allows only in test mode. In production, this always throws.
+ * In test mode (NODE_ENV=development or test), admins are allowed.
+ */
+export async function allowNoOne(req: NextRequest) {
+  // In development/test environments, allow admins to use test-only endpoints
+  const isDevelopment =
+    process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test';
+  if (isDevelopment) {
+    await allowOnlyAdmins(req);
+    return;
+  }
+
   throw new ApiErrorForbidden('This operation is allowed only in tests');
 }
 
@@ -29,8 +38,6 @@ export async function isAdmin(
   request: NextRequest,
   jwt: JWT | null = null,
 ): Promise<boolean> {
-  if (process.env.DISABLE_JWT_CHECKS) return true;
-
   if (!jwt) {
     jwt = await getToken({ req: request });
   }
@@ -55,7 +62,6 @@ export async function allowAdminOrSelf(
   req: NextRequest,
   ownUserId: string,
 ): Promise<void> {
-  if (process.env.DISABLE_JWT_CHECKS) return;
   const token = await getToken({ req });
   if (!token) throw new ApiErrorUnauthorized('Token is missing');
   if (await isAdmin(req, token)) return;
@@ -70,8 +76,6 @@ export async function allowAdminOrSelf(
 }
 
 export async function getOwnUserId(req: NextRequest): Promise<string> {
-  if (process.env.DISABLE_JWT_CHECKS)
-    return '502c79bc-e051-70f5-048c-5619e49e2383';
   const token = await getToken({ req });
   if (!token) throw new ApiErrorUnauthorized('Token is missing');
   return token.sub!;
@@ -79,7 +83,6 @@ export async function getOwnUserId(req: NextRequest): Promise<string> {
 
 /** Will throw if the token is not valid. */
 export async function allowAnyLoggedIn(req: NextRequest): Promise<void> {
-  if (process.env.DISABLE_JWT_CHECKS) return;
   const token = await getToken({ req });
   if (!token) throw new ApiErrorUnauthorized('Token is missing');
 }

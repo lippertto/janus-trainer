@@ -8,6 +8,7 @@ import {
 import { TrainingStatus } from '@/generated/prisma/client';
 import superagent from 'superagent';
 import { UserDto, CompensationDto } from '@/lib/dto';
+import { withAdminAuth } from './test-auth';
 
 /**
  * Test suite for Payment IBAN Capture feature
@@ -25,22 +26,25 @@ describe('Payment IBAN Capture', () => {
   // Base functionality test list - convert ONE at a time to executable tests
 
   it('should reject payment creation when single trainer has NULL IBAN', async () => {
+    await api.authenticate();
     // GIVEN: A trainer with NULL IBAN
-    const trainerResponse = await superagent.get(
-      `${SERVER}/api/users/${USER_ID_TRAINER}?expand=cognito`,
+    const trainerResponse = await withAdminAuth(
+      superagent.get(`${SERVER}/api/users/${USER_ID_TRAINER}?expand=cognito`),
     );
     const trainer = trainerResponse.body as UserDto;
     const originalIban = trainer.iban;
 
     try {
       // Set IBAN to NULL
-      await superagent.patch(`${SERVER}/api/users/${USER_ID_TRAINER}`).send({
+      await withAdminAuth(
+        superagent.patch(`${SERVER}/api/users/${USER_ID_TRAINER}`),
+      ).send({
         iban: null,
       });
 
       // Verify IBAN was actually set to NULL
-      const verifyResponse = await superagent.get(
-        `${SERVER}/api/users/${USER_ID_TRAINER}?expand=cognito`,
+      const verifyResponse = await withAdminAuth(
+        superagent.get(`${SERVER}/api/users/${USER_ID_TRAINER}?expand=cognito`),
       );
       const verifiedTrainer = verifyResponse.body as UserDto;
       expect(verifiedTrainer.iban).toBeNull();
@@ -69,29 +73,34 @@ describe('Payment IBAN Capture', () => {
       }
     } finally {
       // Cleanup: restore original IBAN
-      await superagent.patch(`${SERVER}/api/users/${USER_ID_TRAINER}`).send({
+      await withAdminAuth(
+        superagent.patch(`${SERVER}/api/users/${USER_ID_TRAINER}`),
+      ).send({
         iban: originalIban,
       });
     }
   });
 
   it('should reject payment creation when one of multiple trainers has NULL IBAN', async () => {
+    await api.authenticate();
     // GIVEN: Two trainers, one with IBAN and one without
-    const trainer1Response = await superagent.get(
-      `${SERVER}/api/users/${USER_ID_TRAINER}?expand=cognito`,
+    const trainer1Response = await withAdminAuth(
+      superagent.get(`${SERVER}/api/users/${USER_ID_TRAINER}?expand=cognito`),
     );
     const trainer1 = trainer1Response.body as UserDto;
     const trainer1OriginalIban = trainer1.iban;
 
-    const trainer2Response = await superagent.get(
-      `${SERVER}/api/users/${USER_ID_ADMIN}?expand=cognito`,
+    const trainer2Response = await withAdminAuth(
+      superagent.get(`${SERVER}/api/users/${USER_ID_ADMIN}?expand=cognito`),
     );
     const trainer2 = trainer2Response.body as UserDto;
     const trainer2OriginalIban = trainer2.iban;
 
     try {
       // Set trainer1's IBAN to NULL
-      await superagent.patch(`${SERVER}/api/users/${USER_ID_TRAINER}`).send({
+      await withAdminAuth(
+        superagent.patch(`${SERVER}/api/users/${USER_ID_TRAINER}`),
+      ).send({
         iban: null,
       });
 
@@ -125,19 +134,24 @@ describe('Payment IBAN Capture', () => {
       }
     } finally {
       // Cleanup: restore original IBANs
-      await superagent.patch(`${SERVER}/api/users/${USER_ID_TRAINER}`).send({
+      await withAdminAuth(
+        superagent.patch(`${SERVER}/api/users/${USER_ID_TRAINER}`),
+      ).send({
         iban: trainer1OriginalIban,
       });
-      await superagent.patch(`${SERVER}/api/users/${USER_ID_ADMIN}`).send({
+      await withAdminAuth(
+        superagent.patch(`${SERVER}/api/users/${USER_ID_ADMIN}`),
+      ).send({
         iban: trainer2OriginalIban,
       });
     }
   });
 
   it('should create PaymentUserIban record when creating payment for single trainer', async () => {
+    await api.authenticate();
     // GIVEN: A trainer with an IBAN
-    const trainerResponse = await superagent.get(
-      `${SERVER}/api/users/${USER_ID_TRAINER}?expand=cognito`,
+    const trainerResponse = await withAdminAuth(
+      superagent.get(`${SERVER}/api/users/${USER_ID_TRAINER}?expand=cognito`),
     );
     const trainer = trainerResponse.body as UserDto;
     expect(trainer).not.toBeNull();
@@ -159,14 +173,16 @@ describe('Payment IBAN Capture', () => {
 
       // WHEN: Trainer updates their IBAN to a new value
       const newIban = 'DE89370400440532013000';
-      await superagent.patch(`${SERVER}/api/users/${USER_ID_TRAINER}`).send({
+      await withAdminAuth(
+        superagent.patch(`${SERVER}/api/users/${USER_ID_TRAINER}`),
+      ).send({
         iban: newIban,
       });
 
       // THEN: Compensations API shows the ORIGINAL IBAN (captured at payment time)
       // NOT the new IBAN
-      const compensationsResponse = await superagent.get(
-        `${SERVER}/api/compensations?paymentId=${payment.id}`,
+      const compensationsResponse = await withAdminAuth(
+        superagent.get(`${SERVER}/api/compensations?paymentId=${payment.id}`),
       );
       const compensations = compensationsResponse.body
         .value as CompensationDto[];
@@ -177,7 +193,9 @@ describe('Payment IBAN Capture', () => {
       expect(compensations[0].iban).not.toBe(newIban);
     } finally {
       // Cleanup: restore original IBAN
-      await superagent.patch(`${SERVER}/api/users/${USER_ID_TRAINER}`).send({
+      await withAdminAuth(
+        superagent.patch(`${SERVER}/api/users/${USER_ID_TRAINER}`),
+      ).send({
         iban: originalIban,
       });
       await api.deleteTraining(training.id);
@@ -185,16 +203,17 @@ describe('Payment IBAN Capture', () => {
   });
 
   it('should create PaymentUserIban records for multiple trainers in same payment', async () => {
+    await api.authenticate();
     // GIVEN: Two trainers with IBANs
-    const trainer1Response = await superagent.get(
-      `${SERVER}/api/users/${USER_ID_TRAINER}?expand=cognito`,
+    const trainer1Response = await withAdminAuth(
+      superagent.get(`${SERVER}/api/users/${USER_ID_TRAINER}?expand=cognito`),
     );
     const trainer1 = trainer1Response.body as UserDto;
     const trainer1OriginalIban = trainer1.iban;
     expect(trainer1OriginalIban).not.toBeNull();
 
-    const trainer2Response = await superagent.get(
-      `${SERVER}/api/users/${USER_ID_ADMIN}?expand=cognito`,
+    const trainer2Response = await withAdminAuth(
+      superagent.get(`${SERVER}/api/users/${USER_ID_ADMIN}?expand=cognito`),
     );
     const trainer2 = trainer2Response.body as UserDto;
     const trainer2OriginalIban = trainer2.iban;
@@ -221,16 +240,20 @@ describe('Payment IBAN Capture', () => {
       // WHEN: Both trainers update their IBANs to new values
       const newIban1 = 'DE89370400440532013000';
       const newIban2 = 'DE68210501700012345678';
-      await superagent.patch(`${SERVER}/api/users/${USER_ID_TRAINER}`).send({
+      await withAdminAuth(
+        superagent.patch(`${SERVER}/api/users/${USER_ID_TRAINER}`),
+      ).send({
         iban: newIban1,
       });
-      await superagent.patch(`${SERVER}/api/users/${USER_ID_ADMIN}`).send({
+      await withAdminAuth(
+        superagent.patch(`${SERVER}/api/users/${USER_ID_ADMIN}`),
+      ).send({
         iban: newIban2,
       });
 
       // THEN: Compensations API shows ORIGINAL IBANs for both trainers
-      const compensationsResponse = await superagent.get(
-        `${SERVER}/api/compensations?paymentId=${payment.id}`,
+      const compensationsResponse = await withAdminAuth(
+        superagent.get(`${SERVER}/api/compensations?paymentId=${payment.id}`),
       );
       const compensations = compensationsResponse.body
         .value as CompensationDto[];
@@ -253,10 +276,14 @@ describe('Payment IBAN Capture', () => {
       expect(comp2!.iban).not.toBe(newIban2);
     } finally {
       // Cleanup: restore original IBANs
-      await superagent.patch(`${SERVER}/api/users/${USER_ID_TRAINER}`).send({
+      await withAdminAuth(
+        superagent.patch(`${SERVER}/api/users/${USER_ID_TRAINER}`),
+      ).send({
         iban: trainer1OriginalIban,
       });
-      await superagent.patch(`${SERVER}/api/users/${USER_ID_ADMIN}`).send({
+      await withAdminAuth(
+        superagent.patch(`${SERVER}/api/users/${USER_ID_ADMIN}`),
+      ).send({
         iban: trainer2OriginalIban,
       });
       await api.deleteTraining(training1.id);
@@ -265,9 +292,10 @@ describe('Payment IBAN Capture', () => {
   });
 
   it('should create only one PaymentUserIban record when same trainer has multiple trainings', async () => {
+    await api.authenticate();
     // GIVEN: A trainer with an IBAN
-    const trainerResponse = await superagent.get(
-      `${SERVER}/api/users/${USER_ID_TRAINER}?expand=cognito`,
+    const trainerResponse = await withAdminAuth(
+      superagent.get(`${SERVER}/api/users/${USER_ID_TRAINER}?expand=cognito`),
     );
     const trainer = trainerResponse.body as UserDto;
     const originalIban = trainer.iban;
@@ -298,14 +326,16 @@ describe('Payment IBAN Capture', () => {
 
       // WHEN: Trainer updates their IBAN to a new value
       const newIban = 'DE89370400440532013000';
-      await superagent.patch(`${SERVER}/api/users/${USER_ID_TRAINER}`).send({
+      await withAdminAuth(
+        superagent.patch(`${SERVER}/api/users/${USER_ID_TRAINER}`),
+      ).send({
         iban: newIban,
       });
 
       // THEN: Compensations API shows only ONE compensation entry with original IBAN
       // (grouped by trainer, so multiple trainings = one compensation entry)
-      const compensationsResponse = await superagent.get(
-        `${SERVER}/api/compensations?paymentId=${payment.id}`,
+      const compensationsResponse = await withAdminAuth(
+        superagent.get(`${SERVER}/api/compensations?paymentId=${payment.id}`),
       );
       const compensations = compensationsResponse.body
         .value as CompensationDto[];
@@ -321,7 +351,9 @@ describe('Payment IBAN Capture', () => {
       expect(compensations[0].totalCompensationCents).toBe(4500); // 1000 + 1500 + 2000
     } finally {
       // Cleanup: restore original IBAN
-      await superagent.patch(`${SERVER}/api/users/${USER_ID_TRAINER}`).send({
+      await withAdminAuth(
+        superagent.patch(`${SERVER}/api/users/${USER_ID_TRAINER}`),
+      ).send({
         iban: originalIban,
       });
       await api.deleteTraining(training1.id);

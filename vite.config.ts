@@ -4,7 +4,7 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({
   test: {
     include: ['**/*.test.tsx', '**/*.test.ts'],
-    exclude: ['playwright/**', 'node_modules/**', 'api-tests/**', '.next/**'],
+    exclude: ['playwright/**', 'node_modules/**', '.next/**', 'api-tests/**'],
   },
   resolve: {
     alias: [
