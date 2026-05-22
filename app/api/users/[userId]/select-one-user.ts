@@ -24,11 +24,9 @@ export async function selectOneUser(
     throw new ApiErrorNotFound(`User with id ${id} not found`);
   }
 
-  let email: string = '';
-
   return {
     ...dbUser,
-    email: email,
+    email: dbUser.email,
     termsAcceptedAt: dbUser.termsAcceptedAt?.toLocaleDateString() ?? null,
     groups: [],
     // @ts-ignore
