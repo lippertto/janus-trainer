@@ -8,6 +8,7 @@ import {
 } from '@/lib/dto';
 import superagent from 'superagent';
 import { DayOfWeek, TrainingStatus } from '@/generated/prisma/enums';
+import { generateAdminToken } from './test-auth';
 
 export const SERVER = 'http://localhost:3000';
 
@@ -24,9 +25,30 @@ export const COURSE_2_NAME = 'Test-Kurs 2';
 
 export class LocalApi {
   baseUrl: string;
+  private authToken: string | null = null;
 
   constructor(baseUrl: string = SERVER) {
     this.baseUrl = baseUrl;
+  }
+
+  /**
+   * Initialize authentication for this API client.
+   * Must be called before making any authenticated requests.
+   */
+  async authenticate(token?: string) {
+    this.authToken = token || (await generateAdminToken());
+  }
+
+  /**
+   * Add authentication header to a superagent request
+   */
+  private addAuth(request: superagent.SuperAgentRequest) {
+    if (this.authToken) {
+      // NextAuth reads the JWT from a cookie named based on NEXTAUTH_URL
+      // For testing, we can set it directly
+      request.set('Cookie', `next-auth.session-token=${this.authToken}`);
+    }
+    return request;
   }
 
   async createTraining({
@@ -48,25 +70,27 @@ export class LocalApi {
       participantCount: 10,
       comment: '',
     };
-    const result = await superagent
-      .post(`${this.baseUrl}/api/trainings`)
-      .send(request);
+    const result = await this.addAuth(
+      superagent.post(`${this.baseUrl}/api/trainings`),
+    ).send(request);
     return result.body as TrainingDto;
   }
 
   async deleteTraining(id: number) {
-    await superagent.delete(`${this.baseUrl}/api/trainings/${id}`);
+    await this.addAuth(
+      superagent.delete(`${this.baseUrl}/api/trainings/${id}`),
+    );
   }
 
   async transitionTraining(id: number, status: TrainingStatus) {
-    const response = await superagent
-      .patch(`${this.baseUrl}/api/trainings/${id}`)
-      .send({ status });
+    const response = await this.addAuth(
+      superagent.patch(`${this.baseUrl}/api/trainings/${id}`),
+    ).send({ status });
     return response.body as TrainingDto;
   }
 
   async clearTrainings() {
-    await superagent.delete(`${this.baseUrl}/api/trainings`);
+    await this.addAuth(superagent.delete(`${this.baseUrl}/api/trainings`));
   }
 
   async createPayment({
@@ -76,7 +100,9 @@ export class LocalApi {
     userId?: string;
     trainingIds: number[];
   }): Promise<PaymentDto> {
-    const result = await superagent.post(`${this.baseUrl}/api/payments`).send({
+    const result = await this.addAuth(
+      superagent.post(`${this.baseUrl}/api/payments`),
+    ).send({
       userId,
       trainingIds: trainingIds,
     });
@@ -88,25 +114,29 @@ export class LocalApi {
   }: {
     trainerId: string;
   }): Promise<PaymentDto[]> {
-    const result = await superagent.get(
-      `${this.baseUrl}/api/payments?trainerId=${trainerId}`,
+    const result = await this.addAuth(
+      superagent.get(`${this.baseUrl}/api/payments?trainerId=${trainerId}`),
     );
     return result.body.value as PaymentDto[];
   }
 
   async deleteCourse(id: number): Promise<void> {
-    await superagent.delete(`${this.baseUrl}/api/courses/${id}`);
+    await this.addAuth(superagent.delete(`${this.baseUrl}/api/courses/${id}`));
   }
 
   async createCostCenter(): Promise<CostCenterDto> {
     const costCenterId = 666;
-    const costCenterResponse = await superagent.get(
-      `${this.baseUrl}/api/cost-centers?costCenterId=${costCenterId}`,
+    const costCenterResponse = await this.addAuth(
+      superagent.get(
+        `${this.baseUrl}/api/cost-centers?costCenterId=${costCenterId}`,
+      ),
     );
     const existing = costCenterResponse.body.value as CostCenterDto[];
     if (existing.length > 0) {
-      const courses = await superagent.get(
-        `${this.baseUrl}/api/courses?costCenterId=${existing[0].id}`,
+      const courses = await this.addAuth(
+        superagent.get(
+          `${this.baseUrl}/api/courses?costCenterId=${existing[0].id}`,
+        ),
       );
       const linkedCourses = courses.body.value as CourseDto[];
       await Promise.all(
@@ -114,8 +144,8 @@ export class LocalApi {
       );
 
       // api logic ensures that only one cost-center with the number exists
-      await superagent.delete(
-        `${this.baseUrl}/api/cost-centers/${existing[0].id}`,
+      await this.addAuth(
+        superagent.delete(`${this.baseUrl}/api/cost-centers/${existing[0].id}`),
       );
     }
 
@@ -124,9 +154,9 @@ export class LocalApi {
       costCenterId,
     };
 
-    const createResponse = await superagent
-      .post(`${this.baseUrl}/api/cost-centers`)
-      .send(createRequest);
+    const createResponse = await this.addAuth(
+      superagent.post(`${this.baseUrl}/api/cost-centers`),
+    ).send(createRequest);
     return createResponse.body as CostCenterDto;
   }
 
@@ -135,7 +165,9 @@ export class LocalApi {
   }: {
     costCenterId: number;
   }): Promise<CourseDto> {
-    const result = await superagent.post(`${this.baseUrl}/api/courses`).send({
+    const result = await this.addAuth(
+      superagent.post(`${this.baseUrl}/api/courses`),
+    ).send({
       name: 'any-course',
       durationMinutes: 120,
       weekday: DayOfWeek.TUESDAY,

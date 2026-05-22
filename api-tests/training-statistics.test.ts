@@ -3,6 +3,7 @@ import superagent from 'superagent';
 import { TrainingCountPerCourse, TrainingDto } from '@/lib/dto';
 import { TrainingStatus } from '@/generated/prisma/client';
 import { expect, test } from 'vitest';
+import { withAdminAuth } from './test-auth';
 
 const api = new LocalApi(SERVER);
 
@@ -15,6 +16,7 @@ async function compensateTrainings(trainings: TrainingDto[]): Promise<void> {
 }
 
 test('happy case: group by cost-center', async () => {
+  await api.authenticate();
   await api.clearTrainings();
 
   // 2 trainings of course 1 in 2024; 3 trainings of course 2 in 2024
@@ -31,8 +33,10 @@ test('happy case: group by cost-center', async () => {
   // one training that is not in status 'COMPENSATED';
   await api.createTraining({ date: '2024-08-09', courseId: 2 });
 
-  const result = await superagent.post(
-    `${SERVER}/api/training-statistics?year=2024&groupBy=cost-center`,
+  const result = await withAdminAuth(
+    superagent.post(
+      `${SERVER}/api/training-statistics?year=2024&groupBy=cost-center`,
+    ),
   );
   expect(result.statusCode).toBe(200);
 
@@ -53,6 +57,7 @@ test('happy case: group by cost-center', async () => {
 });
 
 test('deduplicates trainings when multiple trainers work on the same day for the same course', async () => {
+  await api.authenticate();
   await api.clearTrainings();
 
   // Scenario: Two trainers both work on course 1 on the same dates (co-teaching)
@@ -85,8 +90,10 @@ test('deduplicates trainings when multiple trainers work on the same day for the
   await compensateTrainings([...trainer1Trainings, ...trainer2Trainings]);
 
   // Test grouping by course - should count 3 unique dates, not 6 trainings
-  const resultByCourse = await superagent.post(
-    `${SERVER}/api/training-statistics?year=2024&groupBy=course`,
+  const resultByCourse = await withAdminAuth(
+    superagent.post(
+      `${SERVER}/api/training-statistics?year=2024&groupBy=course`,
+    ),
   );
   expect(resultByCourse.statusCode).toBe(200);
 

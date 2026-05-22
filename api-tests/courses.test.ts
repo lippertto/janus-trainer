@@ -2,17 +2,18 @@ import { describe, expect, test } from 'vitest';
 import superagent from 'superagent';
 import { CourseDto } from '@/lib/dto';
 import { LocalApi, SERVER } from './apiTestUtils';
+import { withAdminAuth } from './test-auth';
 
 async function deleteCostCenter(id: number) {
-  await superagent.delete(`${SERVER}/api/cost-centers/${id}`);
+  await withAdminAuth(superagent.delete(`${SERVER}/api/cost-centers/${id}`));
 }
 
 async function deleteCourse(id: number) {
-  await superagent.delete(`${SERVER}/api/courses/${id}`);
+  await withAdminAuth(superagent.delete(`${SERVER}/api/courses/${id}`));
 }
 
 async function getAllCourses(): Promise<CourseDto[]> {
-  const result = await superagent.get(`${SERVER}/api/courses`);
+  const result = await withAdminAuth(superagent.get(`${SERVER}/api/courses`));
   return result.body.value as CourseDto[];
 }
 
@@ -24,6 +25,7 @@ describe('/courses', () => {
     let course1, course2;
     try {
       const api = new LocalApi(SERVER);
+      await api.authenticate();
       costCenter = await api.createCostCenter();
 
       course1 = await api.createCourse({ costCenterId: costCenter.id });
@@ -54,14 +56,15 @@ describe('/courses', () => {
     let course;
     try {
       const api = new LocalApi(SERVER);
+      await api.authenticate();
       costCenter = await api.createCostCenter();
 
       course = await api.createCourse({ costCenterId: costCenter.id });
 
       await deleteCourse(course.id);
-      const courseResponse = await superagent
-        .get(`${SERVER}/api/courses/${course.id}`)
-        .ok((res) => res.status === 404);
+      const courseResponse = await withAdminAuth(
+        superagent.get(`${SERVER}/api/courses/${course.id}`),
+      ).ok((res) => res.status === 404);
       expect(courseResponse.statusCode).toBe(404);
     } finally {
       if (costCenter) {

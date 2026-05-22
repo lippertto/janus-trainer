@@ -9,11 +9,13 @@ import {
   USER_NAME_TRAINER,
 } from './apiTestUtils';
 import { describe, expect, test } from 'vitest';
+import { withAdminAuth } from './test-auth';
 
 const api = new LocalApi(SERVER);
 
 describe('/trainings:find-duplicates', () => {
   test('happy case', async () => {
+    await api.authenticate();
     await api.clearTrainings();
 
     let t1, t2, t3, t4, t5;
@@ -48,8 +50,10 @@ describe('/trainings:find-duplicates', () => {
       });
       // WHEN we request to find duplicates for one training
       const result = (
-        await superagent.post(
-          `${SERVER}/api/trainings:find-duplicates?trainingIds=${t1.id}`,
+        await withAdminAuth(
+          superagent.post(
+            `${SERVER}/api/trainings:find-duplicates?trainingIds=${t1.id}`,
+          ),
         )
       ).body;
       expect(result.value).toHaveLength(2);
@@ -81,22 +85,24 @@ describe('/trainings:find-duplicates', () => {
 
   test('returns bad request on bad request', async () => {
     let receivedStatus = 0;
-    await superagent
-      .post(`${SERVER}/api/trainings:find-duplicates?trainingIds=123,abc`)
-      .catch((e) => {
-        receivedStatus = e.response.status;
-      });
+    await withAdminAuth(
+      superagent.post(
+        `${SERVER}/api/trainings:find-duplicates?trainingIds=123,abc`,
+      ),
+    ).catch((e) => {
+      receivedStatus = e.response.status;
+    });
     expect(receivedStatus).toBe(400);
   });
 
   test('returns empty array on empty trainingIds', async () => {
-    let result = await superagent.post(
-      `${SERVER}/api/trainings:find-duplicates`,
+    let result = await withAdminAuth(
+      superagent.post(`${SERVER}/api/trainings:find-duplicates`),
     );
     expect(result.body.value).toHaveLength(0);
 
-    result = await superagent.post(
-      `${SERVER}/api/trainings:find-duplicates?trainingIds=`,
+    result = await withAdminAuth(
+      superagent.post(`${SERVER}/api/trainings:find-duplicates?trainingIds=`),
     );
     expect(result.body.value).toHaveLength(0);
   });

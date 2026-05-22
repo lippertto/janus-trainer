@@ -96,7 +96,6 @@ export function buildAuthConfig(): AuthOptions {
         // @ts-expect-error: we actually have to pass null in here.
         clientSecret: null,
         issuer: getIssuer(),
-        checks: process.env.DISABLE_JWT_CHECKS ? 'none' : undefined,
         client: {
           token_endpoint_auth_method: 'none',
         },

@@ -12,17 +12,21 @@ import superagent from 'superagent';
 import { TrainerReportDto } from '@/lib/dto';
 import { TrainingStatus } from '@/generated/prisma/client';
 import { describe, expect, test } from 'vitest';
+import { withAdminAuth } from './test-auth';
 
 const api = new LocalApi();
 
 describe('/trainer-reports', () => {
   test('no trainings in period', async () => {
+    await api.authenticate();
     await api.clearTrainings();
 
     await api.createTraining({ date: '2024-01-01', userId: USER_ID_TRAINER });
 
-    const response = await superagent.get(
-      `${SERVER}/api/trainer-reports?trainerId=${USER_ID_TRAINER}&start=2020-01-01&end=2020-12-31`,
+    const response = await withAdminAuth(
+      superagent.get(
+        `${SERVER}/api/trainer-reports?trainerId=${USER_ID_TRAINER}&start=2020-01-01&end=2020-12-31`,
+      ),
     );
     expect(response.status).toBe(200);
     const report = response.body as TrainerReportDto;
@@ -33,6 +37,7 @@ describe('/trainer-reports', () => {
   });
 
   test('one trainings in period', async () => {
+    await api.authenticate();
     await api.clearTrainings();
 
     await api
@@ -43,8 +48,10 @@ describe('/trainer-reports', () => {
       })
       .then((c) => api.transitionTraining(c.id, TrainingStatus.APPROVED))
       .then((c) => api.transitionTraining(c.id, TrainingStatus.COMPENSATED));
-    const response = await superagent.get(
-      `${SERVER}/api/trainer-reports?trainerId=${USER_ID_TRAINER}&start=2024-01-01&end=2024-12-31`,
+    const response = await withAdminAuth(
+      superagent.get(
+        `${SERVER}/api/trainer-reports?trainerId=${USER_ID_TRAINER}&start=2024-01-01&end=2024-12-31`,
+      ),
     );
     expect(response.status).toBe(200);
     const report = response.body as TrainerReportDto;
@@ -58,6 +65,7 @@ describe('/trainer-reports', () => {
   });
 
   test('trainings in multiple courses', async () => {
+    await api.authenticate();
     await api.clearTrainings();
 
     await api
@@ -88,8 +96,10 @@ describe('/trainer-reports', () => {
       })
       .then((c) => api.transitionTraining(c.id, TrainingStatus.APPROVED))
       .then((c) => api.transitionTraining(c.id, TrainingStatus.COMPENSATED));
-    const response = await superagent.get(
-      `${SERVER}/api/trainer-reports?trainerId=${USER_ID_TRAINER}&start=2024-01-01&end=2024-12-31`,
+    const response = await withAdminAuth(
+      superagent.get(
+        `${SERVER}/api/trainer-reports?trainerId=${USER_ID_TRAINER}&start=2024-01-01&end=2024-12-31`,
+      ),
     );
     expect(response.status).toBe(200);
     const report = response.body as TrainerReportDto;

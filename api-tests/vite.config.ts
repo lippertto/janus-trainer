@@ -9,6 +9,9 @@ export default defineConfig({
   test: {
     include: ['api-tests/*.test.ts'],
     testTimeout: 50_000,
+    fileParallelism: false, // Tests share database state
+    globalSetup: ['./api-tests/global-setup.ts'],
+    setupFiles: ['./api-tests/setup.ts'],
   },
   resolve: {
     alias: [

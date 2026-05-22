@@ -10,6 +10,7 @@ import {
 } from './apiTestUtils';
 import { describe, expect, test } from 'vitest';
 import prisma from '@/lib/prisma';
+import { withAdminAuth } from './test-auth';
 
 const api = new LocalApi();
 
@@ -30,7 +31,9 @@ async function createAndValidatePayment(
 }
 
 async function checkIfTrainingStatusIsCompensated(trainingId: number) {
-  const result = await superagent.get(`${SERVER}/api/trainings/${trainingId}`);
+  const result = await withAdminAuth(
+    superagent.get(`${SERVER}/api/trainings/${trainingId}`),
+  );
   expect(result.statusCode).toBe(200);
   const training = result.body as TrainingDto;
   expect(training.status).toBe(TrainingStatus.COMPENSATED);
@@ -40,6 +43,7 @@ async function checkIfTrainingStatusIsCompensated(trainingId: number) {
 
 describe('/payments', () => {
   test('happy case', async () => {
+    await api.authenticate();
     await api.clearTrainings();
     // GIVEN
     const courseId = 1;
@@ -107,8 +111,8 @@ describe('/payments', () => {
       }
 
       // check payment list
-      const paymentListResponse = await superagent.get(
-        `${SERVER}/api/payments`,
+      const paymentListResponse = await withAdminAuth(
+        superagent.get(`${SERVER}/api/payments`),
       );
       expect(paymentListResponse.statusCode).toEqual(200);
       const paymentList = paymentListResponse.body.value as PaymentDto[];
@@ -124,14 +128,18 @@ describe('/payments', () => {
       // clean up
       await Promise.all([
         ...trainingIds.map((t) =>
-          superagent.delete(`${SERVER}/api/trainings/${t}`),
+          withAdminAuth(superagent.delete(`${SERVER}/api/trainings/${t}`)),
         ),
       ]);
       if (paymentId1) {
-        await superagent.delete(`${SERVER}/api/payments/${paymentId1}`);
+        await withAdminAuth(
+          superagent.delete(`${SERVER}/api/payments/${paymentId1}`),
+        );
       }
       if (paymentId2) {
-        await superagent.delete(`${SERVER}/api/payments/${paymentId2}`);
+        await withAdminAuth(
+          superagent.delete(`${SERVER}/api/payments/${paymentId2}`),
+        );
       }
     }
   });
@@ -139,6 +147,7 @@ describe('/payments', () => {
 
 describe('/payments?trainerid', () => {
   test('happy case', async () => {
+    await api.authenticate();
     await api.clearTrainings();
 
     const training1ToBeIncludedInPayment1 = await api.createTraining({
@@ -200,6 +209,7 @@ describe('/payments?trainerid', () => {
 
 describe('/payments with date filtering', () => {
   test('filters payments by start and end date', async () => {
+    await api.authenticate();
     await api.clearTrainings();
 
     // Create trainings
@@ -240,8 +250,10 @@ describe('/payments with date filtering', () => {
       });
 
       // Test: Get payments for 2024 only
-      const payments2024Response = await superagent.get(
-        `${SERVER}/api/payments?start=2024-01-01&end=2024-12-31`,
+      const payments2024Response = await withAdminAuth(
+        superagent.get(
+          `${SERVER}/api/payments?start=2024-01-01&end=2024-12-31`,
+        ),
       );
       expect(payments2024Response.statusCode).toBe(200);
       const payments2024List = payments2024Response.body.value as PaymentDto[];
@@ -253,8 +265,10 @@ describe('/payments with date filtering', () => {
       expect(found2025In2024).toBeUndefined();
 
       // Test: Get payments for 2025 only
-      const payments2025Response = await superagent.get(
-        `${SERVER}/api/payments?start=2025-01-01&end=2025-12-31`,
+      const payments2025Response = await withAdminAuth(
+        superagent.get(
+          `${SERVER}/api/payments?start=2025-01-01&end=2025-12-31`,
+        ),
       );
       expect(payments2025Response.statusCode).toBe(200);
       const payments2025List = payments2025Response.body.value as PaymentDto[];
@@ -266,8 +280,8 @@ describe('/payments with date filtering', () => {
       expect(found2024In2025).toBeUndefined();
 
       // Test: Get all payments (no filter)
-      const allPaymentsResponse = await superagent.get(
-        `${SERVER}/api/payments`,
+      const allPaymentsResponse = await withAdminAuth(
+        superagent.get(`${SERVER}/api/payments`),
       );
       expect(allPaymentsResponse.statusCode).toBe(200);
       const allPaymentsList = allPaymentsResponse.body.value as PaymentDto[];
@@ -280,10 +294,18 @@ describe('/payments with date filtering', () => {
     } finally {
       // Clean up
       await Promise.all([
-        superagent.delete(`${SERVER}/api/trainings/${training1.id}`),
-        superagent.delete(`${SERVER}/api/trainings/${training2.id}`),
-        superagent.delete(`${SERVER}/api/payments/${payment2024.id}`),
-        superagent.delete(`${SERVER}/api/payments/${payment2025.id}`),
+        withAdminAuth(
+          superagent.delete(`${SERVER}/api/trainings/${training1.id}`),
+        ),
+        withAdminAuth(
+          superagent.delete(`${SERVER}/api/trainings/${training2.id}`),
+        ),
+        withAdminAuth(
+          superagent.delete(`${SERVER}/api/payments/${payment2024.id}`),
+        ),
+        withAdminAuth(
+          superagent.delete(`${SERVER}/api/payments/${payment2025.id}`),
+        ),
       ]);
     }
   });
