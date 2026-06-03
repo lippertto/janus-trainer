@@ -1,6 +1,7 @@
 import md5 from 'md5';
 import * as sepa from 'sepa';
 import { CompensationDto } from './dto';
+import { sanitizeSepa } from './sepa-charset';
 
 // There are two different formats for the sepa xml files.
 // This is the one used for transfers
@@ -26,7 +27,7 @@ export function generateSepaXml(compensations: CompensationDto[]): string {
   info.collectionDate = new Date();
   info.debtorIBAN = 'DE36370400440222411100';
   info.debtorBIC = 'COBADEFFXXX';
-  info.debtorName = 'SC Janus e.V.';
+  info.debtorName = sanitizeSepa('SC Janus e.V.');
   info.debtorId = 'DE2600100000045188';
   info.batchBooking = false;
   // we request the execution for today
@@ -35,10 +36,10 @@ export function generateSepaXml(compensations: CompensationDto[]): string {
 
   compensations.forEach((c) => {
     const tx = info.createTransaction();
-    tx.creditorName = c.user.name;
+    tx.creditorName = sanitizeSepa(c.user.name);
     tx.creditorIBAN = c.iban;
     tx.amount = c.totalCompensationCents / 100;
-    tx.remittanceInfo = `${c.courseName} ${c.periodStart}..${c.periodEnd}`;
+    tx.remittanceInfo = sanitizeSepa(`${c.courseName} ${c.periodStart}..${c.periodEnd}`);
     tx.end2endId = compensationHash(c);
     // FIXME: remove line after patch. This is not needed.
     tx.mandateSignatureDate = new Date();
