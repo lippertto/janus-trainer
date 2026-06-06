@@ -10,15 +10,10 @@ import {
   userSuspenseQuery,
 } from '@/lib/shared-queries';
 import { EditIbanDialog } from '@/components/EditIbanDialog';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { UserDto } from '@/lib/dto';
-import { patchInApi } from '@/lib/fetch';
-import { API_USERS } from '@/lib/routes';
-import { showError, showSuccess } from '@/lib/notifications';
 import Profile from '@/app/profile/Profile';
+import { useUpdateIban } from '@/app/profile/useUpdateIban';
 
 function ProfilePageContents({ session }: { session: JanusSession }) {
-  const queryClient = useQueryClient();
   const [showIbanDialog, setShowIbanDialog] = React.useState(false);
   const { data: user } = userSuspenseQuery(
     session.userId,
@@ -32,22 +27,7 @@ function ProfilePageContents({ session }: { session: JanusSession }) {
     session.accessToken,
   );
 
-  const updateIbanMutation = useMutation({
-    mutationFn: (iban: string) =>
-      patchInApi<UserDto>(
-        API_USERS,
-        session.userId,
-        { iban },
-        session.accessToken,
-      ),
-    onSuccess: (_) => {
-      showSuccess(`Iban aktualisiert`);
-      queryClient.invalidateQueries({ queryKey: [API_USERS, session.userId] });
-    },
-    onError: (e) => {
-      showError('Konnte IBAN nicht aktualisieren', e.message);
-    },
-  });
+  const updateIbanMutation = useUpdateIban(session.userId, session.accessToken);
 
   return (
     <React.Fragment>
