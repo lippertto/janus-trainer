@@ -1,5 +1,8 @@
 import React from 'react';
 
+// Import polyfills FIRST, before any other imports
+import './polyfills';
+
 import Box from '@mui/system/Box';
 import JanusAppbar from './JanusAppbar';
 import JanusProviders from './JanusProviders';

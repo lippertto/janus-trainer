@@ -14,12 +14,17 @@ export function EditIbanDialog(props: {
   initialValue: string | null;
   handleConfirm: (v: string) => void;
 }) {
-  const [iban, setIban] = React.useState<string>(
-    props.initialValue?.toUpperCase() ?? '',
-  );
+  const [iban, setIban] = React.useState<string>('');
+
+  React.useEffect(() => {
+    if (props.open) {
+      setIban(props.initialValue?.toUpperCase() ?? '');
+    }
+  }, [props.open, props.initialValue]);
+
   const ibanIsValid = validateIBAN(iban);
   return (
-    <Dialog open={props.open}>
+    <Dialog open={props.open} onClose={props.handleClose}>
       <DialogTitle>IBAN bearbeiten</DialogTitle>
       <DialogContent>
         <TextField
@@ -40,10 +45,6 @@ export function EditIbanDialog(props: {
       <DialogActions>
         <Button
           onClick={() => {
-            setTimeout(
-              () => setIban(props.initialValue?.toUpperCase() ?? ''),
-              200,
-            );
             props.handleClose();
           }}
         >

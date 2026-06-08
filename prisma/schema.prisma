@@ -53,7 +53,7 @@ model Training {
 }
 
 // The user in the database is only part of the domain object.
-// The groups and the email are stored in cognito.
+// The groups are stored in cognito, but email is duplicated here for convenience.
 model UserInDb {
   // This is an external id, in our case cognito
   id        String     @id
