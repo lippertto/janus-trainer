@@ -40,8 +40,6 @@ export function generateSepaXml(compensations: CompensationDto[]): string {
     tx.amount = c.totalCompensationCents / 100;
     tx.remittanceInfo = `${c.courseName} ${c.periodStart}..${c.periodEnd}`;
     tx.end2endId = compensationHash(c);
-    // FIXME: remove line after patch. This is not needed.
-    tx.mandateSignatureDate = new Date();
     info.addTransaction(tx);
   });
   return doc.toString();

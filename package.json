@@ -51,7 +51,7 @@
     "react-error-boundary": "^6.1.2",
     "react-hook-form": "^7.79.0",
     "react-markdown": "^10.1.0",
-    "sepa": "2.1.0",
+    "sepa": "3.0.0",
     "throttle-debounce": "^5.0.2",
     "tsx": "^4.22.4",
     "uuid": "^14.0.0"

@@ -3646,13 +3646,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@xmldom/xmldom@npm:^0.9.8":
-  version: 0.9.8
-  resolution: "@xmldom/xmldom@npm:0.9.8"
-  checksum: 10c0/2ea984270832de2843ab0bbb6df71bde9aa02126b69e5fd56b5512b98ace48e94aff7186e77d0b22fe4b6780483862be752bcf8577436638a9210109029a0503
-  languageName: node
-  linkType: hard
-
 "abbrev@npm:^4.0.0":
   version: 4.0.0
   resolution: "abbrev@npm:4.0.0"
@@ -6601,7 +6594,7 @@ __metadata:
     react-error-boundary: "npm:^6.1.2"
     react-hook-form: "npm:^7.79.0"
     react-markdown: "npm:^10.1.0"
-    sepa: "npm:2.1.0"
+    sepa: "npm:3.0.0"
     superagent: "npm:^10.3.0"
     throttle-debounce: "npm:^5.0.2"
     tsx: "npm:^4.22.4"
@@ -8916,12 +8909,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sepa@npm:2.1.0":
-  version: 2.1.0
-  resolution: "sepa@npm:2.1.0"
-  dependencies:
-    "@xmldom/xmldom": "npm:^0.9.8"
-  checksum: 10c0/a30b5063442bb8a8d2ac3a548adf8b45a8671a02919182c691f5f95b00c2aa0e69e5032b6f14af68d8cf09613c7939def45b9d937f7900816283034b7ef191be
+"sepa@npm:3.0.0":
+  version: 3.0.0
+  resolution: "sepa@npm:3.0.0"
+  checksum: 10c0/335faedfd9cd7b21a9ccbf77254a061dabe14fc03038497f8e200da8c4a011669af34f882a3787a9c31034d48be7d2719cc07fd9f6571c5b386e20119f31a16b
   languageName: node
   linkType: hard
 
