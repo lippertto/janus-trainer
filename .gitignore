@@ -309,3 +309,6 @@ playwright/test-report/
 playwright/.auth/
 playwright/test-results/
 generated/*
+
+# Spec Kit: per-checkout pointer to the active feature directory, not shared state
+.specify/feature.json
