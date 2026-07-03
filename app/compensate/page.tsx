@@ -18,10 +18,15 @@ import Autocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
 import Stack from '@mui/system/Stack';
 import { compareNamed } from '@/lib/sort-and-filter';
-import { useSuspenseQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  useSuspenseQuery,
+  useQueryClient,
+  useMutation,
+} from '@tanstack/react-query';
 import { API_COMPENSATIONS, API_PAYMENTS, API_USERS } from '@/lib/routes';
-import { fetchListFromApi } from '@/lib/fetch';
+import { createInApi, fetchListFromApi } from '@/lib/fetch';
 import { generateSepaXml } from '@/lib/sepa-generation';
+import { showError } from '@/lib/notifications';
 
 async function paymentsQueryFn(
   accessToken: string,
@@ -104,20 +109,18 @@ function CompensationPageContents(props: { session: JanusSession }) {
     selectedPaymentId,
   );
 
-  const handleMarkAsCompensated = async (trainingIds: number[]) => {
-    const body = JSON.stringify({ trainingIds });
-    const response = await fetch('/api/payments', {
-      method: 'POST',
-      body,
-    });
-    if (!response.ok) {
-      throw new Error(await response.text());
-    }
-    queryClient.invalidateQueries({
-      queryKey: [API_COMPENSATIONS, selectedPaymentId],
-    });
-    queryClient.invalidateQueries({ queryKey: [API_PAYMENTS] });
-  };
+  const markAsCompensatedMutation = useMutation({
+    mutationFn: (trainingIds: number[]) =>
+      createInApi(API_PAYMENTS, { trainingIds }, props.session.accessToken),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [API_COMPENSATIONS, selectedPaymentId],
+      });
+      queryClient.invalidateQueries({ queryKey: [API_PAYMENTS] });
+    },
+    onError: (e) =>
+      showError('Konnte Zahlungen nicht als überwiesen markieren', e.message),
+  });
 
   const handleGenerateSepa = (compensations: CompensationDto[]) => {
     const sepaXml = generateSepaXml(compensations);
@@ -171,7 +174,8 @@ function CompensationPageContents(props: { session: JanusSession }) {
             compensations={compensations}
             selectedPaymentId={selectedPaymentId}
             trainer={trainer}
-            onMarkAsCompensated={handleMarkAsCompensated}
+            onMarkAsCompensated={markAsCompensatedMutation.mutate}
+            isMarkingAsCompensated={markAsCompensatedMutation.isPending}
             onGenerateSepa={handleGenerateSepa}
           />
         </Suspense>

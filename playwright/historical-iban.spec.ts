@@ -3,6 +3,10 @@ import { newBrowser } from './browser';
 import { fillOutDatePicker } from '@/playwright/playwrightTestHelpers';
 import dayjs from 'dayjs';
 
+function ibanToHumanReadable(value: string) {
+  return value.replace(/(.{4})/g, '$1 ').trim();
+}
+
 /**
  * Helper function to set a trainer's IBAN on the profile page
  */
@@ -13,6 +17,12 @@ async function setTrainerIban(page: Page, iban: string) {
   await ibanField.clear();
   await ibanField.fill(iban);
   await page.getByRole('button', { name: /ok/i }).click();
+
+  // Wait for the PATCH + user query invalidation to settle before returning,
+  // otherwise callers that immediately close the browser context tear down
+  // the connection mid-stream.
+  const displayedIban = page.getByRole('textbox', { name: 'IBAN' });
+  await expect(displayedIban).toHaveValue(ibanToHumanReadable(iban));
 }
 
 /**
@@ -118,6 +128,10 @@ test.describe.serial('Historical IBAN Capture', () => {
     await page
       .getByRole('button', { name: /Alle als überwiesen markieren/i })
       .click();
+
+    // Wait for the mutation + query invalidations to settle before closing
+    // the context, otherwise Playwright tears down the connection mid-stream.
+    await expect(trainerRow).toBeHidden();
 
     await context.close();
   });
