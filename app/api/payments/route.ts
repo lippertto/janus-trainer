@@ -128,7 +128,7 @@ export async function POST(
       { userId },
       `Created payment for trainingIds: ${request.trainingIds}`,
     );
-    return NextResponse.json(result);
+    return NextResponse.json(result, { status: 201 });
   } catch (e) {
     return handleTopLevelCatch(e);
   }

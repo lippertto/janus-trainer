@@ -66,6 +66,7 @@ describe('CompensationBox', () => {
         trainer={null}
         onMarkAsCompensated={mockOnMarkAsCompensated}
         onGenerateSepa={mockOnGenerateSepa}
+        isMarkingAsCompensated={false}
       />,
     );
 
@@ -96,6 +97,7 @@ describe('CompensationBox', () => {
         trainer={null}
         onMarkAsCompensated={mockOnMarkAsCompensated}
         onGenerateSepa={mockOnGenerateSepa}
+        isMarkingAsCompensated={false}
       />,
     );
 
@@ -128,6 +130,7 @@ describe('CompensationBox', () => {
         trainer={null}
         onMarkAsCompensated={mockOnMarkAsCompensated}
         onGenerateSepa={mockOnGenerateSepa}
+        isMarkingAsCompensated={false}
       />,
     );
 
@@ -161,6 +164,7 @@ describe('CompensationBox', () => {
         trainer={null}
         onMarkAsCompensated={mockOnMarkAsCompensated}
         onGenerateSepa={mockOnGenerateSepa}
+        isMarkingAsCompensated={false}
       />,
     );
 
@@ -191,6 +195,7 @@ describe('CompensationBox', () => {
         trainer={null}
         onMarkAsCompensated={mockOnMarkAsCompensated}
         onGenerateSepa={vi.fn()}
+        isMarkingAsCompensated={false}
       />,
     );
 
@@ -216,6 +221,7 @@ describe('CompensationBox', () => {
         trainer={null}
         onMarkAsCompensated={vi.fn()}
         onGenerateSepa={vi.fn()}
+        isMarkingAsCompensated={false}
       />,
     );
 
@@ -228,41 +234,6 @@ describe('CompensationBox', () => {
       'Ungültige Beträge (negativ oder 0,00 €): Max Mustermann / Course A (0.00 €)',
     );
     expect(vi.fn()).not.toHaveBeenCalled();
-
-    unmount();
-  });
-
-  test('shows error when onMarkAsCompensated fails', async () => {
-    const validCompensations = [
-      createMockCompensation('user1', 'Max Mustermann', 'Course A', 10000),
-    ];
-
-    const mockOnMarkAsCompensated = vi
-      .fn()
-      .mockRejectedValue(new Error('Network error'));
-
-    const { unmount } = render(
-      <CompensationBox
-        compensations={validCompensations}
-        selectedPaymentId={-1}
-        trainer={null}
-        onMarkAsCompensated={mockOnMarkAsCompensated}
-        onGenerateSepa={vi.fn()}
-      />,
-    );
-
-    const markButton = screen.getByRole('button', {
-      name: /Alle als überwiesen markieren/i,
-    });
-    fireEvent.click(markButton);
-
-    // Wait for async handler to complete
-    await vi.waitFor(() => {
-      expect(notifications.showError).toHaveBeenCalledWith(
-        'Konnte Zahlungen nicht als überwiesen markieren',
-        'Network error',
-      );
-    });
 
     unmount();
   });
@@ -288,6 +259,7 @@ describe('CompensationBox', () => {
         trainer={mockTrainer}
         onMarkAsCompensated={mockOnMarkAsCompensated}
         onGenerateSepa={mockOnGenerateSepa}
+        isMarkingAsCompensated={false}
       />,
     );
 
@@ -311,6 +283,31 @@ describe('CompensationBox', () => {
         trainer={null}
         onMarkAsCompensated={vi.fn()}
         onGenerateSepa={vi.fn()}
+        isMarkingAsCompensated={false}
+      />,
+    );
+
+    const markButton = screen.getByRole('button', {
+      name: /Alle als überwiesen markieren/i,
+    });
+    expect(markButton).toBeDisabled();
+
+    unmount();
+  });
+
+  test('Mark as compensated button is disabled while the mutation is pending', () => {
+    const validCompensations = [
+      createMockCompensation('user1', 'Max Mustermann', 'Course A', 10000),
+    ];
+
+    const { unmount } = render(
+      <CompensationBox
+        compensations={validCompensations}
+        selectedPaymentId={-1}
+        trainer={null}
+        onMarkAsCompensated={vi.fn()}
+        onGenerateSepa={vi.fn()}
+        isMarkingAsCompensated={true}
       />,
     );
 

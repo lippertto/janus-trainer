@@ -29,7 +29,8 @@ export default function CompensationBox(props: {
   selectedPaymentId: number;
   /** A trainer id to filter. If filtering is active, no sepa xml files can be generated because the logic is currently undefined. */
   trainer: Pick<UserDto, 'id'> | null;
-  onMarkAsCompensated: (trainingIds: number[]) => Promise<void>;
+  onMarkAsCompensated: (trainingIds: number[]) => void;
+  isMarkingAsCompensated: boolean;
   onGenerateSepa: (compensations: CompensationDto[]) => void;
 }) {
   // if we have a filter on the trainer id, look only at those
@@ -63,19 +64,13 @@ export default function CompensationBox(props: {
             props.selectedPaymentId !== CURRENT_PAYMENT_ID ||
             Boolean(props.trainer)
           }
+          loading={props.isMarkingAsCompensated}
           onClick={async () => {
             if (invalidCompensations.length > 0) {
               showError(formatInvalidCompensationError(invalidCompensations));
             } else {
               const allIds = compensations.flatMap((c) => c.correspondingIds);
-              try {
-                await props.onMarkAsCompensated(allIds);
-              } catch (error) {
-                showError(
-                  'Konnte Zahlungen nicht als überwiesen markieren',
-                  error instanceof Error ? error.message : null,
-                );
-              }
+              props.onMarkAsCompensated(allIds);
             }
           }}
         >

@@ -6,6 +6,7 @@ import { generateSepaXml } from './sepa-generation';
 import { CompensationDto } from '@/lib/dto';
 import xpath from 'xpath';
 import { describe, expect, test, vi } from 'vitest';
+import * as sepa from 'sepa';
 
 describe('Test sepa library', () => {
   test('CID validation', () => {
@@ -15,6 +16,15 @@ describe('Test sepa library', () => {
   test('validates IBAN', () => {
     expect(validateIBAN('DE03500105175984997529')).toBe(true);
     expect(validateIBAN('DE36370400440222411100')).toBe(true);
+  });
+
+  // test added before migration to v3
+  test('Document can be constructed', () => {
+    expect(typeof sepa.Document).toBe('function');
+    const doc = new sepa.Document('pain.001.001.09');
+    expect(doc).toBeTruthy();
+    const paymentInfo = doc.createPaymentInfo();
+    expect(typeof paymentInfo.createTransaction).toBe('function');
   });
 });
 
@@ -108,5 +118,89 @@ describe('sepa generation works', () => {
     expect(creditorIbans).toHaveLength(2);
     expect(creditorIbans[0]).toBe('DE11500105171658347596');
     expect(creditorIbans[1]).toBe('DE78500105172112588369');
+
+    // structural assertions added before migration to sepa v3
+    const GRP_HDR = '/pain:Document/pain:CstmrCdtTrfInitn/pain:GrpHdr';
+    const PMT_INF = '/pain:Document/pain:CstmrCdtTrfInitn/pain:PmtInf';
+
+    const msgId = select(
+      `${GRP_HDR}/pain:MsgId/text()`,
+      sepaDom,
+      false,
+    ) as any as Node[];
+    expect(msgId[0].textContent).toMatch(/^SCJTA-/);
+
+    const creDtTm = select(
+      `${GRP_HDR}/pain:CreDtTm/text()`,
+      sepaDom,
+      false,
+    ) as any as Node[];
+    expect(creDtTm[0].textContent).toMatch(/^\d{4}-\d{2}-\d{2}T/);
+
+    const nbOfTxs = select(
+      `${GRP_HDR}/pain:NbOfTxs/text()`,
+      sepaDom,
+      false,
+    ) as any as Node[];
+    expect(nbOfTxs[0].textContent).toBe('2');
+
+    const ctrlSum = select(
+      `${GRP_HDR}/pain:CtrlSum/text()`,
+      sepaDom,
+      false,
+    ) as any as Node[];
+    expect(ctrlSum[0].textContent).toBe('600.00');
+
+    const initgPtyNm = select(
+      `${GRP_HDR}/pain:InitgPty/pain:Nm/text()`,
+      sepaDom,
+      false,
+    ) as any as Node[];
+    expect(initgPtyNm[0].textContent).toBe('SC Janus e.V.');
+
+    const debtorNm = select(
+      `${PMT_INF}/pain:Dbtr/pain:Nm/text()`,
+      sepaDom,
+      false,
+    ) as any as Node[];
+    expect(debtorNm[0].textContent).toBe('SC Janus e.V.');
+
+    const debtorIban = select(
+      `${PMT_INF}/pain:DbtrAcct/pain:Id/pain:IBAN/text()`,
+      sepaDom,
+      false,
+    ) as any as Node[];
+    expect(debtorIban[0].textContent).toBe('DE36370400440222411100');
+
+    const debtorBic = select(
+      `${PMT_INF}/pain:DbtrAgt/pain:FinInstnId/pain:BICFI/text()`,
+      sepaDom,
+      false,
+    ) as any as Node[];
+    expect(debtorBic[0].textContent).toBe('COBADEFFXXX');
+
+    const reqdExctnDt = select(
+      `${PMT_INF}/pain:ReqdExctnDt/pain:Dt/text()`,
+      sepaDom,
+      false,
+    ) as any as Node[];
+    expect(reqdExctnDt[0].textContent).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+
+    const svcLvl = select(
+      `${PMT_INF}/pain:PmtTpInf/pain:SvcLvl/pain:Cd/text()`,
+      sepaDom,
+      false,
+    ) as any as Node[];
+    expect(svcLvl[0].textContent).toBe('SEPA');
+
+    const endToEndIds = select(
+      `${TRANSACTIONS}/pain:PmtId/pain:EndToEndId/text()`,
+      sepaDom,
+      false,
+    ) as any as Node[];
+    expect(endToEndIds).toHaveLength(2);
+    expect(endToEndIds[0].textContent).toMatch(/^[0-9a-f]{4}$/);
+    expect(endToEndIds[1].textContent).toMatch(/^[0-9a-f]{4}$/);
+    expect(endToEndIds[0].textContent).not.toBe(endToEndIds[1].textContent);
   });
 });
