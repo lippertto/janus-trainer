@@ -12,25 +12,23 @@ import prisma from '@/lib/prisma';
 import { NextRequest, NextResponse } from 'next/server';
 
 function sqlResultToQueryResponse(sqlResult: any): CompensationQueryResponse {
-  const value: CompensationDto[] = sqlResult.map(
-    (r: any): CompensationDto => ({
-      user: {
-        id: r.userId,
-        name: r.userName,
-      },
-      iban: r.userIban,
-      totalCompensationCents: Number(r.totalCompensationCents),
-      totalTrainings: Number(r.totalTrainings),
-      correspondingIds: r.correspondingIds
-        .split(',')
-        .map((id: any) => Number(id)),
-      periodStart: r.periodStart,
-      periodEnd: r.periodEnd,
-      costCenterId: r.costCenterId,
-      costCenterName: r.costCenterName,
-      courseName: r.courseName,
-    }),
-  );
+  const value: CompensationDto[] = sqlResult.map((r: any): CompensationDto => ({
+    user: {
+      id: r.userId,
+      name: r.userName,
+    },
+    iban: r.userIban,
+    totalCompensationCents: Number(r.totalCompensationCents),
+    totalTrainings: Number(r.totalTrainings),
+    correspondingIds: r.correspondingIds
+      .split(',')
+      .map((id: any) => Number(id)),
+    periodStart: r.periodStart,
+    periodEnd: r.periodEnd,
+    costCenterId: r.costCenterId,
+    costCenterName: r.costCenterName,
+    courseName: r.courseName,
+  }));
   return { value };
 }
 
