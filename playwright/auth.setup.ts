@@ -21,7 +21,6 @@ setup.describe.serial('Log in with accounts for test users', () => {
     await page.locator('input[name="signInSubmitButton"]:visible').click();
 
     await page.waitForURL('/');
-    // eslint-disable-next-line playwright/no-standalone-expect
     await expect(page.getByText('Kurzanleitung')).toBeVisible();
     await page.context().storageState({ path: adminFile });
   });
@@ -41,7 +40,6 @@ setup.describe.serial('Log in with accounts for test users', () => {
     await page.locator('input[name="signInSubmitButton"]:visible').click();
 
     await page.waitForURL('/');
-    // eslint-disable-next-line playwright/no-standalone-expect
     await expect(page.getByText('Kurzanleitung')).toBeVisible();
     await page.context().storageState({ path: trainerFile });
   });
