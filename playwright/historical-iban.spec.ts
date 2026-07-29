@@ -136,6 +136,7 @@ test.describe.serial('Historical IBAN Capture', () => {
     await context.close();
   });
 
+  // eslint-disable-next-line playwright/expect-expect
   test('trainer changes their IBAN to new value', async ({ browser }) => {
     const context = await browser.newContext({
       storageState: 'playwright/.auth/trainer.json',
@@ -176,6 +177,7 @@ test.describe.serial('Historical IBAN Capture', () => {
     await context.close();
   });
 
+  // eslint-disable-next-line playwright/expect-expect
   test('cleanup: trainer restores original IBAN', async ({ browser }) => {
     const context = await browser.newContext({
       storageState: 'playwright/.auth/trainer.json',

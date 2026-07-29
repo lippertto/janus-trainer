@@ -1,13 +1,16 @@
 # File from https://github.com/vercel/next.js/blob/canary/examples/with-docker/Dockerfile
 # Changes are marked with TLT
 
-# TLT - changed node version to 24
-FROM node:24-alpine AS base
+# TLT - changed node version to 26
+FROM node:26-alpine AS base
 
 # Install dependencies only when needed
 FROM base AS deps
 # Check https://github.com/nodejs/docker-node/tree/b4117f9333da4138b03a546ec926ef50a31506c3#nodealpine to understand why libc6-compat might be needed.
 RUN apk add --no-cache libc6-compat
+
+RUN npm install -g corepack
+
 WORKDIR /app
 
 # Install dependencies based on the preferred package manager
@@ -33,6 +36,8 @@ COPY . .
 
 # TLT: 'prisma generate' will generate files into ./generated
 
+RUN npm install -g corepack
+
 # TLT - added corepack and prisma commands. Removed non-yarn commands
 RUN corepack enable && corepack install
 
@@ -46,6 +51,8 @@ FROM base AS runner
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
+
+RUN npm install -g corepack
 
 RUN corepack enable
 

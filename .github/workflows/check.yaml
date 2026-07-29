@@ -11,7 +11,7 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20.x'
+          node-version: '26.x'
           cache: yarn
       - name: yarn install
         run: yarn install
@@ -24,8 +24,6 @@ jobs:
 
   api-tests:
     runs-on: ubuntu-latest
-    env:
-      POSTGRES_CONNECTION_URL: postgresql://postgres:postgress@localhost:5432/postgres
     steps:
       - uses: actions/checkout@v6
       - name: Enable Corepack
@@ -33,20 +31,11 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '24.x'
+          node-version: '26.x'
           cache: yarn
       - name: yarn install
         run: yarn install
-      - name: Start database
-        run: docker compose up -d
-      - name: Wait for database to be ready
-        run: |
-          timeout 30 bash -c 'until docker compose exec -T database pg_isready -U postgres; do sleep 1; done'
       - name: Generate Prisma client
         run: yarn prisma generate
-      - name: Run database migrations
-        run: yarn prisma migrate deploy
-      - name: Seed database
-        run: yarn prisma db seed
       - name: Run API tests
         run: yarn vitest -c api-tests/vite.config.ts
