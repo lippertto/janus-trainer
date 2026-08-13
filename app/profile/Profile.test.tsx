@@ -43,7 +43,6 @@ describe('Profile', () => {
         groups={[Group.ADMINS]}
         courses={[]}
         handleEditIbanClick={() => {}}
-        accessToken="123"
       />,
     );
 
@@ -68,7 +67,6 @@ describe('Profile', () => {
         courses={[]}
         groups={[]}
         handleEditIbanClick={() => {}}
-        accessToken={'123'}
       />,
     );
 

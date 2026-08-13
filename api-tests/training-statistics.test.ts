@@ -1,6 +1,10 @@
 import { LocalApi, SERVER, USER_ID_TRAINER } from './apiTestUtils';
 import superagent from 'superagent';
-import { TrainingCountPerCourse, TrainingDto } from '@/lib/dto';
+import {
+  TrainingCountPerCourse,
+  TrainingDto,
+  TrainingStatisticsResponse,
+} from '@/lib/dto';
 import { TrainingStatus } from '@/generated/prisma/client';
 import { expect, test } from 'vitest';
 import { withAdminAuth } from './test-auth';
@@ -97,7 +101,7 @@ test('deduplicates trainings when multiple trainers work on the same day for the
   );
   expect(resultByCourse.statusCode).toBe(200);
 
-  const dataByCourse = resultByCourse.body as { value: TrainingCountPerCourse };
+  const dataByCourse = resultByCourse.body as TrainingStatisticsResponse;
   expect(dataByCourse.value).toHaveLength(1);
   expect(dataByCourse.value[0]).toMatchObject({
     courseId: 1,
