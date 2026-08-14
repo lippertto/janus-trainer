@@ -32,11 +32,10 @@ const createMockCompensation = (
   user: {
     id: userId,
     name: userName,
-    email: `${userId}@example.com`,
-    iban: 'DE89370400440532013000',
   },
   courseName,
-  costCenterId: 'CC1',
+  costCenterId: 1,
+  costCenterName: 'CC1',
   totalCompensationCents: totalCents,
   totalTrainings: 1,
   correspondingIds: [1],
