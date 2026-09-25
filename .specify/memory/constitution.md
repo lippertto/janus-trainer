@@ -53,15 +53,14 @@ testing catches schema mismatches, constraint violations, and migration issues b
 deployment.
 
 **How to apply**: For any `/app/api/**` route changes, write tests in `api-tests/` first.
-Run `yarn test:api` locally with database running and `DISABLE_JWT_CHECKS=1` before
-pushing.
+Run `yarn test:api`.
 
 ### III. Security-First API Design
 
 All API routes MUST implement security controls:
 - Authorization checks using `allowOnlyAdmins()`, `allowAdminOrSelf()`, or `allowNoOne()`
 - Input validation via DTOs with class-validator decorators before processing
-- JWT token verification enforced (except test mode with `DISABLE_JWT_CHECKS=1`)
+- JWT token verification enforced
 - Never commit sensitive data (.env files, credentials, tokens) to version control
 - Fix discovered vulnerabilities immediately before proceeding with other work
 

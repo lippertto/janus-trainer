@@ -9,11 +9,6 @@ yarn start:dev
 
 ## Execute API tests
 
-To execute the API tests, you have to start the server with the environment variable
-`DISABLE_JWT_CHECKS=1` set.
-
-Also, you need to start the database in the background with `docker compose up -d`.
-
 Then, run `yarn vitest -c api-tests/vite.config.js`
 
 # TODO
