@@ -3,6 +3,7 @@
 
 # TLT - changed node version to 26
 FROM node:26-alpine AS base
+ENV COREPACK_HOME=/opt/corepack
 
 # Install dependencies only when needed
 FROM base AS deps
@@ -13,13 +14,11 @@ RUN npm install -g corepack
 
 WORKDIR /app
 
-# Install dependencies based on the preferred package manager
-# TLT - added .yarnrc.yml
-COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* .npmrc* .yarnrc.yml ./
-# TLT: added corepack yarn install and changed --frozen-lockfile to --immutable
+# Install dependencies from the pinned pnpm lockfile
+COPY package.json pnpm-lock.yaml ./
 RUN corepack enable && corepack install
 
-RUN yarn --immutable
+RUN pnpm install --frozen-lockfile
 
 
 # Rebuild the source code only when needed
@@ -38,13 +37,13 @@ COPY . .
 
 RUN npm install -g corepack
 
-# TLT - added corepack and prisma commands. Removed non-yarn commands
+# Enable the pinned package manager for the build
 RUN corepack enable && corepack install
 
-# TLT: 'prisma generate' will generate files into node_modules
+# Generate the Prisma client
 COPY prisma ./prisma
-RUN yarn prisma generate
-RUN yarn build
+RUN pnpm exec prisma generate
+RUN pnpm build
 
 # Production image, copy all the files and run next
 FROM base AS runner
@@ -59,19 +58,22 @@ RUN corepack enable
 WORKDIR /app
 RUN chown -R nextjs:nodejs /app
 
-USER nextjs
-
 ENV NODE_ENV=production
 
 # TLT: The prisma directory contains the migrations. prisma.config.ts contains the configuration of the db source
 # TLT: Since we execute them on the VM via the docker images, the files need to be there
-COPY --chown=nextjs:nodejs  .yarnrc.yml yarn.lock package.json ./
+COPY --chown=nextjs:nodejs pnpm-lock.yaml package.json ./
+RUN corepack install
 COPY --chown=nextjs:nodejs prisma ./prisma
 COPY --chown=nextjs:nodejs prisma.config.ts ./
 
+USER nextjs
 
 COPY --from=builder  --chown=nextjs:nodejs /app/public ./public
 COPY --from=builder  --chown=nextjs:nodejs /app/generated ./generated
+
+# Include Prisma CLI and its dependencies for running migrations in the container.
+COPY --from=deps --chown=nextjs:nodejs /app/node_modules ./node_modules
 
 # Automatically leverage output traces to reduce image size
 # https://nextjs.org/docs/advanced-features/output-file-tracing
