@@ -160,3 +160,27 @@ describe('jwt callback, token refresh', () => {
     err.mockRestore();
   });
 });
+
+describe('session callback', () => {
+  const callSession = (token: any) =>
+    buildAuthConfig().callbacks!.session!({
+      session: { user: {}, expires: '' } as any,
+      token,
+      user: undefined as any,
+      newSession: undefined,
+      trigger: 'update',
+    }) as Promise<any>;
+
+  test('exposes the refresh error', async () => {
+    const session = await callSession({
+      sub: 'u',
+      error: 'RefreshAccessTokenError',
+    });
+    expect(session.error).toBe('RefreshAccessTokenError');
+  });
+
+  test('has no error property for a healthy token', async () => {
+    const session = await callSession({ sub: 'u', accessToken: 'a' });
+    expect(session.error).toBeUndefined();
+  });
+});

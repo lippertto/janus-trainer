@@ -147,6 +147,9 @@ export function buildAuthConfig(): AuthOptions {
         janusSession.name = token.name as string;
         janusSession.userId = token.sub!;
         janusSession.groups = (token.groups || []) as Group[];
+        if (token.error) {
+          janusSession.error = token.error;
+        }
 
         return session;
       },
@@ -199,4 +202,5 @@ export interface JanusSession extends Session {
   accessToken: string;
   name: string;
   groups: Group[];
+  error?: 'RefreshAccessTokenError';
 }
