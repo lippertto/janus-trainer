@@ -119,6 +119,33 @@ export class UserCreateRequest {
 
 export class UserUpdateRequest extends UserCreateRequest {}
 
+export class ForgotPasswordRequest {
+  constructor(obj: any) {
+    Object.assign(this, obj);
+  }
+
+  @IsEmail()
+  email: string;
+}
+
+export class ConfirmForgotPasswordRequest {
+  constructor(obj: any) {
+    Object.assign(this, obj);
+  }
+
+  @IsEmail()
+  email: string;
+
+  @IsString()
+  @IsNotEmpty()
+  confirmationCode: string;
+
+  // No length rule on purpose: the password policy of the Cognito pool is authoritative.
+  @IsString()
+  @IsNotEmpty()
+  newPassword: string;
+}
+
 export class RespondToNewPasswordChallengeRequest {
   constructor(obj: any) {
     Object.assign(this, obj);
