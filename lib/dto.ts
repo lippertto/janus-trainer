@@ -119,6 +119,19 @@ export class UserCreateRequest {
 
 export class UserUpdateRequest extends UserCreateRequest {}
 
+export class SignInRequest {
+  constructor(obj: any) {
+    Object.assign(this, obj);
+  }
+
+  @IsEmail()
+  email: string;
+
+  @IsString()
+  @IsNotEmpty()
+  password: string;
+}
+
 export class UserPatchRequest {
   constructor(obj: any) {
     Object.assign(this, obj);
