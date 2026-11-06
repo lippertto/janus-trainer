@@ -119,6 +119,30 @@ export class UserCreateRequest {
 
 export class UserUpdateRequest extends UserCreateRequest {}
 
+export class RespondToNewPasswordChallengeRequest {
+  constructor(obj: any) {
+    Object.assign(this, obj);
+  }
+
+  @IsEmail()
+  email: string;
+
+  /** Cognito's USER_ID_FOR_SRP from the sign-in response; used as USERNAME for the challenge. */
+  @IsString()
+  @IsNotEmpty()
+  challengeUsername: string;
+
+  // No length rule on purpose: the password policy of the Cognito pool is authoritative.
+  @IsString()
+  @IsNotEmpty()
+  newPassword: string;
+
+  /** The opaque Cognito session from the sign-in response. */
+  @IsString()
+  @IsNotEmpty()
+  session: string;
+}
+
 export class SignInRequest {
   constructor(obj: any) {
     Object.assign(this, obj);
