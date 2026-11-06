@@ -152,6 +152,43 @@ describe('POST /api/auth/sign-in', () => {
     expect(await response.text()).not.toContain('ticket');
   });
 
+  test('logs which unexpected situation occurred, without any secret', async () => {
+    cognitoMock.on(InitiateAuthCommand).resolves({
+      ChallengeName: 'SMS_MFA',
+      Session: COGNITO_SESSION,
+    });
+    await POST(request(validBody));
+    const logged = JSON.stringify(
+      Object.values(loggerMock).flatMap((f) => f.mock.calls),
+    );
+    expect(logged).toContain('Unsupported challenge: SMS_MFA');
+    expect(logged).not.toContain(COGNITO_SESSION);
+    expect(logged).not.toContain(PASSWORD);
+  });
+
+  test('an incomplete authentication result is logged as such', async () => {
+    cognitoMock.on(InitiateAuthCommand).resolves({
+      AuthenticationResult: { AccessToken: ACCESS_TOKEN, ExpiresIn: 3600 },
+    });
+    const response = await POST(request(validBody));
+    expect(response.status).toBe(500);
+    const logged = JSON.stringify(
+      Object.values(loggerMock).flatMap((f) => f.mock.calls),
+    );
+    expect(logged).toContain('incomplete authentication result');
+    expect(logged).not.toContain(ACCESS_TOKEN);
+  });
+
+  test('a plain unknown error logs only its type', async () => {
+    cognitoMock.on(InitiateAuthCommand).rejects(new Error(`boom ${PASSWORD}`));
+    await POST(request(validBody));
+    const logged = JSON.stringify(
+      Object.values(loggerMock).flatMap((f) => f.mock.calls),
+    );
+    expect(logged).not.toContain('boom');
+    expect(logged).not.toContain(PASSWORD);
+  });
+
   test.each([
     ['no body fields', {}],
     ['malformed email', { email: 'nope', password: 'x' }],

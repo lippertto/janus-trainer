@@ -1,5 +1,6 @@
 import {
   CodeMismatchException,
+  CognitoIdentityProviderServiceException,
   InitiateAuthCommand,
   ExpiredCodeException,
   InvalidPasswordException,
@@ -11,6 +12,31 @@ import {
 import { cognitoClient } from '@/app/api/users/cognito-client';
 import { ApiError } from '@/lib/helpers-for-api';
 import { logger } from '@/lib/logging';
+
+/**
+ * An error raised by this module itself. Its message is a fixed text (never built from a
+ * password, token, session or reset code), so it is safe to log in full. Errors from the AWS SDK
+ * and everything else are NOT safe and are logged by type only.
+ */
+export class CognitoAuthFlowError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'CognitoAuthFlowError';
+    Object.setPrototypeOf(this, CognitoAuthFlowError.prototype);
+  }
+}
+
+/** Fails early, with a message that names the missing setting, if the environment is incomplete. */
+export function assertCognitoConfigured(): void {
+  if (!process.env.COGNITO_CLIENT_ID) {
+    throw new CognitoAuthFlowError('COGNITO_CLIENT_ID is not set');
+  }
+  if (!process.env.AWS_REGION && !process.env.COGNITO_REGION) {
+    throw new CognitoAuthFlowError(
+      'Neither AWS_REGION nor COGNITO_REGION is set',
+    );
+  }
+}
 
 export type MappedCognitoError = {
   code: string;
@@ -107,10 +133,10 @@ export function decodeIdToken(idToken: string): IdTokenClaims {
     const payload = idToken.split('.')[1];
     claims = JSON.parse(Buffer.from(payload, 'base64url').toString('utf-8'));
   } catch {
-    throw new Error('Could not decode ID token');
+    throw new CognitoAuthFlowError('Could not decode ID token');
   }
   if (typeof claims?.sub !== 'string') {
-    throw new Error('ID token does not contain a sub claim');
+    throw new CognitoAuthFlowError('ID token does not contain a sub claim');
   }
   const groups = claims['cognito:groups'];
   return {
@@ -121,6 +147,16 @@ export function decodeIdToken(idToken: string): IdTokenClaims {
       ? groups.filter((g): g is string => typeof g === 'string')
       : [],
   };
+}
+
+/** A description of an error that is safe to log: never contains data from the request. */
+function describe(e: unknown): string {
+  if (e instanceof CognitoAuthFlowError) return `${e.name}: ${e.message}`;
+  if (e instanceof CognitoIdentityProviderServiceException) {
+    // The message of an SDK exception comes from the service; log only the type and status.
+    return `${e.name} (HTTP ${e.$metadata?.httpStatusCode ?? 'unknown'})`;
+  }
+  return e instanceof Error ? e.name : typeof e;
 }
 
 /**
@@ -138,9 +174,7 @@ export function toApiError(
   if (e instanceof ApiError) return e;
   const mapped = mapCognitoErrorToUserMessage(e, context);
   if (mapped.httpStatus === 500) {
-    logger.warn(
-      `Unexpected error during a Cognito auth call: ${e instanceof Error ? e.name : typeof e}`,
-    );
+    logger.warn(`Unexpected error during a Cognito auth call: ${describe(e)}`);
   }
   return new ApiError(mapped.message, mapped.code, mapped.httpStatus);
 }
@@ -179,7 +213,9 @@ export function toAuthenticatedTokens(
     !result.IdToken ||
     !result.ExpiresIn
   ) {
-    throw new Error('Cognito returned an incomplete authentication result');
+    throw new CognitoAuthFlowError(
+      'Cognito returned an incomplete authentication result',
+    );
   }
   return {
     claims: decodeIdToken(result.IdToken),
@@ -197,6 +233,7 @@ export async function initiateUserPasswordAuth(
   email: string,
   password: string,
 ): Promise<SignInResult> {
+  assertCognitoConfigured();
   const response = await cognitoClient().send(
     new InitiateAuthCommand({
       AuthFlow: 'USER_PASSWORD_AUTH',
@@ -208,7 +245,9 @@ export async function initiateUserPasswordAuth(
   if (response.ChallengeName === 'NEW_PASSWORD_REQUIRED') {
     const challengeUsername = response.ChallengeParameters?.USER_ID_FOR_SRP;
     if (!response.Session || !challengeUsername) {
-      throw new Error('Cognito returned an incomplete challenge');
+      throw new CognitoAuthFlowError(
+        'Cognito returned an incomplete challenge',
+      );
     }
     return {
       status: 'CHALLENGE',
@@ -219,7 +258,9 @@ export async function initiateUserPasswordAuth(
   }
   if (response.ChallengeName) {
     // e.g. MFA, which is not configured on the pool
-    throw new Error(`Unsupported challenge: ${response.ChallengeName}`);
+    throw new CognitoAuthFlowError(
+      `Unsupported challenge: ${response.ChallengeName}`,
+    );
   }
 
   return {
