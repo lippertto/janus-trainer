@@ -7,51 +7,53 @@ import type { AuthOptions, NextAuthOptions, Profile, Session } from 'next-auth';
 import { getServerSession } from 'next-auth';
 import type { JWT } from 'next-auth/jwt';
 import CognitoProvider from 'next-auth/providers/cognito';
+import CredentialsProvider from 'next-auth/providers/credentials';
+import { readLoginTicket } from './login-ticket';
 import { Group } from './dto';
 import { retry } from '@lifeomic/attempt';
+import { InitiateAuthCommand } from '@aws-sdk/client-cognito-identity-provider';
+import { cognitoClient } from '@/app/api/users/cognito-client';
+import { decodeIdToken } from '@/app/api/users/cognito-auth';
 
-// refresh logic copied from https://github.com/nextauthjs/next-auth-refresh-token-example/blob/57f84dbc50f30233d4ee389c7239212858ecae14/pages/api/auth/%5B...nextauth%5D.js#L1
-// TODO - update according to https://authjs.dev/guides/basics/refresh-token-rotation?frameworks=core
 /**
- * Takes a token, and returns a new token with updated
- * `accessToken` and `accessTokenExpires`. If an error occurs,
- * returns the old token and an error property
+ * Takes a token, and returns a new token with updated `accessToken`, `accessTokenExpires` and
+ * `groups`. If an error occurs, returns the old token and an error property.
+ *
+ * Talks to Cognito through the SDK, so it works for sessions from both sign-in paths and does
+ * not depend on the Hosted UI domain. See specs/003-custom-login-page/research.md, Decision 4.
  */
-async function refreshAccessToken(token: JWT) {
+async function refreshAccessToken(token: JWT): Promise<JWT> {
   try {
-    const url =
-      'https://janus-trainer-app.auth.eu-north-1.amazoncognito.com/oauth2/token' +
-      new URLSearchParams({
-        client_id: process.env.COGNITO_CLIENT_ID!,
-        grant_type: 'refresh_token',
-        refresh_token: token.refreshToken as string,
-      });
-
-    const response = await fetch(url, {
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      method: 'POST',
-    });
-
-    const refreshedTokens = await response.json();
-
-    if (!response.ok) {
-      throw refreshedTokens;
+    const response = await cognitoClient().send(
+      new InitiateAuthCommand({
+        AuthFlow: 'REFRESH_TOKEN_AUTH',
+        ClientId: process.env.COGNITO_CLIENT_ID!,
+        AuthParameters: { REFRESH_TOKEN: token.refreshToken as string },
+      }),
+    );
+    const result = response.AuthenticationResult;
+    if (!result?.AccessToken || !result.ExpiresIn) {
+      throw new Error('Cognito returned no authentication result');
     }
 
     return {
       ...token,
-      accessToken: refreshedTokens.access_token,
-      accessTokenExpires: Date.now() + refreshedTokens.expires_in * 1000,
-      refreshToken: refreshedTokens.refresh_token ?? token.refreshToken, // Fall back to old refresh token
+      accessToken: result.AccessToken,
+      accessTokenExpires: Date.now() + result.ExpiresIn * 1000,
+      // Cognito returns a new refresh token only if rotation is enabled
+      refreshToken: result.RefreshToken ?? token.refreshToken,
+      groups: result.IdToken
+        ? decodeIdToken(result.IdToken).groups
+        : token.groups,
     };
   } catch (error) {
-    console.log(error);
-
+    // Log only the error type: the message could contain token material.
+    console.log(
+      `Token refresh failed: ${error instanceof Error ? error.name : 'unknown error'}`,
+    );
     return {
       ...token,
-      error: 'RefreshAccessTokenError',
+      error: 'RefreshAccessTokenError' as const,
     };
   }
 }
@@ -90,6 +92,7 @@ async function checkIfUserExists(userId: string) {
 export function buildAuthConfig(): AuthOptions {
   // configuration according to https://github.com/nextauthjs/next-auth/issues/4707
   return {
+    pages: { signIn: '/login' },
     providers: [
       CognitoProvider({
         clientId: process.env.COGNITO_CLIENT_ID!,
@@ -108,6 +111,27 @@ export function buildAuthConfig(): AuthOptions {
           };
         },
       }),
+      // Accepts only the encrypted login ticket that the /api/auth/sign-in and
+      // /api/auth/respond-to-new-password-challenge routes hand out. It must never accept raw
+      // Cognito tokens. It deliberately does not call checkIfUserExists(): the signIn callback
+      // below is the single enforcement point for that.
+      CredentialsProvider({
+        name: 'Credentials',
+        credentials: { ticket: { type: 'text' } },
+        async authorize(credentials) {
+          const ticket = await readLoginTicket(credentials?.ticket);
+          if (!ticket) return null;
+          return {
+            id: ticket.sub,
+            name: ticket.name,
+            email: ticket.email,
+            groups: ticket.groups,
+            accessToken: ticket.accessToken,
+            refreshToken: ticket.refreshToken,
+            accessTokenExpires: Date.now() + ticket.expiresIn * 1000,
+          };
+        },
+      }),
     ],
     callbacks: {
       async signIn({ account }) {
@@ -123,12 +147,26 @@ export function buildAuthConfig(): AuthOptions {
         janusSession.name = token.name as string;
         janusSession.userId = token.sub!;
         janusSession.groups = (token.groups || []) as Group[];
+        if (token.error) {
+          janusSession.error = token.error;
+        }
 
         return session;
       },
       // store the access token to the session
       async jwt({ token, user, account, profile }) {
-        // initial login
+        // Initial login via the credentials provider. This branch must come before the OAuth one:
+        // credentials sign-ins never have a profile, so they would silently get a session without
+        // accessToken and groups there.
+        if (account?.provider === 'credentials' && user) {
+          token.accessToken = user.accessToken;
+          token.refreshToken = user.refreshToken;
+          token.accessTokenExpires = user.accessTokenExpires;
+          token.groups = user.groups;
+          return token;
+        }
+
+        // initial login via OAuth
         if (account && user) {
           if (!profile) {
             console.log('No profile provided. This should not happen.');
@@ -136,7 +174,8 @@ export function buildAuthConfig(): AuthOptions {
           }
           token.accessToken = account.access_token;
           token.refreshToken = account.refresh_token;
-          token.accessTokenExpires = Date.now() + account.expires_at! * 1000;
+          // expires_at is already an epoch in seconds
+          token.accessTokenExpires = account.expires_at! * 1000;
           // Cognito always provides the groups in the profile
           token.groups = profile[
             'cognito:groups' as keyof Profile
@@ -174,4 +213,5 @@ export interface JanusSession extends Session {
   accessToken: string;
   name: string;
   groups: Group[];
+  error?: 'RefreshAccessTokenError';
 }

@@ -15,3 +15,10 @@ export const API_TRAININGS_DUPLICATES = '/api/trainings:find-duplicates';
 export const API_TRAINING_STATISTICS = '/api/training-statistics';
 
 export const API_USERS = '/api/users';
+
+export const API_AUTH_SIGN_IN = '/api/auth/sign-in';
+export const API_AUTH_RESPOND_TO_NEW_PASSWORD_CHALLENGE =
+  '/api/auth/respond-to-new-password-challenge';
+export const API_AUTH_FORGOT_PASSWORD = '/api/auth/forgot-password';
+export const API_AUTH_CONFIRM_FORGOT_PASSWORD =
+  '/api/auth/confirm-forgot-password';
