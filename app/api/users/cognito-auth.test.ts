@@ -8,7 +8,11 @@ import {
   TooManyRequestsException,
   TooManyFailedAttemptsException,
 } from '@aws-sdk/client-cognito-identity-provider';
-import { mapCognitoErrorToUserMessage } from '@/app/api/users/cognito-auth';
+import { fakeIdToken } from '@/app/api/users/cognito-test-utils';
+import {
+  decodeIdToken,
+  mapCognitoErrorToUserMessage,
+} from '@/app/api/users/cognito-auth';
 
 function awsError<T extends Error>(
   Type: new (args: any) => T,
@@ -114,5 +118,42 @@ describe('mapCognitoErrorToUserMessage', () => {
   test('non-error values become a generic 500', () => {
     expect(mapCognitoErrorToUserMessage('boom').httpStatus).toBe(500);
     expect(mapCognitoErrorToUserMessage(undefined).httpStatus).toBe(500);
+  });
+});
+
+describe('decodeIdToken', () => {
+  test('reads sub, email, name and groups', () => {
+    const token = fakeIdToken({
+      sub: 'abc',
+      email: 'a@example.com',
+      name: 'Anna',
+      'cognito:groups': ['admins', 'trainers'],
+    });
+    expect(decodeIdToken(token)).toEqual({
+      sub: 'abc',
+      email: 'a@example.com',
+      name: 'Anna',
+      groups: ['admins', 'trainers'],
+    });
+  });
+
+  test('missing groups claim yields an empty list', () => {
+    const token = fakeIdToken({ sub: 'abc', email: 'a@b.de', name: 'A' });
+    expect(decodeIdToken(token).groups).toEqual([]);
+  });
+
+  test('throws on a malformed token without echoing it', () => {
+    expect(() => decodeIdToken('garbage')).toThrow(/ID token/);
+    try {
+      decodeIdToken('garbage');
+    } catch (e) {
+      expect((e as Error).message).not.toContain('garbage');
+    }
+  });
+
+  test('throws when sub is missing', () => {
+    expect(() => decodeIdToken(fakeIdToken({ email: 'a@b.de' }))).toThrow(
+      /ID token/,
+    );
   });
 });

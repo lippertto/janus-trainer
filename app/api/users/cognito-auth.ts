@@ -80,3 +80,41 @@ export function mapCognitoErrorToUserMessage(
     message: 'Es ist ein unerwarteter Fehler aufgetreten.',
   };
 }
+
+export type IdTokenClaims = {
+  sub: string;
+  email: string;
+  name: string;
+  groups: string[];
+};
+
+/**
+ * Reads the claims of an ID token WITHOUT verifying its signature.
+ *
+ * This is only acceptable for tokens that this server has just received from Cognito over TLS
+ * (the SDK response). Never use it for tokens that came from a browser.
+ * See specs/003-custom-login-page/research.md, Decision 3.
+ *
+ * The error message deliberately does not contain the token.
+ */
+export function decodeIdToken(idToken: string): IdTokenClaims {
+  let claims: Record<string, unknown>;
+  try {
+    const payload = idToken.split('.')[1];
+    claims = JSON.parse(Buffer.from(payload, 'base64url').toString('utf-8'));
+  } catch {
+    throw new Error('Could not decode ID token');
+  }
+  if (typeof claims?.sub !== 'string') {
+    throw new Error('ID token does not contain a sub claim');
+  }
+  const groups = claims['cognito:groups'];
+  return {
+    sub: claims.sub,
+    email: typeof claims.email === 'string' ? claims.email : '',
+    name: typeof claims.name === 'string' ? claims.name : '',
+    groups: Array.isArray(groups)
+      ? groups.filter((g): g is string => typeof g === 'string')
+      : [],
+  };
+}
