@@ -1,5 +1,9 @@
 import {
   CodeMismatchException,
+  ConfirmForgotPasswordCommand,
+  ForgotPasswordCommand,
+  InvalidParameterException,
+  UserNotFoundException,
   CognitoIdentityProviderServiceException,
   InitiateAuthCommand,
   ExpiredCodeException,
@@ -301,4 +305,84 @@ export async function respondToNewPasswordChallenge(
     );
   }
   return toAuthenticatedTokens(response.AuthenticationResult);
+}
+
+// Cognito's message when a user cannot reset the password, e.g. because the account never
+// completed the first login. The exact wording is documented by AWS; see the T026 note below.
+const CANNOT_RESET_MESSAGE = /no registered\/verified email or phone_number/i;
+
+/**
+ * Asks Cognito to email a password reset code.
+ *
+ * Resolves WITHOUT telling the caller whether an account exists (spec FR-008): the known
+ * "unknown or unusable account" shapes are swallowed. Anything else is rethrown, in particular
+ * unknown InvalidParameterExceptions: a blanket catch would hide real misconfiguration (for
+ * example a client without the required auth flow).
+ *
+ * Swallowed:
+ * - UserNotFoundException: unknown account.
+ * - InvalidParameterException with Cognito's "no registered/verified email or phone_number"
+ *   message: an account that cannot receive a code, e.g. still in FORCE_CHANGE_PASSWORD.
+ *   TODO(T026): this wording is from AWS's documentation and has NOT been observed against the
+ *   test pool yet. Verify with a user who never completed the first login.
+ * - NotAuthorizedException: a disabled account (soft-deleted users are disabled in Cognito).
+ * - LimitExceededException: Cognito raises it per existing account, so surfacing it would leak
+ *   that the account exists (contracts/auth-routes.md).
+ *
+ * Not swallowed: TooManyRequestsException (general throttling, says nothing about the account)
+ * and CodeDeliveryFailureException (a real infrastructure problem).
+ */
+export async function requestPasswordReset(email: string): Promise<void> {
+  assertCognitoConfigured();
+  try {
+    await cognitoClient().send(
+      new ForgotPasswordCommand({
+        ClientId: process.env.COGNITO_CLIENT_ID!,
+        Username: email,
+      }),
+    );
+  } catch (e) {
+    const swallow =
+      e instanceof UserNotFoundException ||
+      e instanceof NotAuthorizedException ||
+      e instanceof LimitExceededException ||
+      (e instanceof InvalidParameterException &&
+        CANNOT_RESET_MESSAGE.test(e.message));
+    if (!swallow) throw e;
+    // Type only: the message could contain the email address.
+    logger.info(`Password reset request not fulfilled: ${describe(e)}`);
+  }
+}
+
+/**
+ * Sets a new password with the emailed code. Does not sign the user in: Cognito returns no
+ * tokens here.
+ *
+ * An unknown or disabled account is reported exactly like a wrong code, so that this route
+ * cannot be used to find out which emails have an account.
+ */
+export async function confirmPasswordReset(
+  email: string,
+  confirmationCode: string,
+  newPassword: string,
+): Promise<void> {
+  assertCognitoConfigured();
+  try {
+    await cognitoClient().send(
+      new ConfirmForgotPasswordCommand({
+        ClientId: process.env.COGNITO_CLIENT_ID!,
+        Username: email,
+        ConfirmationCode: confirmationCode,
+        Password: newPassword,
+      }),
+    );
+  } catch (e) {
+    if (
+      e instanceof UserNotFoundException ||
+      e instanceof NotAuthorizedException
+    ) {
+      throw new CodeMismatchException({ message: '', $metadata: {} });
+    }
+    throw e;
+  }
 }
