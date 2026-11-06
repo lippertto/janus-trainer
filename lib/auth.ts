@@ -155,7 +155,18 @@ export function buildAuthConfig(): AuthOptions {
       },
       // store the access token to the session
       async jwt({ token, user, account, profile }) {
-        // initial login
+        // Initial login via the credentials provider. This branch must come before the OAuth one:
+        // credentials sign-ins never have a profile, so they would silently get a session without
+        // accessToken and groups there.
+        if (account?.provider === 'credentials' && user) {
+          token.accessToken = user.accessToken;
+          token.refreshToken = user.refreshToken;
+          token.accessTokenExpires = user.accessTokenExpires;
+          token.groups = user.groups;
+          return token;
+        }
+
+        // initial login via OAuth
         if (account && user) {
           if (!profile) {
             console.log('No profile provided. This should not happen.');

@@ -37,6 +37,66 @@ describe('jwt callback, OAuth sign-in', () => {
   });
 });
 
+describe('jwt callback, credentials sign-in', () => {
+  const expires = Date.now() + 3_600_000;
+  const user = {
+    id: 'user-1',
+    name: 'Tina',
+    email: 't@example.com',
+    groups: ['admins'],
+    accessToken: 'cred-access',
+    refreshToken: 'cred-refresh',
+    accessTokenExpires: expires,
+  };
+  const account = {
+    provider: 'credentials',
+    type: 'credentials' as const,
+    providerAccountId: 'user-1',
+  };
+
+  test('copies tokens and groups from the user, although there is no profile', async () => {
+    const token = await jwtCallback()({
+      token: { sub: 'user-1' },
+      user,
+      account,
+    });
+    expect(token.accessToken).toBe('cred-access');
+    expect(token.refreshToken).toBe('cred-refresh');
+    expect(token.accessTokenExpires).toBe(expires);
+    expect(token.groups).toEqual(['admins']);
+    expect(token.sub).toBe('user-1');
+  });
+
+  test('the resulting session has accessToken, userId and groups', async () => {
+    const config = buildAuthConfig();
+    const token = await config.callbacks!.jwt!({
+      token: { sub: 'user-1', name: 'Tina' },
+      user,
+      account,
+    });
+    const session: any = await config.callbacks!.session!({
+      session: { user: {}, expires: '' } as any,
+      token,
+      user: undefined as any,
+      newSession: undefined,
+      trigger: 'update',
+    });
+    expect(session.accessToken).toBe('cred-access');
+    expect(session.userId).toBe('user-1');
+    expect(session.groups).toEqual(['admins']);
+  });
+
+  test('does not leak refresh token / access token into the profile-less OAuth path', async () => {
+    // an OAuth sign-in without a profile must still not become a credentials sign-in
+    const token = await jwtCallback()({
+      token: { sub: 'user-1' },
+      user,
+      account: { ...account, provider: 'cognito', type: 'oauth' as const },
+    });
+    expect(token.accessToken).toBeUndefined();
+  });
+});
+
 describe('jwt callback, token refresh', () => {
   const cognitoMock = mockClient(CognitoIdentityProviderClient);
 
