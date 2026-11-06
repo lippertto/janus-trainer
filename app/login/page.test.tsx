@@ -218,24 +218,6 @@ describe('LoginPage, sign-in step', () => {
     );
   });
 
-  test('a CHALLENGE response does not dead-end', async () => {
-    fetchMock.mockResolvedValue(
-      jsonResponse(200, {
-        status: 'CHALLENGE',
-        challengeName: 'NEW_PASSWORD_REQUIRED',
-        session: 's',
-        challengeUsername: 'u',
-      }),
-    );
-    renderPage();
-    await fillAndSubmit();
-
-    expect(
-      await screen.findByTestId('login-challenge-placeholder'),
-    ).toBeVisible();
-    expect(signInMock).not.toHaveBeenCalled();
-  });
-
   test('an already signed-in user is redirected to the callbackUrl', async () => {
     searchParams = new URLSearchParams({ callbackUrl: '/enter' });
     useSessionMock.mockReturnValue({
@@ -253,5 +235,245 @@ describe('LoginPage, sign-in step', () => {
     });
     renderPage();
     expect(replaceMock).not.toHaveBeenCalled();
+  });
+});
+
+describe('LoginPage, new-password-required step', () => {
+  const NEW_PASSWORD = 'N3w-secret-pw!';
+  const COGNITO_SESSION = 'cognito-session-string';
+
+  beforeEach(() => {
+    replaceMock.mockReset();
+    refreshMock.mockReset();
+    signInMock.mockReset();
+    fetchMock.mockReset();
+    searchParams = new URLSearchParams();
+    useSessionMock.mockReturnValue({ status: 'unauthenticated', data: null });
+    vi.stubGlobal('fetch', fetchMock);
+  });
+  afterEach(() => {
+    cleanup();
+    vi.unstubAllGlobals();
+  });
+
+  const challengeResponse = () =>
+    jsonResponse(200, {
+      status: 'CHALLENGE',
+      challengeName: 'NEW_PASSWORD_REQUIRED',
+      session: COGNITO_SESSION,
+      challengeUsername: 'uuid-username',
+    });
+
+  async function reachNewPasswordStep() {
+    fetchMock.mockResolvedValueOnce(challengeResponse());
+    renderPage();
+    await fillAndSubmit('trainer@example.com', 'temporary-pw');
+    await screen.findByTestId('new-password');
+  }
+
+  async function submitNewPassword(
+    password = NEW_PASSWORD,
+    confirm = password,
+  ) {
+    const user = userEvent.setup();
+    await user.type(screen.getByTestId('new-password'), password);
+    await user.type(screen.getByTestId('new-password-confirm'), confirm);
+    await user.click(screen.getByTestId('new-password-submit'));
+  }
+
+  test('the challenge switches to the new-password form with the right attributes', async () => {
+    await reachNewPasswordStep();
+    expect(screen.queryByTestId('login-password')).not.toBeInTheDocument();
+    for (const id of ['new-password', 'new-password-confirm']) {
+      expect(screen.getByTestId(id)).toHaveAttribute('type', 'password');
+      expect(screen.getByTestId(id)).toHaveAttribute(
+        'autocomplete',
+        'new-password',
+      );
+    }
+    expect(signInMock).not.toHaveBeenCalled();
+  });
+
+  test('submits challengeUsername and session, then signs in with the ticket only', async () => {
+    searchParams = new URLSearchParams({ callbackUrl: '/enter' });
+    await reachNewPasswordStep();
+    fetchMock.mockResolvedValueOnce(
+      jsonResponse(200, { status: 'SUCCESS', ticket: 'the-ticket' }),
+    );
+    signInMock.mockResolvedValue({ ok: true });
+
+    await submitNewPassword();
+
+    await waitFor(() => expect(replaceMock).toHaveBeenCalledWith('/enter'));
+    expect(fetchMock).toHaveBeenLastCalledWith(
+      '/api/auth/respond-to-new-password-challenge',
+      expect.objectContaining({
+        method: 'POST',
+        body: JSON.stringify({
+          email: 'trainer@example.com',
+          challengeUsername: 'uuid-username',
+          newPassword: NEW_PASSWORD,
+          session: COGNITO_SESSION,
+        }),
+      }),
+    );
+    expect(signInMock).toHaveBeenCalledWith('credentials', {
+      redirect: false,
+      ticket: 'the-ticket',
+    });
+    expect(refreshMock).toHaveBeenCalled();
+  });
+
+  test('mismatching confirmation: inline error and nothing is sent', async () => {
+    await reachNewPasswordStep();
+    await submitNewPassword(NEW_PASSWORD, 'something-else');
+
+    expect(
+      await screen.findByText('Die Passwörter stimmen nicht überein.'),
+    ).toBeVisible();
+    expect(fetchMock).toHaveBeenCalledTimes(1); // only the sign-in call
+  });
+
+  test('does not apply any password length rule itself', async () => {
+    await reachNewPasswordStep();
+    fetchMock.mockResolvedValueOnce(
+      jsonResponse(200, { status: 'SUCCESS', ticket: 't' }),
+    );
+    signInMock.mockResolvedValue({ ok: true });
+    await submitNewPassword('a');
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+  });
+
+  test('InvalidPassword: inline error, form stays, retry reuses the Cognito session', async () => {
+    await reachNewPasswordStep();
+    fetchMock.mockResolvedValueOnce(
+      jsonResponse(400, {
+        error: {
+          code: 'InvalidPassword',
+          message: 'Das Passwort erfüllt die Anforderungen nicht. too short',
+        },
+      }),
+    );
+    await submitNewPassword('short');
+
+    expect(await screen.findByTestId('new-password-error')).toHaveTextContent(
+      'Das Passwort erfüllt die Anforderungen nicht. too short',
+    );
+    expect(screen.getByTestId('new-password')).toBeVisible();
+    expect(screen.getByTestId('new-password-submit')).toBeEnabled();
+
+    // retry with a valid password
+    fetchMock.mockResolvedValueOnce(
+      jsonResponse(200, { status: 'SUCCESS', ticket: 'the-ticket' }),
+    );
+    signInMock.mockResolvedValue({ ok: true });
+    const user = userEvent.setup();
+    await user.clear(screen.getByTestId('new-password'));
+    await user.clear(screen.getByTestId('new-password-confirm'));
+    await submitNewPassword(NEW_PASSWORD);
+
+    await waitFor(() => expect(replaceMock).toHaveBeenCalled());
+    const lastBody = JSON.parse(fetchMock.mock.lastCall![1].body);
+    expect(lastBody.session).toBe(COGNITO_SESSION);
+    expect(lastBody.newPassword).toBe(NEW_PASSWORD);
+  });
+
+  test('expired session (401): back to sign-in with a message, email kept', async () => {
+    await reachNewPasswordStep();
+    fetchMock.mockResolvedValueOnce(
+      jsonResponse(401, {
+        error: {
+          code: 'Unauthorized',
+          message: 'Die Sitzung ist abgelaufen. Bitte melde dich erneut an.',
+        },
+      }),
+    );
+    await submitNewPassword();
+
+    expect(await screen.findByTestId('login-notice')).toHaveTextContent(
+      'Die Sitzung ist abgelaufen. Bitte melde dich erneut an.',
+    );
+    expect(screen.getByTestId('login-email')).toHaveValue(
+      'trainer@example.com',
+    );
+    expect(screen.getByTestId('login-password')).toHaveValue('');
+    expect(screen.queryByTestId('new-password')).not.toBeInTheDocument();
+    expect(signInMock).not.toHaveBeenCalled();
+  });
+
+  test('AccessDenied after the password change: back to sign-in with the German message', async () => {
+    await reachNewPasswordStep();
+    fetchMock.mockResolvedValueOnce(
+      jsonResponse(200, { status: 'SUCCESS', ticket: 't' }),
+    );
+    signInMock.mockResolvedValue({ ok: false, error: 'AccessDenied' });
+    await submitNewPassword();
+
+    expect(await screen.findByTestId('login-notice')).toHaveTextContent(
+      'Dein Konto ist in dieser App nicht freigeschaltet. Bitte wende dich an einen Administrator.',
+    );
+    expect(replaceMock).not.toHaveBeenCalled();
+    expect(screen.getByTestId('login-email')).toHaveValue(
+      'trainer@example.com',
+    );
+  });
+
+  test('another signIn failure after the password change says the password was saved', async () => {
+    await reachNewPasswordStep();
+    fetchMock.mockResolvedValueOnce(
+      jsonResponse(200, { status: 'SUCCESS', ticket: 't' }),
+    );
+    signInMock.mockResolvedValue({ ok: false, error: 'CredentialsSignin' });
+    await submitNewPassword();
+
+    expect(await screen.findByTestId('login-notice')).toHaveTextContent(
+      'Dein neues Passwort wurde gespeichert',
+    );
+  });
+
+  test('the submit button is disabled while the request is pending', async () => {
+    await reachNewPasswordStep();
+    let resolveFetch: (r: Response) => void = () => {};
+    fetchMock.mockReturnValueOnce(
+      new Promise<Response>((resolve) => (resolveFetch = resolve)),
+    );
+    await submitNewPassword();
+
+    await waitFor(() =>
+      expect(screen.getByTestId('new-password-submit')).toBeDisabled(),
+    );
+    resolveFetch(
+      jsonResponse(400, {
+        error: { code: 'InvalidPassword', message: 'nope' },
+      }),
+    );
+    await waitFor(() =>
+      expect(screen.getByTestId('new-password-submit')).toBeEnabled(),
+    );
+  });
+
+  test('neither the new password, the Cognito session nor the ticket stay in the React Query cache', async () => {
+    await reachNewPasswordStep();
+    fetchMock.mockResolvedValueOnce(
+      jsonResponse(200, { status: 'SUCCESS', ticket: 'the-ticket' }),
+    );
+    signInMock.mockResolvedValue({ ok: true });
+    await submitNewPassword();
+    await waitFor(() => expect(replaceMock).toHaveBeenCalled());
+
+    const cached = JSON.stringify(
+      queryClient
+        .getMutationCache()
+        .getAll()
+        .map((m) => m.state),
+    );
+    for (const secret of [
+      NEW_PASSWORD,
+      COGNITO_SESSION,
+      'the-ticket',
+      'temporary-pw',
+    ]) {
+      expect(cached).not.toContain(secret);
+    }
   });
 });

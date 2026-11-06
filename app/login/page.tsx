@@ -14,9 +14,12 @@ import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import type { JanusSession } from '@/lib/auth';
 import { safeCallbackUrl } from '@/lib/callback-url';
-import { API_AUTH_SIGN_IN } from '@/lib/routes';
+import {
+  API_AUTH_RESPOND_TO_NEW_PASSWORD_CHALLENGE,
+  API_AUTH_SIGN_IN,
+} from '@/lib/routes';
 
-// See data-model.md. The remaining steps are added together with their forms.
+// See data-model.md. The forgot-password steps are added together with their forms.
 type LoginViewState =
   | { step: 'sign-in' }
   | {
@@ -31,13 +34,38 @@ type SignInFormData = {
   password: string;
 };
 
+type NewPasswordFormData = {
+  newPassword: string;
+  confirmPassword: string;
+};
+
 const GENERIC_SIGN_IN_ERROR =
   'Anmeldung fehlgeschlagen. Bitte versuche es erneut.';
+const PASSWORD_SAVED_MESSAGE =
+  'Dein neues Passwort wurde gespeichert, aber die Anmeldung ist fehlgeschlagen. Bitte melde dich mit dem neuen Passwort an.';
 const ACCESS_DENIED_MESSAGE =
   'Dein Konto ist in dieser App nicht freigeschaltet. Bitte wende dich an einen Administrator.';
 
+type UserFacingErrorKind =
+  /** The server answered with 401. */
+  | 'unauthorized'
+  /** The account exists in Cognito but not in this app. */
+  | 'access-denied'
+  /** The login ticket could not be exchanged for a session. */
+  | 'sign-in-failed'
+  | 'other';
+
 /** An error whose message is meant to be shown to the user as is. */
-class UserFacingError extends Error {}
+class UserFacingError extends Error {
+  constructor(
+    message: string,
+    readonly kind: UserFacingErrorKind = 'other',
+  ) {
+    super(message);
+  }
+}
+
+type Notice = { severity: 'info' | 'warning' | 'error'; message: string };
 
 type SignInResponse =
   | { status: 'SUCCESS'; ticket: string }
@@ -69,7 +97,10 @@ async function postJson<T>(route: string, body: unknown): Promise<T> {
     } catch {
       // keep the generic message
     }
-    throw new UserFacingError(message);
+    throw new UserFacingError(
+      message,
+      response.status === 401 ? 'unauthorized' : 'other',
+    );
   }
   return (await response.json()) as T;
 }
@@ -78,15 +109,16 @@ async function postJson<T>(route: string, body: unknown): Promise<T> {
 async function completeSignIn(ticket: string): Promise<void> {
   const result = await signIn('credentials', { redirect: false, ticket });
   if (!result || result.error) {
-    throw new UserFacingError(
-      result?.error === 'AccessDenied'
-        ? ACCESS_DENIED_MESSAGE
-        : GENERIC_SIGN_IN_ERROR,
-    );
+    if (result?.error === 'AccessDenied') {
+      throw new UserFacingError(ACCESS_DENIED_MESSAGE, 'access-denied');
+    }
+    throw new UserFacingError(GENERIC_SIGN_IN_ERROR, 'sign-in-failed');
   }
 }
 
 function SignInForm(props: {
+  initialEmail: string;
+  notice: Notice | null;
   onChallenge: (challenge: {
     email: string;
     challengeUsername: string;
@@ -96,7 +128,7 @@ function SignInForm(props: {
   disabled: boolean;
 }) {
   const { control, handleSubmit, getValues } = useForm<SignInFormData>({
-    defaultValues: { email: '', password: '' },
+    defaultValues: { email: props.initialEmail, password: '' },
   });
 
   const signInMutation = useMutation({
@@ -107,22 +139,17 @@ function SignInForm(props: {
       const response = await postJson<SignInResponse>(API_AUTH_SIGN_IN, data);
       if (response.status === 'SUCCESS') {
         await completeSignIn(response.ticket);
-        // Return nothing: the mutation result is kept in React Query's cache, and the ticket
-        // must not end up there.
-        return null;
-      }
-      return {
-        email: data.email,
-        challengeUsername: response.challengeUsername,
-        cognitoSession: response.session,
-      };
-    },
-    onSuccess: (challenge) => {
-      if (challenge) {
-        props.onChallenge(challenge);
-      } else {
         props.onSignedIn();
+      } else {
+        props.onChallenge({
+          email: data.email,
+          challengeUsername: response.challengeUsername,
+          cognitoSession: response.session,
+        });
       }
+      // Return nothing: a mutation's result is kept in React Query's cache, and neither the
+      // ticket nor the Cognito session may end up there.
+      return null;
     },
   });
 
@@ -131,6 +158,11 @@ function SignInForm(props: {
   return (
     <form onSubmit={handleSubmit(() => signInMutation.mutate())} noValidate>
       <Stack spacing={2}>
+        {props.notice && (
+          <Alert severity={props.notice.severity} data-testid="login-notice">
+            {props.notice.message}
+          </Alert>
+        )}
         {signInMutation.isError && (
           <Alert severity="error" data-testid="login-error">
             {signInMutation.error instanceof UserFacingError
@@ -191,6 +223,136 @@ function SignInForm(props: {
   );
 }
 
+function NewPasswordForm(props: {
+  email: string;
+  challengeUsername: string;
+  cognitoSession: string;
+  onSignedIn: () => void;
+  /** Leaves the form, e.g. because the Cognito session ran out. */
+  onBackToSignIn: (notice: Notice) => void;
+  disabled: boolean;
+}) {
+  const { control, handleSubmit, getValues } = useForm<NewPasswordFormData>({
+    defaultValues: { newPassword: '', confirmPassword: '' },
+  });
+
+  const mutation = useMutation({
+    // Takes no variables on purpose, see SignInForm: nothing secret may end up in React Query's
+    // cache. The Cognito session is a prop, not a variable, for the same reason.
+    mutationFn: async () => {
+      const response = await postJson<{ status: 'SUCCESS'; ticket: string }>(
+        API_AUTH_RESPOND_TO_NEW_PASSWORD_CHALLENGE,
+        {
+          email: props.email,
+          challengeUsername: props.challengeUsername,
+          newPassword: getValues('newPassword'),
+          session: props.cognitoSession,
+        },
+      );
+      await completeSignIn(response.ticket);
+      return null;
+    },
+    onSuccess: () => props.onSignedIn(),
+    onError: (error) => {
+      if (!(error instanceof UserFacingError)) return;
+      if (error.kind === 'unauthorized') {
+        // The Cognito session ran out: the user has to start over.
+        props.onBackToSignIn({ severity: 'warning', message: error.message });
+      } else if (error.kind === 'access-denied') {
+        props.onBackToSignIn({ severity: 'error', message: error.message });
+      } else if (error.kind === 'sign-in-failed') {
+        // The password was changed already, so signing in with the new one is all that is left.
+        props.onBackToSignIn({
+          severity: 'info',
+          message: PASSWORD_SAVED_MESSAGE,
+        });
+      }
+      // everything else (e.g. InvalidPassword) is shown inline, and the user can retry
+    },
+  });
+
+  const pending = mutation.isPending || props.disabled;
+  const inlineError =
+    mutation.isError &&
+    !(
+      mutation.error instanceof UserFacingError &&
+      mutation.error.kind !== 'other'
+    )
+      ? mutation.error instanceof UserFacingError
+        ? mutation.error.message
+        : GENERIC_SIGN_IN_ERROR
+      : null;
+
+  return (
+    <form onSubmit={handleSubmit(() => mutation.mutate())} noValidate>
+      <Stack spacing={2}>
+        <Typography>
+          Du meldest dich zum ersten Mal an. Bitte wähle ein neues Passwort.
+        </Typography>
+        {inlineError && (
+          <Alert severity="error" data-testid="new-password-error">
+            {inlineError}
+          </Alert>
+        )}
+        <Controller
+          control={control}
+          name="newPassword"
+          // No length or character rules here: the password policy of the user pool is
+          // authoritative, and Cognito's own message is shown if it is not met.
+          rules={{ required: 'Bitte gib ein neues Passwort ein.' }}
+          render={({ field, fieldState }) => (
+            <TextField
+              {...field}
+              label="Neues Passwort"
+              type="password"
+              autoComplete="new-password"
+              required
+              autoFocus
+              error={!!fieldState.error}
+              helperText={fieldState.error?.message ?? ''}
+              slotProps={{ htmlInput: { 'data-testid': 'new-password' } }}
+            />
+          )}
+        />
+        <Controller
+          control={control}
+          name="confirmPassword"
+          rules={{
+            required: 'Bitte wiederhole das neue Passwort.',
+            validate: (value) =>
+              value === getValues('newPassword') ||
+              'Die Passwörter stimmen nicht überein.',
+          }}
+          render={({ field, fieldState }) => (
+            <TextField
+              {...field}
+              label="Neues Passwort wiederholen"
+              type="password"
+              autoComplete="new-password"
+              required
+              error={!!fieldState.error}
+              helperText={fieldState.error?.message ?? ''}
+              slotProps={{
+                htmlInput: { 'data-testid': 'new-password-confirm' },
+              }}
+            />
+          )}
+        />
+        <Button
+          type="submit"
+          variant="contained"
+          size="large"
+          disabled={pending}
+          sx={{ minHeight: 48 }}
+          data-testid="new-password-submit"
+        >
+          Passwort speichern und anmelden
+        </Button>
+      </Stack>
+    </form>
+  );
+}
+
 function LoginPageContents() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -199,6 +361,9 @@ function LoginPageContents() {
     step: 'sign-in',
   });
   const [redirecting, setRedirecting] = React.useState(false);
+  // What to show on the sign-in step when the user was sent back to it.
+  const [signInEmail, setSignInEmail] = React.useState('');
+  const [notice, setNotice] = React.useState<Notice | null>(null);
 
   const callbackUrl = safeCallbackUrl(searchParams.get('callbackUrl'));
 
@@ -231,19 +396,29 @@ function LoginPageContents() {
         </Typography>
         {viewState.step === 'sign-in' && (
           <SignInForm
+            initialEmail={signInEmail}
+            notice={notice}
             disabled={redirecting || signedIn}
-            onChallenge={(challenge) =>
-              setViewState({ step: 'new-password-required', ...challenge })
-            }
+            onChallenge={(challenge) => {
+              setNotice(null);
+              setViewState({ step: 'new-password-required', ...challenge });
+            }}
             onSignedIn={goToCallbackUrl}
           />
         )}
         {viewState.step === 'new-password-required' && (
-          // Placeholder so the flow does not dead-end. Replaced by the real form in T020.
-          <Alert severity="info" data-testid="login-challenge-placeholder">
-            Bitte wähle ein neues Passwort. Dieser Schritt ist noch nicht
-            verfügbar.
-          </Alert>
+          <NewPasswordForm
+            email={viewState.email}
+            challengeUsername={viewState.challengeUsername}
+            cognitoSession={viewState.cognitoSession}
+            disabled={redirecting || signedIn}
+            onSignedIn={goToCallbackUrl}
+            onBackToSignIn={(backNotice) => {
+              setSignInEmail(viewState.email);
+              setNotice(backNotice);
+              setViewState({ step: 'sign-in' });
+            }}
+          />
         )}
       </Paper>
     </Box>
