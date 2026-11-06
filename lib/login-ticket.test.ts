@@ -59,9 +59,16 @@ describe('login ticket', () => {
 
   test('tampered ticket returns null', async () => {
     const ticket = await createLoginTicket(PAYLOAD);
-    const last = ticket.slice(-1);
-    const tampered = ticket.slice(0, -1) + (last === 'A' ? 'B' : 'A');
-    expect(await readLoginTicket(tampered)).toBeNull();
+    // Flip a character inside the ciphertext. (Not the last one: it holds padding bits, so
+    // changing it may leave the decoded bytes unchanged.)
+    const parts = ticket.split('.');
+    const ciphertext = parts[3];
+    const i = Math.floor(ciphertext.length / 2);
+    parts[3] =
+      ciphertext.slice(0, i) +
+      (ciphertext[i] === 'A' ? 'B' : 'A') +
+      ciphertext.slice(i + 1);
+    expect(await readLoginTicket(parts.join('.'))).toBeNull();
   });
 
   test.each([undefined, null, '', 'not-a-jwe'])(
