@@ -30,8 +30,8 @@ see research.md Decision 13)
 
 **Storage**: N/A — no database schema changes. Cognito remains the sole identity/credential store.
 
-**Testing**: Vitest unit tests (`yarn test`) for the new API routes with mocked Cognito responses;
-Playwright (`yarn playwright:test`) updates to `playwright/auth.setup.ts` and new specs for the
+**Testing**: Vitest unit tests (`pnpm test`) for the new API routes with mocked Cognito responses;
+Playwright (`pnpm playwright:test`) updates to `playwright/auth.setup.ts` and new specs for the
 first-login-challenge and forgot-password flows.
 
 **Target Platform**: Web (existing Next.js standalone Docker deployment, unchanged)

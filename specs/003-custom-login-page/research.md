@@ -249,7 +249,7 @@ Cognito interaction for these two flows is verified manually (quickstart) in the
 **Decision**: Introduce `aws-sdk-client-mock` (a widely-used, purpose-built mocking library for
 AWS SDK v3 clients) as a new dev dependency, and unit-test the four new API routes
 (`app/api/auth/*/route.ts`) with mocked `CognitoIdentityProviderClient` responses in regular
-Vitest unit tests (`*.test.ts` colocated with the route, run via `yarn test`), rather than in
+Vitest unit tests (`*.test.ts` colocated with the route, run via `pnpm test`), rather than in
 `api-tests/`. Do **not** attempt to exercise real Cognito calls from `api-tests/`.
 
 **Rationale**: This is genuinely new territory for the repo. Investigation confirmed that:

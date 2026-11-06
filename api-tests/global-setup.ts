@@ -69,7 +69,7 @@ async function startPostgres(): Promise<string> {
 }
 
 function runPrisma(args: string[], env: NodeJS.ProcessEnv) {
-  execFileSync('yarn', ['prisma', ...args], {
+  execFileSync('pnpm', ['exec', 'prisma', ...args], {
     stdio: 'inherit',
     env,
   });
@@ -86,7 +86,7 @@ export async function setup() {
   runPrisma(['db', 'seed'], prismaEnv);
 
   console.log('Starting Next.js server for API tests...');
-  serverProcess = spawn('yarn', ['start:dev'], {
+  serverProcess = spawn('pnpm', ['start:dev'], {
     env: {
       ...process.env,
       NODE_ENV: 'development',

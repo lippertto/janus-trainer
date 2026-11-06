@@ -6,36 +6,34 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - name: Enable Corepack
-        run: corepack enable
+      - uses: pnpm/action-setup@v4
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '26.x'
-          cache: yarn
-      - name: yarn install
-        run: yarn install
-      - run: |
-          yarn prisma generate
-      - name: yarn format:check
-        run: yarn format:check
-      - name: yarn test
-        run: yarn test
+          cache: pnpm
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Generate Prisma client
+        run: pnpm exec prisma generate
+      - name: Check formatting
+        run: pnpm format:check
+      - name: Run unit tests
+        run: pnpm test
 
   api-tests:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - name: Enable Corepack
-        run: corepack enable
+      - uses: pnpm/action-setup@v4
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '26.x'
-          cache: yarn
-      - name: yarn install
-        run: yarn install
+          cache: pnpm
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
       - name: Generate Prisma client
-        run: yarn prisma generate
+        run: pnpm exec prisma generate
       - name: Run API tests
-        run: yarn vitest -c api-tests/vite.config.ts
+        run: pnpm test:api

@@ -18,7 +18,7 @@
 
 ### User Story 1 — Everyday sign-in
 
-1. `yarn start:dev`.
+1. `pnpm start:dev`.
 2. Navigate to `/` while signed out. Click "Anmelden".
 3. Confirm you land on `/login` (same origin, app-styled), not an external AWS domain.
 4. Enter the confirmed test user's email/password. Submit.
@@ -56,13 +56,13 @@
 
 ## Automated Verification
 
-- `yarn test` — unit tests for the new API route handlers and any pure helper functions
+- `pnpm test` — unit tests for the new API route handlers and any pure helper functions
   (`mapCognitoErrorToUserMessage`, DTO validation).
-- `yarn test` also covers `lib/login-ticket.ts` (round trip, tampered, expired, wrong salt).
-- `yarn test:api` — not used for the four new routes; they are unit-tested with a mocked Cognito
+- `pnpm test` also covers `lib/login-ticket.ts` (round trip, tampered, expired, wrong salt).
+- `pnpm test:api` — not used for the four new routes; they are unit-tested with a mocked Cognito
   client (research Decision 13, plan.md Complexity Tracking). Existing `api-tests/` must keep
   passing.
-- `yarn playwright:test` — `playwright/auth.setup.ts` exercises the real same-origin sign-in
+- `pnpm playwright:test` — `playwright/auth.setup.ts` exercises the real same-origin sign-in
   against Cognito. `playwright/login.spec.ts` covers the first-login and forgot-password **UI
   flows with stubbed `/api/auth/*` responses** (`page.route()`), because temporary passwords and
   reset codes arrive by email. The real Cognito behavior for those two flows is verified by the

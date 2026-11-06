@@ -34,7 +34,7 @@ Single Next.js application at the repository root (see `plan.md` Project Structu
 **Purpose**: Dependencies and infra changes needed before any code for this feature can be built
 or tested.
 
-- [x] T001 Add `aws-sdk-client-mock` as a dev dependency (`yarn add -D aws-sdk-client-mock`) — required by all Cognito-route unit tests in later phases
+- [x] T001 Add `aws-sdk-client-mock` as a dev dependency (`pnpm add -D aws-sdk-client-mock`) — required by all Cognito-route unit tests in later phases
 - [x] T002 [P] Add `ALLOW_USER_PASSWORD_AUTH` to `ExplicitAuthFlows` in the `JanusUserPoolClient` resource in `cloudformation.yaml` (see `research.md` Decision 2) — required for `InitiateAuthCommand` with `USER_PASSWORD_AUTH` to succeed. **Must be deployed to `test` and then `prod` before the app code is released** (see `quickstart.md` Rollout order)
 - [x] T003 [P] Add `API_AUTH_SIGN_IN`, `API_AUTH_RESPOND_TO_NEW_PASSWORD_CHALLENGE`, `API_AUTH_FORGOT_PASSWORD`, `API_AUTH_CONFIRM_FORGOT_PASSWORD` route path constants in `lib/routes.ts`
 
@@ -163,7 +163,7 @@ password succeeds. Submitting a nonexistent email produces the identical confirm
       usable at a 375px-wide mobile viewport (per spec FR-012 and constitution's mobile-first
       principle), adjusting MUI layout/spacing as needed in `app/login/page.tsx`
 - [ ] T032a Security review pass: confirm no response body, log line or React Query cache entry contains a Cognito token, password, reset code or Cognito session string; confirm the old `/api/auth/signin/cognito` route is still functional as rollback (and note that SC-005 therefore holds for in-app entry points only); record the lockout-DoS risk from `contracts/auth-routes.md` in the PR description
-- [ ] T033 Run `yarn lint:check`, `yarn format:check`, `yarn test`, and `yarn build`; fix any
+- [ ] T033 Run `pnpm lint:check`, `pnpm format:check`, `pnpm test`, and `pnpm build`; fix any
       failures across all files touched by this feature
 - [ ] T034 Walk through the full `quickstart.md` manually end-to-end (all three user stories in
       one pass) against a local dev environment with `ALLOW_USER_PASSWORD_AUTH` deployed to the
@@ -240,7 +240,7 @@ Task: "Add SignInRequest DTO to lib/dto.ts"
 1. Complete Phase 1: Setup.
 2. Complete Phase 2: Foundational (blocks everything else).
 3. Complete Phase 3: User Story 1.
-4. **STOP and VALIDATE**: run T015's manual check plus `yarn test`/`yarn playwright:test`.
+4. **STOP and VALIDATE**: run T015's manual check plus `pnpm test`/`pnpm playwright:test`.
    At this point, every user with a confirmed (non-temporary) password can sign in through the new
    `/login` page — the Hosted UI is already fully bypassed for the majority of everyday sign-ins.
 5. Deploy/demo if ready — new/temporary-password users and forgot-password users would still need

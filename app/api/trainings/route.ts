@@ -18,7 +18,6 @@ import prisma from '@/lib/prisma';
 import { Prisma, Training, TrainingStatus } from '@/generated/prisma/client';
 import { NextRequest, NextResponse } from 'next/server';
 import { trainingToDto } from '@/app/api/trainings/trainingUtils';
-import { startWorkerThread } from 'synckit';
 
 async function selectTrainings(
   trainerId: string | null,
