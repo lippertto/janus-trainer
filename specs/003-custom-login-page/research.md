@@ -17,6 +17,10 @@ ordinary API route lets us return full structured JSON (mirroring every other ro
 codebase) and keeps `authorize()`'s job small and safe: verify credentials/tokens that were
 already validated against Cognito, and mint a session.
 
+**Amendment (review)**: `authorize()` MUST NOT accept raw Cognito tokens from the browser — see
+Decision 14. The API routes never return Cognito tokens to the client; they return an opaque,
+server-encrypted, short-lived _login ticket_ that `authorize()` decrypts.
+
 **Alternatives considered**:
 
 - Encoding challenge state into the thrown `Error.message` string in `authorize()`, relying on
@@ -50,43 +54,88 @@ new flow has proven stable in production.
 
 ## Decision 3: Cognito user pool groups (RBAC) for credential-based sessions
 
-**Decision**: Decode the `IdToken` JWT returned by `InitiateAuthCommand`/
-`RespondToAuthChallengeCommand` and read its `cognito:groups` claim directly, exactly like the
-existing `CognitoProvider.profile()` callback does for the OAuth flow. Pass `groups` through as a
-field on the `User` object returned by `authorize()`. Update the `jwt` callback in `lib/auth.ts`
-to read `groups` from `user` when `account?.provider === 'credentials'`, instead of from
-`profile['cognito:groups']` (which won't exist for this provider).
+**Decision**: The sign-in / challenge-response routes decode the `IdToken` returned by Cognito
+(server-side, directly from the Cognito response, so no signature check is needed at this point —
+the token arrived over TLS from the SDK call we just made) and read `sub`, `email`, `name` and
+`cognito:groups` from it. These claims travel to `authorize()` inside the login ticket
+(Decision 14). `authorize()` returns a `User` with `id = sub` (NextAuth derives `token.sub` and
+`session.userId` from `user.id`), plus `name`, `email`, `groups`, `accessToken`, `refreshToken` and
+`accessTokenExpires`.
 
-**Rationale**: The ID token already contains the same `cognito:groups` claim regardless of which
-Cognito auth flow produced it — no extra `AdminListGroupsForUserCommand` call needed. This keeps
-group/permission data flowing exclusively from Cognito, matching FR-002 (no change to where
-accounts/passwords/groups are stored) and avoiding scope creep into `docs/cognito-migration.md`'s
-separate (and explicitly different) DB-backed groups plan.
+The `jwt` callback in `lib/auth.ts` gets an explicit branch **before** the existing OAuth branch:
 
-**Alternatives considered**: Calling `AdminListGroupsForUserCommand` (already used elsewhere in
-`app/api/users/cognito.ts`) as a second round trip. Rejected: unnecessary extra Cognito API call
-and latency; the ID token already carries this claim.
+```ts
+if (account?.provider === 'credentials' && user) {
+  token.accessToken = user.accessToken;
+  token.refreshToken = user.refreshToken;
+  token.accessTokenExpires = user.accessTokenExpires;
+  token.groups = user.groups;
+  return token;
+}
+```
 
-## Decision 4: Token refresh reuse
+This is required: the existing OAuth branch does `if (!profile) return token;`, and credentials
+sign-ins never have a `profile`, so without an explicit branch they would silently get a session
+with no `accessToken` and no `groups`. The `User`/`JWT` type augmentations needed for the extra
+fields go into the existing `types/` directory.
 
-**Decision**: Reuse the existing `refreshAccessToken()` function in `lib/auth.ts` unchanged for
-credential-based sessions.
+**Rationale**: The ID token already contains the `cognito:groups` claim regardless of which
+Cognito auth flow produced it — no extra `AdminListGroupsForUserCommand` call needed. Group data
+keeps flowing exclusively from Cognito (FR-002).
 
-**Rationale**: Cognito refresh tokens behave identically regardless of which `AuthFlow` originally
-produced them (`USER_PASSWORD_AUTH` vs. the OAuth Authorization Code flow). The existing refresh
-logic already POSTs to Cognito's `/oauth2/token` endpoint using only `client_id` and
-`refresh_token` — no flow-specific data is involved.
+**Alternatives considered**: Calling `AdminListGroupsForUserCommand` as a second round trip.
+Rejected: unnecessary extra call and latency.
 
-## Decision 5: Backend-user existence check
+## Decision 4: Token refresh — fix `refreshAccessToken()` instead of reusing it unchanged
 
-**Decision**: Reuse the existing `checkIfUserExists()` helper (currently called from the
-`signIn` callback) inside the new credentials `authorize()` path too, keyed by the Cognito `sub`
-claim from the decoded ID token (same identifier the OAuth flow already uses as
-`account.providerAccountId`).
+**Decision**: Rewrite `refreshAccessToken()` in `lib/auth.ts` to call Cognito through the SDK:
+`InitiateAuthCommand({ AuthFlow: 'REFRESH_TOKEN_AUTH', AuthParameters: { REFRESH_TOKEN } })` via
+`cognitoClient()`, replacing the current `fetch` to the Hosted-UI `/oauth2/token` endpoint. Keep
+the old refresh token when Cognito doesn't return a new one (it doesn't, unless rotation is on),
+and refresh `groups` from the new `IdToken`. Also fix the OAuth branch's expiry computation
+(`Date.now() + account.expires_at! * 1000` → `account.expires_at! * 1000`; `expires_at` is
+already an epoch in seconds).
 
-**Rationale**: FR-003 explicitly requires preserving this existing rejection behavior
-("Cognito knows the user, but the app's own backend does not"). Reusing the same helper avoids
-divergent behavior between the two sign-in paths.
+**Rationale**: The earlier assumption that the existing function could be reused unchanged was
+wrong; reviewing it showed it has never worked:
+
+- The URL is built as `'…/oauth2/token' + new URLSearchParams(...)` — no `?`, and the body is
+  never sent.
+- The domain is hard-coded to the prod Hosted-UI domain (`janus-trainer-app.auth.…`), whereas the
+  pool domains are per environment (`janus-trainer-app-${env}`).
+- It has been masked by the expiry bug above: `Date.now() + expires_at * 1000` puts the expiry
+  tens of thousands of years in the future, so refresh never fires.
+
+Credential sessions will compute a correct expiry (`Date.now() + expiresIn * 1000`), so refresh
+_will_ fire after ~1 hour and must work. Moving it to the SDK also removes a runtime dependency on
+the Hosted-UI domain, in line with the spec's decoupling goal (SC-005), and works identically for
+sessions created via either sign-in path (the fallback OAuth provider is kept).
+
+**Consequence**: Fixing the expiry also activates refresh for OAuth sessions, and a failed refresh
+yields `error: 'RefreshAccessTokenError'` on the token. The `session` callback must expose that
+error and the client must send the user to `/login` (sign out) when it sees it — otherwise the user
+is left with a session that silently has a stale access token. This is covered by tasks T005b/T005c.
+
+**Alternatives considered**: Mirroring the current (broken-but-dormant) behavior. Rejected: it
+would hide the bug only until the first credential session reaches its first expiry, and would
+leave stale Cognito groups in 30-day sessions.
+
+## Decision 5: Backend-user existence check — enforced once, in the existing `signIn` callback
+
+**Decision**: Do **not** add `checkIfUserExists()` calls to the new routes or to `authorize()`.
+NextAuth already runs the `signIn` callback for credentials sign-ins, with
+`account.providerAccountId === user.id === sub`, so the existing check in `lib/auth.ts` covers the
+new path with no change. A rejected user gets `signIn(...)` result `{ error: 'AccessDenied' }` on
+the client, which `/login` maps to a German message.
+
+**Rationale**: FR-003 requires the rejection to be preserved. A check in the sign-in route alone
+would not be enforcement, since the session is only minted by `authorize()` + the `signIn`
+callback. Having one enforcement point avoids two or three redundant `HEAD` round trips and
+divergent behavior. Today's baseline for this case is NextAuth's `AccessDenied` error; the new
+page shows an equivalent German message ("Dein Konto ist in dieser App nicht freigeschaltet. …").
+
+**Trade-off**: For a first-time user who is unknown to the backend, the password change succeeds in
+Cognito before the denial. This is identical to the situation today with the Hosted UI.
 
 ## Decision 6: Forgot-password and first-login-challenge routes are plain API routes, not NextAuth
 
@@ -136,8 +185,8 @@ with three mutually exclusive view states managed by local component state: `sig
 `new-password-required`, `forgot-password`. Each state's submit action calls a dedicated React
 Query `useMutation` hitting the corresponding new API route. Field-level and top-level errors are
 shown inline via MUI `Alert`/`helperText` (not `showError` toasts, which are reserved for
-non-blocking confirmations like "check your email"). A nested `app/login/layout.tsx` suppresses
-the app bar/navigation chrome for a focused, full-page login experience.
+non-blocking confirmations like "check your email"). The app bar is suppressed on `/login`
+as described in Decision 15 (not via a nested layout).
 
 **Rationale**: `react-hook-form` is already a dependency and is the established pattern for
 multi-field forms with validation in this codebase (`UserDialog.tsx`). This is the first
@@ -156,7 +205,7 @@ simpler one.
 ## Decision 10: `LoginRequired` and sign-in entry points
 
 **Decision**: Change `components/LoginRequired.tsx`'s button from `signIn()` to
-`router.push('/login')` (or a plain `<Link href="/login">`), preserving the
+navigation to `/login?callbackUrl=…` (see Decision 16), removing the then-unused `signIn` import, preserving the
 `data-testid="login-button"` attribute so existing Playwright locators for _finding_ the button
 keep working (only the subsequent navigation target changes).
 
@@ -189,6 +238,12 @@ sign-in is same-origin.
 constitution requires Playwright coverage for critical paths, and sign-in is the most critical
 path of all.
 
+**Scope of new E2E specs**: The temporary password and the reset code are delivered by email, which
+Playwright cannot read. `playwright/login.spec.ts` therefore stubs the four `/api/auth/*` routes
+with `page.route()` to cover the UI state machine (challenge → new-password form → success;
+request → confirm → back to sign-in; inline errors; identical message for unknown email). The real
+Cognito interaction for these two flows is verified manually (quickstart) in the `test` pool.
+
 ## Decision 13: Testing strategy for Cognito-calling API routes (new precedent)
 
 **Decision**: Introduce `aws-sdk-client-mock` (a widely-used, purpose-built mocking library for
@@ -217,13 +272,11 @@ external third-party identity provider calls, and the existing codebase already 
 Cognito-writing routes as out of scope for `api-tests/` for exactly this reason. See
 `plan.md`'s Complexity Tracking section for how this is recorded as a justified exception.
 
-**What still gets tested in `api-tests/`**: The parts of these routes that touch our own database
-or backend logic without going through Cognito — specifically, `checkIfUserExists()`'s HEAD call
-to `/api/users/{userId}` (reused, research Decision 5) can still be exercised as it already is
-today, and the DTO validation (`400` responses for malformed input) does not require Cognito at
-all and can be tested at either level. Only the actual Cognito `InitiateAuthCommand`/
-`RespondToAuthChallengeCommand`/`ForgotPasswordCommand`/`ConfirmForgotPasswordCommand` calls are
-mocked.
+**What still gets tested elsewhere**: DTO validation (`400` responses) needs no Cognito and is
+covered in the route unit tests. The backend-recognition check is enforced by the existing `signIn`
+callback (Decision 5) and the `HEAD /api/users/{userId}` endpoint it calls is already covered as
+today. The ticket encode/decode round trip (Decision 14) gets its own unit tests, including
+tampered, expired and wrong-salt tickets.
 
 **Alternatives considered**:
 
@@ -237,6 +290,64 @@ mocked.
   instead of `aws-sdk-client-mock`. Rejected: `aws-sdk-client-mock` is the standard, well-maintained
   library for this exact purpose across the AWS SDK v3 ecosystem, and integrates cleanly with
   Vitest's existing `vi.mock`-free style without needing to restructure `cognito-client.ts`.
+
+## Decision 14: Login ticket instead of raw tokens in the browser (security-critical)
+
+**Decision**: The API routes `sign-in` and `respond-to-new-password-challenge` never return
+Cognito tokens to the client. On success they return `{ status: 'SUCCESS', ticket }`, where
+`ticket` is produced by `encode()` from `next-auth/jwt` with:
+
+- `secret: process.env.NEXTAUTH_SECRET`
+- a dedicated `salt` (`'janus-login-ticket'`), so a ticket can never be accepted as a session
+  cookie and vice versa
+- `maxAge: 60` (seconds)
+- payload: `sub`, `email`, `name`, `groups`, `accessToken`, `refreshToken`, `expiresIn`
+
+The client then calls `signIn('credentials', { redirect: false, ticket })`. `authorize()` calls
+`decode()` with the same secret/salt; a missing, tampered or expired ticket returns `null`.
+
+**Rationale**: The earlier draft returned `idToken`/`accessToken`/`refreshToken` to the browser and
+had it post them back to `authorize()`, leaving verification as "decide during implementation".
+The server cannot know that tokens posted to the credentials callback came from its own
+sign-in route. Without verification an attacker could forge an ID token with `sub=<admin>` and
+`cognito:groups: ["admins"]` and receive an admin session. It would also expose the refresh token
+to page JavaScript, whereas today it lives only in NextAuth's encrypted, httpOnly cookie. An
+encrypted-and-authenticated (JWE) ticket is unforgeable without `NEXTAUTH_SECRET`, opaque to JS,
+needs no server-side state (works with multiple instances), and expires almost immediately.
+
+**Residual risk**: A ticket is a bearer credential for ~60 seconds. It is only ever held in JS
+memory for the duration of one `fetch` → `signIn` hop over TLS and is never logged or persisted.
+Single-use enforcement would need shared state and is not worth the complexity here.
+
+**Alternatives considered**:
+
+- Verifying the posted ID token against the pool's JWKS in `authorize()` (`jose`/`aws-jwt-verify`;
+  `jose` is only a transitive dependency, so it would need adding). Rejected as the primary
+  design: it proves the ID token is genuine, but not that it was meant for this login, and still
+  exposes the refresh token to the browser. Remains a viable fallback if the ticket approach
+  proves problematic.
+- Calling Cognito from inside `authorize()` directly. Rejected for the reasons in Decision 1
+  (challenge state can't be returned).
+
+## Decision 15: Suppressing the app chrome on `/login`
+
+**Decision**: A nested `app/login/layout.tsx` is **not** used. Nested layouts render inside the
+root layout, so the app bar, drawer and `pt: 3` wrapper from `app/layout.tsx` would still appear.
+Instead, `JanusAppbar` (already a client component) reads `usePathname()` and returns `null` on
+`/login`. `TermsAcceptance` already renders nothing without a session, so it needs no change.
+
+**Rationale**: Route groups with separate root layouts would require moving every existing page.
+A pathname check is a three-line change. It also prevents a signed-out user from seeing a drawer
+of links to protected pages on the login screen.
+
+## Decision 16: Return-to-page and already-signed-in handling (FR-011)
+
+**Decision**: `LoginRequired` navigates to `/login?callbackUrl=<current path + search>`. `/login`
+reads `callbackUrl`, accepts it only if it is a same-origin relative path (starts with a single
+`/`, not `//`), and falls back to `/`. After `signIn(..., { redirect: false })` succeeds, the page
+does `router.replace(callbackUrl)` followed by `router.refresh()` so the new session is picked up.
+A user who already has a session and visits `/login` is redirected to `callbackUrl`.
+NextAuth's own redirects use `pages.signIn` (Decision 11), which already appends `callbackUrl`.
 
 ## Open items deferred to `spec.md` Assumptions (not re-litigated here)
 

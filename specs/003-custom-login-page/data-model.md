@@ -12,7 +12,12 @@ A discriminated union tracked in component state, determining which form is rend
 ```ts
 type LoginViewState =
   | { step: 'sign-in' }
-  | { step: 'new-password-required'; email: string; cognitoSession: string }
+  | {
+      step: 'new-password-required';
+      email: string;
+      challengeUsername: string; // Cognito USER_ID_FOR_SRP, used as USERNAME in the challenge response
+      cognitoSession: string;
+    }
   | { step: 'forgot-password-request' }
   | { step: 'forgot-password-confirm'; email: string };
 ```
@@ -45,9 +50,14 @@ flow).
 - **Cognito ID/Access/Refresh Tokens**: produced by `AuthenticationResult` once sign-in fully
   succeeds (either directly from `InitiateAuthCommand` for users with no pending challenge, or
   from `RespondToAuthChallengeCommand` after a `NEW_PASSWORD_REQUIRED` challenge is resolved).
-  These are handed to NextAuth's `CredentialsProvider.authorize()` to mint the existing
-  `JanusSession` (`lib/auth.ts`), exactly as the OAuth flow already does — no new persisted fields
-  on `JanusSession`.
+  They stay on the server: the API route packs the needed claims and tokens into a **login
+  ticket**, and only the ticket reaches the browser.
+- **Login Ticket** (`lib/login-ticket.ts`): an encrypted JWE (`next-auth/jwt` `encode`, secret
+  `NEXTAUTH_SECRET`, dedicated salt, `maxAge` 60 s) carrying `sub`, `email`, `name`, `groups`,
+  `accessToken`, `refreshToken`, `expiresIn`. Held in JS memory only for the single hop from the
+  sign-in/challenge response into `signIn('credentials', { ticket })`; never persisted or logged.
+  `authorize()` decodes it and mints the existing `JanusSession` — no new persisted fields on
+  `JanusSession`. A failed token refresh surfaces as `session.error` (see research Decision 4).
 
 ## API Route Request/Response Contracts
 
@@ -59,5 +69,6 @@ See `contracts/auth-routes.md` for the full request/response shapes of the four 
 - `prisma/schema.prisma` — no new fields, tables, or migrations.
 - `UserInDb` model — untouched; the existing `HEAD /api/users/{userId}` backend-recognition check
   (research Decision 5) is reused as-is.
-- `JanusSession` interface (`lib/auth.ts`) — unchanged shape; only the `jwt` callback gains a
-  branch to read `groups` from `user` instead of `profile` when `account.provider === 'credentials'`.
+- `JanusSession` interface (`lib/auth.ts`) — unchanged persisted shape apart from an optional
+  `error?: 'RefreshAccessTokenError'`; the `jwt` callback gains an explicit credentials branch
+  (research Decision 3).

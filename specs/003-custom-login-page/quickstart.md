@@ -9,6 +9,7 @@
   `ALLOW_USER_PASSWORD_AUTH` enabled (see `cloudformation.yaml` change in this feature). For local
   development against the shared dev/test Cognito pool, this requires the CloudFormation change to
   have been deployed first (automatic on PR open/update per `.github/workflows/run-on-pull-requests.yaml`).
+- `NEXTAUTH_SECRET` set (also used to encrypt the login ticket).
 - A Cognito test user with a **confirmed** (non-temporary) password, for exercising the plain
   sign-in path (User Story 1). A second, freshly admin-created user with only a temporary password,
   for exercising the first-login challenge path (User Story 2).
@@ -23,7 +24,12 @@
 4. Enter the confirmed test user's email/password. Submit.
 5. Confirm you are redirected back into the app, fully authenticated (e.g. home page content
    renders).
-6. Repeat with a wrong password: confirm an inline error appears on `/login` without navigating
+6. Visit `/login` directly while signed in: confirm you are redirected away. Open a protected
+   page (e.g. `/enter`) while signed out, sign in, and confirm you land back on it
+   (`callbackUrl`), and that `/login?callbackUrl=https://evil.example` redirects to `/` instead.
+7. Sign in as a Cognito user that has no row in the app DB: confirm the German "not enabled"
+   message appears and no session is created.
+8. Repeat with a wrong password: confirm an inline error appears on `/login` without navigating
    away, and the email field retains its value.
 
 ### User Story 2 — First-time mandatory password change
@@ -52,13 +58,15 @@
 
 - `yarn test` — unit tests for the new API route handlers and any pure helper functions
   (`mapCognitoErrorToUserMessage`, DTO validation).
-- `yarn test:api` — integration tests in `api-tests/` for the four new routes, per the
-  constitution's TDD-for-API-routes requirement. These will need a way to exercise Cognito
-  interactions (see plan.md's Testing Strategy section for how existing tests avoid live Cognito
-  calls, and how these new tests should handle needing a _real_ Cognito call, unlike other
-  existing API tests).
-- `yarn playwright:test` — updated `playwright/auth.setup.ts` (and any new specs covering the
-  first-login and forgot-password flows) exercising the full same-origin flow.
+- `yarn test` also covers `lib/login-ticket.ts` (round trip, tampered, expired, wrong salt).
+- `yarn test:api` — not used for the four new routes; they are unit-tested with a mocked Cognito
+  client (research Decision 13, plan.md Complexity Tracking). Existing `api-tests/` must keep
+  passing.
+- `yarn playwright:test` — `playwright/auth.setup.ts` exercises the real same-origin sign-in
+  against Cognito. `playwright/login.spec.ts` covers the first-login and forgot-password **UI
+  flows with stubbed `/api/auth/*` responses** (`page.route()`), because temporary passwords and
+  reset codes arrive by email. The real Cognito behavior for those two flows is verified by the
+  manual steps above.
 
 ## Rollback
 
@@ -67,3 +75,9 @@ Reverting is low-risk: remove the `CredentialsProvider` from `lib/auth.ts`, remo
 `signIn()`, and (optionally) revert the `ALLOW_USER_PASSWORD_AUTH` CloudFormation change. The
 existing Cognito OAuth Hosted-UI provider configuration is left untouched throughout this feature,
 so it continues to function as an immediate fallback at every step.
+
+## Rollout order
+
+1. Deploy the `cloudformation.yaml` change (`ALLOW_USER_PASSWORD_AUTH`) to `test`, then `prod`.
+2. Only then deploy the application code. Without the flag, every sign-in on `/login` fails with
+   `InvalidParameterException`.
