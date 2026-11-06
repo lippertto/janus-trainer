@@ -7,6 +7,8 @@ import type { AuthOptions, NextAuthOptions, Profile, Session } from 'next-auth';
 import { getServerSession } from 'next-auth';
 import type { JWT } from 'next-auth/jwt';
 import CognitoProvider from 'next-auth/providers/cognito';
+import CredentialsProvider from 'next-auth/providers/credentials';
+import { readLoginTicket } from './login-ticket';
 import { Group } from './dto';
 import { retry } from '@lifeomic/attempt';
 
@@ -17,7 +19,7 @@ import { retry } from '@lifeomic/attempt';
  * `accessToken` and `accessTokenExpires`. If an error occurs,
  * returns the old token and an error property
  */
-async function refreshAccessToken(token: JWT) {
+async function refreshAccessToken(token: JWT): Promise<JWT> {
   try {
     const url =
       'https://janus-trainer-app.auth.eu-north-1.amazoncognito.com/oauth2/token' +
@@ -51,7 +53,7 @@ async function refreshAccessToken(token: JWT) {
 
     return {
       ...token,
-      error: 'RefreshAccessTokenError',
+      error: 'RefreshAccessTokenError' as const,
     };
   }
 }
@@ -90,6 +92,7 @@ async function checkIfUserExists(userId: string) {
 export function buildAuthConfig(): AuthOptions {
   // configuration according to https://github.com/nextauthjs/next-auth/issues/4707
   return {
+    pages: { signIn: '/login' },
     providers: [
       CognitoProvider({
         clientId: process.env.COGNITO_CLIENT_ID!,
@@ -105,6 +108,27 @@ export function buildAuthConfig(): AuthOptions {
             name: profile.name,
             email: profile.email,
             image: profile.picture,
+          };
+        },
+      }),
+      // Accepts only the encrypted login ticket that the /api/auth/sign-in and
+      // /api/auth/respond-to-new-password-challenge routes hand out. It must never accept raw
+      // Cognito tokens. It deliberately does not call checkIfUserExists(): the signIn callback
+      // below is the single enforcement point for that.
+      CredentialsProvider({
+        name: 'Credentials',
+        credentials: { ticket: { type: 'text' } },
+        async authorize(credentials) {
+          const ticket = await readLoginTicket(credentials?.ticket);
+          if (!ticket) return null;
+          return {
+            id: ticket.sub,
+            name: ticket.name,
+            email: ticket.email,
+            groups: ticket.groups,
+            accessToken: ticket.accessToken,
+            refreshToken: ticket.refreshToken,
+            accessTokenExpires: Date.now() + ticket.expiresIn * 1000,
           };
         },
       }),
