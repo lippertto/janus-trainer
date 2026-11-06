@@ -5,6 +5,7 @@ import {
   ExpiredCodeException,
   InvalidPasswordException,
   LimitExceededException,
+  RespondToAuthChallengeCommand,
   NotAuthorizedException,
   TooManyFailedAttemptsException,
   TooManyRequestsException,
@@ -267,4 +268,37 @@ export async function initiateUserPasswordAuth(
     status: 'SUCCESS',
     ...toAuthenticatedTokens(response.AuthenticationResult),
   };
+}
+
+/**
+ * Completes the NEW_PASSWORD_REQUIRED challenge (first login with a temporary password).
+ *
+ * `username` must be the challengeUsername that Cognito returned from the sign-in call
+ * (USER_ID_FOR_SRP), not the email the user typed.
+ *
+ * No `requiredAttributes` are sent: the user pool defines no custom schema, so the only required
+ * attribute is the email, which AdminCreateUser already sets. If the pool ever gets more required
+ * attributes, Cognito answers with an InvalidParameterException and they would have to be added
+ * here (see ChallengeParameters.requiredAttributes of the sign-in response).
+ */
+export async function respondToNewPasswordChallenge(
+  username: string,
+  newPassword: string,
+  session: string,
+): Promise<AuthenticatedTokens> {
+  assertCognitoConfigured();
+  const response = await cognitoClient().send(
+    new RespondToAuthChallengeCommand({
+      ChallengeName: 'NEW_PASSWORD_REQUIRED',
+      ClientId: process.env.COGNITO_CLIENT_ID!,
+      Session: session,
+      ChallengeResponses: { USERNAME: username, NEW_PASSWORD: newPassword },
+    }),
+  );
+  if (response.ChallengeName) {
+    throw new CognitoAuthFlowError(
+      `Unsupported challenge: ${response.ChallengeName}`,
+    );
+  }
+  return toAuthenticatedTokens(response.AuthenticationResult);
 }
