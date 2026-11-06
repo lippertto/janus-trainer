@@ -35,8 +35,8 @@ Single Next.js application at the repository root (see `plan.md` Project Structu
 or tested.
 
 - [ ] T001 Add `aws-sdk-client-mock` as a dev dependency (`yarn add -D aws-sdk-client-mock`) — required by all Cognito-route unit tests in later phases
-- [ ] T002 [P] Add `ALLOW_USER_PASSWORD_AUTH` to `ExplicitAuthFlows` in the `JanusUserPoolClient` resource in `cloudformation.yaml` (see `research.md` Decision 2) — required for `InitiateAuthCommand` with `USER_PASSWORD_AUTH` to succeed. **Must be deployed to `test` and then `prod` before the app code is released** (see `quickstart.md` Rollout order)
-- [ ] T003 [P] Add `API_AUTH_SIGN_IN`, `API_AUTH_RESPOND_TO_NEW_PASSWORD_CHALLENGE`, `API_AUTH_FORGOT_PASSWORD`, `API_AUTH_CONFIRM_FORGOT_PASSWORD` route path constants in `lib/routes.ts`
+- [x] T002 [P] Add `ALLOW_USER_PASSWORD_AUTH` to `ExplicitAuthFlows` in the `JanusUserPoolClient` resource in `cloudformation.yaml` (see `research.md` Decision 2) — required for `InitiateAuthCommand` with `USER_PASSWORD_AUTH` to succeed. **Must be deployed to `test` and then `prod` before the app code is released** (see `quickstart.md` Rollout order)
+- [x] T003 [P] Add `API_AUTH_SIGN_IN`, `API_AUTH_RESPOND_TO_NEW_PASSWORD_CHALLENGE`, `API_AUTH_FORGOT_PASSWORD`, `API_AUTH_CONFIRM_FORGOT_PASSWORD` route path constants in `lib/routes.ts`
 
 **Checkpoint**: Infra and constants ready for foundational code.
 
