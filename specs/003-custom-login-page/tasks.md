@@ -159,7 +159,7 @@ password succeeds. Submitting a nonexistent email produces the identical confirm
 
 **Purpose**: Final checks spanning all three stories.
 
-- [ ] T032 [P] Verify `/login` and all three of its view states render correctly and remain
+- [x] T032 [P] Verify `/login` and all three of its view states render correctly and remain
       usable at a 375px-wide mobile viewport (per spec FR-012 and constitution's mobile-first
       principle), adjusting MUI layout/spacing as needed in `app/login/page.tsx`
 - [x] T032a Security review pass: confirm no response body, log line or React Query cache entry contains a Cognito token, password, reset code or Cognito session string; confirm the old `/api/auth/signin/cognito` route is still functional as rollback (and note that SC-005 therefore holds for in-app entry points only); record the lockout-DoS risk from `contracts/auth-routes.md` in the PR description
