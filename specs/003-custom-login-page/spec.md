@@ -219,6 +219,10 @@ confirming a subsequent sign-in with the new password succeeds.
 - Account creation/invitation (how a new user first receives a temporary password) is unchanged;
   this feature only affects what happens when a user with valid or temporary credentials attempts to
   sign in.
+- A user who has never completed the first login (still has only a temporary password) cannot use
+  "forgot password": Cognito accepts the request but sends no email, and the response must stay the
+  same for every account (FR-008). Such a user who lost the invitation email needs an admin to
+  resend the invitation. Observed on the dev pool; see `contracts/auth-routes.md`.
 - Rate limiting/lockout behavior for repeated failed attempts is provided by the identity provider
   and is not being newly implemented by this feature; the custom forms only need to surface the
   resulting error clearly.

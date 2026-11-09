@@ -142,6 +142,12 @@ observed in the unit tests/test pool. Behavior for users still in `FORCE_CHANGE_
 (never completed first login) must be checked manually; if Cognito raises `InvalidParameterException`
 for them, the route returns `CODE_SENT` as well.
 
+**Observed (dev pool, to be re-checked on the test pool):** for a user in `FORCE_CHANGE_PASSWORD`
+with a verified email, Cognito raises nothing. `ForgotPassword` succeeds and returns
+`CodeDeliveryDetails` (masked email, `DeliveryMedium: EMAIL`), but no email is delivered. The route
+therefore answers `CODE_SENT` without special handling, and such a user cannot reset the password
+here; the admin's "resend invitation" is the recovery path.
+
 **Error responses** (only for genuine infra/service failures, never for "account not found"):
 
 - `400 BadRequest` — validation failure (malformed email).

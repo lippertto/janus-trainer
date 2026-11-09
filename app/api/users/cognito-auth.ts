@@ -322,12 +322,18 @@ const CANNOT_RESET_MESSAGE = /no registered\/verified email or phone_number/i;
  * Swallowed:
  * - UserNotFoundException: unknown account.
  * - InvalidParameterException with Cognito's "no registered/verified email or phone_number"
- *   message: an account that cannot receive a code, e.g. still in FORCE_CHANGE_PASSWORD.
- *   TODO(T026): this wording is from AWS's documentation and has NOT been observed against the
- *   test pool yet. Verify with a user who never completed the first login.
+ *   message: a defensive guess for an account that cannot receive a code. It has NOT been
+ *   observed: a user in FORCE_CHANGE_PASSWORD with a verified email did not trigger it (see
+ *   below). If it can be shown to never occur, this branch can be removed.
  * - NotAuthorizedException: a disabled account (soft-deleted users are disabled in Cognito).
  * - LimitExceededException: Cognito raises it per existing account, so surfacing it would leak
  *   that the account exists (contracts/auth-routes.md).
+ *
+ * Observed on the dev pool (not the test pool): for a user in FORCE_CHANGE_PASSWORD with a
+ * verified email, ForgotPassword resolves normally with CodeDeliveryDetails (masked email,
+ * DeliveryMedium EMAIL), but no email is ever delivered. There is nothing to catch, so the
+ * response is CODE_SENT like for every other account (FR-008). A user who lost the invitation
+ * email therefore cannot recover through the login page; the admin's "resend invitation" does.
  *
  * Not swallowed: TooManyRequestsException (general throttling, says nothing about the account)
  * and CodeDeliveryFailureException (a real infrastructure problem).

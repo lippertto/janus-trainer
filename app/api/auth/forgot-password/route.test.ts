@@ -69,6 +69,24 @@ describe('POST /api/auth/forgot-password', () => {
     });
   });
 
+  test('a user who never signed in (FORCE_CHANGE_PASSWORD): Cognito resolves, the response is CODE_SENT', async () => {
+    // The exact response observed from the dev pool for such a user, via the AWS CLI. Cognito
+    // reports a delivery but sends no email. This test only documents that there is no error to
+    // handle; it cannot show what Cognito does.
+    cognitoMock.on(ForgotPasswordCommand).resolves({
+      CodeDeliveryDetails: {
+        Destination: 'l***@g***',
+        DeliveryMedium: 'EMAIL',
+        AttributeName: 'email',
+      },
+    });
+    const response = await POST(
+      request({ email: 'never-signed-in@example.com' }),
+    );
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ status: 'CODE_SENT' });
+  });
+
   test('the response never contains the delivery destination', async () => {
     cognitoMock.on(ForgotPasswordCommand).resolves({
       CodeDeliveryDetails: {
