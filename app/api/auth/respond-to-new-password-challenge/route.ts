@@ -46,12 +46,19 @@ export async function POST(request: NextRequest) {
       throw toApiError(e, 'challenge');
     }
 
-    const ticket = await createLoginTicket({
-      ...tokens.claims,
-      accessToken: tokens.accessToken,
-      refreshToken: tokens.refreshToken,
-      expiresIn: tokens.expiresIn,
-    });
+    let ticket;
+    try {
+      ticket = await createLoginTicket({
+        ...tokens.claims,
+        accessToken: tokens.accessToken,
+        refreshToken: tokens.refreshToken,
+        expiresIn: tokens.expiresIn,
+      });
+    } catch (e) {
+      // e.g. NEXTAUTH_SECRET is not set. handleTopLevelCatch would return a plain Error's
+      // message to the caller, so convert it to a generic error first.
+      throw toApiError(e);
+    }
     return NextResponse.json({ status: 'SUCCESS', ticket });
   } catch (e) {
     return handleTopLevelCatch(e);

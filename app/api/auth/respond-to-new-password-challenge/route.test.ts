@@ -217,6 +217,17 @@ describe('POST /api/auth/respond-to-new-password-challenge', () => {
     expect(loggedText()).toContain('incomplete authentication result');
   });
 
+  test('a failure while creating the ticket is a 500 that does not reveal the cause', async () => {
+    cognitoSucceeds();
+    vi.stubEnv('NEXTAUTH_SECRET', '');
+    const response = await POST(request(validBody));
+    expect(response.status).toBe(500);
+    const text = await response.text();
+    expect(text).not.toContain('NEXTAUTH_SECRET');
+    expect(text).not.toContain('ticket');
+    expect(JSON.parse(text).error.code).toBe('InternalServerError');
+  });
+
   test('an unexpected failure is a 500 without internal details', async () => {
     cognitoMock
       .on(RespondToAuthChallengeCommand)
