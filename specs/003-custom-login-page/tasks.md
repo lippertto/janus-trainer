@@ -163,7 +163,7 @@ password succeeds. Submitting a nonexistent email produces the identical confirm
       usable at a 375px-wide mobile viewport (per spec FR-012 and constitution's mobile-first
       principle), adjusting MUI layout/spacing as needed in `app/login/page.tsx`
 - [ ] T032a Security review pass: confirm no response body, log line or React Query cache entry contains a Cognito token, password, reset code or Cognito session string; confirm the old `/api/auth/signin/cognito` route is still functional as rollback (and note that SC-005 therefore holds for in-app entry points only); record the lockout-DoS risk from `contracts/auth-routes.md` in the PR description
-- [ ] T033 Run `pnpm lint:check`, `pnpm format:check`, `pnpm test`, and `pnpm build`; fix any
+- [x] T033 Run `pnpm lint:check`, `pnpm format:check`, `pnpm test`, and `pnpm build`; fix any
       failures across all files touched by this feature
 - [ ] T034 Walk through the full `quickstart.md` manually end-to-end (all three user stories in
       one pass) against a local dev environment with `ALLOW_USER_PASSWORD_AUTH` deployed to the
