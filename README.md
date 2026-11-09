@@ -2,14 +2,16 @@
 
 You can run the app locally (excluding the cognito login) by using the following commands:
 
+Install dependencies with `pnpm install` (the pinned pnpm version can be enabled with Corepack), then:
+
 ```shell
 podman-compose up -d
-yarn start:dev
+pnpm start:dev
 ```
 
 ## Execute API tests
 
-Then, run `yarn vitest -c api-tests/vite.config.js`
+Then, run `pnpm test:api`.
 
 # TODO
 
@@ -39,7 +41,7 @@ Then, run `yarn vitest -c api-tests/vite.config.js`
 
 ## Evolving the database schema
 
-All commands should be prefixed with `yarn run dotenv -e .env.development.local -- ` to load the database connection values
+All commands should be prefixed with `pnpm exec dotenv -e .env.development.local -- ` to load the database connection values
 
 Update the generated code: `prisma generate`
 

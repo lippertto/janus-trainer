@@ -1,2 +1,2 @@
-yarn format:check
-yarn lint:check
+pnpm format:check
+pnpm lint:check

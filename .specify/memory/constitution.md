@@ -53,7 +53,7 @@ testing catches schema mismatches, constraint violations, and migration issues b
 deployment.
 
 **How to apply**: For any `/app/api/**` route changes, write tests in `api-tests/` first.
-Run `yarn test:api`.
+Run `pnpm test:api`.
 
 ### III. Security-First API Design
 
@@ -76,10 +76,10 @@ before merging significant changes.
 
 Database schema changes MUST follow the documented workflow:
 1. Update `prisma/schema.prisma`
-2. Push to local DB: `yarn run dotenv -e .env.development -- prisma db push`
-3. Generate TypeScript client: `yarn run dotenv -e .env.development -- prisma generate`
+2. Push to local DB: `pnpm exec dotenv -e .env.development -- prisma db push`
+3. Generate TypeScript client: `pnpm exec dotenv -e .env.development -- prisma generate`
 4. Test changes thoroughly with API tests
-5. Create migration when complete: `yarn run dotenv -e .env.development -- prisma migrate dev`
+5. Create migration when complete: `pnpm exec dotenv -e .env.development -- prisma migrate dev`
 
 Never run Prisma commands without `dotenv -e .env.development` prefix. Always create
 migrations for schema changes before merging to main branch.
@@ -139,12 +139,12 @@ patterns without documented justification and approval.
 ### Pre-Merge Quality Gates
 
 Before any PR merge:
-- `yarn lint:check` passes
-- `yarn format:check` passes
-- `yarn test` passes (unit tests)
-- `yarn test:api` passes (API integration tests)
+- `pnpm lint:check` passes
+- `pnpm format:check` passes
+- `pnpm test` passes (unit tests)
+- `pnpm test:api` passes (API integration tests)
 - Playwright tests pass for affected user flows
-- `yarn build` succeeds (no TypeScript errors)
+- `pnpm build` succeeds (no TypeScript errors)
 
 ### Testing Requirements
 
