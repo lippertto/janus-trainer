@@ -149,7 +149,7 @@ password succeeds. Submitting a nonexistent email produces the identical confirm
 - [x] T028 [US3] Implement `app/api/auth/confirm-forgot-password/route.ts` (`POST`): `validateOrThrow()` → `confirmPasswordReset()` → return `{ status: 'PASSWORD_RESET' }`; map `CodeMismatchException`/`ExpiredCodeException`/`InvalidPasswordException` via `mapCognitoErrorToUserMessage()`; wrap in `handleTopLevelCatch()` (depends on T025, T026)
 - [x] T029 [US3] Extend `app/login/page.tsx`: add a "forgot password?" link/button on the sign-in view that switches to `{ step: 'forgot-password-request' }`; build the email-only request form (submits to T027's route, then always shows a `showSuccess()` toast confirmation like "Falls ein Konto mit dieser E-Mail existiert, wurde ein Code gesendet" and switches to `{ step: 'forgot-password-confirm', email }`); build the code + new-password + confirm-new-password form (`autoComplete="one-time-code"` / `"new-password"`, `inputMode="numeric"` for the code, submit disabled while pending; on success, `showSuccess()` and switch back to `{ step: 'sign-in' }`; on error, inline `Alert` with retry, and on `CodeExpired` offer a "Neuen Code anfordern" action)
 - [ ] T030 [US3] Extend `playwright/login.spec.ts` covering the forgot-password UI flow with stubbed `/api/auth/*` responses: request → confirm → back to sign-in; `CodeMismatch`/`CodeExpired` inline errors; nonexistent email shows the identical confirmation
-- [ ] T031 [US3] Manually verify User Story 3 per `quickstart.md`'s "User Story 3" section
+- [x] T031 [US3] Manually verify User Story 3 per `quickstart.md`'s "User Story 3" section
 
 **Checkpoint**: All three user stories are independently functional. The feature is complete.
 
