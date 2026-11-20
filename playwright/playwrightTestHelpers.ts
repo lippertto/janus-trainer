@@ -1,5 +1,5 @@
 import dayjs from 'dayjs';
-import { Page } from 'playwright-core';
+import { Page } from '@playwright/test';
 
 export async function fillOutDatePicker(
   page: Page,
