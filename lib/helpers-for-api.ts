@@ -184,15 +184,8 @@ export class ApiErrorForbidden extends ApiError {
 
 export class ApiErrorUnauthorized extends ApiError {
   constructor(message: string) {
-    super(message, 'Unauthorized', 401);
+    super(message, 'Unauthorized', 403);
     Object.setPrototypeOf(this, ApiErrorUnauthorized.prototype);
-  }
-}
-
-export class ApiErrorTooManyRequests extends ApiError {
-  constructor(message: string) {
-    super(message, 'TooManyRequests', 429);
-    Object.setPrototypeOf(this, ApiErrorTooManyRequests.prototype);
   }
 }
 
