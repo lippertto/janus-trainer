@@ -4,6 +4,9 @@
 # Claude Code directory
 .claude/
 
+# Pi directory
+.pi/
+
 # Generated package manager lockfile
 pnpm-lock.yaml
 
