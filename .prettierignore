@@ -3,3 +3,12 @@
 
 # Claude Code directory
 .claude/
+
+# Pi directory
+.pi/
+
+# Generated package manager lockfile
+pnpm-lock.yaml
+
+# Rewritten by `next dev` on every start
+tsconfig.json

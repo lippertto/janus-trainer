@@ -14,6 +14,7 @@ import { styled } from '@mui/material/styles';
 import { ConfirmProvider } from 'material-ui-confirm';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v13-appRouter';
+import { SignOutOnSessionError } from '@/app/SignOutOnSessionError';
 
 const theme = createTheme({}, deDE);
 
@@ -55,7 +56,10 @@ export default function JanusProviders({
               }}
             >
               <QueryClientProvider client={queryClient}>
-                <SessionProvider>{children}</SessionProvider>
+                <SessionProvider>
+                  <SignOutOnSessionError />
+                  {children}
+                </SessionProvider>
               </QueryClientProvider>{' '}
             </ConfirmProvider>
           </SnackbarProvider>

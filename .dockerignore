@@ -2,7 +2,6 @@
 .github
 .husky
 .next
-.yarn
 api-tests
 generated
 node_modules
